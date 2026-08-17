@@ -8,6 +8,7 @@ import {
 } from './diagnostics'
 import {
   discoverSongPackages,
+  findPackageFiles,
   loadSourcePackage,
   type DiscoveredSongPackage,
   type JsonSourceFile,
@@ -177,9 +178,9 @@ function validateMediaPresence(
 ): void {
   const audioDirectory = path.join(songPackage.directoryPath, 'audio')
   const artworkDirectory = path.join(songPackage.directoryPath, 'artwork')
-  const audioFiles = findFiles(audioDirectory, /^source\.[^./]+$/)
-  const coverFiles = findFiles(artworkDirectory, /^cover\.[^./]+$/)
-  const heroFiles = findFiles(artworkDirectory, /^hero\.[^./]+$/)
+  const audioFiles = findPackageFiles(audioDirectory, /^source\.[^./]+$/)
+  const coverFiles = findPackageFiles(artworkDirectory, /^cover\.[^./]+$/)
+  const heroFiles = findPackageFiles(artworkDirectory, /^hero\.[^./]+$/)
 
   if (audioFiles.length === 0) {
     diagnostics.push({
@@ -319,7 +320,7 @@ function validateFeatureReferences(
 ): void {
   const featuresDirectory = path.join(songPackage.directoryPath, 'features')
   const segmentIds = new Set(lyrics.segments.map((segment) => segment.id))
-  const markdownFiles = findFiles(featuresDirectory, /\.md$/i)
+  const markdownFiles = findPackageFiles(featuresDirectory, /\.md$/i)
   const referencePattern = /\[\[segment:([^\]\s]+)\]\]/g
 
   markdownFiles.forEach((filePath) => {
@@ -354,18 +355,6 @@ function validateFeatureReferences(
       }
     }
   })
-}
-
-function findFiles(directoryPath: string, namePattern: RegExp): string[] {
-  try {
-    return fs
-      .readdirSync(directoryPath, { withFileTypes: true })
-      .filter((entry) => entry.isFile() && namePattern.test(entry.name))
-      .map((entry) => path.join(directoryPath, entry.name))
-      .sort((left, right) => left.localeCompare(right))
-  } catch {
-    return []
-  }
 }
 
 function toSourcePath(sourceRoot: string, targetPath: string): string {

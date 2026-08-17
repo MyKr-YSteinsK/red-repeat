@@ -71,6 +71,21 @@ export function readJsonSourceFile(filePath: string): JsonSourceFile {
   }
 }
 
+export function findPackageFiles(
+  directoryPath: string,
+  namePattern: RegExp,
+): string[] {
+  try {
+    return fs
+      .readdirSync(directoryPath, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && namePattern.test(entry.name))
+      .map((entry) => path.join(directoryPath, entry.name))
+      .sort((left, right) => left.localeCompare(right))
+  } catch {
+    return []
+  }
+}
+
 function isDirectory(targetPath: string): boolean {
   try {
     return fs.statSync(targetPath).isDirectory()
