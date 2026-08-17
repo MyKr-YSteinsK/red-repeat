@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+public/library-runtime/
+.cache/library-compiler/
 *.local
 
 # Editor directories and files

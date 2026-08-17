@@ -129,6 +129,24 @@ describe('Library Validator', () => {
     expectCode(result, 'MISSING_COVER_ARTWORK')
   })
 
+  it('reports ambiguous cover and hero artwork', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    fs.writeFileSync(
+      path.join(packageDirectory, 'artwork', 'cover.webp'),
+      'second synthetic cover placeholder',
+    )
+    fs.writeFileSync(
+      path.join(packageDirectory, 'artwork', 'hero.webp'),
+      'second synthetic hero placeholder',
+    )
+
+    const result = validateLibrary(root)
+
+    expectCode(result, 'AMBIGUOUS_COVER_ARTWORK')
+    expectCode(result, 'AMBIGUOUS_HERO_ARTWORK')
+  })
+
   it('reports unknown Segment and Section references', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)

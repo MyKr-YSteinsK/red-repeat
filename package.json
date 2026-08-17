@@ -10,6 +10,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "library:validate": "tsx src/library/cli.ts",
+    "library:compile": "tsx src/library/compile-cli.ts",
     "preview": "vite preview"
   },
   "dependencies": {

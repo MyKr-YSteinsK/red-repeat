@@ -209,6 +209,16 @@ function validateMediaPresence(
       sourcePath: toSourcePath(sourceRoot, artworkDirectory),
       message: 'missing canonical artwork/cover.* file',
     })
+  } else if (coverFiles.length > 1) {
+    diagnostics.push({
+      severity: 'error',
+      code: 'AMBIGUOUS_COVER_ARTWORK',
+      songId,
+      sourcePath: toSourcePath(sourceRoot, artworkDirectory),
+      message: `found multiple canonical covers: ${coverFiles
+        .map((filePath) => path.basename(filePath))
+        .join(', ')}`,
+    })
   }
 
   if (heroFiles.length === 0) {
@@ -218,6 +228,16 @@ function validateMediaPresence(
       songId,
       sourcePath: toSourcePath(sourceRoot, artworkDirectory),
       message: 'optional artwork/hero.* file is not present',
+    })
+  } else if (heroFiles.length > 1) {
+    diagnostics.push({
+      severity: 'error',
+      code: 'AMBIGUOUS_HERO_ARTWORK',
+      songId,
+      sourcePath: toSourcePath(sourceRoot, artworkDirectory),
+      message: `found multiple canonical heroes: ${heroFiles
+        .map((filePath) => path.basename(filePath))
+        .join(', ')}`,
     })
   }
 }
