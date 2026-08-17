@@ -29,5 +29,8 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Validate Library source
+        run: npm run library:validate
+
       - name: Build
         run: npm run build

@@ -17,8 +17,12 @@ npm run dev
 npm run lint
 npm run typecheck
 npm test
+npm run library:validate
 npm run build
 ```
+
+`npm run library:validate` checks the optional production `library/` source packages;
+an absent or empty Library is valid at this stage.
 
 For deterministic CI installs, use `npm ci`.
 
