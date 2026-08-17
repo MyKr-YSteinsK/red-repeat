@@ -141,6 +141,38 @@ describe('Library Compiler media pipeline', () => {
     ).toBe(false)
   }, 30_000)
 
+  it('removes a song runtime directory when its source package is deleted', async () => {
+    const fixture = await createFixture()
+    const secondSongRoot = path.join(
+      fixture.options.sourceRoot,
+      'second-light',
+    )
+    fs.cpSync(fixture.songRoot, secondSongRoot, { recursive: true })
+    writeJson(path.join(secondSongRoot, 'manifest.json'), {
+      songId: 'second-light',
+      title: 'Second Light',
+      artist: 'A Composer',
+    })
+
+    const firstResult = await compileLibrary(fixture.options)
+    expect(firstResult).toMatchObject({ valid: true, songCount: 2 })
+    expect(
+      fs.existsSync(
+        path.join(fixture.outputRoot, 'songs', 'second-light'),
+      ),
+    ).toBe(true)
+
+    fs.rmSync(secondSongRoot, { recursive: true, force: true })
+    const secondResult = await compileLibrary(fixture.options)
+
+    expect(secondResult).toMatchObject({ valid: true, songCount: 1 })
+    expect(
+      fs.existsSync(
+        path.join(fixture.outputRoot, 'songs', 'second-light'),
+      ),
+    ).toBe(false)
+  }, 30_000)
+
   it('fails when Timeline playback exceeds probed audio duration', async () => {
     const fixture = await createFixture({ playEndMs: 2_000 })
 

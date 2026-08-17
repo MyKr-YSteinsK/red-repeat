@@ -10,6 +10,9 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
+      workbox: {
+        globIgnores: ['library-runtime/**'],
+      },
       manifest: {
         name: 'RED:REPEAT',
         short_name: 'RED:REPEAT',
