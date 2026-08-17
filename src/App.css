@@ -1,22 +1,216 @@
 .app-shell {
+  width: min(100%, 74rem);
   min-height: 100svh;
-  display: grid;
-  place-content: center;
-  gap: 0.5rem;
-  padding: 2rem;
-  box-sizing: border-box;
-  text-align: center;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3vw, 2.75rem) clamp(1.25rem, 5vw, 5rem)
+    1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.app-shell h1 {
+.site-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2rem;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.brand-signal {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  background: var(--color-red);
+}
+
+.brand-wordmark {
+  font-size: 0.83rem;
+  font-weight: 760;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+.brand-divider {
+  margin-inline: 0.08em;
+  color: var(--color-red);
+}
+
+.imprint,
+.eyebrow,
+.empty-kicker,
+.empty-signal,
+.site-footer {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.imprint {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.library {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(4.5rem, 13vh, 9rem) 0 clamp(4rem, 10vh, 7rem);
+}
+
+.library-heading {
+  max-width: 46rem;
+}
+
+.eyebrow,
+.empty-kicker {
+  margin: 0;
+  color: var(--color-red);
+}
+
+.library-heading h1 {
+  max-width: 42rem;
+  margin: 1rem 0 1.35rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 7.6rem);
+  font-weight: 400;
+  letter-spacing: -0.075em;
+  line-height: 0.9;
+}
+
+.library-lede {
+  max-width: 29rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.5;
+}
+
+.empty-state {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(1.25rem, 4vw, 3.5rem);
+  margin-top: clamp(4rem, 10vw, 8rem);
+  padding: 1.15rem 0 1.35rem;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 65%, transparent);
+}
+
+.empty-index {
   margin: 0;
   color: var(--color-ink);
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 8vw, 5rem);
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-variant-numeric: lining-nums;
   letter-spacing: -0.08em;
+  line-height: 0.8;
 }
 
-.app-shell p {
+.empty-copy {
+  max-width: 34rem;
+}
+
+.empty-copy h2 {
+  max-width: 26rem;
+  margin: 0.55rem 0 0.65rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.empty-copy > p:last-child {
   margin: 0;
   color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.empty-signal {
+  align-self: start;
+  margin: 0.25rem 0 0;
+  color: var(--color-red);
+  white-space: nowrap;
+}
+
+.site-footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-top: 1.25rem;
+  color: var(--color-muted);
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.footer-signal {
+  color: var(--color-red);
+}
+
+.brand-lockup:hover .brand-wordmark,
+.brand-lockup:focus-visible .brand-wordmark {
+  text-decoration: underline;
+  text-decoration-color: var(--color-red);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding-inline: 1.25rem;
+  }
+
+  .site-header {
+    gap: 1rem;
+  }
+
+  .imprint {
+    max-width: 7.5rem;
+  }
+
+  .empty-state {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 1.25rem;
+  }
+
+  .empty-index {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .empty-signal {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .empty-copy {
+    grid-column: 1 / -1;
+  }
+
+  .site-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
 }
