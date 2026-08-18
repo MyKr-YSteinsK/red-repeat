@@ -26,6 +26,7 @@ const validLyrics = {
 }
 
 const validTimeline = {
+  audioSourceHash: 'a'.repeat(64),
   sections: [{ id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 4000 }],
   occurrences: [
     {
@@ -96,6 +97,21 @@ describe('Song Edition source schemas', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('requires a lowercase SHA-256 audio source fingerprint', () => {
+    expect(
+      TimelineSchema.safeParse({
+        ...validTimeline,
+        audioSourceHash: 'A'.repeat(64),
+      }).success,
+    ).toBe(false)
+    expect(
+      TimelineSchema.safeParse({
+        ...validTimeline,
+        audioSourceHash: undefined,
+      }).success,
+    ).toBe(false)
   })
 
   it('allows overlapping occurrences and repeated Segment references', () => {

@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { hashText } from './hash'
 import { validateLibrary } from './validator'
 
 const temporaryRoots: string[] = []
@@ -23,6 +24,7 @@ const lyrics = {
 }
 
 const timeline = {
+  audioSourceHash: hashText('synthetic audio placeholder'),
   sections: [{ id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 4000 }],
   occurrences: [
     {
@@ -71,6 +73,26 @@ describe('Library Validator', () => {
 
     expect(result).toMatchObject({ valid: true, songCount: 1, errors: 0 })
     expect(result.warnings).toBe(0)
+  })
+
+  it('reports a Timeline audio source hash mismatch', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      ...timeline,
+      audioSourceHash: 'b'.repeat(64),
+    })
+
+    const result = validateLibrary(root)
+    const diagnostic = result.diagnostics.find(
+      ({ code }) => code === 'TIMELINE_AUDIO_SOURCE_MISMATCH',
+    )
+
+    expect(diagnostic).toMatchObject({
+      severity: 'error',
+      fieldPath: 'audioSourceHash',
+      sourcePath: 'first-light/timeline.json',
+    })
   })
 
   it('reports a songId and directory mismatch', () => {
@@ -171,6 +193,7 @@ describe('Library Validator', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
     writeJson(path.join(packageDirectory, 'timeline.json'), {
+      audioSourceHash: timeline.audioSourceHash,
       sections: [
         { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1000 },
         { id: 'instrumental', label: 'Instrumental', startMs: 1500, endMs: 2000 },
@@ -197,6 +220,7 @@ describe('Library Validator', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
     writeJson(path.join(packageDirectory, 'timeline.json'), {
+      audioSourceHash: timeline.audioSourceHash,
       sections: [
         { id: 'verse-2', label: 'Verse 2', startMs: 1200, endMs: 2000 },
         { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1500 },
@@ -233,6 +257,7 @@ describe('Library Validator', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
     writeJson(path.join(packageDirectory, 'timeline.json'), {
+      audioSourceHash: timeline.audioSourceHash,
       sections: [
         { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1000 },
         { id: 'verse-2', label: 'Verse 2', startMs: 1000, endMs: 4000 },
@@ -258,6 +283,7 @@ describe('Library Validator', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
     writeJson(path.join(packageDirectory, 'timeline.json'), {
+      audioSourceHash: timeline.audioSourceHash,
       sections: [
         { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 2500 },
         { id: 'instrumental', label: 'Instrumental', startMs: 2500, endMs: 4000 },

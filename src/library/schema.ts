@@ -2,6 +2,9 @@ import { z } from 'zod'
 
 const nonEmptyText = z.string().trim().min(1)
 const integerMilliseconds = z.number().int().nonnegative()
+const sha256Hash = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/, 'must be a lowercase SHA-256 hex digest')
 
 export const SongIdSchema = z
   .string()
@@ -107,6 +110,7 @@ export const OccurrenceSchema = z
 
 export const TimelineSchema = z
   .object({
+    audioSourceHash: sha256Hash,
     sections: z.array(SectionSchema),
     occurrences: z.array(OccurrenceSchema),
   })

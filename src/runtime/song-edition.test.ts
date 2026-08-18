@@ -74,6 +74,7 @@ const lyrics: LyricsDocument = {
 }
 
 const timeline: TimelineDocument = {
+  audioSourceHash: 'a'.repeat(64),
   sections: [
     { id: 'intro', label: 'Intro', startMs: 0, endMs: 500 },
     { id: 'instrumental', label: 'Instrumental', startMs: 500, endMs: 750 },

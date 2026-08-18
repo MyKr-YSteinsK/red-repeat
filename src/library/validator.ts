@@ -6,6 +6,7 @@ import {
   type Diagnostic,
   type ValidationResult,
 } from './diagnostics'
+import { hashFile } from './hash'
 import {
   discoverSongPackages,
   findPackageFiles,
@@ -84,7 +85,23 @@ function validateSongPackage(
     })
   }
 
-  validateMediaPresence(songPackage, sourceRoot, contextSongId, diagnostics)
+  const audioSourcePath = validateMediaPresence(
+    songPackage,
+    sourceRoot,
+    contextSongId,
+    diagnostics,
+  )
+
+  if (timeline && audioSourcePath) {
+    validateTimelineAudioSourceHash(
+      timeline,
+      audioSourcePath,
+      songPackage,
+      sourceRoot,
+      contextSongId,
+      diagnostics,
+    )
+  }
 
   if (lyrics && timeline) {
     validateTimelineReferences(
@@ -185,7 +202,7 @@ function validateMediaPresence(
   sourceRoot: string,
   songId: string,
   diagnostics: Diagnostic[],
-): void {
+): string | undefined {
   const audioDirectory = path.join(songPackage.directoryPath, 'audio')
   const artworkDirectory = path.join(songPackage.directoryPath, 'artwork')
   const audioFiles = findPackageFiles(audioDirectory, /^source\.[^./]+$/)
@@ -249,6 +266,49 @@ function validateMediaPresence(
       message: `found multiple canonical heroes: ${heroFiles
         .map((filePath) => path.basename(filePath))
         .join(', ')}`,
+    })
+  }
+
+  return audioFiles.length === 1 ? audioFiles[0] : undefined
+}
+
+function validateTimelineAudioSourceHash(
+  timeline: TimelineDocument,
+  audioSourcePath: string,
+  songPackage: DiscoveredSongPackage,
+  sourceRoot: string,
+  songId: string,
+  diagnostics: Diagnostic[],
+): void {
+  const timelinePath = toSourcePath(
+    sourceRoot,
+    path.join(songPackage.directoryPath, 'timeline.json'),
+  )
+
+  let actualHash: string
+  try {
+    actualHash = hashFile(audioSourcePath)
+  } catch (error) {
+    diagnostics.push({
+      severity: 'error',
+      code: 'SOURCE_READ_ERROR',
+      songId,
+      sourcePath: toSourcePath(sourceRoot, audioSourcePath),
+      message: `could not hash canonical audio source: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    })
+    return
+  }
+
+  if (timeline.audioSourceHash !== actualHash) {
+    diagnostics.push({
+      severity: 'error',
+      code: 'TIMELINE_AUDIO_SOURCE_MISMATCH',
+      songId,
+      sourcePath: timelinePath,
+      fieldPath: 'audioSourceHash',
+      message: `timeline audioSourceHash "${timeline.audioSourceHash}" does not match canonical audio source SHA-256 "${actualHash}"`,
     })
   }
 }

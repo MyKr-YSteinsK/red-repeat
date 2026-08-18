@@ -4,7 +4,7 @@ import path from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import sharp from 'sharp'
 import { compileLibrary } from './compiler'
-import { hashJson } from './hash'
+import { hashFile, hashJson } from './hash'
 import { probeAudio } from './media'
 import {
   CatalogSchema,
@@ -65,6 +65,13 @@ describe('Library Compiler media pipeline', () => {
       fixture.outputRoot,
       firstEdition.edition.audio.url,
     )
+    const compiledTimeline = JSON.parse(
+      fs.readFileSync(
+        fileForRuntimeUrl(fixture.outputRoot, firstEdition.edition.timelineUrl),
+        'utf8',
+      ),
+    ) as { audioSourceHash: string }
+    expect(compiledTimeline.audioSourceHash).toBe(hashFile(fixture.audioPath))
     const audioProbe = await probeAudio(audioPath)
     expect(audioProbe.codec).toBe('aac')
     expect(audioProbe.channels).toBe(2)
@@ -111,6 +118,14 @@ describe('Library Compiler media pipeline', () => {
     )
 
     writeWav(fixture.audioPath, 0.3)
+    const changedTimelinePath = path.join(fixture.songRoot, 'timeline.json')
+    const changedTimeline = JSON.parse(
+      fs.readFileSync(changedTimelinePath, 'utf8'),
+    ) as Record<string, unknown>
+    writeJson(changedTimelinePath, {
+      ...changedTimeline,
+      audioSourceHash: hashFile(fixture.audioPath),
+    })
     const audioResult = await compileLibrary(fixture.options)
     const audioEdition = readCompiledEdition(fixture.outputRoot).edition
 
@@ -183,6 +198,34 @@ describe('Library Compiler media pipeline', () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: 'TIMELINE_EXCEEDS_AUDIO_DURATION',
+        }),
+      ]),
+    )
+    expect(fs.existsSync(path.join(fixture.outputRoot, 'catalog.json'))).toBe(
+      false,
+    )
+  }, 30_000)
+
+  it('blocks compilation when Timeline audio identity is stale', async () => {
+    const fixture = await createFixture()
+    const timelinePath = path.join(fixture.songRoot, 'timeline.json')
+    const timeline = JSON.parse(fs.readFileSync(timelinePath, 'utf8')) as Record<
+      string,
+      unknown
+    >
+    writeJson(timelinePath, {
+      ...timeline,
+      audioSourceHash: '0'.repeat(64),
+    })
+
+    const result = await compileLibrary(fixture.options)
+
+    expect(result.valid).toBe(false)
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'TIMELINE_AUDIO_SOURCE_MISMATCH',
+          fieldPath: 'audioSourceHash',
         }),
       ]),
     )
@@ -283,7 +326,6 @@ async function createFixture(
     intro: 'A synthetic fixture for compiler integration tests.',
   })
   writeJson(path.join(songRoot, 'lyrics.json'), lyrics)
-  writeJson(path.join(songRoot, 'timeline.json'), timeline)
   writeJson(path.join(songRoot, 'visual.json'), {
     recommendedTheme: 'cinema',
     mood: ['restrained'],
@@ -294,6 +336,10 @@ async function createFixture(
     'Read this line [[segment:s001]].\n',
   )
   writeWav(audioPath, 0)
+  writeJson(path.join(songRoot, 'timeline.json'), {
+    ...timeline,
+    audioSourceHash: hashFile(audioPath),
+  })
   await writeArtwork(coverPath, '#334455', 2048, 1024)
   await writeArtwork(heroPath, '#556677', 2400, 1200)
 

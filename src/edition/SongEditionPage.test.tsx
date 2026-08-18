@@ -179,7 +179,11 @@ function propsFor(
       return runtimeEdition
     }),
     loadLyrics: vi.fn(async () => ({ segments: [] })),
-    loadTimeline: vi.fn(async () => ({ sections: [], occurrences: [] })),
+    loadTimeline: vi.fn(async () => ({
+      audioSourceHash: 'a'.repeat(64),
+      sections: [],
+      occurrences: [],
+    })),
     loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
     loadFeature: vi.fn(async () => '# Notes\n\nA small note.'),
     resolveAsset: vi.fn((logicalPath: string) => `/app${logicalPath}`),

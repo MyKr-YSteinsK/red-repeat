@@ -230,7 +230,11 @@ function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populate
     return jsonResponse({ segments: [] })
   }
   if (url.endsWith('/timeline.a.json')) {
-    return jsonResponse({ sections: [], occurrences: [] })
+    return jsonResponse({
+      audioSourceHash: 'a'.repeat(64),
+      sections: [],
+      occurrences: [],
+    })
   }
   return jsonResponse({ recommendedTheme: 'liner' })
 }

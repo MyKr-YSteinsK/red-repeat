@@ -9,6 +9,7 @@ import {
 } from './playback-ranges'
 
 const timeline: TimelineDocument = {
+  audioSourceHash: 'a'.repeat(64),
   sections: [
     { id: 'verse-1', label: 'Verse 1', startMs: 100, endMs: 1000 },
     { id: 'instrumental', label: 'Instrumental', startMs: 1500, endMs: 2500 },

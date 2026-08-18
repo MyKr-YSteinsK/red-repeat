@@ -60,6 +60,7 @@ const model = assembleRuntimeSongEdition({
     ],
   } satisfies LyricsDocument,
   timeline: {
+    audioSourceHash: 'a'.repeat(64),
     sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 }],
     occurrences: [
       {
