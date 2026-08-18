@@ -14,8 +14,10 @@ import {
   areTimelinesEqual,
   cloneTimeline,
   updateOccurrenceTiming,
+  updateSectionTiming,
   validateTimelineWorkingCopy,
   type OccurrenceTimingField,
+  type SectionTimingField,
 } from './timeline-debugger-model'
 import { useTimelineDebuggerPlayback } from './use-timeline-debugger-playback'
 
@@ -349,6 +351,39 @@ function TimelineDebuggerReady({
     setTransportMessage(undefined)
   }
 
+  const adjustSelectedSection = (
+    field: SectionTimingField,
+    deltaMs: number,
+  ): void => {
+    if (!selectedSection) {
+      return
+    }
+    setWorkingTimeline((currentTimeline) =>
+      updateSectionTiming(currentTimeline, selectedSection.id, field, deltaMs),
+    )
+    setTransportMessage(undefined)
+  }
+
+  const playSelectedSection = (): void => {
+    if (!selectedSection) {
+      return
+    }
+    if (!playback.engine) {
+      setTransportMessage('Audio playback is unavailable in this environment.')
+      return
+    }
+    setTransportMessage(undefined)
+    runEngineAction(() =>
+      playback.engine?.playRange(
+        {
+          startMs: selectedSection.startMs,
+          endMs: selectedSection.endMs,
+        },
+        selectedSection.id,
+      ),
+    )
+  }
+
   return (
     <main
       className="timeline-debugger"
@@ -498,6 +533,27 @@ function TimelineDebuggerReady({
           </button>
           <button
             type="button"
+            onClick={() => seekTo(selectedSection?.startMs)}
+            disabled={!selectedSection || !playback.engine}
+          >
+            Seek Section startMs
+          </button>
+          <button
+            type="button"
+            onClick={() => seekTo(selectedSection?.endMs)}
+            disabled={!selectedSection || !playback.engine}
+          >
+            Seek Section endMs
+          </button>
+          <button
+            type="button"
+            onClick={playSelectedSection}
+            disabled={!selectedSection || !playback.engine}
+          >
+            Play Section
+          </button>
+          <button
+            type="button"
             onClick={() => seekTo(selectedOccurrence?.endMs)}
             disabled={!selectedOccurrence || !playback.engine}
           >
@@ -565,6 +621,84 @@ function TimelineDebuggerReady({
             {transportMessage}
           </p>
         ) : null}
+      </section>
+
+      <section className="timeline-debugger-panel" aria-labelledby="selected-section-title">
+        <div className="timeline-debugger-section-heading">
+          <div>
+            <p className="timeline-debugger-eyebrow">SELECTED SECTION</p>
+            <h2 id="selected-section-title">{selectedSection?.label ?? 'None selected'}</h2>
+          </div>
+          {selectedSection ? (
+            <span className="timeline-debugger-badge">
+              {workingTimeline.occurrences.some(
+                (occurrence) => occurrence.sectionId === selectedSection.id,
+              )
+                ? 'LYRIC SECTION'
+                : 'INSTRUMENTAL'}
+            </span>
+          ) : null}
+        </div>
+        {selectedSection ? (
+          <>
+            <dl className="timeline-debugger-timing-facts">
+              <div>
+                <dt>sectionId</dt>
+                <dd>{selectedSection.id}</dd>
+              </div>
+              <div>
+                <dt>startMs</dt>
+                <dd>{selectedSection.startMs}</dd>
+              </div>
+              <div>
+                <dt>endMs</dt>
+                <dd>{selectedSection.endMs}</dd>
+              </div>
+              <div>
+                <dt>Occurrences</dt>
+                <dd>
+                  {workingTimeline.occurrences.filter(
+                    (occurrence) => occurrence.sectionId === selectedSection.id,
+                  ).length}
+                </dd>
+              </div>
+            </dl>
+            <div
+              className="timeline-debugger-timing-editor"
+              aria-label="Section timing adjustments"
+            >
+              <p className="timeline-debugger-eyebrow">SECTION TIMING ADJUSTMENTS</p>
+              {(['startMs', 'endMs'] as const).map((field) => (
+                <div className="timeline-debugger-timing-control" key={field}>
+                  <div className="timeline-debugger-timing-value">
+                    <span>{field}</span>
+                    <output data-section-timing-field={field}>
+                      {selectedSection[field]}
+                    </output>
+                  </div>
+                  <div className="timeline-debugger-adjustments">
+                    {[-100, -50, 50, 100].map((deltaMs) => {
+                      const direction = deltaMs < 0 ? 'Decrease' : 'Increase'
+                      return (
+                        <button
+                          key={deltaMs}
+                          type="button"
+                          aria-label={`${direction} Section ${field} by ${Math.abs(deltaMs)}ms`}
+                          onClick={() => adjustSelectedSection(field, deltaMs)}
+                        >
+                          {deltaMs > 0 ? '+' : ''}
+                          {deltaMs}ms
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p>No Section is available in this Timeline.</p>
+        )}
       </section>
 
       <section className="timeline-debugger-panel" aria-labelledby="selected-occurrence-title">

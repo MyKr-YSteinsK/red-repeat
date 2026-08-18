@@ -173,7 +173,43 @@ describe('Timeline Debugger live context', () => {
     expect(screen.getByRole('heading', { name: 'o001' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /Select Section Instrumental/ }))
-    expect(screen.getAllByText('instrumental').length).toBeGreaterThan(0)
+    expect(screen.getByRole('heading', { name: 'Instrumental' })).toBeInTheDocument()
+    expect(screen.getByText('INSTRUMENTAL')).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Increase Section startMs by 100ms' }),
+    )
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'dirty',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Seek Section startMs' }))
+    expect(media.currentTime).toBe(1.1)
+    fireEvent.click(screen.getByRole('button', { name: 'Seek Section endMs' }))
+    expect(media.currentTime).toBe(1.4)
+    fireEvent.click(screen.getByRole('button', { name: 'Play Section' }))
+    await waitFor(() => expect(media.currentTime).toBe(1.1))
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Decrease Section startMs by 100ms' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Decrease Section startMs by 100ms' }),
+    )
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'invalid',
+    )
+    expect(
+      screen.getByRole('alert', { name: 'Timeline validation errors' }),
+    ).toHaveTextContent('sections[instrumental]')
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Increase Section startMs by 100ms' }),
+    )
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'dirty',
+    )
   })
 })
 

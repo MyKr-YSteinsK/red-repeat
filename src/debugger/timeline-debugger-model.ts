@@ -7,6 +7,8 @@ export type OccurrenceTimingField =
   | 'playStartMs'
   | 'playEndMs'
 
+export type SectionTimingField = 'startMs' | 'endMs'
+
 export interface TimelineValidationError {
   fieldPath: string
   message: string
@@ -44,6 +46,22 @@ export function updateOccurrenceTiming(
       occurrence.id === occurrenceId
         ? { ...occurrence, [field]: occurrence[field] + deltaMs }
         : occurrence,
+    ),
+  }
+}
+
+export function updateSectionTiming(
+  timeline: TimelineDocument,
+  sectionId: string,
+  field: SectionTimingField,
+  deltaMs: number,
+): TimelineDocument {
+  return {
+    ...timeline,
+    sections: timeline.sections.map((section) =>
+      section.id === sectionId
+        ? { ...section, [field]: section[field] + deltaMs }
+        : section,
     ),
   }
 }
