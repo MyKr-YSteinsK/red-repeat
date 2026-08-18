@@ -43,6 +43,37 @@ const populatedCatalog = {
   ],
 }
 
+const runtimeEditionForApp = {
+  contractVersion: 1,
+  contentHash: 'c'.repeat(64),
+  song: {
+    songId: 'first-light',
+    title: 'First Light',
+    artist: 'A Composer',
+  },
+  lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
+  timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
+  visualUrl: '/library-runtime/songs/first-light/visual.a.json',
+  features: [],
+  audio: {
+    url: '/library-runtime/songs/first-light/audio.a.m4a',
+    sourceHash: 'd'.repeat(64),
+    runtimeHash: 'e'.repeat(64),
+    durationMs: 1000,
+    format: {
+      container: 'm4a',
+      codec: 'aac-lc',
+      bitrateKbps: 192,
+      sampleRate: 48000,
+      channels: 2,
+    },
+  },
+  artwork: {
+    coverSmallUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
+    coverLargeUrl: '/library-runtime/songs/first-light/cover-large.a.webp',
+  },
+}
+
 beforeEach(() => {
   window.history.replaceState({}, '', '/')
 })
@@ -140,7 +171,22 @@ describe('App Library consumer', () => {
 
 function clientFor(payload: unknown): RuntimeClient {
   return createRuntimeClient({
-    fetchImpl: vi.fn(async () => jsonResponse(payload)),
+    fetchImpl: vi.fn(async (input) => {
+      const url = String(input)
+      if (url.endsWith('/catalog.json')) {
+        return jsonResponse(payload)
+      }
+      if (url.endsWith('/edition.a.json')) {
+        return jsonResponse(runtimeEditionForApp)
+      }
+      if (url.endsWith('/lyrics.a.json')) {
+        return jsonResponse({ segments: [] })
+      }
+      if (url.endsWith('/timeline.a.json')) {
+        return jsonResponse({ sections: [], occurrences: [] })
+      }
+      return jsonResponse({ recommendedTheme: 'liner' })
+    }),
   })
 }
 

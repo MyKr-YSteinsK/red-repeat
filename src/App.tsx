@@ -12,6 +12,7 @@ import {
   RuntimeClient,
   RuntimeClientError,
 } from './runtime/runtime-client'
+import { SongEditionPage } from './edition/SongEditionPage'
 
 const defaultRuntimeClient = createRuntimeClient()
 
@@ -86,6 +87,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
         <EditionRoute
           route={route}
           state={catalogState}
+          runtimeClient={runtimeClient}
           homeHref={homeHref}
         />
       )}
@@ -267,10 +269,12 @@ function CatalogEditionLink({
 function EditionRoute({
   route,
   state,
+  runtimeClient,
   homeHref,
 }: {
   route: Extract<AppRoute, { kind: 'edition' }>
   state: CatalogState
+  runtimeClient: RuntimeClient
   homeHref: string
 }) {
   if (state.status !== 'ready') {
@@ -306,16 +310,12 @@ function EditionRoute({
   }
 
   return (
-    <main className="library edition-placeholder" aria-labelledby="edition-title">
-      <div className="library-heading">
-        <p className="eyebrow">SONG EDITION / OPENING</p>
-        <h1 id="edition-title">{edition.title}</h1>
-        <p className="library-lede">{edition.artist}</p>
-      </div>
-      <a className="text-link" href={homeHref}>
-        Return to Library
-      </a>
-    </main>
+    <SongEditionPage
+      key={edition.songId}
+      catalogEdition={edition}
+      runtimeClient={runtimeClient}
+      homeHref={homeHref}
+    />
   )
 }
 

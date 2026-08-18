@@ -200,6 +200,193 @@
   color: var(--color-red);
 }
 
+.song-edition {
+  flex: 1;
+  padding: clamp(2.5rem, 7vh, 6rem) 0 clamp(4rem, 10vh, 8rem);
+}
+
+.song-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: clamp(3rem, 7vw, 6rem);
+}
+
+.song-topline .text-link {
+  margin-top: 0;
+}
+
+.edition-signal {
+  margin: 0;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.song-opening {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+  align-items: start;
+  gap: clamp(2.5rem, 8vw, 8rem);
+}
+
+.song-artwork {
+  min-width: 0;
+}
+
+.song-cover-large,
+.song-hero-large {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: var(--color-line);
+}
+
+.song-cover-large {
+  max-height: min(65svh, 42rem);
+}
+
+.song-hero-large {
+  max-height: 16rem;
+  margin-top: 1rem;
+}
+
+.song-opening-copy {
+  align-self: center;
+  max-width: 34rem;
+  padding-block: 2rem;
+}
+
+.song-opening-copy h1 {
+  margin: 1.1rem 0 0.6rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 8vw, 7.8rem);
+  font-weight: 400;
+  letter-spacing: -0.085em;
+  line-height: 0.86;
+}
+
+.song-artist {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+}
+
+.song-album {
+  margin: 0.45rem 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.song-intro {
+  max-width: 31rem;
+  margin: clamp(2rem, 5vw, 4rem) 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  line-height: 1.35;
+}
+
+.edition-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: clamp(2.5rem, 6vw, 5rem) 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.edition-metadata div {
+  min-width: 0;
+}
+
+.edition-metadata dt,
+.edition-metadata dd {
+  margin: 0;
+}
+
+.edition-metadata dt {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.edition-metadata dd {
+  margin-top: 0.35rem;
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-opening-note,
+.song-next-cue {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.song-opening-note {
+  margin: 2rem 0 0;
+}
+
+.song-opening-rule {
+  margin-top: clamp(4rem, 10vw, 9rem);
+  border-top: 1px solid var(--color-line);
+}
+
+.song-next-cue {
+  margin: 1rem 0 0;
+}
+
+.song-edition-status {
+  max-width: 48rem;
+}
+
+.song-edition-status h1 {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 400;
+  letter-spacing: -0.08em;
+  line-height: 0.88;
+}
+
+.song-status-copy {
+  max-width: 30rem;
+  margin: 1.5rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.song-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1.5rem;
+}
+
+.song-status-actions .text-button,
+.song-status-actions .text-link {
+  margin-top: 1.5rem;
+}
+
 .library-heading {
   max-width: 46rem;
 }
@@ -360,5 +547,32 @@
 
   .catalog-title {
     font-size: 1.35rem;
+  }
+
+  .song-topline {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .song-opening {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .song-opening-copy {
+    padding-block: 0;
+  }
+
+  .song-opening-copy h1 {
+    font-size: clamp(3.5rem, 17vw, 6rem);
+  }
+
+  .song-cover-large {
+    max-height: none;
+  }
+
+  .edition-metadata {
+    gap: 1rem;
   }
 }

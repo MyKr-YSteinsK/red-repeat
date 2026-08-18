@@ -1,0 +1,148 @@
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
+import type { RuntimeClient } from '../runtime/runtime-client'
+import { RuntimeClientError } from '../runtime/runtime-client'
+import {
+  SongEditionPage,
+  type SongEditionPageProps,
+} from './SongEditionPage'
+
+afterEach(() => {
+  cleanup()
+})
+
+const catalogEdition: CatalogEdition = {
+  songId: 'first-light',
+  title: 'First Light',
+  artist: 'A Composer',
+  album: 'Returning',
+  year: 2026,
+  recommendedTheme: 'liner',
+  coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
+  editionUrl: '/library-runtime/songs/first-light/edition.a.json',
+}
+
+const edition: RuntimeEdition = {
+  contractVersion: 1,
+  contentHash: 'a'.repeat(64),
+  song: {
+    songId: 'first-light',
+    title: 'First Light',
+    artist: 'A Composer',
+    album: 'Returning',
+    year: 2026,
+    intro: 'A quiet beginning.',
+  },
+  lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
+  timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
+  visualUrl: '/library-runtime/songs/first-light/visual.a.json',
+  features: [],
+  audio: {
+    url: '/library-runtime/songs/first-light/audio.a.m4a',
+    sourceHash: 'b'.repeat(64),
+    runtimeHash: 'c'.repeat(64),
+    durationMs: 1000,
+    format: {
+      container: 'm4a',
+      codec: 'aac-lc',
+      bitrateKbps: 192,
+      sampleRate: 48000,
+      channels: 2,
+    },
+  },
+  artwork: {
+    coverSmallUrl: catalogEdition.coverUrl,
+    coverLargeUrl: '/library-runtime/songs/first-light/cover-large.a.webp',
+    heroLargeUrl: '/library-runtime/songs/first-light/hero-large.a.webp',
+  },
+}
+
+describe('Liner Song Edition opening', () => {
+  it('renders required and optional metadata with cover and hero artwork', async () => {
+    const { container } = render(<SongEditionPage {...propsFor(edition)} />)
+
+    expect(
+      await screen.findByRole('heading', { name: 'First Light' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('A Composer')).toBeInTheDocument()
+    expect(screen.getByText('Returning / 2026')).toBeInTheDocument()
+    expect(screen.getByText('A quiet beginning.')).toBeInTheDocument()
+    expect(screen.getByAltText('First Light cover artwork')).toHaveAttribute(
+      'src',
+      '/app/library-runtime/songs/first-light/cover-large.a.webp',
+    )
+    expect(container.querySelectorAll('img')).toHaveLength(2)
+  })
+
+  it('naturally omits optional metadata and hero artwork', async () => {
+    const minimalEdition: RuntimeEdition = {
+      ...edition,
+      song: {
+        songId: 'first-light',
+        title: 'First Light',
+        artist: 'A Composer',
+      },
+      artwork: {
+        coverSmallUrl: catalogEdition.coverUrl,
+        coverLargeUrl: edition.artwork.coverLargeUrl,
+      },
+    }
+
+    const { container } = render(
+      <SongEditionPage {...propsFor(minimalEdition)} />,
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'First Light' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Returning / 2026')).not.toBeInTheDocument()
+    expect(screen.queryByText('A quiet beginning.')).not.toBeInTheDocument()
+    expect(container.querySelectorAll('img')).toHaveLength(1)
+  })
+
+  it('shows an edition load error while keeping the Library return action', async () => {
+    const error = new RuntimeClientError({
+      kind: 'http',
+      logicalPath: catalogEdition.editionUrl,
+      url: `/app${catalogEdition.editionUrl}`,
+      status: 404,
+      message: 'missing',
+    })
+    const props = propsFor(edition, error)
+
+    render(<SongEditionPage {...props} />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Runtime http while reading /library-runtime/songs/first-light/edition.a.json.',
+    )
+    expect(screen.getByRole('link', { name: 'Return to Library' })).toHaveAttribute(
+      'href',
+      '/red-repeat/',
+    )
+  })
+})
+
+function propsFor(
+  runtimeEdition: RuntimeEdition,
+  error?: Error,
+): SongEditionPageProps {
+  const client = {
+    loadEdition: vi.fn(async () => {
+      if (error) {
+        throw error
+      }
+      return runtimeEdition
+    }),
+    loadLyrics: vi.fn(async () => ({ segments: [] })),
+    loadTimeline: vi.fn(async () => ({ sections: [], occurrences: [] })),
+    loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
+    resolveAsset: vi.fn((logicalPath: string) => `/app${logicalPath}`),
+  } as unknown as RuntimeClient
+
+  return {
+    catalogEdition,
+    runtimeClient: client,
+    homeHref: '/red-repeat/',
+  }
+}
