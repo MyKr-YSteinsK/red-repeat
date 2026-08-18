@@ -19,7 +19,7 @@ export function SongEditionPlaybackSurface({
 }: SongEditionPlaybackSurfaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [focusMode, setFocusMode] = useState(false)
-  const [focusReadingVisible, setFocusReadingVisible] = useState(false)
+  const [readingVisible, setReadingVisible] = useState(false)
   const activeOccurrenceIds = new Set(
     playback.resolution.activeOccurrences.map(({ id }) => id),
   )
@@ -38,8 +38,8 @@ export function SongEditionPlaybackSurface({
         <FocusPanel
           model={model}
           playback={playback}
-          readingVisible={focusReadingVisible}
-          onToggleReading={() => setFocusReadingVisible((visible) => !visible)}
+          readingVisible={readingVisible}
+          onToggleReading={() => setReadingVisible((visible) => !visible)}
         />
       ) : (
         <>
@@ -56,6 +56,8 @@ export function SongEditionPlaybackSurface({
             activeOccurrenceIds={activeOccurrenceIds}
             primaryOccurrenceId={playback.resolution.primaryOccurrence?.id}
             selectedOccurrenceId={playback.selectedOccurrenceId}
+            readingVisible={readingVisible}
+            onToggleReading={() => setReadingVisible((visible) => !visible)}
             onSelectOccurrence={playback.selectOccurrence}
           />
         </>
@@ -87,7 +89,13 @@ function FocusPanel({
   const selected = playback.selectedOccurrenceId
     ? model.occurrencesById[playback.selectedOccurrenceId]
     : null
-  const current = primary ?? selected
+  const selectedIsInCurrentSection =
+    selected?.section.id === playback.resolution.currentSection?.id
+  const current =
+    primary ??
+    (playback.audioState.status !== 'playing' && selectedIsInCurrentSection
+      ? selected
+      : null)
   const previous = playback.resolution.previousOccurrence
     ? model.occurrencesById[playback.resolution.previousOccurrence.id]
     : null

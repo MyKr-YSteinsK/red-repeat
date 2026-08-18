@@ -9,6 +9,8 @@ export interface LinerLyricsProps {
   activeOccurrenceIds?: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
+  readingVisible?: boolean
+  onToggleReading?: () => void
   onSelectOccurrence?: (occurrence: AssembledOccurrence) => void
 }
 
@@ -17,9 +19,14 @@ export function LinerLyrics({
   activeOccurrenceIds = new Set<string>(),
   primaryOccurrenceId,
   selectedOccurrenceId,
+  readingVisible: controlledReadingVisible,
+  onToggleReading,
   onSelectOccurrence,
 }: LinerLyricsProps) {
-  const [readingVisible, setReadingVisible] = useState(false)
+  const [internalReadingVisible, setInternalReadingVisible] = useState(false)
+  const readingVisible = controlledReadingVisible ?? internalReadingVisible
+  const toggleReading =
+    onToggleReading ?? (() => setInternalReadingVisible((visible) => !visible))
 
   return (
     <section className="liner-lyrics" aria-labelledby="lyrics-title">
@@ -32,7 +39,7 @@ export function LinerLyrics({
           className="reading-toggle"
           type="button"
           aria-pressed={readingVisible}
-          onClick={() => setReadingVisible((visible) => !visible)}
+          onClick={toggleReading}
         >
           {readingVisible ? 'Hide reading' : 'Show reading'}
         </button>

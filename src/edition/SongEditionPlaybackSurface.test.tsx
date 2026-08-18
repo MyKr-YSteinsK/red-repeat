@@ -297,6 +297,67 @@ describe('Song Edition timeline playback binding', () => {
       }),
     ).toBeDisabled()
   })
+
+  it('enters and exits Focus without rebuilding playback state', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+    engine.setPlaybackRate(0.75)
+
+    await act(async () => {
+      media.currentTime = 0.65
+      frames.flush()
+    })
+    const stateBeforeFocus = engine.getState()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByRole('heading', { name: 'Repeat me' })).toBeInTheDocument()
+    expect(engine.getState()).toMatchObject({
+      sourceUrl: stateBeforeFocus.sourceUrl,
+      status: stateBeforeFocus.status,
+      currentTimeMs: stateBeforeFocus.currentTimeMs,
+      playbackRate: 0.75,
+    })
+    expect(screen.getByText('再来一次')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(screen.getByRole('heading', { name: 'The work in time.' })).toBeInTheDocument()
+    expect(screen.getAllByText('Repeat me')).toHaveLength(2)
+  })
+
+  it('preserves reading visibility and never keeps a lyric through instrumental or gap', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show reading' }))
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+
+    await engine.playContinuous()
+    await act(async () => {
+      media.currentTime = 1.1
+      frames.flush()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByRole('heading', { name: 'No lyric active' })).toBeInTheDocument()
+    expect(screen.getByText('Instrumental passage')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+
+    await act(async () => {
+      media.currentTime = 1.6
+      frames.flush()
+    })
+    expect(screen.getByRole('heading', { name: 'No lyric active' })).toBeInTheDocument()
+    expect(screen.getByText('A gap between Sections')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+  })
 })
 
 function renderSurface(
