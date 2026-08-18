@@ -217,6 +217,86 @@ describe('Song Edition timeline playback binding', () => {
     const first = getAudioEngine(new FakeMedia())
     expect(getAudioEngine()).toBe(first)
   })
+
+  it('provides previous/next boundaries and loop scope replacement', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    expect(screen.getByRole('button', { name: 'Previous occurrence' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next occurrence' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Next occurrence' }))
+    await waitFor(() => expect(engine.getState().activeOccurrenceId).toBe('o001'))
+
+    fireEvent.click(screen.getByRole('button', { name: '2 lines loop' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Loop 2 lines' }))
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        intent: 'loop',
+        activeRange: { startMs: 50, endMs: 750 },
+      })
+    })
+    expect(frames.pendingCount()).toBe(1)
+
+    fireEvent.click(screen.getByRole('button', { name: '4 lines loop' }))
+    await waitFor(() => {
+      expect(engine.getState().activeRange).toEqual({ startMs: 50, endMs: 850 })
+    })
+    expect(frames.pendingCount()).toBe(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pause' }))
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('exposes speed steps, shortcuts, and a usable Focus toggle', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase speed' }))
+    expect(engine.getState().playbackRate).toBe(1.05)
+    fireEvent.click(screen.getByRole('button', { name: 'Set speed 0.65x' }))
+    expect(engine.getState().playbackRate).toBe(0.65)
+    fireEvent.click(screen.getByRole('button', { name: 'Decrease speed' }))
+    expect(engine.getState().playbackRate).toBe(0.6)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByRole('heading', { name: 'No lyric active' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Exit Focus' })).toBeInTheDocument()
+    expect(engine.getState().sourceUrl).toBe(
+      '/app/library-runtime/songs/first-light/audio.m4a',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(screen.getByRole('heading', { name: 'The work in time.' })).toBeInTheDocument()
+  })
+
+  it('marks Section loop unavailable during an instrumental Section', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+
+    await act(async () => {
+      media.currentTime = 1.1
+      frames.flush()
+    })
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Section loop: unavailable without lyric Occurrences',
+      }),
+    ).toBeDisabled()
+  })
 })
 
 function renderSurface(
