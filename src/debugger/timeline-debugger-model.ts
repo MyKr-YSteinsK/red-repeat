@@ -27,6 +27,20 @@ export function cloneTimeline(timeline: TimelineDocument): TimelineDocument {
   }
 }
 
+export function prepareTimelineForExport(
+  timeline: TimelineDocument,
+  audioSourceHash: string,
+): TimelineDocument {
+  return {
+    ...cloneTimeline(timeline),
+    audioSourceHash,
+  }
+}
+
+export function serializeTimeline(timeline: TimelineDocument): string {
+  return `${JSON.stringify(timeline, null, 2)}\n`
+}
+
 export function areTimelinesEqual(
   left: TimelineDocument,
   right: TimelineDocument,

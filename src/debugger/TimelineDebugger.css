@@ -123,6 +123,38 @@
   line-height: 1.5;
 }
 
+.timeline-debugger-working-copy {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-working-copy .timeline-debugger-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.timeline-debugger-working-copy .timeline-debugger-actions button:disabled {
+  color: #9b958d;
+  cursor: not-allowed;
+}
+
+.timeline-debugger-working-copy-note {
+  max-width: 52rem;
+  margin: 1.2rem 0 0;
+  color: #6e6962;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.timeline-debugger-working-copy-note code {
+  margin: 0 0.25rem;
+  color: #22201d;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
 .timeline-debugger-placeholder {
   max-width: 48rem;
 }

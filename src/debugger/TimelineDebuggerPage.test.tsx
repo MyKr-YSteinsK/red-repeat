@@ -203,6 +203,7 @@ describe('Timeline Debugger live context', () => {
     expect(
       screen.getByRole('alert', { name: 'Timeline validation errors' }),
     ).toHaveTextContent('sections[instrumental]')
+    expect(screen.getByRole('button', { name: 'Copy timeline.json' })).toBeDisabled()
     fireEvent.click(
       screen.getByRole('button', { name: 'Increase Section startMs by 100ms' }),
     )
@@ -210,6 +211,73 @@ describe('Timeline Debugger live context', () => {
       'data-working-copy-state',
       'dirty',
     )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset selected Section' }))
+    expect(screen.getAllByText('1000').length).toBeGreaterThan(0)
+    fireEvent.click(screen.getAllByRole('button', { name: /o002.*Stay near/ })[0])
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Reset selected Occurrence' }),
+    )
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'clean',
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Increase Section startMs by 50ms' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Reset all changes' }))
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'clean',
+    )
+
+    const writeText = vi.fn((text: string) =>
+      Promise.resolve(text).then(() => undefined),
+    )
+    const originalClipboard = navigator.clipboard
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Copy timeline.json' }))
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1))
+    expect(JSON.parse(writeText.mock.calls[0][0])).toMatchObject({
+      audioSourceHash: 'b'.repeat(64),
+    })
+
+    const createObjectURL = vi.fn(() => 'blob:timeline')
+    const revokeObjectURL = vi.fn()
+    const originalCreateObjectURL = URL.createObjectURL
+    const originalRevokeObjectURL = URL.revokeObjectURL
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectURL,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectURL,
+    })
+    const anchorClick = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined)
+    fireEvent.click(screen.getByRole('button', { name: 'Download timeline.json' }))
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    expect(anchorClick).toHaveBeenCalledTimes(1)
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:timeline')
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: originalClipboard,
+    })
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: originalCreateObjectURL,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: originalRevokeObjectURL,
+    })
+    anchorClick.mockRestore()
   })
 })
 

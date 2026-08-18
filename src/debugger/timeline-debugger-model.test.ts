@@ -4,6 +4,8 @@ import type { TimelineDocument } from '../library/schema'
 import {
   areTimelinesEqual,
   cloneTimeline,
+  prepareTimelineForExport,
+  serializeTimeline,
   updateOccurrenceTiming,
   updateSectionTiming,
   validateTimelineWorkingCopy,
@@ -118,5 +120,18 @@ describe('Timeline Debugger working-copy model', () => {
     expect(areTimelinesEqual(copy, timeline)).toBe(true)
     copy.occurrences[0].endMs += 50
     expect(areTimelinesEqual(copy, timeline)).toBe(false)
+  })
+
+  it('serializes the complete source-order Timeline with the runtime audio hash', () => {
+    const exportTimeline = prepareTimelineForExport(timeline, 'b'.repeat(64))
+    const serialized = serializeTimeline(exportTimeline)
+
+    expect(exportTimeline.audioSourceHash).toBe('b'.repeat(64))
+    expect(exportTimeline.sections.map((section) => section.id)).toEqual(['verse'])
+    expect(exportTimeline.occurrences.map((occurrence) => occurrence.id)).toEqual([
+      'o001',
+    ])
+    expect(serialized).toBe(`${JSON.stringify(exportTimeline, null, 2)}\n`)
+    expect(JSON.parse(serialized)).toEqual(exportTimeline)
   })
 })

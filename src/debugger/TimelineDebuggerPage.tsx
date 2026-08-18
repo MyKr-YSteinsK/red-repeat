@@ -13,6 +13,8 @@ import {
 import {
   areTimelinesEqual,
   cloneTimeline,
+  prepareTimelineForExport,
+  serializeTimeline,
   updateOccurrenceTiming,
   updateSectionTiming,
   validateTimelineWorkingCopy,
@@ -235,6 +237,12 @@ function TimelineDebuggerReady({
     () => workingTimeline.sections[0]?.id,
   )
   const [transportMessage, setTransportMessage] = useState<string>()
+  const [exportMessage, setExportMessage] = useState<string>()
+  const exportTimeline = prepareTimelineForExport(
+    workingTimeline,
+    resources.edition.audio.sourceHash,
+  )
+  const exportValidation = validateTimelineWorkingCopy(exportTimeline)
   const playback = useTimelineDebuggerPlayback(
     workingTimeline,
     runtimeClient.resolveAsset(resources.edition.audio.url),
@@ -384,6 +392,104 @@ function TimelineDebuggerReady({
     )
   }
 
+  const resetSelectedOccurrence = (): void => {
+    if (!selectedOccurrence) {
+      return
+    }
+    const baselineOccurrence = resources.timeline.occurrences.find(
+      (occurrence) => occurrence.id === selectedOccurrence.id,
+    )
+    if (!baselineOccurrence) {
+      return
+    }
+    setWorkingTimeline((currentTimeline) => ({
+      ...currentTimeline,
+      occurrences: currentTimeline.occurrences.map((occurrence) =>
+        occurrence.id === baselineOccurrence.id
+          ? { ...baselineOccurrence }
+          : occurrence,
+      ),
+    }))
+    setTransportMessage(undefined)
+    setExportMessage(undefined)
+  }
+
+  const resetSelectedSection = (): void => {
+    if (!selectedSection) {
+      return
+    }
+    const baselineSection = resources.timeline.sections.find(
+      (section) => section.id === selectedSection.id,
+    )
+    if (!baselineSection) {
+      return
+    }
+    setWorkingTimeline((currentTimeline) => ({
+      ...currentTimeline,
+      sections: currentTimeline.sections.map((section) =>
+        section.id === baselineSection.id ? { ...baselineSection } : section,
+      ),
+    }))
+    setTransportMessage(undefined)
+    setExportMessage(undefined)
+  }
+
+  const resetAllChanges = (): void => {
+    setWorkingTimeline(cloneTimeline(resources.timeline))
+    setTransportMessage(undefined)
+    setExportMessage(undefined)
+  }
+
+  const getExportJson = (): string | undefined => {
+    if (!exportValidation.valid) {
+      setExportMessage('Export is blocked until the working copy is valid.')
+      return undefined
+    }
+    return serializeTimeline(exportTimeline)
+  }
+
+  const copyTimelineJson = async (): Promise<void> => {
+    const serialized = getExportJson()
+    if (!serialized) {
+      return
+    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      setExportMessage('Clipboard is unavailable; use Download timeline.json instead.')
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(serialized)
+      setExportMessage('Copied timeline.json with the current runtime audio hash.')
+    } catch {
+      setExportMessage('Clipboard write failed; use Download timeline.json instead.')
+    }
+  }
+
+  const downloadTimelineJson = (): void => {
+    const serialized = getExportJson()
+    if (!serialized) {
+      return
+    }
+    if (
+      typeof document === 'undefined' ||
+      typeof URL === 'undefined' ||
+      typeof URL.createObjectURL !== 'function' ||
+      typeof URL.revokeObjectURL !== 'function'
+    ) {
+      setExportMessage('Download is unavailable in this environment.')
+      return
+    }
+    const objectUrl = URL.createObjectURL(
+      new Blob([serialized], { type: 'application/json' }),
+    )
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = 'timeline.json'
+    link.click()
+    URL.revokeObjectURL(objectUrl)
+    setExportMessage('Downloaded timeline.json with the current runtime audio hash.')
+  }
+
   return (
     <main
       className="timeline-debugger"
@@ -439,6 +545,38 @@ function TimelineDebuggerReady({
             <dd>{resources.visual.recommendedTheme}</dd>
           </div>
         </dl>
+        <div className="timeline-debugger-working-copy" aria-label="Working copy export">
+          <p className="timeline-debugger-eyebrow">WORKING COPY / EXPORT</p>
+          <div className="timeline-debugger-actions">
+            <button type="button" onClick={resetAllChanges}>
+              Reset all changes
+            </button>
+            <button
+              type="button"
+              onClick={() => void copyTimelineJson()}
+              disabled={!exportValidation.valid}
+            >
+              Copy timeline.json
+            </button>
+            <button
+              type="button"
+              onClick={downloadTimelineJson}
+              disabled={!exportValidation.valid}
+            >
+              Download timeline.json
+            </button>
+          </div>
+          <p className="timeline-debugger-working-copy-note">
+            Export keeps source order and uses the compiled runtime audio hash. Replace
+            <code>library/&lt;song-id&gt;/timeline.json</code> manually, then run
+            <code>library:validate</code> and <code>library:compile</code>.
+          </p>
+          {exportMessage ? (
+            <p className="timeline-debugger-message" role="status">
+              {exportMessage}
+            </p>
+          ) : null}
+        </div>
       </section>
 
       <section
@@ -668,6 +806,11 @@ function TimelineDebuggerReady({
               aria-label="Section timing adjustments"
             >
               <p className="timeline-debugger-eyebrow">SECTION TIMING ADJUSTMENTS</p>
+              <div className="timeline-debugger-actions">
+                <button type="button" onClick={resetSelectedSection}>
+                  Reset selected Section
+                </button>
+              </div>
               {(['startMs', 'endMs'] as const).map((field) => (
                 <div className="timeline-debugger-timing-control" key={field}>
                   <div className="timeline-debugger-timing-value">
@@ -762,6 +905,11 @@ function TimelineDebuggerReady({
               aria-label="Occurrence timing adjustments"
             >
               <p className="timeline-debugger-eyebrow">TIMING ADJUSTMENTS</p>
+              <div className="timeline-debugger-actions">
+                <button type="button" onClick={resetSelectedOccurrence}>
+                  Reset selected Occurrence
+                </button>
+              </div>
               {(['playStartMs', 'startMs', 'endMs', 'playEndMs'] as const).map(
                 (field) => (
                   <div className="timeline-debugger-timing-control" key={field}>
