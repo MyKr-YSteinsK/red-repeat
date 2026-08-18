@@ -151,3 +151,297 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.timeline-debugger-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.timeline-debugger-section-heading h2 {
+  margin: 0.65rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.8vw, 3.5rem);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.timeline-debugger-clock {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.timeline-debugger-clock strong {
+  color: #a32d2b;
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.timeline-debugger-clock span,
+.timeline-debugger-live-facts dt,
+.timeline-debugger-timing-facts dt {
+  color: #6e6962;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timeline-debugger-live-facts,
+.timeline-debugger-timing-facts {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0 0;
+}
+
+.timeline-debugger-live-facts div,
+.timeline-debugger-timing-facts div {
+  min-width: 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-live-facts dd,
+.timeline-debugger-timing-facts dd {
+  margin: 0.45rem 0 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.timeline-debugger-active {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-active h3 {
+  margin: 0;
+  color: #6e6962;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timeline-debugger-active ul,
+.timeline-debugger-list,
+.timeline-debugger-occurrence-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-debugger-active ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.timeline-debugger-active button,
+.timeline-debugger-transport button,
+.timeline-debugger-section-row,
+.timeline-debugger-occurrence-row {
+  border: 1px solid #c9c3ba;
+  color: #22201d;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.timeline-debugger-active button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.timeline-debugger-active button.is-active,
+.timeline-debugger-active button[aria-pressed='true'],
+.timeline-debugger-section-row.is-selected,
+.timeline-debugger-occurrence-row.is-selected {
+  border-color: #a32d2b;
+}
+
+.timeline-debugger-active button strong,
+.timeline-debugger-occurrence-row strong {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-debugger-active button em {
+  color: #a32d2b;
+  font-size: 0.58rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+}
+
+.timeline-debugger-transport {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 2rem;
+}
+
+.timeline-debugger-transport button {
+  min-height: 2.4rem;
+  padding: 0.5rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.timeline-debugger-transport button:hover,
+.timeline-debugger-transport button:focus-visible,
+.timeline-debugger-section-row:hover,
+.timeline-debugger-section-row:focus-visible,
+.timeline-debugger-occurrence-row:hover,
+.timeline-debugger-occurrence-row:focus-visible {
+  border-color: #a32d2b;
+}
+
+.timeline-debugger-transport button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.timeline-debugger-message {
+  margin: 1rem 0 0;
+  color: #a32d2b;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.timeline-debugger-timing-wide {
+  grid-column: span 3;
+}
+
+.timeline-debugger-list {
+  counter-reset: debugger-section;
+  margin-top: 1.5rem;
+}
+
+.timeline-debugger-list > li {
+  border-top: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-section-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.85rem 0;
+  border-width: 0 0 1px;
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+}
+
+.timeline-debugger-section-row strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.timeline-debugger-section-row span {
+  color: #6e6962;
+}
+
+.timeline-debugger-occurrence-list {
+  padding: 0.6rem 0 0.8rem 3rem;
+}
+
+.timeline-debugger-occurrence-row {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) minmax(16rem, 1.2fr) auto;
+  align-items: baseline;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.65rem 0.7rem;
+  border-width: 0 0 1px;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+}
+
+.timeline-debugger-occurrence-row span {
+  color: #6e6962;
+}
+
+.timeline-debugger-instrumental {
+  margin: 0;
+  padding: 0.8rem 0 1rem 3rem;
+  color: #6e6962;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .timeline-debugger-live-facts,
+  .timeline-debugger-timing-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .timeline-debugger-occurrence-row {
+    grid-template-columns: 8rem minmax(0, 1fr);
+  }
+
+  .timeline-debugger-occurrence-row span:nth-of-type(2),
+  .timeline-debugger-occurrence-row span:nth-of-type(3) {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 720px) {
+  .timeline-debugger-section-heading {
+    flex-direction: column;
+  }
+
+  .timeline-debugger-clock {
+    align-items: flex-start;
+  }
+
+  .timeline-debugger-live-facts,
+  .timeline-debugger-timing-facts,
+  .timeline-debugger-active ul {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .timeline-debugger-timing-wide {
+    grid-column: span 2;
+  }
+
+  .timeline-debugger-section-row {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+
+  .timeline-debugger-section-row span:nth-of-type(2),
+  .timeline-debugger-section-row span:nth-of-type(3) {
+    grid-column: 2;
+  }
+
+  .timeline-debugger-occurrence-list {
+    padding-left: 1rem;
+  }
+}
