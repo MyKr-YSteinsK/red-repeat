@@ -71,6 +71,135 @@
   padding: clamp(4.5rem, 13vh, 9rem) 0 clamp(4rem, 10vh, 7rem);
 }
 
+.library-populated,
+.edition-placeholder,
+.library-status {
+  justify-content: flex-start;
+  padding-top: clamp(3.5rem, 9vh, 7rem);
+}
+
+.catalog-list {
+  margin-top: clamp(3rem, 7vw, 5.5rem);
+  border-top: 1px solid var(--color-line);
+}
+
+.catalog-entry {
+  display: grid;
+  grid-template-columns: 2.5rem 5rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(0.8rem, 2.5vw, 2rem);
+  min-height: 7rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--color-line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.catalog-entry:hover .catalog-title,
+.catalog-entry:focus-visible .catalog-title {
+  color: var(--color-red);
+}
+
+.catalog-index,
+.catalog-theme,
+.catalog-meta {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.catalog-index {
+  align-self: start;
+  padding-top: 0.35rem;
+}
+
+.catalog-cover {
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+  background: var(--color-line);
+}
+
+.catalog-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.catalog-title {
+  overflow: hidden;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-artist {
+  color: var(--color-ink);
+  font-size: 0.9rem;
+}
+
+.catalog-meta {
+  margin-top: 0.3rem;
+}
+
+.catalog-theme {
+  white-space: nowrap;
+}
+
+.catalog-arrow {
+  color: var(--color-red);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.status-line,
+.error-state {
+  margin-top: clamp(3rem, 8vw, 6rem);
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.error-state p {
+  margin: 0.5rem 0 0;
+}
+
+.text-button,
+.text-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.text-button:hover,
+.text-button:focus-visible,
+.text-link:hover,
+.text-link:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
 .library-heading {
   max-width: 46rem;
 }
@@ -212,5 +341,24 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 0.6rem;
+  }
+
+  .catalog-entry {
+    grid-template-columns: 1.75rem 4.25rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    min-height: 6rem;
+  }
+
+  .catalog-cover {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .catalog-theme {
+    display: none;
+  }
+
+  .catalog-title {
+    font-size: 1.35rem;
   }
 }

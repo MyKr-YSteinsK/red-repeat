@@ -122,6 +122,10 @@ export class RuntimeClient {
     return this.loadText(logicalRuntimePath, options)
   }
 
+  resolveAsset(logicalRuntimePath: string): string {
+    return this.resolve(logicalRuntimePath)
+  }
+
   cancelPending(): void {
     this.requestGeneration += 1
     this.activeControllers.forEach((controller) => controller.abort())
