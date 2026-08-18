@@ -30,6 +30,7 @@ import {
 } from './schema'
 import {
   discoverSongPackages,
+  findCanonicalAudioSources,
   findPackageFiles,
   loadSourcePackage,
   type DiscoveredSongPackage,
@@ -172,10 +173,7 @@ async function compileSongPackage(options: {
   const lyrics = parseSourceFile(loaded.lyrics, LyricsSchema)
   const timeline = parseSourceFile(loaded.timeline, TimelineSchema)
   const visual = parseSourceFile(loaded.visual, VisualSchema)
-  const audioSource = findPackageFiles(
-    path.join(options.songPackage.directoryPath, 'audio'),
-    /^source\.[^./]+$/,
-  )[0]
+  const audioSource = findCanonicalAudioSources(options.songPackage)[0]
   const coverSource = findPackageFiles(
     path.join(options.songPackage.directoryPath, 'artwork'),
     /^cover\.[^./]+$/,

@@ -51,6 +51,15 @@ export function loadSourcePackage(
   }
 }
 
+export function findCanonicalAudioSources(
+  songPackage: DiscoveredSongPackage,
+): string[] {
+  return findPackageFiles(
+    path.join(songPackage.directoryPath, 'audio'),
+    /^source\.[^./]+$/,
+  )
+}
+
 export function readJsonSourceFile(filePath: string): JsonSourceFile {
   if (!fs.existsSync(filePath)) {
     return { status: 'missing', filePath }

@@ -11,6 +11,7 @@
     "test": "vitest run",
     "library:validate": "tsx src/library/cli.ts",
     "library:compile": "tsx src/library/compile-cli.ts",
+    "library:audio-hash": "tsx src/library/audio-hash-cli.ts",
     "preview": "vite preview"
   },
   "dependencies": {

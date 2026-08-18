@@ -9,6 +9,7 @@ import {
 import { hashFile } from './hash'
 import {
   discoverSongPackages,
+  findCanonicalAudioSources,
   findPackageFiles,
   loadSourcePackage,
   type DiscoveredSongPackage,
@@ -205,7 +206,7 @@ function validateMediaPresence(
 ): string | undefined {
   const audioDirectory = path.join(songPackage.directoryPath, 'audio')
   const artworkDirectory = path.join(songPackage.directoryPath, 'artwork')
-  const audioFiles = findPackageFiles(audioDirectory, /^source\.[^./]+$/)
+  const audioFiles = findCanonicalAudioSources(songPackage)
   const coverFiles = findPackageFiles(artworkDirectory, /^cover\.[^./]+$/)
   const heroFiles = findPackageFiles(artworkDirectory, /^hero\.[^./]+$/)
 
