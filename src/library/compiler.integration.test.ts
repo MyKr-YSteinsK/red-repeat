@@ -1,11 +1,20 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import sharp from 'sharp'
+import {
+  prepareTimelineForExport,
+  serializeTimeline,
+  updateOccurrenceTiming,
+  updateSectionTiming,
+} from '../debugger/timeline-debugger-model'
 import { compileLibrary } from './compiler'
+import { findAudioSourceFingerprint, runAudioHashCli } from './audio-hash-cli'
 import { hashFile, hashJson } from './hash'
 import { probeAudio } from './media'
+import type { TimelineDocument } from './schema'
+import { validateLibrary } from './validator'
 import {
   CatalogSchema,
   RuntimeEditionSchema,
@@ -134,6 +143,60 @@ describe('Library Compiler media pipeline', () => {
     expect(audioEdition.audio.sourceHash).not.toBe(
       firstEdition.edition.audio.sourceHash,
     )
+  }, 30_000)
+
+  it('round-trips a Debugger Timeline export through hash, validation, and runtime', async () => {
+    const fixture = await createFixture()
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+    const fingerprint = findAudioSourceFingerprint(
+      'first-light',
+      fixture.options.sourceRoot,
+    )
+    expect(
+      runAudioHashCli(['first-light'], {
+        sourceRoot: fixture.options.sourceRoot,
+      }),
+    ).toBe(0)
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining(`audioSourceHash: ${fingerprint.audioSourceHash}`),
+    )
+    log.mockRestore()
+
+    const timelinePath = path.join(fixture.songRoot, 'timeline.json')
+    const sourceTimeline = JSON.parse(
+      fs.readFileSync(timelinePath, 'utf8'),
+    ) as TimelineDocument
+    const editedTimeline = updateSectionTiming(
+      updateOccurrenceTiming(sourceTimeline, 'o001', 'playEndMs', 50),
+      'verse-1',
+      'endMs',
+      100,
+    )
+    const exportedTimeline = prepareTimelineForExport(
+      editedTimeline,
+      fingerprint.audioSourceHash,
+    )
+    writeJson(timelinePath, JSON.parse(serializeTimeline(exportedTimeline)))
+
+    expect(validateLibrary(fixture.options.sourceRoot)).toMatchObject({
+      valid: true,
+      songCount: 1,
+      errors: 0,
+    })
+    const compileResult = await compileLibrary(fixture.options)
+    expect(compileResult).toMatchObject({ valid: true, songCount: 1, errors: 0 })
+
+    const runtime = readCompiledEdition(fixture.outputRoot)
+    const runtimeTimeline = JSON.parse(
+      fs.readFileSync(
+        fileForRuntimeUrl(fixture.outputRoot, runtime.edition.timelineUrl),
+        'utf8',
+      ),
+    )
+    expect(runtimeTimeline).toEqual(exportedTimeline)
+    expect(runtimeTimeline.audioSourceHash).toBe(runtime.edition.audio.sourceHash)
+    expect(runtimeTimeline.occurrences[0].playEndMs).toBe(850)
+    expect(runtimeTimeline.sections[0].endMs).toBe(1100)
   }, 30_000)
 
   it('allows a missing hero and removes stale generated resources', async () => {
