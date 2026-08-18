@@ -10,7 +10,13 @@ import {
   RuntimeClient,
   RuntimeClientError,
 } from '../runtime/runtime-client'
-import { cloneTimeline } from './timeline-debugger-model'
+import {
+  areTimelinesEqual,
+  cloneTimeline,
+  updateOccurrenceTiming,
+  validateTimelineWorkingCopy,
+  type OccurrenceTimingField,
+} from './timeline-debugger-model'
 import { useTimelineDebuggerPlayback } from './use-timeline-debugger-playback'
 
 export type TimelineDebuggerCatalogState =
@@ -210,9 +216,16 @@ function TimelineDebuggerReady({
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
 }) {
-  const [workingTimeline] = useState<TimelineDocument>(() =>
+  const [workingTimeline, setWorkingTimeline] = useState<TimelineDocument>(() =>
     cloneTimeline(resources.timeline),
   )
+  const validation = validateTimelineWorkingCopy(workingTimeline)
+  const isDirty = !areTimelinesEqual(workingTimeline, resources.timeline)
+  const workingCopyState = validation.valid
+    ? isDirty
+      ? 'dirty'
+      : 'clean'
+    : 'invalid'
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<
     string | undefined
   >(() => workingTimeline.occurrences[0]?.id)
@@ -323,11 +336,24 @@ function TimelineDebuggerReady({
     )
   }
 
+  const adjustSelectedOccurrence = (
+    field: OccurrenceTimingField,
+    deltaMs: number,
+  ): void => {
+    if (!selectedOccurrence) {
+      return
+    }
+    setWorkingTimeline((currentTimeline) =>
+      updateOccurrenceTiming(currentTimeline, selectedOccurrence.id, field, deltaMs),
+    )
+    setTransportMessage(undefined)
+  }
+
   return (
     <main
       className="timeline-debugger"
       data-debugger-state="ready"
-      data-working-copy-state="clean"
+      data-working-copy-state={workingCopyState}
       data-current-time-ms={playback.audioState.currentTimeMs}
     >
       <header className="timeline-debugger-header">
@@ -352,7 +378,7 @@ function TimelineDebuggerReady({
             <p>{resources.edition.song.artist}</p>
           </div>
           <span className="timeline-debugger-badge">
-            WORKING COPY / CLEAN
+            WORKING COPY / {workingCopyState.toUpperCase()}
           </span>
         </div>
 
@@ -419,7 +445,7 @@ function TimelineDebuggerReady({
           </div>
           <div>
             <dt>Dirty State</dt>
-            <dd>clean</dd>
+            <dd>{workingCopyState}</dd>
           </div>
         </dl>
 
@@ -472,10 +498,48 @@ function TimelineDebuggerReady({
           </button>
           <button
             type="button"
+            onClick={() => seekTo(selectedOccurrence?.endMs)}
+            disabled={!selectedOccurrence || !playback.engine}
+          >
+            Jump endMs
+          </button>
+          <button
+            type="button"
+            onClick={() => seekTo(selectedOccurrence?.playEndMs)}
+            disabled={!selectedOccurrence || !playback.engine}
+          >
+            Jump playEndMs
+          </button>
+          <button
+            type="button"
             onClick={replaySelectedOccurrence}
             disabled={!selectedOccurrence || !playback.engine}
           >
             Replay practice range
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!selectedOccurrence || !playback.engine) {
+                setTransportMessage(
+                  'Audio playback is unavailable in this environment.',
+                )
+                return
+              }
+              setTransportMessage(undefined)
+              runEngineAction(() =>
+                playback.engine?.playRange(
+                  {
+                    startMs: selectedOccurrence.startMs,
+                    endMs: selectedOccurrence.endMs,
+                  },
+                  selectedOccurrence.id,
+                ),
+              )
+            }}
+            disabled={!selectedOccurrence || !playback.engine}
+          >
+            Play actual range
           </button>
           <button
             type="button"
@@ -518,44 +582,105 @@ function TimelineDebuggerReady({
           ) : null}
         </div>
         {selectedOccurrence ? (
-          <dl className="timeline-debugger-timing-facts">
-            <div>
-              <dt>sectionId</dt>
-              <dd>{selectedOccurrence.sectionId}</dd>
+          <>
+            <dl className="timeline-debugger-timing-facts">
+              <div>
+                <dt>sectionId</dt>
+                <dd>{selectedOccurrence.sectionId}</dd>
+              </div>
+              <div>
+                <dt>segmentId</dt>
+                <dd>{selectedOccurrence.segmentId}</dd>
+              </div>
+              <div>
+                <dt>playStartMs</dt>
+                <dd>{selectedOccurrence.playStartMs}</dd>
+              </div>
+              <div>
+                <dt>startMs</dt>
+                <dd>{selectedOccurrence.startMs}</dd>
+              </div>
+              <div>
+                <dt>endMs</dt>
+                <dd>{selectedOccurrence.endMs}</dd>
+              </div>
+              <div>
+                <dt>playEndMs</dt>
+                <dd>{selectedOccurrence.playEndMs}</dd>
+              </div>
+              <div className="timeline-debugger-timing-wide">
+                <dt>Original lyric</dt>
+                <dd>
+                  {segmentById.get(selectedOccurrence.segmentId)?.lyrics ??
+                    'Missing Segment'}
+                </dd>
+              </div>
+              <div className="timeline-debugger-timing-wide">
+                <dt>translation</dt>
+                <dd>
+                  {segmentById.get(selectedOccurrence.segmentId)?.translation ??
+                    'Missing Segment'}
+                </dd>
+              </div>
+            </dl>
+            <div
+              className="timeline-debugger-timing-editor"
+              aria-label="Occurrence timing adjustments"
+            >
+              <p className="timeline-debugger-eyebrow">TIMING ADJUSTMENTS</p>
+              {(['playStartMs', 'startMs', 'endMs', 'playEndMs'] as const).map(
+                (field) => (
+                  <div className="timeline-debugger-timing-control" key={field}>
+                    <div className="timeline-debugger-timing-value">
+                      <span>{field}</span>
+                      <output data-timing-field={field}>
+                        {selectedOccurrence[field]}
+                      </output>
+                    </div>
+                    <div className="timeline-debugger-adjustments">
+                      {[-100, -50, 50, 100].map((deltaMs) => {
+                        const direction = deltaMs < 0 ? 'Decrease' : 'Increase'
+                        return (
+                          <button
+                            key={deltaMs}
+                            type="button"
+                            aria-label={`${direction} ${field} by ${Math.abs(deltaMs)}ms`}
+                            onClick={() => adjustSelectedOccurrence(field, deltaMs)}
+                          >
+                            {deltaMs > 0 ? '+' : ''}
+                            {deltaMs}ms
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ),
+              )}
             </div>
-            <div>
-              <dt>segmentId</dt>
-              <dd>{selectedOccurrence.segmentId}</dd>
-            </div>
-            <div>
-              <dt>playStartMs</dt>
-              <dd>{selectedOccurrence.playStartMs}</dd>
-            </div>
-            <div>
-              <dt>startMs</dt>
-              <dd>{selectedOccurrence.startMs}</dd>
-            </div>
-            <div>
-              <dt>endMs</dt>
-              <dd>{selectedOccurrence.endMs}</dd>
-            </div>
-            <div>
-              <dt>playEndMs</dt>
-              <dd>{selectedOccurrence.playEndMs}</dd>
-            </div>
-            <div className="timeline-debugger-timing-wide">
-              <dt>Original lyric</dt>
-              <dd>{segmentById.get(selectedOccurrence.segmentId)?.lyrics ?? 'Missing Segment'}</dd>
-            </div>
-            <div className="timeline-debugger-timing-wide">
-              <dt>translation</dt>
-              <dd>{segmentById.get(selectedOccurrence.segmentId)?.translation ?? 'Missing Segment'}</dd>
-            </div>
-          </dl>
+          </>
         ) : (
           <p>No Occurrence is available in this Timeline.</p>
         )}
       </section>
+
+      {!validation.valid ? (
+        <section
+          className="timeline-debugger-validation"
+          role="alert"
+          aria-label="Timeline validation errors"
+        >
+          <p className="timeline-debugger-eyebrow">WORKING COPY / INVALID</p>
+          <h2>Timing needs attention before export.</h2>
+          <ul>
+            {validation.errors.map((error, index) => (
+              <li key={`${error.fieldPath}-${index}`}>
+                <code>{error.fieldPath}</code>
+                <span>{error.message}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="timeline-debugger-panel" aria-labelledby="timeline-list-title">
         <div className="timeline-debugger-section-heading">

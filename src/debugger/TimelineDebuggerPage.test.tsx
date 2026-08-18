@@ -139,12 +139,33 @@ describe('Timeline Debugger live context', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: /o002.*Stay near/ })[0])
     expect(screen.getByRole('heading', { name: 'o002' })).toBeInTheDocument()
-    expect(screen.getByText('playStartMs')).toBeInTheDocument()
-    expect(screen.getByText('450')).toBeInTheDocument()
+    expect(screen.getAllByText('playStartMs').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('450').length).toBeGreaterThan(0)
     expect(screen.getByText('靠近一些')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase endMs by 100ms' }))
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'invalid',
+    )
+    expect(
+      screen.getByRole('alert', { name: 'Timeline validation errors' }),
+    ).toHaveTextContent('occurrences[o002].timing')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Decrease endMs by 50ms' }))
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-working-copy-state',
+      'dirty',
+    )
 
     fireEvent.click(screen.getByRole('button', { name: 'Seek startMs' }))
     expect(media.currentTime).toBe(0.5)
+    fireEvent.click(screen.getByRole('button', { name: 'Jump endMs' }))
+    expect(media.currentTime).toBe(0.85)
+    fireEvent.click(screen.getByRole('button', { name: 'Jump playEndMs' }))
+    expect(media.currentTime).toBe(0.85)
+    fireEvent.click(screen.getByRole('button', { name: 'Play actual range' }))
+    await waitFor(() => expect(media.currentTime).toBe(0.5))
     fireEvent.click(screen.getByRole('button', { name: 'Replay practice range' }))
     await waitFor(() => expect(media.currentTime).toBe(0.45))
 

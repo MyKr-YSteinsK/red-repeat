@@ -336,6 +336,95 @@
   grid-column: span 3;
 }
 
+.timeline-debugger-timing-editor {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-timing-control {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #c9c3ba;
+}
+
+.timeline-debugger-timing-value {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: #6e6962;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.timeline-debugger-timing-value output {
+  color: #22201d;
+}
+
+.timeline-debugger-adjustments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.timeline-debugger-adjustments button {
+  min-width: 4.2rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #c9c3ba;
+  color: #22201d;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+}
+
+.timeline-debugger-adjustments button:hover,
+.timeline-debugger-adjustments button:focus-visible {
+  border-color: #a32d2b;
+  color: #a32d2b;
+}
+
+.timeline-debugger-validation {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid #a32d2b;
+  color: #22201d;
+}
+
+.timeline-debugger-validation h2 {
+  margin: 0.6rem 0 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+
+.timeline-debugger-validation ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-debugger-validation li {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.timeline-debugger-validation code {
+  color: #a32d2b;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
 .timeline-debugger-list {
   counter-reset: debugger-section;
   margin-top: 1.5rem;
@@ -443,5 +532,11 @@
 
   .timeline-debugger-occurrence-list {
     padding-left: 1rem;
+  }
+
+  .timeline-debugger-timing-control,
+  .timeline-debugger-validation li {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 }
