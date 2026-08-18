@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
   getAudioEngine,
+  normalizePlaybackRate,
   resetAudioEngineForTests,
   type AudioRange,
   type AudioMediaAdapter,
@@ -219,6 +220,95 @@ describe('Audio Engine foundation', () => {
     expect(engine.getState()).toMatchObject({ status: 'error', error: rejection })
     expect(frames.pendingCount()).toBe(0)
   })
+
+  it('repeats a range without stacking watchers and preserves speed', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    engine.setPlaybackRate(0.75)
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      media.currentTime = 0.3
+      frames.flush()
+      await flushMicrotasks()
+
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        intent: 'loop',
+        playbackRate: 0.75,
+      })
+      expect(media.currentTime).toBe(0.1)
+      expect(media.playbackRate).toBe(0.75)
+      expect(frames.pendingCount()).toBe(1)
+    }
+  })
+
+  it('pause exits a loop and range or continuous intent replaces it', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+    const staleLoopCallback = frames.latestCallback()
+
+    engine.pause()
+    staleLoopCallback()
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+    })
+    expect(frames.pendingCount()).toBe(0)
+
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+    const staleLoopForRange = frames.latestCallback()
+    await engine.playRange({ startMs: 500, endMs: 700 }, 'o002')
+    staleLoopForRange()
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'range',
+      activeOccurrenceId: 'o002',
+    })
+
+    const staleLoopForContinuous = frames.latestCallback()
+    await engine.playContinuous()
+    staleLoopForContinuous()
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'continuous',
+    })
+  })
+
+  it('source switch exits a loop', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/first.m4a')
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+    const staleCallback = frames.latestCallback()
+
+    engine.loadSource('/second.m4a')
+    staleCallback()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'loading',
+      sourceUrl: '/second.m4a',
+      intent: 'continuous',
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('accepts only the supported playback-rate range and step', () => {
+    expect(normalizePlaybackRate(0.5)).toBe(0.5)
+    expect(normalizePlaybackRate(0.65)).toBe(0.65)
+    expect(normalizePlaybackRate(0.75)).toBe(0.75)
+    expect(normalizePlaybackRate(0.85)).toBe(0.85)
+    expect(normalizePlaybackRate(1)).toBe(1)
+    expect(normalizePlaybackRate(1.25)).toBe(1.25)
+    expect(() => normalizePlaybackRate(0.66)).toThrow(RangeError)
+    expect(() => normalizePlaybackRate(1.3)).toThrow(RangeError)
+  })
 })
 
 function getAudioEngineWithFake() {
@@ -290,4 +380,11 @@ class FakeFrameScheduler implements FrameScheduler {
   pendingCount(): number {
     return this.callbacks.size
   }
+}
+
+async function flushMicrotasks(): Promise<void> {
+  await Promise.resolve()
+  await Promise.resolve()
+  await Promise.resolve()
+  await Promise.resolve()
 }

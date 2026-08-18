@@ -89,9 +89,13 @@ export class AudioEngine {
   }
 
   private readonly onEnded = (): void => {
-    if (this.state.intent === 'continuous') {
-      this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
+    if (this.state.intent === 'loop' && this.state.activeRange) {
+      this.restartLoop(this.operationGeneration, this.state.activeRange)
+      return
     }
+
+    this.cancelRangeWatcher()
+    this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
   }
 
   private readonly onError = (): void => {
@@ -231,13 +235,29 @@ export class AudioEngine {
     range: AudioRange,
     activeOccurrenceId?: string,
   ): Promise<void> {
+    return this.playBoundedRange(range, 'range', activeOccurrenceId, false)
+  }
+
+  async playLoop(
+    range: AudioRange,
+    activeOccurrenceId?: string,
+  ): Promise<void> {
+    return this.playBoundedRange(range, 'loop', activeOccurrenceId, true)
+  }
+
+  private async playBoundedRange(
+    range: AudioRange,
+    intent: 'range' | 'loop',
+    activeOccurrenceId: string | undefined,
+    repeat: boolean,
+  ): Promise<void> {
     this.assertUsable()
     this.assertSourceLoaded()
     assertValidRange(range)
     const generation = this.beginOperation(true)
     this.setState({
       status: 'seeking',
-      intent: 'range',
+      intent,
       activeOccurrenceId,
       activeRange: { ...range },
       error: undefined,
@@ -259,7 +279,7 @@ export class AudioEngine {
         status: 'playing',
         currentTimeMs: this.readCurrentTimeMs(),
       })
-      this.startRangeWatcher(generation, range)
+      this.startRangeWatcher(generation, range, repeat)
     } catch (error) {
       if (this.isCurrentOperation(generation)) {
         this.cancelRangeWatcher()
@@ -352,7 +372,11 @@ export class AudioEngine {
     this.listeners.forEach((listener) => listener(nextState))
   }
 
-  private startRangeWatcher(generation: number, range: AudioRange): void {
+  private startRangeWatcher(
+    generation: number,
+    range: AudioRange,
+    repeat: boolean,
+  ): void {
     this.cancelRangeWatcher()
     this.rangeWatcherHandle = this.frameScheduler.requestFrame(() => {
       this.rangeWatcherHandle = undefined
@@ -363,17 +387,53 @@ export class AudioEngine {
 
       const currentTimeMs = this.readCurrentTimeMs()
       if (currentTimeMs >= range.endMs) {
-        this.cancelRangeWatcher()
-        this.media.pause()
-        if (this.isCurrentOperation(generation)) {
-          this.setState({ status: 'paused', currentTimeMs })
+        if (repeat) {
+          this.restartLoop(generation, range)
+        } else {
+          this.cancelRangeWatcher()
+          this.media.pause()
+          if (this.isCurrentOperation(generation)) {
+            this.setState({ status: 'paused', currentTimeMs })
+          }
         }
         return
       }
 
       this.setState({ currentTimeMs })
-      this.startRangeWatcher(generation, range)
+      this.startRangeWatcher(generation, range, repeat)
     })
+  }
+
+  private restartLoop(generation: number, range: AudioRange): void {
+    if (!this.isCurrentOperation(generation)) {
+      return
+    }
+
+    this.media.pause()
+    this.setState({
+      status: 'seeking',
+      currentTimeMs: range.startMs,
+    })
+    this.media.currentTime = range.startMs / 1000
+
+    void Promise.resolve()
+      .then(() => this.media.play())
+      .then(() => {
+        if (!this.isCurrentOperation(generation)) {
+          return
+        }
+        this.setState({
+          status: 'playing',
+          currentTimeMs: this.readCurrentTimeMs(),
+        })
+        this.startRangeWatcher(generation, range, true)
+      })
+      .catch((error: unknown) => {
+        if (this.isCurrentOperation(generation)) {
+          this.cancelRangeWatcher()
+          this.setState({ status: 'error', error: toError(error) })
+        }
+      })
   }
 
   private cancelRangeWatcher(): void {
