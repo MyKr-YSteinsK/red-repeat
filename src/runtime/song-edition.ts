@@ -55,6 +55,7 @@ export interface AssembleSongEditionInput {
   timeline: TimelineDocument
   visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
+  allowMissingFeatureContent?: boolean
 }
 
 export function assembleRuntimeSongEdition(
@@ -107,7 +108,11 @@ export function assembleRuntimeSongEdition(
     lyrics: input.lyrics,
     timeline: input.timeline,
     visual: input.visual,
-    features: assembleFeatures(input.edition.features, input.features),
+    features: assembleFeatures(
+      input.edition.features,
+      input.features,
+      input.allowMissingFeatureContent ?? false,
+    ),
     segmentsById,
     occurrencesById: Object.fromEntries(
       assembledOccurrences.map(({ occurrence, ...assembled }) => [
@@ -153,7 +158,9 @@ function assertCatalogConsistency(
 function assembleFeatures(
   descriptors: readonly RuntimeFeatureDescriptor[],
   contents: readonly RuntimeFeatureContent[],
+  allowMissingContent: boolean,
 ): readonly RuntimeFeatureContent[] {
+  indexById(descriptors, 'Feature')
   const contentById = new Map<string, RuntimeFeatureContent>()
   contents.forEach((feature) => {
     if (contentById.has(feature.descriptor.id)) {
@@ -162,15 +169,18 @@ function assembleFeatures(
     contentById.set(feature.descriptor.id, feature)
   })
 
-  const assembled = descriptors.map((descriptor) => {
+  const assembled = descriptors.flatMap((descriptor) => {
     const feature = contentById.get(descriptor.id)
     if (!feature) {
+      if (allowMissingContent) {
+        return []
+      }
       throw new Error(`missing Feature content ${descriptor.id}`)
     }
     if (feature.descriptor.url !== descriptor.url) {
       throw new Error(`Feature URL mismatch for ${descriptor.id}`)
     }
-    return { descriptor, content: feature.content }
+    return [{ descriptor, content: feature.content }]
   })
 
   if (assembled.length !== contents.length) {

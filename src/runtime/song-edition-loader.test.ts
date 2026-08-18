@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from './runtime-client'
+import { RuntimeClientError } from './runtime-client'
 import { loadRuntimeSongEditionCore } from './song-edition-loader'
 
 const catalogEdition: CatalogEdition = {
@@ -63,5 +64,42 @@ describe('runtime Song Edition loader', () => {
     expect(client.loadLyrics).toHaveBeenCalledWith(edition.lyricsUrl, {})
     expect(client.loadTimeline).toHaveBeenCalledWith(edition.timelineUrl, {})
     expect(client.loadVisual).toHaveBeenCalledWith(edition.visualUrl, {})
+  })
+
+  it('keeps an individual Feature failure local to the assembled core', async () => {
+    const featureEdition = {
+      ...edition,
+      features: [
+        {
+          id: 'liner-note',
+          url: '/library-runtime/songs/first-light/features/liner-note.md',
+        },
+      ],
+    }
+    const client = {
+      loadEdition: vi.fn(async () => featureEdition),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async () => ({ sections: [], occurrences: [] })),
+      loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
+      loadFeature: vi.fn(async () => {
+        throw new RuntimeClientError({
+          kind: 'network',
+          logicalPath: featureEdition.features[0].url,
+          url: featureEdition.features[0].url,
+          message: 'offline',
+        })
+      }),
+    } as unknown as RuntimeClient
+
+    const result = await loadRuntimeSongEditionCore(client, catalogEdition)
+
+    expect(result.features).toEqual([])
+    expect(result.featureErrors).toHaveLength(1)
+    expect(result.featureErrors[0].descriptor.id).toBe('liner-note')
+    expect(result.assembled.features).toEqual([])
+    expect(client.loadFeature).toHaveBeenCalledWith(
+      featureEdition.features[0],
+      {},
+    )
   })
 })

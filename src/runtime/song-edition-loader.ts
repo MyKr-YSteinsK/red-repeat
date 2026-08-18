@@ -4,7 +4,11 @@ import type {
   TimelineDocument,
   VisualDocument,
 } from '../library/schema'
-import type { RuntimeClient, RuntimeLoadOptions } from './runtime-client'
+import {
+  RuntimeClientError,
+  type RuntimeClient,
+  type RuntimeLoadOptions,
+} from './runtime-client'
 import {
   assembleRuntimeSongEdition,
   type AssembledSongEdition,
@@ -18,7 +22,13 @@ export interface RuntimeSongEditionCore {
   timeline: TimelineDocument
   visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
+  featureErrors: readonly RuntimeFeatureLoadError[]
   assembled: AssembledSongEdition
+}
+
+export interface RuntimeFeatureLoadError {
+  descriptor: RuntimeEdition['features'][number]
+  error: unknown
 }
 
 export async function loadRuntimeSongEditionCore(
@@ -32,13 +42,56 @@ export async function loadRuntimeSongEditionCore(
     client.loadTimeline(edition.timelineUrl, options),
     client.loadVisual(edition.visualUrl, options),
   ])
-  const features = await Promise.all(
+  const featureResults = await Promise.all(
     edition.features.map(async (descriptor) => ({
       descriptor,
-      content: await client.loadFeature(descriptor, options),
+      result: await loadFeatureSafely(client, descriptor, options),
     })),
   )
+  const features = featureResults.flatMap(({ descriptor, result }) =>
+    result.status === 'ok' ? [{ descriptor, content: result.content }] : [],
+  )
+  const featureErrors = featureResults.flatMap(({ descriptor, result }) =>
+    result.status === 'error'
+      ? [{ descriptor, error: result.error }]
+      : [],
+  )
 
-  const core = { catalogEdition, edition, lyrics, timeline, visual, features }
-  return { ...core, assembled: assembleRuntimeSongEdition(core) }
+  const core = {
+    catalogEdition,
+    edition,
+    lyrics,
+    timeline,
+    visual,
+    features,
+    featureErrors,
+  }
+  return {
+    ...core,
+    assembled: assembleRuntimeSongEdition({
+      ...core,
+      allowMissingFeatureContent: true,
+    }),
+  }
+}
+
+async function loadFeatureSafely(
+  client: RuntimeClient,
+  descriptor: RuntimeEdition['features'][number],
+  options: RuntimeLoadOptions,
+): Promise<
+  | { status: 'ok'; content: string }
+  | { status: 'error'; error: unknown }
+> {
+  try {
+    return {
+      status: 'ok',
+      content: await client.loadFeature(descriptor, options),
+    }
+  } catch (error) {
+    if (error instanceof RuntimeClientError && error.kind === 'abort') {
+      throw error
+    }
+    return { status: 'error', error }
+  }
 }

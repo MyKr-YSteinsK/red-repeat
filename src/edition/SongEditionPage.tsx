@@ -6,6 +6,7 @@ import {
   RuntimeClientError,
 } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
+import { FeatureSection } from './FeatureMarkdown'
 import { useSongEditionCore } from './use-song-edition-core'
 
 export interface SongEditionPageProps {
@@ -114,6 +115,11 @@ export function SongEditionPage({
         model={core.assembled}
         runtimeClient={runtimeClient}
         audioEngine={audioEngine}
+      />
+      <FeatureSection
+        model={core.assembled}
+        features={core.features}
+        featureErrors={core.featureErrors}
       />
     </main>
   )
