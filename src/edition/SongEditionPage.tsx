@@ -4,6 +4,7 @@ import {
   RuntimeClient,
   RuntimeClientError,
 } from '../runtime/runtime-client'
+import { LinerLyrics } from './LinerLyrics'
 import { useSongEditionCore } from './use-song-edition-core'
 
 export interface SongEditionPageProps {
@@ -106,6 +107,7 @@ export function SongEditionPage({
 
       <div className="song-opening-rule" aria-hidden="true" />
       <p className="song-next-cue">Lyrics and timeline follow below.</p>
+      <LinerLyrics model={core.assembled} />
     </main>
   )
 }

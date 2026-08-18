@@ -5,6 +5,11 @@ import type {
   VisualDocument,
 } from '../library/schema'
 import type { RuntimeClient, RuntimeLoadOptions } from './runtime-client'
+import {
+  assembleRuntimeSongEdition,
+  type AssembledSongEdition,
+  type RuntimeFeatureContent,
+} from './song-edition'
 
 export interface RuntimeSongEditionCore {
   catalogEdition: CatalogEdition
@@ -12,6 +17,8 @@ export interface RuntimeSongEditionCore {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   visual: VisualDocument
+  features: readonly RuntimeFeatureContent[]
+  assembled: AssembledSongEdition
 }
 
 export async function loadRuntimeSongEditionCore(
@@ -25,6 +32,13 @@ export async function loadRuntimeSongEditionCore(
     client.loadTimeline(edition.timelineUrl, options),
     client.loadVisual(edition.visualUrl, options),
   ])
+  const features = await Promise.all(
+    edition.features.map(async (descriptor) => ({
+      descriptor,
+      content: await client.loadFeature(descriptor, options),
+    })),
+  )
 
-  return { catalogEdition, edition, lyrics, timeline, visual }
+  const core = { catalogEdition, edition, lyrics, timeline, visual, features }
+  return { ...core, assembled: assembleRuntimeSongEdition(core) }
 }

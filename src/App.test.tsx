@@ -50,6 +50,8 @@ const runtimeEditionForApp = {
     songId: 'first-light',
     title: 'First Light',
     artist: 'A Composer',
+    album: 'Returning',
+    year: 2026,
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',

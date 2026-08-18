@@ -387,6 +387,218 @@
   margin-top: 1.5rem;
 }
 
+.liner-lyrics {
+  margin-top: clamp(5rem, 12vw, 11rem);
+}
+
+.lyrics-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.lyrics-heading h2 {
+  margin: 0.75rem 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.reading-toggle {
+  min-height: 2.5rem;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reading-toggle[aria-pressed='true'],
+.reading-toggle:hover,
+.reading-toggle:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.lyrics-section {
+  padding: clamp(2rem, 5vw, 4.5rem) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.75rem);
+}
+
+.section-heading h3 {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.section-index {
+  margin: 0;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+
+.occurrence-list {
+  display: flex;
+  max-width: 65rem;
+  flex-direction: column;
+  gap: clamp(1.8rem, 4vw, 3.5rem);
+}
+
+.lyric-occurrence {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.32fr);
+  column-gap: clamp(2rem, 7vw, 7rem);
+  padding-left: 1rem;
+  border-left: 2px solid transparent;
+}
+
+.lyric-occurrence.is-active {
+  border-left-color: color-mix(in srgb, var(--color-red) 55%, var(--color-line));
+}
+
+.lyric-occurrence.is-primary {
+  border-left-color: var(--color-red);
+}
+
+.lyric-occurrence.is-selected .lyric-original-text {
+  text-decoration: underline;
+  text-decoration-color: var(--color-red);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+.lyric-original {
+  grid-column: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.lyric-original-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3.4vw, 3.1rem);
+  letter-spacing: -0.04em;
+  line-height: 1.03;
+}
+
+.lyric-original:hover .lyric-original-text,
+.lyric-original:focus-visible .lyric-original-text {
+  color: var(--color-red);
+}
+
+.lyric-translation {
+  grid-column: 1;
+  margin: 0.55rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+
+.lyric-readings {
+  display: flex;
+  grid-column: 1;
+  flex-wrap: wrap;
+  gap: 0.55rem 1.2rem;
+  margin-top: 0.85rem;
+}
+
+.lyric-reading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.lyric-layer-label {
+  color: var(--color-red);
+  text-transform: uppercase;
+}
+
+.lyric-notes {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: start;
+  padding-top: 0.2rem;
+  color: var(--color-muted);
+}
+
+.lyric-note + .lyric-note {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.lyric-note h4,
+.lyric-note p {
+  margin: 0;
+}
+
+.lyric-note h4 {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lyric-note p {
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.instrumental-marker {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.instrumental-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--color-red);
+}
+
 .library-heading {
   max-width: 46rem;
 }
@@ -574,5 +786,24 @@
 
   .edition-metadata {
     gap: 1rem;
+  }
+
+  .lyrics-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .lyric-occurrence {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .lyric-notes {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-line);
   }
 }

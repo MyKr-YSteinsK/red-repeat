@@ -90,7 +90,13 @@ describe('Liner Song Edition opening', () => {
     }
 
     const { container } = render(
-      <SongEditionPage {...propsFor(minimalEdition)} />,
+      <SongEditionPage
+        {...propsFor(minimalEdition, undefined, {
+          ...catalogEdition,
+          album: undefined,
+          year: undefined,
+        })}
+      />,
     )
 
     expect(
@@ -126,6 +132,7 @@ describe('Liner Song Edition opening', () => {
 function propsFor(
   runtimeEdition: RuntimeEdition,
   error?: Error,
+  runtimeCatalogEdition: CatalogEdition = catalogEdition,
 ): SongEditionPageProps {
   const client = {
     loadEdition: vi.fn(async () => {
@@ -141,7 +148,7 @@ function propsFor(
   } as unknown as RuntimeClient
 
   return {
-    catalogEdition,
+    catalogEdition: runtimeCatalogEdition,
     runtimeClient: client,
     homeHref: '/red-repeat/',
   }
