@@ -84,7 +84,9 @@ describe('Audio Engine foundation', () => {
     const engine = createAudioEngine(media)
     engine.loadSource('/audio.m4a')
     engine.setPlaybackRate(0.75)
-    media.play = vi.fn(() => Promise.resolve())
+    media.play = vi.fn(async () => {
+      media.paused = false
+    })
     await engine.playContinuous()
 
     engine.pause()
@@ -146,6 +148,99 @@ describe('Audio Engine foundation', () => {
     frames.flush()
 
     expect(engine.getState()).toMatchObject({ status: 'paused', intent: 'continuous' })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('observes continuous playback time on the shared frame scheduler', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    await engine.playContinuous()
+
+    expect(frames.pendingCount()).toBe(1)
+    media.currentTime = 0.42
+    frames.flush()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'continuous',
+      currentTimeMs: 420,
+    })
+    expect(frames.pendingCount()).toBe(1)
+
+    engine.pause()
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('ignores a delayed internal pause event after a new play command', async () => {
+    const media = new FakeMedia()
+    media.queuePauseEvents = true
+    const engine = createAudioEngine(media)
+    engine.loadSource('/audio.m4a')
+    await engine.playContinuous()
+
+    engine.pause()
+    await engine.playContinuous()
+    media.flushPauseEvents()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'continuous',
+    })
+  })
+
+  it('ignores the internal pause event during loop restart', async () => {
+    const media = new FakeMedia()
+    media.queuePauseEvents = true
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+
+    media.currentTime = 0.3
+    frames.flush()
+    await flushMicrotasks()
+    media.flushPauseEvents()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'loop',
+      activeRange: { startMs: 100, endMs: 300 },
+    })
+  })
+
+  it('ignores a delayed pause event when replacing the source', async () => {
+    const media = new FakeMedia()
+    media.queuePauseEvents = true
+    const engine = createAudioEngine(media)
+    engine.loadSource('/first.m4a')
+    await engine.playContinuous()
+
+    engine.loadSource('/second.m4a')
+    media.flushPauseEvents()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'loading',
+      sourceUrl: '/second.m4a',
+      intent: 'continuous',
+    })
+  })
+
+  it('honors an external pause event', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playContinuous()
+
+    media.userPause()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+    })
     expect(frames.pendingCount()).toBe(0)
   })
 
@@ -323,15 +418,25 @@ class FakeMedia implements AudioMediaAdapter {
   paused = true
   playbackRate = 1
   preservesPitch = false
+  queuePauseEvents = false
   play = vi.fn(async () => {
     this.paused = false
   })
   pause = vi.fn(() => {
+    const wasPlaying = !this.paused
     this.paused = true
+    if (wasPlaying) {
+      if (this.queuePauseEvents) {
+        this.pendingPauseEvents += 1
+      } else {
+        this.emit('pause')
+      }
+    }
   })
   load = vi.fn()
 
   private readonly listeners = new Map<string, Set<() => void>>()
+  private pendingPauseEvents = 0
 
   addEventListener(event: string, listener: () => void): void {
     const eventListeners = this.listeners.get(event) ?? new Set<() => void>()
@@ -345,6 +450,19 @@ class FakeMedia implements AudioMediaAdapter {
 
   emit(event: string): void {
     this.listeners.get(event)?.forEach((listener) => listener())
+  }
+
+  flushPauseEvents(): void {
+    const pendingPauseEvents = this.pendingPauseEvents
+    this.pendingPauseEvents = 0
+    for (let index = 0; index < pendingPauseEvents; index += 1) {
+      this.emit('pause')
+    }
+  }
+
+  userPause(): void {
+    this.paused = true
+    this.emit('pause')
   }
 }
 

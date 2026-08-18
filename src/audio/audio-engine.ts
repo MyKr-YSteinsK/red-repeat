@@ -75,7 +75,8 @@ export class AudioEngine {
   private readonly frameScheduler: FrameScheduler
   private operationGeneration = 0
   private disposed = false
-  private rangeWatcherHandle: unknown
+  private playbackObservationHandle: unknown
+  private pendingInternalPauseEvents = 0
 
   private readonly onLoadedMetadata = (): void => {
     this.refreshDuration()
@@ -94,7 +95,7 @@ export class AudioEngine {
       return
     }
 
-    this.cancelRangeWatcher()
+    this.cancelPlaybackObservation()
     this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
   }
 
@@ -106,10 +107,24 @@ export class AudioEngine {
   }
 
   private readonly onPause = (): void => {
-    this.cancelRangeWatcher()
-    if (this.state.status === 'playing') {
-      this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
+    if (this.disposed) {
+      return
     }
+
+    if (this.pendingInternalPauseEvents > 0) {
+      this.pendingInternalPauseEvents -= 1
+      return
+    }
+
+    this.operationGeneration += 1
+    this.cancelPlaybackObservation()
+    this.setState({
+      status: this.state.sourceUrl ? 'paused' : 'idle',
+      intent: 'continuous',
+      currentTimeMs: this.readCurrentTimeMs(),
+      activeOccurrenceId: undefined,
+      activeRange: undefined,
+    })
   }
 
   private readonly media: AudioMediaAdapter
@@ -184,6 +199,7 @@ export class AudioEngine {
             status: 'playing',
             currentTimeMs: this.readCurrentTimeMs(),
           })
+          this.startPlaybackObservation(generation)
         }
       })
       .catch((error: unknown) => {
@@ -279,10 +295,10 @@ export class AudioEngine {
         status: 'playing',
         currentTimeMs: this.readCurrentTimeMs(),
       })
-      this.startRangeWatcher(generation, range, repeat)
+      this.startPlaybackObservation(generation, range, repeat)
     } catch (error) {
       if (this.isCurrentOperation(generation)) {
-        this.cancelRangeWatcher()
+        this.cancelPlaybackObservation()
         const normalizedError = toError(error)
         this.setState({ status: 'error', error: normalizedError })
       }
@@ -306,8 +322,8 @@ export class AudioEngine {
 
     this.disposed = true
     this.operationGeneration += 1
-    this.cancelRangeWatcher()
-    this.media.pause()
+    this.cancelPlaybackObservation()
+    this.requestInternalPause()
     this.media.removeEventListener('loadedmetadata', this.onLoadedMetadata)
     this.media.removeEventListener('durationchange', this.onDurationChange)
     this.media.removeEventListener('ended', this.onEnded)
@@ -318,9 +334,9 @@ export class AudioEngine {
 
   private beginOperation(pauseMedia = false): number {
     this.operationGeneration += 1
-    this.cancelRangeWatcher()
+    this.cancelPlaybackObservation()
     if (pauseMedia) {
-      this.media.pause()
+      this.requestInternalPause()
     }
     return this.operationGeneration
   }
@@ -372,26 +388,26 @@ export class AudioEngine {
     this.listeners.forEach((listener) => listener(nextState))
   }
 
-  private startRangeWatcher(
+  private startPlaybackObservation(
     generation: number,
-    range: AudioRange,
-    repeat: boolean,
+    range?: AudioRange,
+    repeat = false,
   ): void {
-    this.cancelRangeWatcher()
-    this.rangeWatcherHandle = this.frameScheduler.requestFrame(() => {
-      this.rangeWatcherHandle = undefined
+    this.cancelPlaybackObservation()
+    this.playbackObservationHandle = this.frameScheduler.requestFrame(() => {
+      this.playbackObservationHandle = undefined
 
       if (!this.isCurrentOperation(generation)) {
         return
       }
 
       const currentTimeMs = this.readCurrentTimeMs()
-      if (currentTimeMs >= range.endMs) {
+      if (range && currentTimeMs >= range.endMs) {
         if (repeat) {
           this.restartLoop(generation, range)
         } else {
-          this.cancelRangeWatcher()
-          this.media.pause()
+          this.cancelPlaybackObservation()
+          this.requestInternalPause()
           if (this.isCurrentOperation(generation)) {
             this.setState({ status: 'paused', currentTimeMs })
           }
@@ -400,7 +416,7 @@ export class AudioEngine {
       }
 
       this.setState({ currentTimeMs })
-      this.startRangeWatcher(generation, range, repeat)
+      this.startPlaybackObservation(generation, range, repeat)
     })
   }
 
@@ -409,7 +425,7 @@ export class AudioEngine {
       return
     }
 
-    this.media.pause()
+    this.requestInternalPause()
     this.setState({
       status: 'seeking',
       currentTimeMs: range.startMs,
@@ -426,20 +442,27 @@ export class AudioEngine {
           status: 'playing',
           currentTimeMs: this.readCurrentTimeMs(),
         })
-        this.startRangeWatcher(generation, range, true)
+        this.startPlaybackObservation(generation, range, true)
       })
       .catch((error: unknown) => {
         if (this.isCurrentOperation(generation)) {
-          this.cancelRangeWatcher()
+          this.cancelPlaybackObservation()
           this.setState({ status: 'error', error: toError(error) })
         }
       })
   }
 
-  private cancelRangeWatcher(): void {
-    if (this.rangeWatcherHandle !== undefined) {
-      this.frameScheduler.cancelFrame(this.rangeWatcherHandle)
-      this.rangeWatcherHandle = undefined
+  private requestInternalPause(): void {
+    if (this.state.status === 'playing' || !this.media.paused) {
+      this.pendingInternalPauseEvents += 1
+      this.media.pause()
+    }
+  }
+
+  private cancelPlaybackObservation(): void {
+    if (this.playbackObservationHandle !== undefined) {
+      this.frameScheduler.cancelFrame(this.playbackObservationHandle)
+      this.playbackObservationHandle = undefined
     }
   }
 }
