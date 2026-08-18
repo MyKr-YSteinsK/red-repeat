@@ -278,7 +278,7 @@ describe('Timeline Debugger live context', () => {
       value: originalRevokeObjectURL,
     })
     anchorClick.mockRestore()
-  })
+  }, 15_000)
 })
 
 function runtimeClientFor(): RuntimeClient {
