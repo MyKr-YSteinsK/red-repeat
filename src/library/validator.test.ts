@@ -23,7 +23,7 @@ const lyrics = {
 }
 
 const timeline = {
-  sections: [{ id: 'verse-1', label: 'Verse 1' }],
+  sections: [{ id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 4000 }],
   occurrences: [
     {
       id: 'o001',
@@ -165,6 +165,110 @@ describe('Library Validator', () => {
 
     expectCode(result, 'UNKNOWN_SEGMENT_REFERENCE')
     expectCode(result, 'UNKNOWN_SECTION_REFERENCE')
+  })
+
+  it('accepts adjacent Sections and legal gaps', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      sections: [
+        { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1000 },
+        { id: 'instrumental', label: 'Instrumental', startMs: 1500, endMs: 2000 },
+        { id: 'verse-2', label: 'Verse 2', startMs: 2000, endMs: 4000 },
+      ],
+      occurrences: [
+        {
+          ...timeline.occurrences[0],
+          startMs: 100,
+          endMs: 700,
+          playStartMs: 0,
+          playEndMs: 1600,
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toBe(0)
+  })
+
+  it('rejects overlapping and out-of-order Sections', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      sections: [
+        { id: 'verse-2', label: 'Verse 2', startMs: 1200, endMs: 2000 },
+        { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1500 },
+      ],
+      occurrences: [],
+    })
+
+    const result = validateLibrary(root)
+
+    expectCode(result, 'SECTION_OUT_OF_ORDER')
+    expectCode(result, 'SECTION_OVERLAP')
+  })
+
+  it('rejects an Occurrence whose actual range escapes its Section', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      ...timeline,
+      occurrences: [
+        {
+          ...timeline.occurrences[0],
+          startMs: 100,
+          endMs: 4500,
+          playStartMs: 0,
+          playEndMs: 5000,
+        },
+      ],
+    })
+
+    expectCode(validateLibrary(root), 'OCCURRENCE_OUTSIDE_SECTION')
+  })
+
+  it('accepts a play range crossing Section boundaries', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      sections: [
+        { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 1000 },
+        { id: 'verse-2', label: 'Verse 2', startMs: 1000, endMs: 4000 },
+      ],
+      occurrences: [
+        {
+          ...timeline.occurrences[0],
+          startMs: 200,
+          endMs: 800,
+          playStartMs: 0,
+          playEndMs: 1200,
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toBe(0)
+  })
+
+  it('accepts an instrumental Section with no Occurrences', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      sections: [
+        { id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 2500 },
+        { id: 'instrumental', label: 'Instrumental', startMs: 2500, endMs: 4000 },
+      ],
+      occurrences: [timeline.occurrences[0]],
+    })
+
+    const result = validateLibrary(root)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toBe(0)
   })
 
   it('reports Visual cues that reference unknown Sections', () => {

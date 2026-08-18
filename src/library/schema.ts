@@ -83,8 +83,14 @@ export const SectionSchema = z
   .object({
     id: SectionIdSchema,
     label: nonEmptyText,
+    startMs: integerMilliseconds,
+    endMs: integerMilliseconds,
   })
   .strict()
+  .refine((section) => section.startMs < section.endMs, {
+    path: ['endMs'],
+    message: 'section timing must satisfy startMs < endMs',
+  })
 
 export const OccurrenceSchema = z
   .object({

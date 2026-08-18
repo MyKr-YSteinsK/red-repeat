@@ -26,7 +26,7 @@ const validLyrics = {
 }
 
 const validTimeline = {
-  sections: [{ id: 'verse-1', label: 'Verse 1' }],
+  sections: [{ id: 'verse-1', label: 'Verse 1', startMs: 0, endMs: 4000 }],
   occurrences: [
     {
       id: 'o001',

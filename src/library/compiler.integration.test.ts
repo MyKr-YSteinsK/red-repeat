@@ -190,6 +190,21 @@ describe('Library Compiler media pipeline', () => {
       false,
     )
   }, 30_000)
+
+  it('fails when an instrumental Section exceeds probed audio duration', async () => {
+    const fixture = await createFixture({ sectionEndMs: 2_000 })
+
+    const result = await compileLibrary(fixture.options)
+
+    expect(result.valid).toBe(false)
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'TIMELINE_EXCEEDS_AUDIO_DURATION',
+        }),
+      ]),
+    )
+  }, 30_000)
 })
 
 interface Fixture {
@@ -212,7 +227,9 @@ interface Fixture {
   }
 }
 
-async function createFixture(options: { playEndMs?: number } = {}): Promise<Fixture> {
+async function createFixture(
+  options: { playEndMs?: number; sectionEndMs?: number } = {},
+): Promise<Fixture> {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'red-repeat-compiler-media-'))
   temporaryRoots.push(root)
 
@@ -233,7 +250,14 @@ async function createFixture(options: { playEndMs?: number } = {}): Promise<Fixt
     ],
   }
   const timeline = {
-    sections: [{ id: 'verse-1', label: 'Verse 1' }],
+    sections: [
+      {
+        id: 'verse-1',
+        label: 'Verse 1',
+        startMs: 0,
+        endMs: options.sectionEndMs ?? 1_000,
+      },
+    ],
     occurrences: [
       {
         id: 'o001',

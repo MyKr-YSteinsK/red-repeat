@@ -185,9 +185,13 @@ async function compileSongPackage(options: {
     /^hero\.[^./]+$/,
   )[0]
   const songOutputRoot = path.join(options.outputRoot, 'songs', manifest.songId)
+  const maxTimelineEndMs = timeline.sections.reduce(
+    (maximum, section) => Math.max(maximum, section.endMs),
+    0,
+  )
   const maxPlayEndMs = timeline.occurrences.reduce(
     (maximum, occurrence) => Math.max(maximum, occurrence.playEndMs),
-    0,
+    maxTimelineEndMs,
   )
 
   if (!audioSource || !coverSource) {

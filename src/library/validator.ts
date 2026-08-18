@@ -97,6 +97,16 @@ function validateSongPackage(
     )
   }
 
+  if (timeline) {
+    validateTimelineStructure(
+      timeline,
+      songPackage,
+      sourceRoot,
+      contextSongId,
+      diagnostics,
+    )
+  }
+
   if (timeline && visual) {
     validateVisualReferences(
       timeline,
@@ -278,6 +288,77 @@ function validateTimelineReferences(
         sourcePath: timelinePath,
         fieldPath: `occurrences[${index}].sectionId`,
         message: `Occurrence "${occurrence.id}" references unknown Section "${occurrence.sectionId}"`,
+      })
+    }
+  })
+}
+
+function validateTimelineStructure(
+  timeline: TimelineDocument,
+  songPackage: DiscoveredSongPackage,
+  sourceRoot: string,
+  songId: string,
+  diagnostics: Diagnostic[],
+): void {
+  const timelinePath = toSourcePath(
+    sourceRoot,
+    path.join(songPackage.directoryPath, 'timeline.json'),
+  )
+  const sectionsById = new Map(
+    timeline.sections.map((section) => [section.id, section]),
+  )
+
+  timeline.sections.forEach((section, index) => {
+    const previousSection = timeline.sections[index - 1]
+
+    if (previousSection && section.startMs < previousSection.startMs) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'SECTION_OUT_OF_ORDER',
+        songId,
+        sourcePath: timelinePath,
+        fieldPath: `sections[${index}].startMs`,
+        message: `Section "${section.id}" starts before the previous Section in source order`,
+      })
+    }
+  })
+
+  const sectionsByStart = timeline.sections
+    .map((section, index) => ({ section, index }))
+    .sort(
+      (left, right) =>
+        left.section.startMs - right.section.startMs || left.index - right.index,
+    )
+
+  sectionsByStart.forEach((current, index) => {
+    const previous = sectionsByStart[index - 1]
+
+    if (previous && previous.section.endMs > current.section.startMs) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'SECTION_OVERLAP',
+        songId,
+        sourcePath: timelinePath,
+        fieldPath: `sections[${current.index}]`,
+        message: `Section "${current.section.id}" overlaps Section "${previous.section.id}"`,
+      })
+    }
+  })
+
+  timeline.occurrences.forEach((occurrence, index) => {
+    const section = sectionsById.get(occurrence.sectionId)
+
+    if (
+      section &&
+      (occurrence.startMs < section.startMs || occurrence.endMs > section.endMs)
+    ) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'OCCURRENCE_OUTSIDE_SECTION',
+        songId,
+        sourcePath: timelinePath,
+        fieldPath: `occurrences[${index}]`,
+        message: `Occurrence "${occurrence.id}" actual timing must stay within Section "${section.id}"; play range may cross Section boundaries`,
       })
     }
   })
