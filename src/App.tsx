@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import './App.css'
 import type { Catalog, CatalogEdition } from './library/runtime-schema'
 import {
@@ -13,6 +13,17 @@ import {
   RuntimeClientError,
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
+
+const DevTimelineDebuggerPage = import.meta.env.DEV
+  ? lazy(async () => {
+      const module = await import('./debugger/TimelineDebuggerPage')
+      return { default: module.TimelineDebuggerPage }
+    })
+  : undefined
+
+if (import.meta.env.DEV) {
+  void import('./debugger/TimelineDebugger.css')
+}
 
 const defaultRuntimeClient = createRuntimeClient()
 
@@ -79,6 +90,30 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
     <div className="app-shell">
       <SiteHeader homeHref={homeHref} />
       {route.kind === 'library' ? (
+        <LibraryRoute
+          state={catalogState}
+          runtimeClient={runtimeClient}
+          onRetry={retryCatalog}
+        />
+      ) : route.kind === 'timeline-debugger' &&
+        import.meta.env.DEV &&
+        DevTimelineDebuggerPage ? (
+        <Suspense
+          fallback={
+            <main className="library library-status" aria-labelledby="debugger-loading-title">
+              <h1 id="debugger-loading-title">Loading Timeline Debugger.</h1>
+            </main>
+          }
+        >
+          <DevTimelineDebuggerPage
+            songId={route.songId}
+            catalogState={catalogState}
+            runtimeClient={runtimeClient}
+            homeHref={homeHref}
+            onRetryCatalog={retryCatalog}
+          />
+        </Suspense>
+      ) : route.kind === 'timeline-debugger' ? (
         <LibraryRoute
           state={catalogState}
           runtimeClient={runtimeClient}

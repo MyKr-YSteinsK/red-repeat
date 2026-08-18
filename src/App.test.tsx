@@ -179,6 +179,76 @@ describe('App Library consumer', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('opens the dev-only Timeline Debugger from its explicit hash route', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/#debug=timeline&edition=first-light',
+    )
+    render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Timeline Debugger' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-debugger-state',
+      'ready',
+    )
+    expect(screen.getByText('First Light')).toBeInTheDocument()
+    expect(screen.getByText('a'.repeat(64))).toBeInTheDocument()
+    expect(screen.getByText('d'.repeat(64))).toBeInTheDocument()
+    expect(screen.queryByText('Songs worth returning to.')).not.toBeInTheDocument()
+  })
+
+  it('shows an explicit debugger state for an unknown runtime edition', async () => {
+    window.history.replaceState({}, '', '/#debug=timeline&edition=missing')
+    render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'The requested edition is not in the runtime catalog.',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-debugger-state',
+      'missing-edition',
+    )
+  })
+
+  it('shows the empty runtime catalog state inside the dev debugger', async () => {
+    window.history.replaceState({}, '', '/#debug=timeline&edition=first-light')
+    render(<App runtimeClient={clientFor(emptyCatalog)} />)
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'The runtime catalog is empty.',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-debugger-state',
+      'empty',
+    )
+  })
+
+  it('keeps debugger runtime resource failures explicit', async () => {
+    window.history.replaceState({}, '', '/#debug=timeline&edition=first-light')
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input)
+      if (url.endsWith('/catalog.json')) {
+        return jsonResponse(populatedCatalog)
+      }
+      throw new TypeError('offline')
+    })
+
+    render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
+
+    expect(
+      await screen.findByRole('alert', { name: 'Could not load First Light.' }),
+    ).toHaveTextContent(
+      'Runtime network while reading /library-runtime/songs/first-light/edition.a.json.',
+    )
+  })
+
   it('renders one or more catalog editions as archive entries', async () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 

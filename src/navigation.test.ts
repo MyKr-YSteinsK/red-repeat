@@ -30,4 +30,22 @@ describe('static-safe navigation', () => {
     expect(parseAppRoute({ hash: '' })).toEqual({ kind: 'library' })
     expect(parseAppRoute({ hash: '#other=value' })).toEqual({ kind: 'library' })
   })
+
+  it('recognizes the Timeline Debugger only in dev mode', () => {
+    expect(
+      parseAppRoute(
+        { hash: '#debug=timeline&edition=first-light' },
+        { devMode: true },
+      ),
+    ).toEqual({ kind: 'timeline-debugger', songId: 'first-light' })
+    expect(
+      parseAppRoute({ hash: '#debug=timeline' }, { devMode: true }),
+    ).toEqual({ kind: 'timeline-debugger' })
+    expect(
+      parseAppRoute(
+        { hash: '#debug=timeline&edition=first-light' },
+        { devMode: false },
+      ),
+    ).toEqual({ kind: 'library' })
+  })
 })
