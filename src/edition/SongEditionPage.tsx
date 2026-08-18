@@ -1,22 +1,25 @@
 import { useState } from 'react'
+import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
   RuntimeClient,
   RuntimeClientError,
 } from '../runtime/runtime-client'
-import { LinerLyrics } from './LinerLyrics'
+import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
 import { useSongEditionCore } from './use-song-edition-core'
 
 export interface SongEditionPageProps {
   catalogEdition: CatalogEdition
   runtimeClient: RuntimeClient
   homeHref: string
+  audioEngine?: AudioEngine
 }
 
 export function SongEditionPage({
   catalogEdition,
   runtimeClient,
   homeHref,
+  audioEngine,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
@@ -107,7 +110,11 @@ export function SongEditionPage({
 
       <div className="song-opening-rule" aria-hidden="true" />
       <p className="song-next-cue">Lyrics and timeline follow below.</p>
-      <LinerLyrics model={core.assembled} />
+      <SongEditionPlaybackSurface
+        model={core.assembled}
+        runtimeClient={runtimeClient}
+        audioEngine={audioEngine}
+      />
     </main>
   )
 }

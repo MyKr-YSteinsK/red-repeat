@@ -599,6 +599,34 @@
   background: var(--color-red);
 }
 
+.song-playback-surface {
+  margin-top: clamp(4rem, 10vw, 9rem);
+}
+
+.playback-context {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.playback-context span:last-child {
+  color: var(--color-red);
+}
+
+.song-playback-surface .liner-lyrics {
+  margin-top: 0;
+}
+
 .library-heading {
   max-width: 46rem;
 }
@@ -805,5 +833,11 @@
     margin-top: 1.2rem;
     padding-top: 1rem;
     border-top: 1px solid var(--color-line);
+  }
+
+  .playback-context {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
   }
 }
