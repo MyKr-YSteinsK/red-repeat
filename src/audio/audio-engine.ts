@@ -49,6 +49,15 @@ export interface AudioMediaAdapter {
 
 export type AudioEngineListener = (state: AudioEngineState) => void
 
+export interface FrameScheduler {
+  requestFrame(callback: () => void): unknown
+  cancelFrame(handle: unknown): void
+}
+
+export interface AudioEngineOptions {
+  frameScheduler?: FrameScheduler
+}
+
 export const MIN_PLAYBACK_RATE = 0.5
 export const MAX_PLAYBACK_RATE = 1.25
 export const PLAYBACK_RATE_STEP = 0.05
@@ -63,8 +72,10 @@ export class AudioEngine {
   }
 
   private readonly listeners = new Set<AudioEngineListener>()
+  private readonly frameScheduler: FrameScheduler
   private operationGeneration = 0
   private disposed = false
+  private rangeWatcherHandle: unknown
 
   private readonly onLoadedMetadata = (): void => {
     this.refreshDuration()
@@ -91,6 +102,7 @@ export class AudioEngine {
   }
 
   private readonly onPause = (): void => {
+    this.cancelRangeWatcher()
     if (this.state.status === 'playing') {
       this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
     }
@@ -98,8 +110,9 @@ export class AudioEngine {
 
   private readonly media: AudioMediaAdapter
 
-  constructor(media: AudioMediaAdapter) {
+  constructor(media: AudioMediaAdapter, options: AudioEngineOptions = {}) {
     this.media = media
+    this.frameScheduler = options.frameScheduler ?? createDefaultFrameScheduler()
     media.addEventListener('loadedmetadata', this.onLoadedMetadata)
     media.addEventListener('durationchange', this.onDurationChange)
     media.addEventListener('ended', this.onEnded)
@@ -130,7 +143,7 @@ export class AudioEngine {
       throw new Error('audio source URL must not be empty')
     }
 
-    this.beginOperation()
+    this.beginOperation(true)
     this.setState({
       status: 'loading',
       intent: 'continuous',
@@ -150,7 +163,7 @@ export class AudioEngine {
   playContinuous(): Promise<void> {
     this.assertUsable()
     this.assertSourceLoaded()
-    const generation = this.beginOperation()
+    const generation = this.beginOperation(true)
     this.setState({
       status: 'loading',
       intent: 'continuous',
@@ -180,8 +193,7 @@ export class AudioEngine {
 
   pause(): void {
     this.assertUsable()
-    this.beginOperation()
-    this.media.pause()
+    this.beginOperation(true)
     this.setState({
       status: this.state.sourceUrl ? 'paused' : 'idle',
       intent: 'continuous',
@@ -196,8 +208,7 @@ export class AudioEngine {
     this.assertUsable()
     this.assertSourceLoaded()
     assertNonNegativeFinite(timeMs, 'seek time')
-    const generation = this.beginOperation()
-    this.media.pause()
+    const generation = this.beginOperation(true)
     this.setState({
       status: 'seeking',
       intent: 'continuous',
@@ -213,6 +224,49 @@ export class AudioEngine {
         status: 'paused',
         currentTimeMs: this.readCurrentTimeMs(),
       })
+    }
+  }
+
+  async playRange(
+    range: AudioRange,
+    activeOccurrenceId?: string,
+  ): Promise<void> {
+    this.assertUsable()
+    this.assertSourceLoaded()
+    assertValidRange(range)
+    const generation = this.beginOperation(true)
+    this.setState({
+      status: 'seeking',
+      intent: 'range',
+      activeOccurrenceId,
+      activeRange: { ...range },
+      error: undefined,
+    })
+    this.media.currentTime = range.startMs / 1000
+    await Promise.resolve()
+
+    if (!this.isCurrentOperation(generation)) {
+      return
+    }
+
+    try {
+      await this.media.play()
+      if (!this.isCurrentOperation(generation)) {
+        return
+      }
+
+      this.setState({
+        status: 'playing',
+        currentTimeMs: this.readCurrentTimeMs(),
+      })
+      this.startRangeWatcher(generation, range)
+    } catch (error) {
+      if (this.isCurrentOperation(generation)) {
+        this.cancelRangeWatcher()
+        const normalizedError = toError(error)
+        this.setState({ status: 'error', error: normalizedError })
+      }
+      throw error
     }
   }
 
@@ -232,6 +286,7 @@ export class AudioEngine {
 
     this.disposed = true
     this.operationGeneration += 1
+    this.cancelRangeWatcher()
     this.media.pause()
     this.media.removeEventListener('loadedmetadata', this.onLoadedMetadata)
     this.media.removeEventListener('durationchange', this.onDurationChange)
@@ -241,8 +296,12 @@ export class AudioEngine {
     this.listeners.clear()
   }
 
-  private beginOperation(): number {
+  private beginOperation(pauseMedia = false): number {
     this.operationGeneration += 1
+    this.cancelRangeWatcher()
+    if (pauseMedia) {
+      this.media.pause()
+    }
     return this.operationGeneration
   }
 
@@ -292,10 +351,44 @@ export class AudioEngine {
     const nextState = this.getState()
     this.listeners.forEach((listener) => listener(nextState))
   }
+
+  private startRangeWatcher(generation: number, range: AudioRange): void {
+    this.cancelRangeWatcher()
+    this.rangeWatcherHandle = this.frameScheduler.requestFrame(() => {
+      this.rangeWatcherHandle = undefined
+
+      if (!this.isCurrentOperation(generation)) {
+        return
+      }
+
+      const currentTimeMs = this.readCurrentTimeMs()
+      if (currentTimeMs >= range.endMs) {
+        this.cancelRangeWatcher()
+        this.media.pause()
+        if (this.isCurrentOperation(generation)) {
+          this.setState({ status: 'paused', currentTimeMs })
+        }
+        return
+      }
+
+      this.setState({ currentTimeMs })
+      this.startRangeWatcher(generation, range)
+    })
+  }
+
+  private cancelRangeWatcher(): void {
+    if (this.rangeWatcherHandle !== undefined) {
+      this.frameScheduler.cancelFrame(this.rangeWatcherHandle)
+      this.rangeWatcherHandle = undefined
+    }
+  }
 }
 
-export function createAudioEngine(media: AudioMediaAdapter): AudioEngine {
-  return new AudioEngine(media)
+export function createAudioEngine(
+  media: AudioMediaAdapter,
+  options: AudioEngineOptions = {},
+): AudioEngine {
+  return new AudioEngine(media, options)
 }
 
 let globalAudioEngine: AudioEngine | undefined
@@ -393,6 +486,29 @@ function createBrowserAudioMediaAdapter(): AudioMediaAdapter {
 function assertNonNegativeFinite(value: number, label: string): void {
   if (!Number.isFinite(value) || value < 0) {
     throw new RangeError(`${label} must be a finite non-negative number`)
+  }
+}
+
+function assertValidRange(range: AudioRange): void {
+  assertNonNegativeFinite(range.startMs, 'range start')
+  assertNonNegativeFinite(range.endMs, 'range end')
+  if (range.startMs >= range.endMs) {
+    throw new RangeError('audio range must satisfy startMs < endMs')
+  }
+}
+
+function createDefaultFrameScheduler(): FrameScheduler {
+  if (typeof globalThis.requestAnimationFrame === 'function') {
+    return {
+      requestFrame: (callback) => globalThis.requestAnimationFrame(callback),
+      cancelFrame: (handle) =>
+        globalThis.cancelAnimationFrame(handle as number),
+    }
+  }
+
+  return {
+    requestFrame: (callback) => setTimeout(callback, 16),
+    cancelFrame: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
   }
 }
 

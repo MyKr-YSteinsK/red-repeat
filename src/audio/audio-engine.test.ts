@@ -3,7 +3,9 @@ import {
   createAudioEngine,
   getAudioEngine,
   resetAudioEngineForTests,
+  type AudioRange,
   type AudioMediaAdapter,
+  type FrameScheduler,
 } from './audio-engine'
 
 afterEach(() => {
@@ -98,6 +100,125 @@ describe('Audio Engine foundation', () => {
   it('does not depend on Web Audio APIs', () => {
     expect('AudioContext' in globalThis).toBe(false)
   })
+
+  it('plays a range from its start and stops at its end', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const range: AudioRange = { startMs: 100, endMs: 300 }
+    engine.loadSource('/audio.m4a')
+
+    await engine.playRange(range, 'o001')
+
+    expect(media.currentTime).toBe(0.1)
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'range',
+      activeOccurrenceId: 'o001',
+      activeRange: range,
+    })
+    expect(frames.pendingCount()).toBe(1)
+
+    media.currentTime = 0.299
+    frames.flush()
+    expect(engine.getState().status).toBe('playing')
+
+    media.currentTime = 0.3
+    frames.flush()
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      currentTimeMs: 300,
+    })
+    expect(frames.pendingCount()).toBe(0)
+    expect(media.pause).toHaveBeenCalled()
+  })
+
+  it('pause cancels the active range watcher', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playRange({ startMs: 100, endMs: 300 })
+
+    engine.pause()
+    media.currentTime = 0.3
+    frames.flush()
+
+    expect(engine.getState()).toMatchObject({ status: 'paused', intent: 'continuous' })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('a second range cancels the first watcher', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playRange({ startMs: 100, endMs: 300 }, 'o001')
+    const staleCallback = frames.latestCallback()
+
+    await engine.playRange({ startMs: 500, endMs: 700 }, 'o002')
+    staleCallback()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      activeOccurrenceId: 'o002',
+      activeRange: { startMs: 500, endMs: 700 },
+    })
+    expect(media.currentTime).toBe(0.5)
+    expect(frames.pendingCount()).toBe(1)
+  })
+
+  it('source replacement cancels range playback and stale RAF work', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/first.m4a')
+    await engine.playRange({ startMs: 100, endMs: 300 }, 'o001')
+    const staleCallback = frames.latestCallback()
+
+    engine.loadSource('/second.m4a')
+    staleCallback()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'loading',
+      sourceUrl: '/second.m4a',
+      intent: 'continuous',
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('a stale range RAF cannot pause newer continuous playback', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playRange({ startMs: 100, endMs: 300 })
+    const staleCallback = frames.latestCallback()
+
+    await engine.playContinuous()
+    media.currentTime = 0.2
+    staleCallback()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'continuous',
+    })
+  })
+
+  it('cleans the watcher when range play is rejected', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const rejection = new Error('play blocked')
+    media.play = vi.fn(() => Promise.reject(rejection))
+    engine.loadSource('/audio.m4a')
+
+    await expect(engine.playRange({ startMs: 100, endMs: 300 })).rejects.toBe(
+      rejection,
+    )
+    expect(engine.getState()).toMatchObject({ status: 'error', error: rejection })
+    expect(frames.pendingCount()).toBe(0)
+  })
 })
 
 function getAudioEngineWithFake() {
@@ -134,5 +255,39 @@ class FakeMedia implements AudioMediaAdapter {
 
   emit(event: string): void {
     this.listeners.get(event)?.forEach((listener) => listener())
+  }
+}
+
+class FakeFrameScheduler implements FrameScheduler {
+  private nextId = 0
+  private readonly callbacks = new Map<number, () => void>()
+
+  requestFrame(callback: () => void): number {
+    const id = this.nextId
+    this.nextId += 1
+    this.callbacks.set(id, callback)
+    return id
+  }
+
+  cancelFrame(handle: unknown): void {
+    this.callbacks.delete(handle as number)
+  }
+
+  flush(): void {
+    const pendingCallbacks = [...this.callbacks.values()]
+    this.callbacks.clear()
+    pendingCallbacks.forEach((callback) => callback())
+  }
+
+  latestCallback(): () => void {
+    const callback = [...this.callbacks.values()].at(-1)
+    if (!callback) {
+      throw new Error('expected a pending frame callback')
+    }
+    return callback
+  }
+
+  pendingCount(): number {
+    return this.callbacks.size
   }
 }
