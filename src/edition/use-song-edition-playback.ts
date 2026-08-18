@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   AudioEngine,
   AudioEngineState,
@@ -24,6 +24,11 @@ export interface SongEditionPlaybackSnapshot {
   selectOccurrence: (occurrence: AssembledOccurrence) => void
 }
 
+interface DerivedPlaybackState {
+  audioState: AudioEngineState
+  resolution: TimelineResolution
+}
+
 export function useSongEditionPlayback(
   model: AssembledSongEdition,
   runtimeClient: RuntimeClient,
@@ -32,9 +37,13 @@ export function useSongEditionPlayback(
   const engine =
     providedEngine ?? (typeof Audio === 'undefined' ? null : getAudioEngine())
   const sourceUrl = runtimeClient.resolveAsset(model.edition.audio.url)
-  const [audioState, setAudioState] = useState<AudioEngineState>(() =>
+  const initialDerivedState = derivePlaybackState(
     engine?.getState() ?? IDLE_AUDIO_STATE,
+    sourceUrl,
+    model.timeline,
   )
+  const derivedStateRef = useRef(initialDerivedState)
+  const [derivedState, setDerivedState] = useState(initialDerivedState)
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<
     string | undefined
   >()
@@ -43,8 +52,45 @@ export function useSongEditionPlayback(
     if (!engine) {
       return
     }
-    return engine.subscribe(setAudioState)
-  }, [engine])
+
+    return engine.subscribe((nextAudioState) => {
+      const nextDerivedState = derivePlaybackState(
+        nextAudioState,
+        sourceUrl,
+        model.timeline,
+      )
+      const previousState = derivedStateRef.current
+      if (!previousState) {
+        derivedStateRef.current = nextDerivedState
+        setDerivedState(nextDerivedState)
+        return
+      }
+
+      const audioStateChanged = !sameAudioControlState(
+        previousState.audioState,
+        nextDerivedState.audioState,
+      )
+      const resolutionChanged = !sameTimelineSemantics(
+        previousState.resolution,
+        nextDerivedState.resolution,
+      )
+
+      if (!audioStateChanged && !resolutionChanged) {
+        return
+      }
+
+      const nextState = {
+        audioState: audioStateChanged
+          ? nextDerivedState.audioState
+          : previousState.audioState,
+        resolution: resolutionChanged
+          ? nextDerivedState.resolution
+          : previousState.resolution,
+      }
+      derivedStateRef.current = nextState
+      setDerivedState(nextState)
+    })
+  }, [engine, model.timeline, sourceUrl])
 
   useEffect(() => {
     if (!engine) {
@@ -59,12 +105,6 @@ export function useSongEditionPlayback(
     }
   }, [engine, sourceUrl])
 
-  const effectiveAudioState =
-    audioState.sourceUrl === sourceUrl ? audioState : IDLE_AUDIO_STATE
-  const resolution = useMemo(
-    () => resolveTimeline(model.timeline, effectiveAudioState.currentTimeMs),
-    [effectiveAudioState.currentTimeMs, model.timeline],
-  )
   const selectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
@@ -82,9 +122,67 @@ export function useSongEditionPlayback(
 
   return {
     engine,
-    audioState: effectiveAudioState,
-    resolution,
+    audioState: derivedState.audioState,
+    resolution: derivedState.resolution,
     selectedOccurrenceId,
     selectOccurrence,
   }
+}
+
+function derivePlaybackState(
+  audioState: AudioEngineState,
+  sourceUrl: string,
+  timeline: AssembledSongEdition['timeline'],
+): DerivedPlaybackState {
+  const effectiveAudioState =
+    audioState.sourceUrl === sourceUrl ? audioState : IDLE_AUDIO_STATE
+
+  return {
+    audioState: effectiveAudioState,
+    resolution: resolveTimeline(
+      timeline,
+      effectiveAudioState.currentTimeMs,
+    ),
+  }
+}
+
+function sameAudioControlState(
+  left: AudioEngineState,
+  right: AudioEngineState,
+): boolean {
+  return (
+    left.status === right.status &&
+    left.intent === right.intent &&
+    left.playbackRate === right.playbackRate &&
+    left.sourceUrl === right.sourceUrl &&
+    left.durationMs === right.durationMs &&
+    left.activeOccurrenceId === right.activeOccurrenceId &&
+    sameRange(left.activeRange, right.activeRange) &&
+    left.error === right.error
+  )
+}
+
+function sameRange(
+  left: AudioEngineState['activeRange'],
+  right: AudioEngineState['activeRange'],
+): boolean {
+  return (
+    left?.startMs === right?.startMs && left?.endMs === right?.endMs
+  )
+}
+
+function sameTimelineSemantics(
+  left: TimelineResolution,
+  right: TimelineResolution,
+): boolean {
+  return (
+    left.currentSection?.id === right.currentSection?.id &&
+    left.primaryOccurrence?.id === right.primaryOccurrence?.id &&
+    left.previousOccurrence?.id === right.previousOccurrence?.id &&
+    left.nextOccurrence?.id === right.nextOccurrence?.id &&
+    left.activeOccurrences.length === right.activeOccurrences.length &&
+    left.activeOccurrences.every(
+      (occurrence, index) => occurrence.id === right.activeOccurrences[index]?.id,
+    )
+  )
 }

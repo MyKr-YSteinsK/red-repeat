@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
@@ -127,6 +127,43 @@ describe('Liner Song Edition opening', () => {
       '/red-repeat/',
     )
   })
+
+  it('owns page-level Focus state and hides secondary notes until exit', async () => {
+    const editionWithFeature: RuntimeEdition = {
+      ...edition,
+      features: [
+        {
+          id: 'note',
+          url: '/library-runtime/songs/first-light/note.md',
+        },
+      ],
+    }
+    render(<SongEditionPage {...propsFor(editionWithFeature)} />)
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).toBeInTheDocument()
+    const page = screen.getByRole('main')
+    expect(page).toHaveAttribute('data-focus-mode', 'false')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(page).toHaveAttribute('data-focus-mode', 'true')
+    expect(
+      screen.queryByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(page).toHaveAttribute('data-focus-mode', 'false')
+    expect(
+      screen.getByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).toBeInTheDocument()
+  })
 })
 
 function propsFor(
@@ -144,6 +181,7 @@ function propsFor(
     loadLyrics: vi.fn(async () => ({ segments: [] })),
     loadTimeline: vi.fn(async () => ({ sections: [], occurrences: [] })),
     loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
+    loadFeature: vi.fn(async () => '# Notes\n\nA small note.'),
     resolveAsset: vi.fn((logicalPath: string) => `/app${logicalPath}`),
   } as unknown as RuntimeClient
 

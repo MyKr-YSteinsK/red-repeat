@@ -70,6 +70,10 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
   }, [retryKey, runtimeClient])
 
   const homeHref = createLibraryHref(window.location)
+  const retryCatalog = (): void => {
+    setCatalogState({ status: 'loading' })
+    setRetryKey((value) => value + 1)
+  }
 
   return (
     <div className="app-shell">
@@ -78,10 +82,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
         <LibraryRoute
           state={catalogState}
           runtimeClient={runtimeClient}
-          onRetry={() => {
-            setCatalogState({ status: 'loading' })
-            setRetryKey((value) => value + 1)
-          }}
+          onRetry={retryCatalog}
         />
       ) : (
         <EditionRoute
@@ -89,6 +90,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
           state={catalogState}
           runtimeClient={runtimeClient}
           homeHref={homeHref}
+          onRetry={retryCatalog}
         />
       )}
       <SiteFooter editionCount={getEditionCount(catalogState)} />
@@ -271,13 +273,15 @@ function EditionRoute({
   state,
   runtimeClient,
   homeHref,
+  onRetry,
 }: {
   route: Extract<AppRoute, { kind: 'edition' }>
   state: CatalogState
   runtimeClient: RuntimeClient
   homeHref: string
+  onRetry: () => void
 }) {
-  if (state.status !== 'ready') {
+  if (state.status === 'loading') {
     return (
       <main className="library library-status" aria-labelledby="edition-title">
         <div className="library-heading">
@@ -288,6 +292,32 @@ function EditionRoute({
         <a className="text-link" href={homeHref}>
           Return to Library
         </a>
+      </main>
+    )
+  }
+
+  if (state.status === 'error') {
+    return (
+      <main className="library library-status" aria-labelledby="edition-title">
+        <div className="library-heading">
+          <p className="eyebrow">SONG EDITION / CATALOG ERROR</p>
+          <h1 id="edition-title">The archive is unavailable.</h1>
+          <p className="library-lede">
+            The selected edition could not be opened because the catalog could not be read.
+          </p>
+        </div>
+        <section className="error-state" role="alert" aria-label="Catalog error">
+          <p className="empty-kicker">RECOVERABLE ERROR</p>
+          <p>{describeRuntimeError(state.error)}</p>
+          <div className="song-status-actions">
+            <button type="button" className="text-button" onClick={onRetry}>
+              Retry catalog
+            </button>
+            <a className="text-link" href={homeHref}>
+              Return to Library
+            </a>
+          </div>
+        </section>
       </main>
     )
   }

@@ -138,6 +138,47 @@ describe('App Library consumer', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2)
   })
 
+  it('keeps a direct edition route recoverable when the catalog fails', async () => {
+    window.history.replaceState({}, '', '/#edition=first-light')
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      if (fetchImpl.mock.calls.length === 1) {
+        throw new TypeError('offline')
+      }
+      return responseForAppUrl(input)
+    })
+
+    render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
+
+    expect(
+      await screen.findByRole('alert', { name: 'Catalog error' }),
+    ).toHaveTextContent(
+      'Runtime network while reading /library-runtime/catalog.json.',
+    )
+    expect(
+      screen.queryByRole('heading', { name: 'Loading the edition.' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry catalog' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'First Light' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps a missing edition separate from a catalog error', async () => {
+    window.history.replaceState({}, '', '/#edition=missing')
+    render(<App runtimeClient={clientFor(emptyCatalog)} />)
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'This edition is not in the archive.',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('alert', { name: 'Catalog error' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders one or more catalog editions as archive entries', async () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
@@ -173,23 +214,25 @@ describe('App Library consumer', () => {
 
 function clientFor(payload: unknown): RuntimeClient {
   return createRuntimeClient({
-    fetchImpl: vi.fn(async (input) => {
-      const url = String(input)
-      if (url.endsWith('/catalog.json')) {
-        return jsonResponse(payload)
-      }
-      if (url.endsWith('/edition.a.json')) {
-        return jsonResponse(runtimeEditionForApp)
-      }
-      if (url.endsWith('/lyrics.a.json')) {
-        return jsonResponse({ segments: [] })
-      }
-      if (url.endsWith('/timeline.a.json')) {
-        return jsonResponse({ sections: [], occurrences: [] })
-      }
-      return jsonResponse({ recommendedTheme: 'liner' })
-    }),
+    fetchImpl: vi.fn(async (input) => responseForAppUrl(input, payload)),
   })
+}
+
+function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populatedCatalog): Response {
+  const url = String(input)
+  if (url.endsWith('/catalog.json')) {
+    return jsonResponse(catalog)
+  }
+  if (url.endsWith('/edition.a.json')) {
+    return jsonResponse(runtimeEditionForApp)
+  }
+  if (url.endsWith('/lyrics.a.json')) {
+    return jsonResponse({ segments: [] })
+  }
+  if (url.endsWith('/timeline.a.json')) {
+    return jsonResponse({ sections: [], occurrences: [] })
+  }
+  return jsonResponse({ recommendedTheme: 'liner' })
 }
 
 function jsonResponse(payload: unknown): Response {

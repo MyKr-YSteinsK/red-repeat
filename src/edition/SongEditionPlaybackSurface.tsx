@@ -10,16 +10,30 @@ export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
+  focusMode?: boolean
+  onToggleFocus?: () => void
+  readingVisible?: boolean
+  onToggleReading?: () => void
 }
 
 export function SongEditionPlaybackSurface({
   model,
   runtimeClient,
   audioEngine,
+  focusMode: controlledFocusMode,
+  onToggleFocus,
+  readingVisible: controlledReadingVisible,
+  onToggleReading,
 }: SongEditionPlaybackSurfaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [focusMode, setFocusMode] = useState(false)
-  const [readingVisible, setReadingVisible] = useState(false)
+  const [internalFocusMode, setInternalFocusMode] = useState(false)
+  const [internalReadingVisible, setInternalReadingVisible] = useState(false)
+  const focusMode = controlledFocusMode ?? internalFocusMode
+  const readingVisible = controlledReadingVisible ?? internalReadingVisible
+  const toggleFocus =
+    onToggleFocus ?? (() => setInternalFocusMode((mode) => !mode))
+  const toggleReading =
+    onToggleReading ?? (() => setInternalReadingVisible((visible) => !visible))
   const activeOccurrenceIds = new Set(
     playback.resolution.activeOccurrences.map(({ id }) => id),
   )
@@ -39,7 +53,7 @@ export function SongEditionPlaybackSurface({
           model={model}
           playback={playback}
           readingVisible={readingVisible}
-          onToggleReading={() => setReadingVisible((visible) => !visible)}
+          onToggleReading={toggleReading}
         />
       ) : (
         <>
@@ -57,7 +71,7 @@ export function SongEditionPlaybackSurface({
             primaryOccurrenceId={playback.resolution.primaryOccurrence?.id}
             selectedOccurrenceId={playback.selectedOccurrenceId}
             readingVisible={readingVisible}
-            onToggleReading={() => setReadingVisible((visible) => !visible)}
+            onToggleReading={toggleReading}
             onSelectOccurrence={playback.selectOccurrence}
           />
         </>
@@ -66,7 +80,7 @@ export function SongEditionPlaybackSurface({
         model={model}
         playback={playback}
         focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((mode) => !mode)}
+        onToggleFocus={toggleFocus}
       />
     </section>
   )

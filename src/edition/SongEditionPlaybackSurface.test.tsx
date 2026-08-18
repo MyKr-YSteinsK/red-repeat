@@ -16,6 +16,7 @@ import type {
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
+import { useSongEditionPlayback } from './use-song-edition-playback'
 
 afterEach(() => {
   cleanup()
@@ -358,6 +359,52 @@ describe('Song Edition timeline playback binding', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
     expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
   })
+
+  it('does not rerender the consumer for frames inside one semantic timeline state', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const renderSnapshots = vi.fn()
+
+    render(
+      <PlaybackRenderProbe
+        model={model}
+        engine={engine}
+        onRender={renderSnapshots}
+      />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+
+    await act(async () => {
+      media.currentTime = 0.15
+      frames.flush()
+    })
+    await waitFor(() => {
+      expect(document.querySelector('output')).toHaveAttribute(
+        'data-primary-occurrence',
+        'o001',
+      )
+    })
+    const afterSemanticChange = renderSnapshots.mock.calls.length
+
+    await act(async () => {
+      media.currentTime = 0.18
+      frames.flush()
+      media.currentTime = 0.2
+      frames.flush()
+    })
+    expect(
+      renderSnapshots.mock.calls.length,
+      JSON.stringify(renderSnapshots.mock.calls),
+    ).toBe(afterSemanticChange)
+
+    await act(async () => {
+      media.currentTime = 0.35
+      frames.flush()
+    })
+    expect(renderSnapshots.mock.calls.length).toBeGreaterThan(afterSemanticChange)
+  })
 })
 
 function renderSurface(
@@ -369,6 +416,42 @@ function renderSurface(
       runtimeClient={runtimeClientFor()}
       audioEngine={engine}
     />,
+  )
+}
+
+function PlaybackRenderProbe({
+  model: probeModel,
+  engine,
+  onRender,
+}: {
+  model: typeof model
+  engine: ReturnType<typeof createAudioEngine>
+  onRender: (snapshot: {
+    currentTimeMs: number
+    status: string
+    sectionId?: string
+    primaryId?: string
+    previousId?: string
+    nextId?: string
+  }) => void
+}) {
+  const playback = useSongEditionPlayback(
+    probeModel,
+    runtimeClientFor(),
+    engine,
+  )
+  onRender({
+    currentTimeMs: playback.audioState.currentTimeMs,
+    status: playback.audioState.status,
+    sectionId: playback.resolution.currentSection?.id,
+    primaryId: playback.resolution.primaryOccurrence?.id,
+    previousId: playback.resolution.previousOccurrence?.id,
+    nextId: playback.resolution.nextOccurrence?.id,
+  })
+  return (
+    <output data-primary-occurrence={playback.resolution.primaryOccurrence?.id}>
+      {playback.resolution.primaryOccurrence?.id ?? 'none'}
+    </output>
   )
 }
 

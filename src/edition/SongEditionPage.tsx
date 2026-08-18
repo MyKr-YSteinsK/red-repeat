@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -23,7 +23,39 @@ export function SongEditionPage({
   audioEngine,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
+  const [focusMode, setFocusMode] = useState(false)
+  const [readingVisible, setReadingVisible] = useState(false)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+
+      if (event.key === 'Escape') {
+        if (focusMode) {
+          event.preventDefault()
+          setFocusMode(false)
+        }
+        return
+      }
+
+      if (event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        setFocusMode((mode) => !mode)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [focusMode])
 
   if (state.status === 'loading') {
     return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
@@ -58,7 +90,11 @@ export function SongEditionPage({
   const { core } = state
   const song = core.edition.song
   return (
-    <main className="song-edition" aria-labelledby="song-title">
+    <main
+      className={`song-edition${focusMode ? ' is-focus-mode' : ''}`}
+      aria-labelledby="song-title"
+      data-focus-mode={focusMode}
+    >
       <div className="song-topline">
         <a className="text-link" href={homeHref}>
           Return to Library
@@ -115,12 +151,18 @@ export function SongEditionPage({
         model={core.assembled}
         runtimeClient={runtimeClient}
         audioEngine={audioEngine}
+        focusMode={focusMode}
+        onToggleFocus={() => setFocusMode((mode) => !mode)}
+        readingVisible={readingVisible}
+        onToggleReading={() => setReadingVisible((visible) => !visible)}
       />
-      <FeatureSection
-        model={core.assembled}
-        features={core.features}
-        featureErrors={core.featureErrors}
-      />
+      {!focusMode ? (
+        <FeatureSection
+          model={core.assembled}
+          features={core.features}
+          featureErrors={core.featureErrors}
+        />
+      ) : null}
     </main>
   )
 }
@@ -149,4 +191,15 @@ function describeEditionError(error: unknown): string {
     return `Runtime ${error.kind} while reading ${error.logicalPath}.`
   }
   return 'The edition resources returned an unexpected error.'
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false
+  }
+
+  return (
+    target.isContentEditable ||
+    ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+  )
 }
