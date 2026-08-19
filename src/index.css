@@ -26,6 +26,7 @@
 html {
   min-width: 320px;
   background: var(--color-paper);
+  overflow-x: hidden;
 }
 
 body {
@@ -33,6 +34,7 @@ body {
   min-height: 100svh;
   margin: 0;
   background: var(--color-paper);
+  overflow-x: hidden;
 }
 
 button,

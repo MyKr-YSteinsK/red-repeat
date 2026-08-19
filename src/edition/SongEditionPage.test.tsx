@@ -254,6 +254,7 @@ describe('Liner Song Edition opening', () => {
 
     expect(page).toHaveAttribute('data-mode', 'focus')
     expect(page).toHaveAttribute('data-theme', 'cinema')
+    expect(screen.getByText('EDITION / cinema')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Use Cinema theme' }),
     ).toHaveAttribute('aria-pressed', 'true')

@@ -213,7 +213,7 @@ export function SongEditionPage({
         </div>
 
         <div className="song-opening-copy">
-          <p className="eyebrow">EDITION / {core.visual.recommendedTheme}</p>
+          <p className="eyebrow">EDITION / {theme}</p>
           <h1 id="song-title">{song.title}</h1>
           <p className="song-artist">{song.artist}</p>
           {song.album || song.year !== undefined ? (
