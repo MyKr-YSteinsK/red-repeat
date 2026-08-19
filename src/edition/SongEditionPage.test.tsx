@@ -24,9 +24,11 @@ import {
   SongEditionPage,
   type SongEditionPageProps,
 } from './SongEditionPage'
+import { themePreferenceKey } from '../theme/theme-preference'
 
 afterEach(() => {
   cleanup()
+  window.localStorage.clear()
 })
 
 const catalogEdition: CatalogEdition = {
@@ -222,6 +224,40 @@ describe('Liner Song Edition opening', () => {
     expect(page).toHaveAttribute('data-mode', 'focus')
     fireEvent.keyDown(window, { key: 'f' })
     expect(page).toHaveAttribute('data-mode', 'liner')
+  })
+
+  it('uses persisted Theme over the recommendation and preserves page Mode', async () => {
+    window.localStorage.setItem(themePreferenceKey('first-light'), 'nocturne')
+    const cinemaCatalogEdition = {
+      ...catalogEdition,
+      recommendedTheme: 'cinema' as const,
+    }
+    render(
+      <SongEditionPage
+        {...propsFor(edition, undefined, cinemaCatalogEdition, {
+          visual: { recommendedTheme: 'cinema' },
+        })}
+      />,
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'First Light' }),
+    ).toBeInTheDocument()
+    const page = screen.getByRole('main')
+    expect(
+      screen.getByRole('button', { name: 'Use Nocturne theme' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Use Cinema theme' }))
+
+    expect(page).toHaveAttribute('data-mode', 'focus')
+    expect(
+      screen.getByRole('button', { name: 'Use Cinema theme' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(window.localStorage.getItem(themePreferenceKey('first-light'))).toBe(
+      'cinema',
+    )
   })
 
   it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {

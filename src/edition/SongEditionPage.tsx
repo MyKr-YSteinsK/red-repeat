@@ -7,6 +7,12 @@ import {
 } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
 import { FeatureSection } from './FeatureMarkdown'
+import { ThemeSwitcher } from '../theme/ThemeSwitcher'
+import {
+  resolveThemePreference,
+  writeThemePreference,
+  type EditionTheme,
+} from '../theme/theme-preference'
 import type {
   SongEditionKeyboardActions,
   SongEditionKeyboardRegistration,
@@ -30,8 +36,25 @@ export function SongEditionPage({
   const [retryKey, setRetryKey] = useState(0)
   const [mode, setMode] = useState<SongEditionMode>('liner')
   const [readingVisible, setReadingVisible] = useState(false)
+  const [themeSelection, setThemeSelection] = useState<
+    { songId: string; theme: EditionTheme } | undefined
+  >()
   const keyboardActions = useRef<SongEditionKeyboardActions | null>(null)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
+  const currentSongId =
+    state.status === 'ready' ? state.core.edition.song.songId : undefined
+
+  const selectTheme = useCallback(
+    (nextTheme: EditionTheme): void => {
+      if (!currentSongId) {
+        return
+      }
+
+      setThemeSelection({ songId: currentSongId, theme: nextTheme })
+      writeThemePreference(currentSongId, nextTheme)
+    },
+    [currentSongId],
+  )
 
   const registerKeyboardActions = useCallback<SongEditionKeyboardRegistration>(
     (actions) => {
@@ -142,6 +165,10 @@ export function SongEditionPage({
 
   const { core } = state
   const song = core.edition.song
+  const theme =
+    themeSelection?.songId === song.songId
+      ? themeSelection.theme
+      : resolveThemePreference(song.songId, core.visual.recommendedTheme)
   return (
     <main
       className={`song-edition${mode === 'focus' ? ' is-focus-mode' : ''}${
@@ -156,6 +183,7 @@ export function SongEditionPage({
           Return to Library
         </a>
         <p className="edition-signal">LINER / SONG EDITION</p>
+        <ThemeSwitcher theme={theme} onChange={selectTheme} />
       </div>
 
       <section className="song-opening">
