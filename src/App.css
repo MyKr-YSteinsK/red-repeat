@@ -292,6 +292,7 @@
 }
 
 .theme-switcher-option {
+  min-height: 2.5rem;
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--color-line);
   background: transparent;
@@ -1743,8 +1744,20 @@
 
   .song-topline {
     align-items: flex-start;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 1rem;
+  }
+
+  .theme-switcher {
+    width: 100%;
+    margin-left: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .theme-switcher-options {
+    max-width: 100%;
   }
 
   .song-opening {
@@ -1758,6 +1771,55 @@
 
   .song-opening-copy h1 {
     font-size: clamp(3.5rem, 17vw, 6rem);
+  }
+
+  .song-edition[data-theme='cinema'] .song-opening,
+  .song-edition[data-theme='nocturne'] .song-opening {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .song-edition[data-theme='cinema'] .song-artwork,
+  .song-edition[data-theme='nocturne'] .song-artwork {
+    width: 100%;
+    max-width: none;
+  }
+
+  .song-edition[data-theme='cinema'] .song-opening-copy,
+  .song-edition[data-theme='nocturne'] .song-opening-copy {
+    padding-block: 0;
+  }
+
+  .song-edition[data-theme='cinema'] .song-opening-copy h1 {
+    font-size: clamp(3.5rem, 17vw, 6rem);
+  }
+
+  .song-edition[data-theme='nocturne'] .song-opening-copy h1 {
+    font-size: clamp(3.2rem, 15vw, 5.5rem);
+  }
+
+  .song-edition[data-theme='cinema'][data-composition-variant='center']
+    .song-opening {
+    grid-template-columns: 1fr;
+  }
+
+  .song-edition[data-theme='cinema'][data-composition-variant='center']
+    .song-opening-copy {
+    width: 100%;
+  }
+
+  .song-edition[data-theme='cinema'][data-composition-variant='offset-right']
+    .song-artwork {
+    transform: none;
+  }
+
+  .song-edition[data-theme='cinema'] .song-cover-large,
+  .song-edition[data-theme='nocturne'] .song-cover-large {
+    max-height: none;
+  }
+
+  .song-edition[data-theme='cinema'] .song-opening-rule {
+    width: min(100%, 10rem);
   }
 
   .song-cover-large {
@@ -1827,6 +1889,7 @@
   .immersive-lyrics {
     min-height: 68svh;
     padding-top: 2.5rem;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .immersive-original {
@@ -1836,6 +1899,18 @@
 
   .immersive-lyric-flow {
     gap: 2.25rem;
+  }
+
+  .song-edition[data-theme='nocturne'] .focus-heading h2 {
+    font-size: clamp(3rem, 16vw, 5.5rem);
+  }
+
+  .song-edition[data-theme='nocturne'] .immersive-original {
+    font-size: clamp(2rem, 12vw, 4.5rem);
+  }
+
+  .song-edition[data-theme='nocturne'] .playback-dock {
+    padding-bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px));
   }
 
   .dock-practice-controls {
@@ -1858,6 +1933,11 @@
   }
 
   .playback-dock.is-controls-hidden {
+    transform: none;
+  }
+
+  .song-edition[data-theme='cinema'] .song-artwork,
+  .song-edition[data-theme='cinema'] .immersive-occurrence.is-primary {
     transform: none;
   }
 }
