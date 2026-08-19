@@ -262,6 +262,42 @@ describe('Liner Song Edition opening', () => {
     )
   })
 
+  it('keeps Feature behavior owned by Mode when Theme is Cinema', async () => {
+    const editionWithFeature: RuntimeEdition = {
+      ...edition,
+      features: [
+        {
+          id: 'note',
+          url: '/library-runtime/songs/first-light/note.md',
+        },
+      ],
+    }
+    const cinemaCatalogEdition = {
+      ...catalogEdition,
+      recommendedTheme: 'cinema' as const,
+    }
+    render(
+      <SongEditionPage
+        {...propsFor(editionWithFeature, undefined, cinemaCatalogEdition, {
+          visual: { recommendedTheme: 'cinema' },
+        })}
+      />,
+    )
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'cinema')
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(
+      screen.queryByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
   it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {
     try {
       const media = new FakeMedia()
