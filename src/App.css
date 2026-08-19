@@ -627,6 +627,128 @@
   margin-top: 0;
 }
 
+.immersive-lyrics {
+  min-height: min(72svh, 52rem);
+  padding: clamp(3rem, 9vw, 8rem) 0 clamp(2rem, 6vw, 5rem);
+}
+
+.immersive-heading {
+  max-width: 42rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.immersive-heading h2 {
+  margin: 0.8rem 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 5vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+}
+
+.immersive-section-cue,
+.immersive-current-cue,
+.immersive-return-current {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.immersive-section-cue {
+  margin: 1.2rem 0 0;
+  color: var(--color-red);
+}
+
+.immersive-current-cue {
+  min-height: 1.5rem;
+  margin-top: 1rem;
+}
+
+.immersive-current-cue p {
+  margin: 0;
+}
+
+.immersive-empty-cue {
+  color: var(--color-muted);
+}
+
+.immersive-return-current {
+  min-height: 2.5rem;
+  margin-top: 1.25rem;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.immersive-return-current:hover,
+.immersive-return-current:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.immersive-return-current:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.immersive-lyric-flow {
+  display: grid;
+  max-width: 54rem;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  margin: clamp(2.5rem, 7vw, 6rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.immersive-occurrence {
+  padding-left: 1rem;
+  border-left: 1px solid transparent;
+  opacity: 0.22;
+}
+
+.immersive-occurrence.is-context {
+  opacity: 0.48;
+}
+
+.immersive-occurrence.is-active {
+  border-left-color: color-mix(in srgb, var(--color-red) 42%, var(--color-line));
+  opacity: 0.68;
+}
+
+.immersive-occurrence.is-primary {
+  border-left-color: var(--color-red);
+  opacity: 1;
+}
+
+.immersive-original,
+.immersive-translation {
+  margin: 0;
+}
+
+.immersive-original {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4.5vw, 4.6rem);
+  letter-spacing: -0.065em;
+  line-height: 0.95;
+}
+
+.immersive-translation {
+  max-width: 38rem;
+  margin-top: 0.65rem;
+  color: var(--color-muted);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  line-height: 1.5;
+}
+
 .playback-dock {
   position: sticky;
   bottom: 0;
@@ -636,9 +758,22 @@
   align-items: center;
   gap: 1rem;
   margin-top: clamp(3rem, 7vw, 6rem);
-  padding: 0.8rem 0;
+  padding: 0.8rem 0 calc(0.8rem + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--color-ink);
   background: color-mix(in srgb, var(--color-paper) 94%, transparent);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.playback-dock.is-controls-hidden {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(0.35rem);
+}
+
+.playback-dock.is-controls-hidden:focus-within {
+  pointer-events: auto;
+  opacity: 1;
+  transform: none;
 }
 
 .dock-main-controls,
@@ -653,6 +788,50 @@
 .dock-main-controls,
 .dock-loop-controls {
   gap: 0.25rem;
+}
+
+.dock-practice-controls {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.dock-practice-control {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dock-practice-control:hover,
+.dock-practice-control:focus-visible,
+.dock-practice-control[aria-pressed='true'] {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.dock-practice-control:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dock-practice-status {
+  margin: 0;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .dock-control,
@@ -1167,7 +1346,40 @@
     font-size: clamp(3.4rem, 18vw, 6rem);
   }
 
+  .immersive-lyrics {
+    min-height: 68svh;
+    padding-top: 2.5rem;
+  }
+
+  .immersive-original {
+    font-size: clamp(2.2rem, 13vw, 4.8rem);
+    line-height: 0.92;
+  }
+
+  .immersive-lyric-flow {
+    gap: 2.25rem;
+  }
+
+  .dock-practice-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dock-practice-control {
+    width: 100%;
+  }
+
   .feature-section {
     margin-top: 5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playback-dock {
+    transition: opacity 0ms;
+  }
+
+  .playback-dock.is-controls-hidden {
+    transform: none;
   }
 }
