@@ -34,3 +34,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify PWA artifact
+        run: npm run pwa:inspect
