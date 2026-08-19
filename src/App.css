@@ -738,6 +738,83 @@
   color: var(--edition-ink);
 }
 
+.song-edition[data-theme='nocturne'] .song-playback-surface {
+  margin-top: clamp(3rem, 8vw, 7rem);
+}
+
+.song-edition[data-theme='nocturne'] .focus-panel {
+  min-height: min(64svh, 42rem);
+  padding-block: clamp(3.5rem, 10vw, 9rem);
+}
+
+.song-edition[data-theme='nocturne'] .focus-heading {
+  margin-top: 1rem;
+}
+
+.song-edition[data-theme='nocturne'] .focus-heading h2 {
+  max-width: 44rem;
+  font-size: clamp(3rem, 8vw, 7rem);
+  letter-spacing: -0.075em;
+}
+
+.song-edition[data-theme='nocturne'] .focus-translation {
+  max-width: 32rem;
+  margin-top: 1.25rem;
+  color: var(--edition-muted);
+}
+
+.song-edition[data-theme='nocturne'] .focus-cues {
+  max-width: 42rem;
+  margin-top: clamp(2rem, 6vw, 5rem);
+  border-top-color: var(--edition-line);
+}
+
+.song-edition[data-theme='nocturne'] .immersive-lyrics {
+  min-height: min(74svh, 54rem);
+  padding-block: clamp(3rem, 10vw, 9rem) clamp(2rem, 6vw, 5rem);
+}
+
+.song-edition[data-theme='nocturne'] .immersive-heading {
+  max-width: 34rem;
+}
+
+.song-edition[data-theme='nocturne'] .immersive-heading h2 {
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+}
+
+.song-edition[data-theme='nocturne'] .immersive-lyric-flow {
+  max-width: min(48rem, var(--edition-max-reading));
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+}
+
+.song-edition[data-theme='nocturne'] .immersive-occurrence {
+  opacity: 0.16;
+}
+
+.song-edition[data-theme='nocturne'] .immersive-occurrence.is-context {
+  opacity: 0.34;
+}
+
+.song-edition[data-theme='nocturne'] .immersive-occurrence.is-active {
+  opacity: 0.62;
+}
+
+.song-edition[data-theme='nocturne'] .immersive-occurrence.is-primary {
+  opacity: 1;
+}
+
+.song-edition[data-theme='nocturne'] .immersive-original {
+  font-size: clamp(1.8rem, 4vw, 4rem);
+}
+
+.song-edition[data-theme='nocturne'] .playback-dock {
+  border-top-color: var(--edition-line);
+}
+
+.song-edition[data-theme='nocturne'] .playback-dock.is-controls-hidden {
+  opacity: 0;
+}
+
 .song-next-cue {
   margin: 1rem 0 0;
 }

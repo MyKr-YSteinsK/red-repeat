@@ -254,6 +254,63 @@ describe('Song Edition timeline playback binding', () => {
     )
   })
 
+  it('keeps Nocturne Focus practice and Immersive playback on the same engine', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const nocturneModel = {
+      ...model,
+      visual: { recommendedTheme: 'nocturne' as const },
+    }
+    render(
+      <SongEditionPlaybackSurface
+        model={nocturneModel}
+        runtimeClient={runtimeClientFor()}
+        audioEngine={engine}
+        theme="nocturne"
+      />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await act(async () => {
+      await engine.playContinuous()
+      media.currentTime = 0.65
+      frames.flush()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    await act(async () => {
+      await flushMicrotasks()
+    })
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Shadow' })).toBeInTheDocument()
+
+    const stateBeforeImmersive = engine.getState()
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-theme',
+      'nocturne',
+    )
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        sourceUrl: stateBeforeImmersive.sourceUrl,
+        currentTimeMs: stateBeforeImmersive.currentTimeMs,
+        status: 'playing',
+      })
+    })
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Play line Repeat me' })[1])
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        currentTimeMs: 450,
+        activeOccurrenceId: 'o002',
+      })
+    })
+  })
+
   it('switches source and clears the previous command context', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()
