@@ -83,6 +83,7 @@ export class AudioEngine {
   private playbackObservationHandle: unknown
   private pendingInternalPauseEvents = 0
   private pendingBoundedCompletion?: {
+    generation: number
     resolve: (completion: BoundedPlaybackCompletion) => void
   }
 
@@ -103,8 +104,28 @@ export class AudioEngine {
       return
     }
 
+    const currentTimeMs = this.readCurrentTimeMs()
+    const activeRange = this.state.activeRange
+    const boundedCompletion = this.pendingBoundedCompletion
+    const boundedRangeReachedEnd =
+      this.state.intent === 'range' &&
+      activeRange !== undefined &&
+      boundedCompletion?.generation === this.operationGeneration &&
+      currentTimeMs >= activeRange.endMs
+
+    if (
+      this.state.intent === 'range' &&
+      activeRange !== undefined &&
+      currentTimeMs < activeRange.endMs
+    ) {
+      return
+    }
+
     this.cancelPlaybackObservation()
-    this.setState({ status: 'paused', currentTimeMs: this.readCurrentTimeMs() })
+    this.setState({ status: 'paused', currentTimeMs })
+    if (boundedRangeReachedEnd) {
+      this.settleBoundedCompletion({ status: 'completed' })
+    }
   }
 
   private readonly onError = (): void => {
@@ -314,6 +335,8 @@ export class AudioEngine {
     assertValidRange(range)
     const generation = this.beginOperation(true)
     this.pendingBoundedCompletion = boundedCompletion
+      ? { generation, resolve: boundedCompletion.resolve }
+      : undefined
     this.setState({
       status: 'seeking',
       intent,

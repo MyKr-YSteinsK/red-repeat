@@ -128,6 +128,8 @@ export function ImmersiveLyrics({
         {model.chronologicalOccurrences.map(({ occurrence, segment }) => {
           const isActive = activeOccurrenceIds.has(occurrence.id)
           const isPrimary = primaryOccurrenceId === occurrence.id
+          const isSelected =
+            playback.selectedOccurrenceId === occurrence.id
           const isContext =
             previousOccurrenceId === occurrence.id ||
             nextOccurrenceId === occurrence.id
@@ -136,6 +138,7 @@ export function ImmersiveLyrics({
             isActive ? 'is-active' : '',
             isPrimary ? 'is-primary' : '',
             isActive && !isPrimary ? 'is-secondary-active' : '',
+            isSelected ? 'is-selected' : '',
             isContext ? 'is-context' : '',
           ]
             .filter(Boolean)
@@ -148,7 +151,14 @@ export function ImmersiveLyrics({
               data-occurrence-id={occurrence.id}
               aria-current={isPrimary ? 'true' : undefined}
             >
-              <p className="immersive-original">{segment.lyrics}</p>
+              <button
+                className="immersive-original"
+                type="button"
+                aria-label={`Play line ${segment.lyrics}`}
+                onClick={() => playback.selectOccurrence(model.occurrencesById[occurrence.id])}
+              >
+                {segment.lyrics}
+              </button>
               <p className="immersive-translation">{segment.translation}</p>
             </li>
           )

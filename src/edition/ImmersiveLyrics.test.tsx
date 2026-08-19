@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
@@ -173,6 +173,23 @@ describe('Immersive Lyrics renderer', () => {
     expect(document.querySelectorAll('.immersive-word')).toHaveLength(0)
   })
 
+  it('plays the clicked Occurrence without making translation interactive', () => {
+    const selectOccurrence = vi.fn()
+    render(createImmersiveElement(650, selectOccurrence))
+
+    const originals = screen.getAllByRole('button', {
+      name: 'Play line Repeat me',
+    })
+    expect(originals[1]).toHaveAttribute('type', 'button')
+    fireEvent.click(originals[1])
+
+    expect(selectOccurrence).toHaveBeenCalledTimes(1)
+    expect(selectOccurrence).toHaveBeenCalledWith(model.occurrencesById.o002)
+    fireEvent.click(screen.getAllByText('再来一次')[0])
+    expect(selectOccurrence).toHaveBeenCalledTimes(1)
+    expect(screen.getByLabelText('Immersive lyrics')).toBeInTheDocument()
+  })
+
   it('scrolls only when the primary Occurrence changes and honors reduced motion', async () => {
     const scrollIntoView = vi.fn()
     Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
@@ -205,7 +222,10 @@ function renderImmersiveAt(currentTimeMs: number) {
   return render(createImmersiveElement(currentTimeMs))
 }
 
-function createImmersiveElement(currentTimeMs: number) {
+function createImmersiveElement(
+  currentTimeMs: number,
+  selectOccurrence = vi.fn(),
+) {
   const resolution = resolveTimeline(model.timeline, currentTimeMs)
   const playback: SongEditionPlaybackSnapshot = {
     engine: null,
@@ -216,7 +236,8 @@ function createImmersiveElement(currentTimeMs: number) {
       currentTimeMs,
     },
     resolution,
-    selectOccurrence: vi.fn(),
+    selectedOccurrenceId: undefined,
+    selectOccurrence,
   }
   return <ImmersiveLyrics model={model} playback={playback} />
 }

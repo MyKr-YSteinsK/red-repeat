@@ -160,6 +160,123 @@ describe('Audio Engine foundation', () => {
     })
   })
 
+  it('resolves bounded playback when native ended arrives before RAF', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete(
+      { startMs: 100, endMs: 300 },
+      'o001',
+    )
+    await flushMicrotasks()
+
+    media.currentTime = 0.3
+    media.emit('ended')
+
+    await expect(completion).resolves.toEqual({ status: 'completed' })
+    expect(frames.pendingCount()).toBe(0)
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      currentTimeMs: 300,
+      activeOccurrenceId: 'o001',
+    })
+  })
+
+  it('ignores a stale ended event after a newer bounded range starts', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const firstCompletion = engine.playRangeUntilComplete(
+      { startMs: 100, endMs: 300 },
+      'o001',
+    )
+    await flushMicrotasks()
+
+    const secondCompletion = engine.playRangeUntilComplete(
+      { startMs: 500, endMs: 700 },
+      'o002',
+    )
+    await expect(firstCompletion).resolves.toEqual({ status: 'cancelled' })
+    await flushMicrotasks()
+
+    media.currentTime = 0.5
+    media.emit('ended')
+    expect(frames.pendingCount()).toBe(1)
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      activeOccurrenceId: 'o002',
+      currentTimeMs: 500,
+    })
+
+    media.currentTime = 0.7
+    frames.flush()
+    await expect(secondCompletion).resolves.toEqual({ status: 'completed' })
+  })
+
+  it('does not turn a cancelled bounded completion back into completed on ended', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete({
+      startMs: 100,
+      endMs: 300,
+    })
+    await flushMicrotasks()
+    engine.pause()
+    media.currentTime = 0.3
+    media.emit('ended')
+
+    await expect(completion).resolves.toEqual({ status: 'cancelled' })
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+    })
+  })
+
+  it('keeps continuous ended separate from bounded completion', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playContinuous()
+
+    media.currentTime = 2
+    media.emit('ended')
+
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+      currentTimeMs: 2000,
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('restarts a loop when native ended arrives', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playLoop({ startMs: 100, endMs: 300 })
+
+    media.currentTime = 0.3
+    media.emit('ended')
+    await flushMicrotasks()
+
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'loop',
+      currentTimeMs: 100,
+      activeRange: { startMs: 100, endMs: 300 },
+    })
+    expect(frames.pendingCount()).toBe(1)
+  })
+
   it('resolves cancellation when a bounded playback is paused', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

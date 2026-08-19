@@ -142,6 +142,37 @@ describe('Song Edition timeline playback binding', () => {
     })
   })
 
+  it('keeps Immersive lyric clicks occurrence-specific and mode-stable', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    const originalButtons = screen.getAllByRole('button', {
+      name: 'Play line Repeat me',
+    })
+    fireEvent.click(originalButtons[1])
+
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        currentTimeMs: 450,
+        activeOccurrenceId: 'o002',
+      })
+    })
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'immersive',
+    )
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-selected-occurrence-id',
+      'o002',
+    )
+
+    fireEvent.click(screen.getAllByText('再来一次')[0])
+    expect(engine.getState().activeOccurrenceId).toBe('o002')
+  })
+
   it('uses Resolver state for overlap, instrumental Section, and gap', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()
