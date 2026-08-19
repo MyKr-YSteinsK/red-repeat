@@ -347,6 +347,32 @@ describe('Liner Song Edition opening', () => {
     expect(page).toHaveAttribute('data-composition-variant', firstVariant)
   })
 
+  it.each([
+    ['cinema', 'Cinema'],
+    ['nocturne', 'Nocturne'],
+  ] as const)('uses the active %s Theme in opening metadata', async (theme, label) => {
+    const catalogForTheme = {
+      ...catalogEdition,
+      recommendedTheme: theme,
+    }
+
+    render(
+      <SongEditionPage
+        {...propsFor(edition, undefined, catalogForTheme, {
+          visual: { recommendedTheme: theme },
+        })}
+      />,
+    )
+
+    await screen.findByRole('heading', { name: 'First Light' })
+    const page = screen.getByRole('main')
+    const metadata = page.querySelector('.edition-metadata')
+
+    expect(metadata).toHaveTextContent(`Theme${label}`)
+    expect(metadata).not.toHaveTextContent('Reading layer')
+    expect(metadata).not.toHaveTextContent('Liner')
+  })
+
   it('keeps Nocturne quiet without removing complete normal reading content', async () => {
     const nocturneCatalogEdition = {
       ...catalogEdition,

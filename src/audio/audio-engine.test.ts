@@ -184,6 +184,31 @@ describe('Audio Engine foundation', () => {
     })
   })
 
+  it('resolves bounded playback when native ended arrives slightly before the range end', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete(
+      { startMs: 100, endMs: 1000 },
+      'o001',
+    )
+    await flushMicrotasks()
+
+    media.duration = 0.95
+    media.currentTime = 0.95
+    media.emit('ended')
+
+    await expect(completion).resolves.toEqual({ status: 'completed' })
+    expect(frames.pendingCount()).toBe(0)
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      currentTimeMs: 950,
+      activeOccurrenceId: 'o001',
+    })
+  })
+
   it('ignores a stale ended event after a newer bounded range starts', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

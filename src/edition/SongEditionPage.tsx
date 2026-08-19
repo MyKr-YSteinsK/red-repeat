@@ -229,8 +229,8 @@ export function SongEditionPage({
               <dd>{catalogEdition.songId}</dd>
             </div>
             <div>
-              <dt>Reading layer</dt>
-              <dd>Liner</dd>
+              <dt>Theme</dt>
+              <dd>{formatThemeLabel(theme)}</dd>
             </div>
           </dl>
           <p className="song-opening-note">
@@ -298,4 +298,8 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target.isContentEditable ||
     ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
   )
+}
+
+function formatThemeLabel(theme: EditionTheme): string {
+  return `${theme.slice(0, 1).toUpperCase()}${theme.slice(1)}`
 }

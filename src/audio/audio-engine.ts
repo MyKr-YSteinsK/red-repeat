@@ -108,10 +108,21 @@ export class AudioEngine {
     const activeRange = this.state.activeRange
     const boundedCompletion = this.pendingBoundedCompletion
     const boundedRangeReachedEnd =
+      activeRange !== undefined && currentTimeMs >= activeRange.endMs
+    const naturalMediaEndReached = this.hasReachedNaturalMediaEnd(currentTimeMs)
+    const currentBoundedRangeEnded =
       this.state.intent === 'range' &&
       activeRange !== undefined &&
       boundedCompletion?.generation === this.operationGeneration &&
-      currentTimeMs >= activeRange.endMs
+      boundedCompletion !== undefined &&
+      (boundedRangeReachedEnd || naturalMediaEndReached)
+
+    if (currentBoundedRangeEnded) {
+      this.cancelPlaybackObservation()
+      this.setState({ status: 'paused', currentTimeMs })
+      this.settleBoundedCompletion({ status: 'completed' })
+      return
+    }
 
     if (
       this.state.intent === 'range' &&
@@ -123,9 +134,6 @@ export class AudioEngine {
 
     this.cancelPlaybackObservation()
     this.setState({ status: 'paused', currentTimeMs })
-    if (boundedRangeReachedEnd) {
-      this.settleBoundedCompletion({ status: 'completed' })
-    }
   }
 
   private readonly onError = (): void => {
@@ -426,6 +434,14 @@ export class AudioEngine {
 
   private readCurrentTimeMs(): number {
     return Math.max(0, Math.round(this.media.currentTime * 1000))
+  }
+
+  private hasReachedNaturalMediaEnd(currentTimeMs: number): boolean {
+    if (!Number.isFinite(this.media.duration)) {
+      return false
+    }
+
+    return currentTimeMs >= Math.max(0, Math.round(this.media.duration * 1000))
   }
 
   private applyPlaybackRate(): void {
