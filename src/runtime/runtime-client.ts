@@ -70,7 +70,9 @@ export class RuntimeClient {
 
   constructor(options: RuntimeClientOptions = {}) {
     this.appBaseUrl = options.appBaseUrl ?? import.meta.env.BASE_URL
-    this.fetchImpl = options.fetchImpl ?? fetch
+    this.fetchImpl =
+      options.fetchImpl ??
+      ((input, init) => globalThis.fetch(input, init))
   }
 
   loadCatalog(options: RuntimeLoadOptions = {}): Promise<Catalog> {

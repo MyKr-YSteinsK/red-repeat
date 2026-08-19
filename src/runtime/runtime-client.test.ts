@@ -108,6 +108,32 @@ describe('Runtime Client', () => {
     })
   })
 
+  it('binds native global fetch to globalThis when no implementation is injected', async () => {
+    const originalFetch = globalThis.fetch
+    const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = []
+    const receiverSensitiveFetch = function (
+      this: typeof globalThis,
+      input: RequestInfo | URL,
+      init?: RequestInit,
+    ): Promise<Response> {
+      expect(this).toBe(globalThis)
+      calls.push({ input, init })
+      return Promise.resolve(jsonResponse(catalog))
+    }
+
+    globalThis.fetch = receiverSensitiveFetch as typeof fetch
+    try {
+      const client = createRuntimeClient({ appBaseUrl: '/' })
+
+      await expect(client.loadCatalog()).resolves.toEqual(catalog)
+      expect(calls).toHaveLength(1)
+      expect(calls[0]?.input).toBe('/library-runtime/catalog.json')
+      expect(calls[0]?.init?.signal).toBeInstanceOf(AbortSignal)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
   it('loads edition resources through a nested base path', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
