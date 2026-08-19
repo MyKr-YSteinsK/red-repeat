@@ -330,6 +330,49 @@ describe('Song Edition timeline playback binding', () => {
     expect(screen.getAllByText('Repeat me')).toHaveLength(2)
   })
 
+  it('switches page modes without reloading audio or resetting reading', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Show reading' }))
+    await engine.playContinuous()
+
+    await act(async () => {
+      media.currentTime = 0.65
+      frames.flush()
+    })
+    const stateBeforeModeChange = engine.getState()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'immersive',
+    )
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'focus',
+    )
+    expect(engine.getState()).toMatchObject({
+      sourceUrl: stateBeforeModeChange.sourceUrl,
+      status: stateBeforeModeChange.status,
+      currentTimeMs: stateBeforeModeChange.currentTimeMs,
+      playbackRate: stateBeforeModeChange.playbackRate,
+    })
+    expect(media.load).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'liner',
+    )
+  })
+
   it('preserves reading visibility and never keeps a lyric through instrumental or gap', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

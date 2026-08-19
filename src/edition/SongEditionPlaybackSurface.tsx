@@ -5,13 +5,14 @@ import { PlaybackDock } from './PlaybackDock'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledSongEdition } from '../runtime/song-edition'
+import type { SongEditionMode } from './song-edition-mode'
 
 export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
-  focusMode?: boolean
-  onToggleFocus?: () => void
+  mode?: SongEditionMode
+  onModeChange?: (mode: SongEditionMode) => void
   readingVisible?: boolean
   onToggleReading?: () => void
 }
@@ -20,18 +21,18 @@ export function SongEditionPlaybackSurface({
   model,
   runtimeClient,
   audioEngine,
-  focusMode: controlledFocusMode,
-  onToggleFocus,
+  mode: controlledMode,
+  onModeChange,
   readingVisible: controlledReadingVisible,
   onToggleReading,
 }: SongEditionPlaybackSurfaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [internalFocusMode, setInternalFocusMode] = useState(false)
+  const [internalMode, setInternalMode] = useState<SongEditionMode>('liner')
   const [internalReadingVisible, setInternalReadingVisible] = useState(false)
-  const focusMode = controlledFocusMode ?? internalFocusMode
+  const mode = controlledMode ?? internalMode
   const readingVisible = controlledReadingVisible ?? internalReadingVisible
-  const toggleFocus =
-    onToggleFocus ?? (() => setInternalFocusMode((mode) => !mode))
+  const changeMode =
+    onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
   const toggleReading =
     onToggleReading ?? (() => setInternalReadingVisible((visible) => !visible))
   const activeOccurrenceIds = new Set(
@@ -41,14 +42,17 @@ export function SongEditionPlaybackSurface({
 
   return (
     <section
-      className={`song-playback-surface${focusMode ? ' is-focus-mode' : ''}`}
+      className={`song-playback-surface${mode === 'focus' ? ' is-focus-mode' : ''}${
+        mode === 'immersive' ? ' is-immersive-mode' : ''
+      }`}
       aria-label="Song timeline playback"
+      data-mode={mode}
       data-engine-active-occurrence-id={
         playback.audioState.activeOccurrenceId
       }
       data-selected-occurrence-id={playback.selectedOccurrenceId}
     >
-      {focusMode ? (
+      {mode === 'focus' ? (
         <FocusPanel
           model={model}
           playback={playback}
@@ -79,8 +83,8 @@ export function SongEditionPlaybackSurface({
       <PlaybackDock
         model={model}
         playback={playback}
-        focusMode={focusMode}
-        onToggleFocus={toggleFocus}
+        mode={mode}
+        onModeChange={changeMode}
       />
     </section>
   )

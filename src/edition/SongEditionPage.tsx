@@ -7,6 +7,7 @@ import {
 } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
 import { FeatureSection } from './FeatureMarkdown'
+import type { SongEditionMode } from './song-edition-mode'
 import { useSongEditionCore } from './use-song-edition-core'
 
 export interface SongEditionPageProps {
@@ -23,7 +24,7 @@ export function SongEditionPage({
   audioEngine,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
-  const [focusMode, setFocusMode] = useState(false)
+  const [mode, setMode] = useState<SongEditionMode>('liner')
   const [readingVisible, setReadingVisible] = useState(false)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
 
@@ -40,22 +41,24 @@ export function SongEditionPage({
       }
 
       if (event.key === 'Escape') {
-        if (focusMode) {
+        if (mode !== 'liner') {
           event.preventDefault()
-          setFocusMode(false)
+          setMode('liner')
         }
         return
       }
 
       if (event.key.toLowerCase() === 'f') {
         event.preventDefault()
-        setFocusMode((mode) => !mode)
+        setMode((currentMode) =>
+          currentMode === 'focus' ? 'liner' : 'focus',
+        )
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [focusMode])
+  }, [mode])
 
   if (state.status === 'loading') {
     return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
@@ -91,9 +94,12 @@ export function SongEditionPage({
   const song = core.edition.song
   return (
     <main
-      className={`song-edition${focusMode ? ' is-focus-mode' : ''}`}
+      className={`song-edition${mode === 'focus' ? ' is-focus-mode' : ''}${
+        mode === 'immersive' ? ' is-immersive-mode' : ''
+      }`}
       aria-labelledby="song-title"
-      data-focus-mode={focusMode}
+      data-mode={mode}
+      data-focus-mode={mode === 'focus'}
     >
       <div className="song-topline">
         <a className="text-link" href={homeHref}>
@@ -151,12 +157,12 @@ export function SongEditionPage({
         model={core.assembled}
         runtimeClient={runtimeClient}
         audioEngine={audioEngine}
-        focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((mode) => !mode)}
+        mode={mode}
+        onModeChange={setMode}
         readingVisible={readingVisible}
         onToggleReading={() => setReadingVisible((visible) => !visible)}
       />
-      {!focusMode ? (
+      {mode === 'liner' ? (
         <FeatureSection
           model={core.assembled}
           features={core.features}

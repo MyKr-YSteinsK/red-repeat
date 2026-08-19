@@ -164,6 +164,48 @@ describe('Liner Song Edition opening', () => {
       }),
     ).toBeInTheDocument()
   })
+
+  it('keeps page modes mutually exclusive and exits Immersive with Escape', async () => {
+    const editionWithFeature: RuntimeEdition = {
+      ...edition,
+      features: [
+        {
+          id: 'note',
+          url: '/library-runtime/songs/first-light/note.md',
+        },
+      ],
+    }
+    render(<SongEditionPage {...propsFor(editionWithFeature)} />)
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).toBeInTheDocument()
+    const page = screen.getByRole('main')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    expect(page).toHaveAttribute('data-mode', 'immersive')
+    expect(page).toHaveAttribute('data-focus-mode', 'false')
+    expect(
+      screen.queryByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+    expect(
+      screen.getByRole('heading', {
+        name: 'A little more about the work.',
+      }),
+    ).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'f' })
+    expect(page).toHaveAttribute('data-mode', 'focus')
+    fireEvent.keyDown(window, { key: 'f' })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+  })
 })
 
 function propsFor(

@@ -9,19 +9,20 @@ import {
 } from './playback-controls'
 import type { SongEditionPlaybackSnapshot } from './use-song-edition-playback'
 import type { AssembledSongEdition } from '../runtime/song-edition'
+import type { SongEditionMode } from './song-edition-mode'
 
 export interface PlaybackDockProps {
   model: AssembledSongEdition
   playback: SongEditionPlaybackSnapshot
-  focusMode: boolean
-  onToggleFocus: () => void
+  mode: SongEditionMode
+  onModeChange: (mode: SongEditionMode) => void
 }
 
 export function PlaybackDock({
   model,
   playback,
-  focusMode,
-  onToggleFocus,
+  mode,
+  onModeChange,
 }: PlaybackDockProps) {
   const [loopScope, setLoopScope] = useState<LoopScope>('1')
   const [message, setMessage] = useState<string | undefined>()
@@ -170,11 +171,24 @@ export function PlaybackDock({
         <button
           className="dock-control dock-focus"
           type="button"
-          aria-label={focusMode ? 'Exit Focus' : 'Focus'}
-          aria-pressed={focusMode}
-          onClick={onToggleFocus}
+          aria-label={mode === 'focus' ? 'Exit Focus' : 'Focus'}
+          aria-pressed={mode === 'focus'}
+          onClick={() =>
+            onModeChange(mode === 'focus' ? 'liner' : 'focus')
+          }
         >
-          {focusMode ? 'Exit Focus' : 'Focus'}
+          {mode === 'focus' ? 'Exit Focus' : 'Focus'}
+        </button>
+        <button
+          className="dock-control dock-immersive"
+          type="button"
+          aria-label={mode === 'immersive' ? 'Exit Immersive' : 'Immersive'}
+          aria-pressed={mode === 'immersive'}
+          onClick={() =>
+            onModeChange(mode === 'immersive' ? 'liner' : 'immersive')
+          }
+        >
+          {mode === 'immersive' ? 'Exit Immersive' : 'Immersive'}
         </button>
       </div>
 
