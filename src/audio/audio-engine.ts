@@ -26,6 +26,11 @@ export interface AudioEngineState {
   error?: Error
 }
 
+export type BoundedPlaybackCompletion =
+  | { status: 'completed' }
+  | { status: 'cancelled' }
+  | { status: 'errored'; error: Error }
+
 export type AudioMediaEvent =
   | 'loadedmetadata'
   | 'durationchange'
@@ -77,6 +82,9 @@ export class AudioEngine {
   private disposed = false
   private playbackObservationHandle: unknown
   private pendingInternalPauseEvents = 0
+  private pendingBoundedCompletion?: {
+    resolve: (completion: BoundedPlaybackCompletion) => void
+  }
 
   private readonly onLoadedMetadata = (): void => {
     this.refreshDuration()
@@ -100,9 +108,13 @@ export class AudioEngine {
   }
 
   private readonly onError = (): void => {
+    const error = new Error('audio media element reported an error')
+    this.operationGeneration += 1
+    this.cancelPlaybackObservation()
+    this.settleBoundedCompletion({ status: 'errored', error })
     this.setState({
       status: 'error',
-      error: new Error('audio media element reported an error'),
+      error,
     })
   }
 
@@ -118,6 +130,7 @@ export class AudioEngine {
 
     this.operationGeneration += 1
     this.cancelPlaybackObservation()
+    this.settleBoundedCompletion({ status: 'cancelled' })
     this.setState({
       status: this.state.sourceUrl ? 'paused' : 'idle',
       intent: 'continuous',
@@ -261,16 +274,46 @@ export class AudioEngine {
     return this.playBoundedRange(range, 'loop', activeOccurrenceId, true)
   }
 
+  async playRangeUntilComplete(
+    range: AudioRange,
+    activeOccurrenceId?: string,
+  ): Promise<BoundedPlaybackCompletion> {
+    let resolveCompletion!: (
+      completion: BoundedPlaybackCompletion,
+    ) => void
+    const completion = new Promise<BoundedPlaybackCompletion>((resolve) => {
+      resolveCompletion = resolve
+    })
+
+    try {
+      await this.playBoundedRange(
+        range,
+        'range',
+        activeOccurrenceId,
+        false,
+        { resolve: resolveCompletion },
+      )
+    } catch (error) {
+      resolveCompletion({ status: 'errored', error: toError(error) })
+    }
+
+    return completion
+  }
+
   private async playBoundedRange(
     range: AudioRange,
     intent: 'range' | 'loop',
     activeOccurrenceId: string | undefined,
     repeat: boolean,
+    boundedCompletion?: {
+      resolve: (completion: BoundedPlaybackCompletion) => void
+    },
   ): Promise<void> {
     this.assertUsable()
     this.assertSourceLoaded()
     assertValidRange(range)
     const generation = this.beginOperation(true)
+    this.pendingBoundedCompletion = boundedCompletion
     this.setState({
       status: 'seeking',
       intent,
@@ -300,6 +343,10 @@ export class AudioEngine {
       if (this.isCurrentOperation(generation)) {
         this.cancelPlaybackObservation()
         const normalizedError = toError(error)
+        this.settleBoundedCompletion({
+          status: 'errored',
+          error: normalizedError,
+        })
         this.setState({ status: 'error', error: normalizedError })
       }
       throw error
@@ -323,6 +370,7 @@ export class AudioEngine {
     this.disposed = true
     this.operationGeneration += 1
     this.cancelPlaybackObservation()
+    this.settleBoundedCompletion({ status: 'cancelled' })
     this.requestInternalPause()
     this.media.removeEventListener('loadedmetadata', this.onLoadedMetadata)
     this.media.removeEventListener('durationchange', this.onDurationChange)
@@ -335,6 +383,7 @@ export class AudioEngine {
   private beginOperation(pauseMedia = false): number {
     this.operationGeneration += 1
     this.cancelPlaybackObservation()
+    this.settleBoundedCompletion({ status: 'cancelled' })
     if (pauseMedia) {
       this.requestInternalPause()
     }
@@ -410,6 +459,7 @@ export class AudioEngine {
           this.requestInternalPause()
           if (this.isCurrentOperation(generation)) {
             this.setState({ status: 'paused', currentTimeMs })
+            this.settleBoundedCompletion({ status: 'completed' })
           }
         }
         return
@@ -464,6 +514,18 @@ export class AudioEngine {
       this.frameScheduler.cancelFrame(this.playbackObservationHandle)
       this.playbackObservationHandle = undefined
     }
+  }
+
+  private settleBoundedCompletion(
+    completion: BoundedPlaybackCompletion,
+  ): void {
+    const pendingCompletion = this.pendingBoundedCompletion
+    if (!pendingCompletion) {
+      return
+    }
+
+    this.pendingBoundedCompletion = undefined
+    pendingCompletion.resolve(completion)
   }
 }
 

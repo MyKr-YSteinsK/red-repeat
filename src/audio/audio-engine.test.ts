@@ -136,6 +136,137 @@ describe('Audio Engine foundation', () => {
     expect(media.pause).toHaveBeenCalled()
   })
 
+  it('resolves bounded playback when the shared RAF observes natural completion', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete(
+      { startMs: 100, endMs: 300 },
+      'o001',
+    )
+    await flushMicrotasks()
+
+    expect(frames.pendingCount()).toBe(1)
+    media.currentTime = 0.3
+    frames.flush()
+
+    await expect(completion).resolves.toEqual({ status: 'completed' })
+    expect(frames.pendingCount()).toBe(0)
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      activeOccurrenceId: 'o001',
+    })
+  })
+
+  it('resolves cancellation when a bounded playback is paused', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete({
+      startMs: 100,
+      endMs: 300,
+    })
+    await flushMicrotasks()
+
+    engine.pause()
+
+    await expect(completion).resolves.toEqual({ status: 'cancelled' })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('cancels an older completion when a new bounded range supersedes it', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const firstCompletion = engine.playRangeUntilComplete(
+      { startMs: 100, endMs: 300 },
+      'o001',
+    )
+    await flushMicrotasks()
+    const staleCallback = frames.latestCallback()
+
+    const secondCompletion = engine.playRangeUntilComplete(
+      { startMs: 500, endMs: 700 },
+      'o002',
+    )
+    await expect(firstCompletion).resolves.toEqual({ status: 'cancelled' })
+    await flushMicrotasks()
+
+    staleCallback()
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      activeOccurrenceId: 'o002',
+    })
+
+    media.currentTime = 0.7
+    frames.flush()
+    await expect(secondCompletion).resolves.toEqual({ status: 'completed' })
+  })
+
+  it('cancels a bounded completion when the source is replaced', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/first.m4a')
+
+    const completion = engine.playRangeUntilComplete({
+      startMs: 100,
+      endMs: 300,
+    })
+    await flushMicrotasks()
+
+    engine.loadSource('/second.m4a')
+
+    await expect(completion).resolves.toEqual({ status: 'cancelled' })
+    expect(frames.pendingCount()).toBe(0)
+    expect(engine.getState().sourceUrl).toBe('/second.m4a')
+  })
+
+  it('reports bounded play rejection without leaving a watcher behind', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const rejection = new Error('play blocked')
+    media.play = vi.fn(() => Promise.reject(rejection))
+    engine.loadSource('/audio.m4a')
+
+    await expect(
+      engine.playRangeUntilComplete({ startMs: 100, endMs: 300 }),
+    ).resolves.toEqual({ status: 'errored', error: rejection })
+    expect(engine.getState()).toMatchObject({
+      status: 'error',
+      error: rejection,
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
+  it('reports media errors and cancels the shared range observation', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+
+    const completion = engine.playRangeUntilComplete({
+      startMs: 100,
+      endMs: 300,
+    })
+    await flushMicrotasks()
+    media.emit('error')
+
+    const result = await completion
+    expect(result.status).toBe('errored')
+    expect(result).toMatchObject({
+      error: new Error('audio media element reported an error'),
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
   it('pause cancels the active range watcher', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()
