@@ -8,6 +8,7 @@ import {
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
 import { FeatureSection } from './FeatureMarkdown'
 import { ThemeSwitcher } from '../theme/ThemeSwitcher'
+import { resolveArtDirection } from '../theme/art-direction'
 import {
   resolveThemePreference,
   writeThemePreference,
@@ -169,6 +170,7 @@ export function SongEditionPage({
     themeSelection?.songId === song.songId
       ? themeSelection.theme
       : resolveThemePreference(song.songId, core.visual.recommendedTheme)
+  const artDirection = resolveArtDirection(song.songId, core.visual, theme)
   return (
     <main
       className={`song-edition${mode === 'focus' ? ' is-focus-mode' : ''}${
@@ -176,6 +178,11 @@ export function SongEditionPage({
       }`}
       aria-labelledby="song-title"
       data-theme={theme}
+      data-density={artDirection.density}
+      data-energy={artDirection.energy}
+      data-motion={artDirection.motion}
+      data-cover-treatment={artDirection.coverTreatment}
+      data-composition-variant={artDirection.compositionVariant}
       data-mode={mode}
       data-focus-mode={mode === 'focus'}
     >
