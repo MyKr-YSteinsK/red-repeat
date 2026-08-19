@@ -13,7 +13,34 @@ import { ImmersiveLyrics } from './ImmersiveLyrics'
 
 afterEach(() => {
   cleanup()
+  if (originalScrollIntoView) {
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: originalScrollIntoView,
+    })
+  } else {
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: undefined,
+    })
+  }
+  if (originalMatchMedia) {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: originalMatchMedia,
+    })
+  } else {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: undefined,
+    })
+  }
 })
+
+const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+const originalMatchMedia = window.matchMedia
 
 const model = assembleRuntimeSongEdition({
   catalogEdition: {
@@ -145,9 +172,40 @@ describe('Immersive Lyrics renderer', () => {
     expect(document.querySelectorAll('.lyric-notes')).toHaveLength(0)
     expect(document.querySelectorAll('.immersive-word')).toHaveLength(0)
   })
+
+  it('scrolls only when the primary Occurrence changes and honors reduced motion', async () => {
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: scrollIntoView,
+    })
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => ({ matches: true })),
+    })
+
+    const view = renderImmersiveAt(650)
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(scrollIntoView).toHaveBeenLastCalledWith({
+      behavior: 'auto',
+      block: 'center',
+    })
+
+    view.rerender(createImmersiveElement(680))
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+
+    view.rerender(createImmersiveElement(750))
+    expect(scrollIntoView).toHaveBeenCalledTimes(2)
+  })
 })
 
-function renderImmersiveAt(currentTimeMs: number): void {
+function renderImmersiveAt(currentTimeMs: number) {
+  return render(createImmersiveElement(currentTimeMs))
+}
+
+function createImmersiveElement(currentTimeMs: number) {
   const resolution = resolveTimeline(model.timeline, currentTimeMs)
   const playback: SongEditionPlaybackSnapshot = {
     engine: null,
@@ -160,5 +218,5 @@ function renderImmersiveAt(currentTimeMs: number): void {
     resolution,
     selectOccurrence: vi.fn(),
   }
-  render(<ImmersiveLyrics model={model} playback={playback} />)
+  return <ImmersiveLyrics model={model} playback={playback} />
 }

@@ -445,6 +445,66 @@ describe('Song Edition timeline playback binding', () => {
     )
   })
 
+  it('hides Immersive controls after inactivity and reveals them on interaction', async () => {
+    try {
+      const media = new FakeMedia()
+      const frames = new FakeFrameScheduler()
+      const engine = createAudioEngine(media, { frameScheduler: frames })
+      const view = renderSurface(engine)
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      vi.useFakeTimers()
+      await engine.playContinuous()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+      const surface = screen.getByLabelText('Song timeline playback')
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+
+      await act(async () => {
+        vi.advanceTimersByTime(2999)
+      })
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+      await act(async () => {
+        vi.advanceTimersByTime(1)
+      })
+      expect(surface).toHaveAttribute('data-controls-hidden', 'true')
+
+      fireEvent.pointerMove(surface)
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+      fireEvent.keyDown(surface, { key: 'Tab' })
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+
+      fireEvent.click(screen.getByRole('button', { name: 'Exit Immersive' }))
+      await act(async () => {
+        vi.advanceTimersByTime(5000)
+      })
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+      view.unmount()
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps Immersive controls discoverable while paused', async () => {
+    try {
+      const media = new FakeMedia()
+      const engine = createAudioEngine(media)
+      renderSurface(engine)
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      vi.useFakeTimers()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+      await act(async () => {
+        vi.advanceTimersByTime(5000)
+      })
+      expect(
+        screen.getByLabelText('Song timeline playback'),
+      ).toHaveAttribute('data-controls-hidden', 'false')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('preserves reading visibility and never keeps a lyric through instrumental or gap', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

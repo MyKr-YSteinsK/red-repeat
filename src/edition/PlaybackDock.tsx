@@ -22,6 +22,8 @@ export interface PlaybackDockProps {
   onModeChange: (mode: SongEditionMode) => void
   practiceController: PracticeController | null
   practiceState: PracticeStrategyState
+  controlsVisible: boolean
+  onRevealControls: () => void
 }
 
 export function PlaybackDock({
@@ -31,6 +33,8 @@ export function PlaybackDock({
   onModeChange,
   practiceController,
   practiceState,
+  controlsVisible,
+  onRevealControls,
 }: PlaybackDockProps) {
   const [loopScope, setLoopScope] = useState<LoopScope>('1')
   const [message, setMessage] = useState<string | undefined>()
@@ -161,7 +165,12 @@ export function PlaybackDock({
   }
 
   return (
-    <section className="playback-dock" aria-label="Playback controls">
+    <section
+      className={`playback-dock${controlsVisible ? '' : ' is-controls-hidden'}`}
+      aria-label="Playback controls"
+      data-controls-hidden={!controlsVisible}
+      onFocus={onRevealControls}
+    >
       <div className="dock-main-controls">
         <button
           className="dock-control"

@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from 'react'
 import type { AssembledSongEdition } from '../runtime/song-edition'
 import type { SongEditionPlaybackSnapshot } from './use-song-edition-playback'
 
@@ -10,6 +11,12 @@ export function ImmersiveLyrics({
   model,
   playback,
 }: ImmersiveLyricsProps) {
+  const flowRef = useRef<HTMLOListElement>(null)
+  const previousPrimaryOccurrenceId = useRef<string | undefined>(undefined)
+  const browseSuppressionUntil = useRef(0)
+  const browseSuppressionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
   const { resolution } = playback
   const activeOccurrenceIds = new Set(
     resolution.activeOccurrences.map(({ id }) => id),
@@ -21,6 +28,55 @@ export function ImmersiveLyrics({
   const currentSectionHasLyrics = resolution.currentSection
     ? (model.occurrencesBySectionId[resolution.currentSection.id]?.length ?? 0) > 0
     : false
+
+  const scrollToCurrent = useCallback(() => {
+    if (!primaryOccurrenceId) {
+      return
+    }
+    const element = Array.from(
+      flowRef.current?.querySelectorAll<HTMLElement>('[data-occurrence-id]') ??
+        [],
+    ).find((candidate) => candidate.dataset.occurrenceId === primaryOccurrenceId)
+    if (!element || typeof element.scrollIntoView !== 'function') {
+      return
+    }
+    element.scrollIntoView({
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      block: 'center',
+    })
+  }, [primaryOccurrenceId])
+
+  useEffect(() => {
+    const previousPrimaryId = previousPrimaryOccurrenceId.current
+    previousPrimaryOccurrenceId.current = primaryOccurrenceId
+    if (
+      primaryOccurrenceId &&
+      primaryOccurrenceId !== previousPrimaryId &&
+      Date.now() >= browseSuppressionUntil.current
+    ) {
+      scrollToCurrent()
+    }
+  }, [primaryOccurrenceId, scrollToCurrent])
+
+  useEffect(
+    () => () => {
+      if (browseSuppressionTimer.current !== undefined) {
+        clearTimeout(browseSuppressionTimer.current)
+      }
+    },
+    [],
+  )
+
+  const markUserBrowse = (): void => {
+    browseSuppressionUntil.current = Date.now() + 1500
+    if (browseSuppressionTimer.current !== undefined) {
+      clearTimeout(browseSuppressionTimer.current)
+    }
+    browseSuppressionTimer.current = setTimeout(() => {
+      browseSuppressionUntil.current = 0
+      browseSuppressionTimer.current = undefined
+    }, 1500)
+  }
 
   return (
     <section
@@ -49,7 +105,26 @@ export function ImmersiveLyrics({
         )}
       </div>
 
-      <ol className="immersive-lyric-flow" aria-label="Immersive lyrics">
+      <button
+        className="immersive-return-current"
+        type="button"
+        disabled={!primaryOccurrenceId}
+        onClick={() => {
+          browseSuppressionUntil.current = 0
+          scrollToCurrent()
+        }}
+      >
+        Return to current
+      </button>
+
+      <ol
+        className="immersive-lyric-flow"
+        aria-label="Immersive lyrics"
+        ref={flowRef}
+        onPointerDown={markUserBrowse}
+        onTouchMove={markUserBrowse}
+        onWheel={markUserBrowse}
+      >
         {model.chronologicalOccurrences.map(({ occurrence, segment }) => {
           const isActive = activeOccurrenceIds.has(occurrence.id)
           const isPrimary = primaryOccurrenceId === occurrence.id
@@ -80,5 +155,13 @@ export function ImmersiveLyrics({
         })}
       </ol>
     </section>
+  )
+}
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
 }

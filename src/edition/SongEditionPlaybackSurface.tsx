@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import { LinerLyrics } from './LinerLyrics'
 import { ImmersiveLyrics } from './ImmersiveLyrics'
@@ -40,16 +40,61 @@ export function SongEditionPlaybackSurface({
   )
   const [internalMode, setInternalMode] = useState<SongEditionMode>('liner')
   const [internalReadingVisible, setInternalReadingVisible] = useState(false)
+  const [controlsVisible, setControlsVisible] = useState(true)
+  const controlsHideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
   const mode = controlledMode ?? internalMode
   const readingVisible = controlledReadingVisible ?? internalReadingVisible
   const changeMode =
     onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
   const handleModeChange = (nextMode: SongEditionMode): void => {
+    setControlsVisible(true)
     if (nextMode !== 'focus') {
       practiceController?.cancel()
     }
     changeMode(nextMode)
   }
+
+  const clearControlsHideTimer = useCallback((): void => {
+    if (controlsHideTimer.current !== undefined) {
+      clearTimeout(controlsHideTimer.current)
+      controlsHideTimer.current = undefined
+    }
+  }, [])
+
+  const scheduleControlsHide = useCallback((): void => {
+    clearControlsHideTimer()
+    if (mode !== 'immersive' || playback.audioState.status !== 'playing') {
+      setControlsVisible(true)
+      return
+    }
+    controlsHideTimer.current = setTimeout(() => {
+      controlsHideTimer.current = undefined
+      setControlsVisible(false)
+    }, 3000)
+  }, [clearControlsHideTimer, mode, playback.audioState.status])
+
+  const revealControls = useCallback((): void => {
+    setControlsVisible(true)
+    scheduleControlsHide()
+  }, [scheduleControlsHide])
+
+  useEffect(() => {
+    clearControlsHideTimer()
+    if (mode === 'immersive' && playback.audioState.status === 'playing') {
+      controlsHideTimer.current = setTimeout(() => {
+        controlsHideTimer.current = undefined
+        setControlsVisible(false)
+      }, 3000)
+    }
+    return clearControlsHideTimer
+  }, [clearControlsHideTimer, mode, playback.audioState.status])
+
+  const effectiveControlsVisible =
+    mode !== 'immersive' ||
+    playback.audioState.status !== 'playing' ||
+    controlsVisible
 
   useEffect(() => {
     if (!practiceController) {
@@ -95,6 +140,10 @@ export function SongEditionPlaybackSurface({
       }`}
       aria-label="Song timeline playback"
       data-mode={mode}
+      data-controls-hidden={!effectiveControlsVisible}
+      onPointerMove={revealControls}
+      onTouchStart={revealControls}
+      onKeyDown={revealControls}
       data-engine-active-occurrence-id={
         playback.audioState.activeOccurrenceId
       }
@@ -137,6 +186,8 @@ export function SongEditionPlaybackSurface({
         onModeChange={handleModeChange}
         practiceController={practiceController}
         practiceState={practiceState}
+        controlsVisible={effectiveControlsVisible}
+        onRevealControls={revealControls}
       />
     </section>
   )
