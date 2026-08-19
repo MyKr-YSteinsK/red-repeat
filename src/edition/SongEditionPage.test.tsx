@@ -405,6 +405,124 @@ describe('Liner Song Edition opening', () => {
     expect(screen.getByAltText('First Light cover artwork')).toBeInTheDocument()
   })
 
+  it('switches Theme without rebuilding playback, Mode, reading, or the anchor element', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const content = {
+      lyrics: {
+        segments: [
+          { id: 's001', lyrics: 'Repeat me', translation: '再来一次' },
+          { id: 's002', lyrics: 'Stay near', translation: '靠近一些' },
+        ],
+      } satisfies LyricsDocument,
+      timeline: {
+        audioSourceHash: 'a'.repeat(64),
+        sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 }],
+        occurrences: [
+          {
+            id: 'o001',
+            segmentId: 's001',
+            sectionId: 'verse',
+            startMs: 100,
+            endMs: 300,
+            playStartMs: 50,
+            playEndMs: 350,
+          },
+          {
+            id: 'o002',
+            segmentId: 's001',
+            sectionId: 'verse',
+            startMs: 500,
+            endMs: 700,
+            playStartMs: 450,
+            playEndMs: 750,
+          },
+          {
+            id: 'o003',
+            segmentId: 's002',
+            sectionId: 'verse',
+            startMs: 600,
+            endMs: 800,
+            playStartMs: 550,
+            playEndMs: 850,
+          },
+        ],
+      } satisfies TimelineDocument,
+      visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
+    }
+    const view = render(
+      <SongEditionPage
+        {...propsFor(edition, undefined, catalogEdition, content)}
+        audioEngine={engine}
+      />,
+    )
+
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'Show reading' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Play line Repeat me' })[1])
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        activeOccurrenceId: 'o002',
+        currentTimeMs: 450,
+      })
+    })
+
+    const anchor = document.querySelector('[data-occurrence-id="o002"]')
+    expect(anchor).toBeTruthy()
+    const stateBeforeTheme = engine.getState()
+    const loadCountBeforeTheme = media.load.mock.calls.length
+    const sourceBeforeTheme = stateBeforeTheme.sourceUrl
+    fireEvent.click(screen.getByRole('button', { name: 'Use Nocturne theme' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
+    })
+    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-selected-occurrence-id',
+      'o002',
+    )
+    expect(document.querySelector('[data-occurrence-id="o002"]')).toBe(anchor)
+    expect(media.load).toHaveBeenCalledTimes(loadCountBeforeTheme)
+    expect(engine.getState()).toMatchObject({
+      sourceUrl: sourceBeforeTheme,
+      currentTimeMs: stateBeforeTheme.currentTimeMs,
+      status: stateBeforeTheme.status,
+      playbackRate: stateBeforeTheme.playbackRate,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    })
+    const stateBeforeFocusTheme = engine.getState()
+    const sourceBeforeFocusTheme = stateBeforeFocusTheme.sourceUrl
+    fireEvent.click(screen.getByRole('button', { name: 'Use Cinema theme' }))
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'cinema')
+    })
+    expect(screen.getByRole('main')).toHaveAttribute('data-mode', 'focus')
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(engine.getState()).toMatchObject({
+      sourceUrl: sourceBeforeFocusTheme,
+      currentTimeMs: stateBeforeFocusTheme.currentTimeMs,
+      status: stateBeforeFocusTheme.status,
+      playbackRate: stateBeforeFocusTheme.playbackRate,
+    })
+    expect(media.load).toHaveBeenCalledTimes(loadCountBeforeTheme)
+
+    view.unmount()
+    engine.dispose()
+  })
+
   it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {
     try {
       const media = new FakeMedia()
