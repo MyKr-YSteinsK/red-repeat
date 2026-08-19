@@ -346,6 +346,65 @@ describe('Liner Song Edition opening', () => {
     expect(page).toHaveAttribute('data-composition-variant', firstVariant)
   })
 
+  it('keeps Nocturne quiet without removing complete normal reading content', async () => {
+    const nocturneCatalogEdition = {
+      ...catalogEdition,
+      recommendedTheme: 'nocturne' as const,
+    }
+    render(
+      <SongEditionPage
+        {...propsFor(edition, undefined, nocturneCatalogEdition, {
+          lyrics: {
+            segments: [
+              { id: 's001', lyrics: 'Repeat me', translation: '再来一次' },
+              { id: 's002', lyrics: 'Stay near', translation: '靠近一些' },
+            ],
+          },
+          timeline: {
+            audioSourceHash: 'a'.repeat(64),
+            sections: [
+              { id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 },
+            ],
+            occurrences: [
+              {
+                id: 'o001',
+                segmentId: 's001',
+                sectionId: 'verse',
+                startMs: 100,
+                endMs: 300,
+                playStartMs: 50,
+                playEndMs: 350,
+              },
+              {
+                id: 'o002',
+                segmentId: 's002',
+                sectionId: 'verse',
+                startMs: 500,
+                endMs: 700,
+                playStartMs: 450,
+                playEndMs: 750,
+              },
+            ],
+          },
+          visual: {
+            recommendedTheme: 'nocturne',
+            coverTreatment: 'atmospheric',
+          },
+        })}
+      />
+    )
+
+    expect(await screen.findByRole('heading', { name: 'First Light' })).toBeInTheDocument()
+    const page = screen.getByRole('main')
+    expect(page).toHaveAttribute('data-theme', 'nocturne')
+    expect(page).toHaveAttribute('data-cover-treatment', 'atmospheric')
+    expect(screen.getByText('Repeat me')).toBeInTheDocument()
+    expect(screen.getByText('Stay near')).toBeInTheDocument()
+    expect(screen.getByText('再来一次')).toBeInTheDocument()
+    expect(screen.getByText('靠近一些')).toBeInTheDocument()
+    expect(screen.getByAltText('First Light cover artwork')).toBeInTheDocument()
+  })
+
   it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {
     try {
       const media = new FakeMedia()

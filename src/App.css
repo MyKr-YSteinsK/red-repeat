@@ -640,6 +640,104 @@
   transform: translateX(0.35rem);
 }
 
+.song-edition[data-theme='nocturne'] {
+  --edition-max-reading: 58rem;
+  --edition-section-space: clamp(2.5rem, 6vw, 5rem);
+}
+
+.song-edition[data-theme='nocturne'] .song-topline {
+  margin-bottom: clamp(2.5rem, 6vw, 5rem);
+}
+
+.song-edition[data-theme='nocturne'] .song-opening {
+  grid-template-columns: minmax(9rem, 0.48fr) minmax(0, 1.52fr);
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+.song-edition[data-theme='nocturne'] .song-artwork {
+  max-width: 25rem;
+}
+
+.song-edition[data-theme='nocturne'] .song-cover-large {
+  max-height: min(58svh, 34rem);
+  object-fit: cover;
+}
+
+.song-edition[data-theme='nocturne'][data-cover-treatment='clean']
+  .song-cover-large {
+  aspect-ratio: auto;
+  filter: none;
+  object-fit: contain;
+}
+
+.song-edition[data-theme='nocturne'][data-cover-treatment='editorial']
+  .song-cover-large {
+  aspect-ratio: 4 / 5;
+  filter: saturate(0.72) contrast(1.04);
+  object-position: 42% 45%;
+}
+
+.song-edition[data-theme='nocturne'][data-cover-treatment='atmospheric']
+  .song-cover-large {
+  aspect-ratio: 3 / 4;
+  filter: saturate(0.58) contrast(1.08) brightness(0.82);
+  object-position: 58% 50%;
+}
+
+.song-edition[data-theme='nocturne'][data-cover-treatment='abstracted']
+  .song-cover-large {
+  aspect-ratio: 1 / 1;
+  filter: grayscale(0.32) saturate(0.66) contrast(1.12);
+  object-position: center;
+}
+
+.song-edition[data-theme='nocturne'] .song-hero-large {
+  max-height: 8rem;
+  opacity: 0.55;
+}
+
+.song-edition[data-theme='nocturne'] .song-opening-copy {
+  max-width: 34rem;
+  padding-block: clamp(1rem, 5vw, 4rem) 1rem;
+}
+
+.song-edition[data-theme='nocturne'] .song-opening-copy h1 {
+  font-size: clamp(3.2rem, 6.5vw, 6.4rem);
+  letter-spacing: -0.075em;
+  line-height: 0.9;
+}
+
+.song-edition[data-theme='nocturne'] .song-intro {
+  max-width: 27rem;
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+}
+
+.song-edition[data-theme='nocturne'] .edition-metadata {
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+
+.song-edition[data-theme='nocturne'] .song-opening-rule {
+  width: min(10rem, 35%);
+  border-top-color: var(--edition-signal);
+}
+
+.song-edition[data-theme='nocturne'] .lyrics-section {
+  padding-right: clamp(0rem, 2vw, 2rem);
+}
+
+.song-edition[data-theme='nocturne'] .lyric-occurrence:not(.is-active):not(.is-primary) {
+  opacity: 0.72;
+}
+
+.song-edition[data-theme='nocturne'] .lyric-occurrence.is-primary {
+  padding-block: 0.25rem;
+}
+
+.song-edition[data-theme='nocturne'] .lyric-occurrence.is-primary .lyric-original-text {
+  color: var(--edition-ink);
+}
+
 .song-next-cue {
   margin: 1rem 0 0;
 }
