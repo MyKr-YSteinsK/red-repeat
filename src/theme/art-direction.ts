@@ -65,10 +65,12 @@ export function resolveArtDirection(
 }
 
 export function getSectionCue(
-  artDirection: ArtDirection,
+  artDirection: ArtDirection | undefined,
   sectionId: string | undefined,
 ): SectionCue['cue'] | undefined {
-  return sectionId ? artDirection.sectionCueById.get(sectionId) : undefined
+  return sectionId && artDirection
+    ? artDirection.sectionCueById.get(sectionId)
+    : undefined
 }
 
 export function stableHash(value: string): number {

@@ -209,6 +209,51 @@ describe('Song Edition timeline playback binding', () => {
     expect(screen.getByText('NOW / Gap')).toBeInTheDocument()
   })
 
+  it('applies Cinema Section Cues to the shared reading, Focus, and Immersive DOM', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const cinemaModel = {
+      ...model,
+      visual: {
+        recommendedTheme: 'cinema',
+        sectionCues: [
+          { sectionId: 'verse', cue: 'expand' },
+          { sectionId: 'instrumental', cue: 'suspend' },
+        ],
+      } satisfies VisualDocument,
+    }
+
+    render(
+      <SongEditionPlaybackSurface
+        model={cinemaModel}
+        runtimeClient={runtimeClientFor()}
+        audioEngine={engine}
+        theme="cinema"
+      />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await act(async () => {
+      await engine.playContinuous()
+      media.currentTime = 0.65
+      frames.flush()
+    })
+
+    expect(
+      document.querySelector('.lyrics-section[data-section-cue="expand"]'),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(document.querySelector('.focus-panel')).toHaveAttribute(
+      'data-section-cue',
+      'expand',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    expect(document.querySelector('.immersive-lyrics')).toHaveAttribute(
+      'data-section-cue',
+      'expand',
+    )
+  })
+
   it('switches source and clears the previous command context', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

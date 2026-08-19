@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { AssembledSongEdition } from '../runtime/song-edition'
+import { getSectionCue, type ArtDirection } from '../theme/art-direction'
 import type { SongEditionPlaybackSnapshot } from './use-song-edition-playback'
 
 export interface ImmersiveLyricsProps {
   model: AssembledSongEdition
   playback: SongEditionPlaybackSnapshot
+  artDirection?: ArtDirection
 }
 
 export function ImmersiveLyrics({
   model,
   playback,
+  artDirection,
 }: ImmersiveLyricsProps) {
   const flowRef = useRef<HTMLOListElement>(null)
   const previousPrimaryOccurrenceId = useRef<string | undefined>(undefined)
@@ -84,6 +87,7 @@ export function ImmersiveLyrics({
       aria-labelledby="immersive-title"
       data-primary-occurrence-id={primaryOccurrenceId}
       data-current-section-id={resolution.currentSection?.id}
+      data-section-cue={getSectionCue(artDirection, resolution.currentSection?.id)}
     >
       <header className="immersive-heading">
         <p className="eyebrow">IMMERSIVE / {model.edition.song.title}</p>

@@ -13,6 +13,7 @@ import type { AssembledSongEdition } from '../runtime/song-edition'
 import type { SongEditionMode } from './song-edition-mode'
 import type { SongEditionKeyboardRegistration } from './song-edition-keyboard'
 import type { EditionTheme } from '../theme/theme-preference'
+import { getSectionCue, resolveArtDirection } from '../theme/art-direction'
 
 export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
@@ -52,6 +53,11 @@ export function SongEditionPlaybackSurface({
   )
   const mode = controlledMode ?? internalMode
   const theme = controlledTheme ?? 'liner'
+  const artDirection = resolveArtDirection(
+    model.edition.song.songId,
+    model.visual,
+    theme,
+  )
   const readingVisible = controlledReadingVisible ?? internalReadingVisible
   const changeMode =
     onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
@@ -172,11 +178,16 @@ export function SongEditionPlaybackSurface({
         <FocusPanel
           model={model}
           playback={playback}
+          artDirection={artDirection}
           readingVisible={readingVisible}
           onToggleReading={toggleReading}
         />
       ) : mode === 'immersive' ? (
-        <ImmersiveLyrics model={model} playback={playback} />
+        <ImmersiveLyrics
+          model={model}
+          playback={playback}
+          artDirection={artDirection}
+        />
       ) : (
         <>
           <p className="playback-context" role="status">
@@ -189,6 +200,7 @@ export function SongEditionPlaybackSurface({
           </p>
           <LinerLyrics
             model={model}
+            artDirection={artDirection}
             activeOccurrenceIds={activeOccurrenceIds}
             primaryOccurrenceId={playback.resolution.primaryOccurrence?.id}
             selectedOccurrenceId={playback.selectedOccurrenceId}
@@ -216,11 +228,13 @@ export function SongEditionPlaybackSurface({
 function FocusPanel({
   model,
   playback,
+  artDirection,
   readingVisible,
   onToggleReading,
 }: {
   model: AssembledSongEdition
   playback: ReturnType<typeof useSongEditionPlayback>
+  artDirection: ReturnType<typeof resolveArtDirection>
   readingVisible: boolean
   onToggleReading: () => void
 }) {
@@ -245,7 +259,14 @@ function FocusPanel({
     : null
 
   return (
-    <section className="focus-panel" aria-labelledby="focus-title">
+    <section
+      className="focus-panel"
+      aria-labelledby="focus-title"
+      data-section-cue={getSectionCue(
+        artDirection,
+        playback.resolution.currentSection?.id,
+      )}
+    >
       <p className="eyebrow">FOCUS / {playback.resolution.currentSection?.label ?? 'GAP'}</p>
       <div className="focus-heading">
         <h2 id="focus-title">

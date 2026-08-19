@@ -544,6 +544,102 @@
   padding-bottom: 0;
 }
 
+.song-edition[data-theme='cinema'] {
+  --edition-max-reading: 72rem;
+}
+
+.song-edition[data-theme='cinema'] .lyrics-section {
+  position: relative;
+  padding-right: clamp(0rem, 5vw, 5rem);
+}
+
+.song-edition[data-theme='cinema'] .lyrics-section[data-section-cue]::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--edition-signal);
+  content: '';
+}
+
+.song-edition[data-theme='cinema']
+  .lyrics-section[data-section-cue='expand'] {
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+}
+
+.song-edition[data-theme='cinema']
+  .lyrics-section[data-section-cue='compress'] {
+  padding-block: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.song-edition[data-theme='cinema']
+  .lyrics-section[data-section-cue='isolate']
+  .occurrence-list {
+  max-width: 48rem;
+  margin-left: clamp(1rem, 7vw, 8rem);
+}
+
+.song-edition[data-theme='cinema']
+  .lyrics-section[data-section-cue='dissolve']
+  .occurrence-list {
+  margin-left: clamp(1rem, 12vw, 12rem);
+}
+
+.song-edition[data-theme='cinema'] .lyric-occurrence.is-primary {
+  padding-block: 0.35rem;
+}
+
+.song-edition[data-theme='cinema'] .lyric-occurrence.is-primary .lyric-original-text {
+  font-size: clamp(1.9rem, 4vw, 3.65rem);
+}
+
+.song-edition[data-theme='cinema'] .focus-panel {
+  min-height: min(68svh, 44rem);
+  padding-block: clamp(4rem, 11vw, 10rem);
+  border-top: 1px solid var(--edition-line);
+}
+
+.song-edition[data-theme='cinema'] .focus-panel[data-section-cue='expand'] {
+  padding-block: clamp(5rem, 15vw, 13rem);
+}
+
+.song-edition[data-theme='cinema'] .focus-panel[data-section-cue='compress'] {
+  min-height: min(48svh, 30rem);
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+
+.song-edition[data-theme='cinema'] .focus-heading h2 {
+  max-width: 56rem;
+  font-size: clamp(3.8rem, 11vw, 10rem);
+}
+
+.song-edition[data-theme='cinema'] .immersive-lyrics {
+  min-height: min(78svh, 58rem);
+  padding-block: clamp(4rem, 12vw, 11rem) clamp(2rem, 7vw, 6rem);
+}
+
+.song-edition[data-theme='cinema'] .immersive-lyric-flow {
+  max-width: min(62rem, var(--edition-max-reading));
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.song-edition[data-theme='cinema'] .immersive-occurrence.is-primary {
+  padding-left: 1.5rem;
+}
+
+.song-edition[data-theme='cinema'][data-motion='slow']
+  .immersive-occurrence,
+.song-edition[data-theme='cinema'][data-motion='moderate']
+  .immersive-occurrence {
+  transition: opacity 360ms ease, transform 360ms ease;
+}
+
+.song-edition[data-theme='cinema'][data-motion='moderate']
+  .immersive-occurrence.is-primary {
+  transform: translateX(0.35rem);
+}
+
 .song-next-cue {
   margin: 1rem 0 0;
 }

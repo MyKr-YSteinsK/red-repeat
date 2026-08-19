@@ -3,9 +3,12 @@ import type {
   AssembledOccurrence,
   AssembledSongEdition,
 } from '../runtime/song-edition'
+import type { ArtDirection } from '../theme/art-direction'
+import { getSectionCue } from '../theme/art-direction'
 
 export interface LinerLyricsProps {
   model: AssembledSongEdition
+  artDirection?: ArtDirection
   activeOccurrenceIds?: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
@@ -16,6 +19,7 @@ export interface LinerLyricsProps {
 
 export function LinerLyrics({
   model,
+  artDirection,
   activeOccurrenceIds = new Set<string>(),
   primaryOccurrenceId,
   selectedOccurrenceId,
@@ -51,6 +55,7 @@ export function LinerLyrics({
             className="lyrics-section"
             key={section.id}
             aria-labelledby={`section-${section.id}`}
+            data-section-cue={getSectionCue(artDirection, section.id)}
           >
             <div className="section-heading">
               <p className="section-index" aria-hidden="true">
