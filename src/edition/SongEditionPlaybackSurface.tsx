@@ -53,8 +53,19 @@ export function SongEditionPlaybackSurface({
     onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
   const handleModeChange = (nextMode: SongEditionMode): void => {
     setControlsVisible(true)
+    const engine = playback.engine
+    const strategyWasActive = practiceController?.getState().kind !== 'idle'
+    const shouldResumeContinuous =
+      mode === 'focus' &&
+      nextMode !== 'focus' &&
+      strategyWasActive &&
+      playback.audioState.status === 'playing' &&
+      engine !== null
     if (nextMode !== 'focus') {
       practiceController?.cancel()
+    }
+    if (shouldResumeContinuous) {
+      void engine.playContinuous().catch(() => undefined)
     }
     changeMode(nextMode)
   }

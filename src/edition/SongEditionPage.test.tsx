@@ -10,8 +10,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
   type AudioMediaAdapter,
+  type FrameScheduler,
 } from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
+import type {
+  LyricsDocument,
+  TimelineDocument,
+  VisualDocument,
+} from '../library/schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { RuntimeClientError } from '../runtime/runtime-client'
 import {
@@ -218,6 +224,126 @@ describe('Liner Song Edition opening', () => {
     expect(page).toHaveAttribute('data-mode', 'liner')
   })
 
+  it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {
+    try {
+      const media = new FakeMedia()
+      const frames = new FakeFrameScheduler()
+      const engine = createAudioEngine(media, { frameScheduler: frames })
+      const scrollIntoView = vi.fn()
+      const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: scrollIntoView,
+      })
+      const content = {
+        lyrics: {
+          segments: [
+            { id: 's001', lyrics: 'Repeat me', translation: '再来一次' },
+            { id: 's002', lyrics: 'Stay near', translation: '靠近一些' },
+          ],
+        } satisfies LyricsDocument,
+        timeline: {
+          audioSourceHash: 'b'.repeat(64),
+          sections: [
+            { id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 },
+            { id: 'instrumental', label: 'Instrumental', startMs: 1000, endMs: 1400 },
+          ],
+          occurrences: [
+            {
+              id: 'o001',
+              segmentId: 's001',
+              sectionId: 'verse',
+              startMs: 100,
+              endMs: 300,
+              playStartMs: 50,
+              playEndMs: 350,
+            },
+            {
+              id: 'o002',
+              segmentId: 's001',
+              sectionId: 'verse',
+              startMs: 500,
+              endMs: 700,
+              playStartMs: 450,
+              playEndMs: 750,
+            },
+            {
+              id: 'o003',
+              segmentId: 's002',
+              sectionId: 'verse',
+              startMs: 600,
+              endMs: 800,
+              playStartMs: 550,
+              playEndMs: 850,
+            },
+          ],
+        } satisfies TimelineDocument,
+        visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
+      }
+
+      const view = render(
+        <SongEditionPage
+          {...propsFor(edition, undefined, catalogEdition, content)}
+          audioEngine={engine}
+        />,
+      )
+      await screen.findByRole('heading', { name: 'First Light' })
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      await act(async () => {
+        await engine.playContinuous()
+        media.currentTime = 0.15
+        frames.flush()
+      })
+      const stateBeforeImmersive = engine.getState()
+      vi.useFakeTimers()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+      const page = screen.getByRole('main')
+      expect(page).toHaveAttribute('data-mode', 'immersive')
+      expect(engine.getState()).toMatchObject({
+        status: stateBeforeImmersive.status,
+        sourceUrl: stateBeforeImmersive.sourceUrl,
+        currentTimeMs: stateBeforeImmersive.currentTimeMs,
+      })
+
+      await act(async () => {
+        media.currentTime = 0.65
+        frames.flush()
+      })
+      expect(document.querySelector('.immersive-lyrics')).toHaveAttribute(
+        'data-primary-occurrence-id',
+        'o002',
+      )
+      expect(scrollIntoView).toHaveBeenCalled()
+
+      const surface = screen.getByLabelText('Song timeline playback')
+      await act(async () => {
+        vi.advanceTimersByTime(3000)
+      })
+      expect(surface).toHaveAttribute('data-controls-hidden', 'true')
+      fireEvent.pointerMove(surface)
+      expect(surface).toHaveAttribute('data-controls-hidden', 'false')
+
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(page).toHaveAttribute('data-mode', 'liner')
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        sourceUrl: stateBeforeImmersive.sourceUrl,
+        currentTimeMs: 650,
+      })
+      view.unmount()
+      engine.dispose()
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: originalScrollIntoView,
+      })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('owns the desktop shortcuts once and protects editable or modified targets', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
@@ -278,6 +404,11 @@ function propsFor(
   runtimeEdition: RuntimeEdition,
   error?: Error,
   runtimeCatalogEdition: CatalogEdition = catalogEdition,
+  content: {
+    lyrics?: LyricsDocument
+    timeline?: TimelineDocument
+    visual?: VisualDocument
+  } = {},
 ): SongEditionPageProps {
   const client = {
     loadEdition: vi.fn(async () => {
@@ -286,13 +417,18 @@ function propsFor(
       }
       return runtimeEdition
     }),
-    loadLyrics: vi.fn(async () => ({ segments: [] })),
-    loadTimeline: vi.fn(async () => ({
-      audioSourceHash: 'a'.repeat(64),
-      sections: [],
-      occurrences: [],
-    })),
-    loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
+    loadLyrics: vi.fn(async () => content.lyrics ?? { segments: [] }),
+    loadTimeline: vi.fn(
+      async () =>
+        content.timeline ?? {
+          audioSourceHash: 'a'.repeat(64),
+          sections: [],
+          occurrences: [],
+        },
+    ),
+    loadVisual: vi.fn(
+      async () => content.visual ?? { recommendedTheme: 'liner' as const },
+    ),
     loadFeature: vi.fn(async () => '# Notes\n\nA small note.'),
     resolveAsset: vi.fn((logicalPath: string) => `/app${logicalPath}`),
   } as unknown as RuntimeClient
@@ -328,5 +464,27 @@ class FakeMedia implements AudioMediaAdapter {
 
   removeEventListener(event: string, listener: () => void): void {
     this.listeners.get(event)?.delete(listener)
+  }
+}
+
+class FakeFrameScheduler implements FrameScheduler {
+  private nextId = 0
+  private readonly callbacks = new Map<number, () => void>()
+
+  requestFrame(callback: () => void): number {
+    const id = this.nextId
+    this.nextId += 1
+    this.callbacks.set(id, callback)
+    return id
+  }
+
+  cancelFrame(handle: unknown): void {
+    this.callbacks.delete(handle as number)
+  }
+
+  flush(): void {
+    const callbacks = [...this.callbacks.values()]
+    this.callbacks.clear()
+    callbacks.forEach((callback) => callback())
   }
 }

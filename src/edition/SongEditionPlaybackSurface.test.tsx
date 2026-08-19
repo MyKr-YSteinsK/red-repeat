@@ -324,6 +324,196 @@ describe('Song Edition timeline playback binding', () => {
     )
   })
 
+  it('completes the Focus Ramp sequence for the selected loop scope', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Play line Repeat me' })[1],
+    )
+    await waitFor(() => {
+      expect(engine.getState().activeOccurrenceId).toBe('o002')
+    })
+    await act(async () => {
+      await engine.playContinuous()
+      engine.setPlaybackRate(1.2)
+      media.currentTime = 0.65
+      frames.flush()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: '2 lines loop' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+
+    await waitFor(() => expect(frames.pendingCount()).toBe(1))
+    for (let repetition = 0; repetition < 6; repetition += 1) {
+      await act(async () => {
+        media.currentTime = 0.85
+        frames.flush()
+        await flushMicrotasks()
+      })
+      if (repetition < 5) {
+        await waitFor(() => expect(frames.pendingCount()).toBe(1))
+      }
+    }
+    await act(async () => {
+      await flushMicrotasks()
+    })
+
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'focus',
+    )
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(engine.getState().playbackRate).toBe(1.2)
+    expect(media.playbackRates.slice(-6)).toEqual([
+      0.7,
+      0.7,
+      0.85,
+      0.85,
+      1,
+      1,
+    ])
+  })
+
+  it('cancels Shadow before its silence timeout when Next starts another occurrence', async () => {
+    try {
+      const media = new FakeMedia()
+      const frames = new FakeFrameScheduler()
+      const engine = createAudioEngine(media, { frameScheduler: frames })
+      renderSurface(engine)
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      await act(async () => {
+        await engine.playContinuous()
+        media.currentTime = 0.65
+        frames.flush()
+      })
+      fireEvent.click(
+        screen.getAllByRole('button', { name: 'Play line Repeat me' })[1],
+      )
+      await waitFor(() => {
+        expect(engine.getState().activeOccurrenceId).toBe('o002')
+      })
+      await act(async () => {
+        await engine.playContinuous()
+        media.currentTime = 0.65
+        frames.flush()
+      })
+      media.play.mockClear()
+      vi.useFakeTimers()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Shadow' }))
+      await act(async () => {
+        await flushMicrotasks()
+      })
+      expect(frames.pendingCount()).toBe(1)
+
+      await act(async () => {
+        media.currentTime = 0.75
+        frames.flush()
+        await flushMicrotasks()
+      })
+      expect(screen.getByText(/YOUR TURN/)).toBeInTheDocument()
+      expect(engine.getState().status).toBe('paused')
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next occurrence' }))
+      await act(async () => {
+        await flushMicrotasks()
+      })
+      expect(engine.getState()).toMatchObject({
+        activeOccurrenceId: 'o003',
+        currentTimeMs: 550,
+      })
+
+      await act(async () => {
+        vi.advanceTimersByTime(8000)
+        await flushMicrotasks()
+      })
+      expect(media.play).toHaveBeenCalledTimes(2)
+      expect(engine.getState()).toMatchObject({
+        activeOccurrenceId: 'o003',
+        currentTimeMs: 550,
+      })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps instrumental resolution valid and leaves Shadow unavailable', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await act(async () => {
+      await engine.playContinuous()
+      media.currentTime = 1.1
+      frames.flush()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    expect(screen.getByText('NOW / Instrumental')).toBeInTheDocument()
+    expect(screen.getByText('Instrumental passage')).toBeInTheDocument()
+    expect(document.querySelector('.immersive-lyrics')).toHaveAttribute(
+      'data-current-section-id',
+      'instrumental',
+    )
+    expect(
+      document.querySelector('.immersive-lyrics [aria-current]'),
+    ).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Immersive' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByRole('button', { name: 'Shadow' })).toBeDisabled()
+    expect(engine.getState().status).toBe('playing')
+  })
+
+  it('cancels an active Ramp before entering Immersive and resumes normal transport', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await act(async () => {
+      await engine.playContinuous()
+      engine.setPlaybackRate(0.75)
+      media.currentTime = 0.65
+      frames.flush()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    await act(async () => {
+      await flushMicrotasks()
+    })
+    expect(engine.getState().playbackRate).toBe(0.7)
+    const stateBeforeImmersive = engine.getState()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    await act(async () => {
+      await flushMicrotasks()
+    })
+    expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
+      'data-mode',
+      'immersive',
+    )
+    expect(engine.getState()).toMatchObject({
+      intent: 'continuous',
+      status: 'playing',
+      sourceUrl: stateBeforeImmersive.sourceUrl,
+      currentTimeMs: stateBeforeImmersive.currentTimeMs,
+      playbackRate: 0.75,
+    })
+    expect(screen.queryByRole('button', { name: 'Ramp' })).not.toBeInTheDocument()
+  })
+
   it('disables Shadow without an active lyric anchor and cancels practice on Focus exit', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()
@@ -644,7 +834,9 @@ class FakeMedia implements AudioMediaAdapter {
   paused = true
   playbackRate = 1
   preservesPitch = false
+  playbackRates: number[] = []
   play = vi.fn(async () => {
+    this.playbackRates.push(this.playbackRate)
     this.paused = false
   })
   pause = vi.fn(() => {
@@ -687,5 +879,11 @@ class FakeFrameScheduler implements FrameScheduler {
 
   pendingCount(): number {
     return this.callbacks.size
+  }
+}
+
+async function flushMicrotasks(iterations = 12): Promise<void> {
+  for (let index = 0; index < iterations; index += 1) {
+    await Promise.resolve()
   }
 }
