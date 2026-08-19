@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   findAdjacentOccurrence,
   findNavigationAnchor,
@@ -14,6 +14,7 @@ import type {
   PracticeController,
   PracticeStrategyState,
 } from '../practice/practice-controller'
+import type { SongEditionKeyboardRegistration } from './song-edition-keyboard'
 
 export interface PlaybackDockProps {
   model: AssembledSongEdition
@@ -24,6 +25,7 @@ export interface PlaybackDockProps {
   practiceState: PracticeStrategyState
   controlsVisible: boolean
   onRevealControls: () => void
+  onRegisterKeyboardActions?: SongEditionKeyboardRegistration
 }
 
 export function PlaybackDock({
@@ -35,6 +37,7 @@ export function PlaybackDock({
   practiceState,
   controlsVisible,
   onRevealControls,
+  onRegisterKeyboardActions,
 }: PlaybackDockProps) {
   const [loopScope, setLoopScope] = useState<LoopScope>('1')
   const [message, setMessage] = useState<string | undefined>()
@@ -163,6 +166,23 @@ export function PlaybackDock({
       setMessage('Speed is outside the supported range.')
     }
   }
+
+  useEffect(() => {
+    if (!onRegisterKeyboardActions) {
+      return
+    }
+
+    onRegisterKeyboardActions({
+      togglePlay,
+      previous: () => playOccurrence(previous),
+      next: () => playOccurrence(next),
+      toggleLoop: () => playLoop(loopScope),
+      decreaseSpeed: () => stepSpeed(-1),
+      increaseSpeed: () => stepSpeed(1),
+      cancelPractice: () => practiceController?.cancel(),
+    })
+    return () => onRegisterKeyboardActions(null)
+  })
 
   return (
     <section

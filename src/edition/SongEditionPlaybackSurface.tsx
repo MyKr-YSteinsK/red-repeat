@@ -11,6 +11,7 @@ import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledSongEdition } from '../runtime/song-edition'
 import type { SongEditionMode } from './song-edition-mode'
+import type { SongEditionKeyboardRegistration } from './song-edition-keyboard'
 
 export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
@@ -18,6 +19,7 @@ export interface SongEditionPlaybackSurfaceProps {
   audioEngine?: AudioEngine
   mode?: SongEditionMode
   onModeChange?: (mode: SongEditionMode) => void
+  onRegisterKeyboardActions?: SongEditionKeyboardRegistration
   readingVisible?: boolean
   onToggleReading?: () => void
 }
@@ -28,6 +30,7 @@ export function SongEditionPlaybackSurface({
   audioEngine,
   mode: controlledMode,
   onModeChange,
+  onRegisterKeyboardActions,
   readingVisible: controlledReadingVisible,
   onToggleReading,
 }: SongEditionPlaybackSurfaceProps) {
@@ -188,6 +191,7 @@ export function SongEditionPlaybackSurface({
         practiceState={practiceState}
         controlsVisible={effectiveControlsVisible}
         onRevealControls={revealControls}
+        onRegisterKeyboardActions={onRegisterKeyboardActions}
       />
     </section>
   )

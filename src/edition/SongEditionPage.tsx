@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -7,6 +7,10 @@ import {
 } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
 import { FeatureSection } from './FeatureMarkdown'
+import type {
+  SongEditionKeyboardActions,
+  SongEditionKeyboardRegistration,
+} from './song-edition-keyboard'
 import type { SongEditionMode } from './song-edition-mode'
 import { useSongEditionCore } from './use-song-edition-core'
 
@@ -26,7 +30,22 @@ export function SongEditionPage({
   const [retryKey, setRetryKey] = useState(0)
   const [mode, setMode] = useState<SongEditionMode>('liner')
   const [readingVisible, setReadingVisible] = useState(false)
+  const keyboardActions = useRef<SongEditionKeyboardActions | null>(null)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
+
+  const registerKeyboardActions = useCallback<SongEditionKeyboardRegistration>(
+    (actions) => {
+      keyboardActions.current = actions
+    },
+    [],
+  )
+
+  const changeMode = useCallback((nextMode: SongEditionMode): void => {
+    if (nextMode !== 'focus') {
+      keyboardActions.current?.cancelPractice()
+    }
+    setMode(nextMode)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -43,22 +62,53 @@ export function SongEditionPage({
       if (event.key === 'Escape') {
         if (mode !== 'liner') {
           event.preventDefault()
-          setMode('liner')
+          changeMode('liner')
         }
         return
       }
 
-      if (event.key.toLowerCase() === 'f') {
+      const actions = keyboardActions.current
+      const key = event.key.toLowerCase()
+      if (event.key === ' ' || event.code === 'Space') {
         event.preventDefault()
-        setMode((currentMode) =>
-          currentMode === 'focus' ? 'liner' : 'focus',
-        )
+        actions?.togglePlay()
+        return
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        actions?.previous()
+        return
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        actions?.next()
+        return
+      }
+      if (key === 'l') {
+        event.preventDefault()
+        actions?.toggleLoop()
+        return
+      }
+      if (key === 'f') {
+        event.preventDefault()
+        changeMode(mode === 'focus' ? 'liner' : 'focus')
+        return
+      }
+      if (event.key === '[') {
+        event.preventDefault()
+        actions?.decreaseSpeed()
+        return
+      }
+      if (event.key === ']') {
+        event.preventDefault()
+        actions?.increaseSpeed()
+        return
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [mode])
+  }, [changeMode, mode])
 
   if (state.status === 'loading') {
     return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
@@ -158,7 +208,8 @@ export function SongEditionPage({
         runtimeClient={runtimeClient}
         audioEngine={audioEngine}
         mode={mode}
-        onModeChange={setMode}
+        onModeChange={changeMode}
+        onRegisterKeyboardActions={registerKeyboardActions}
         readingVisible={readingVisible}
         onToggleReading={() => setReadingVisible((visible) => !visible)}
       />

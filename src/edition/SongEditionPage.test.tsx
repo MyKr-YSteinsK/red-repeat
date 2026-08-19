@@ -1,5 +1,16 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createAudioEngine,
+  type AudioMediaAdapter,
+} from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { RuntimeClientError } from '../runtime/runtime-client'
@@ -206,6 +217,61 @@ describe('Liner Song Edition opening', () => {
     fireEvent.keyDown(window, { key: 'f' })
     expect(page).toHaveAttribute('data-mode', 'liner')
   })
+
+  it('owns the desktop shortcuts once and protects editable or modified targets', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    const view = render(
+      <SongEditionPage {...propsFor(edition)} audioEngine={engine} />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await act(async () => {
+      await engine.playContinuous()
+    })
+
+    const page = screen.getByRole('main')
+    const spaceEvent = new KeyboardEvent('keydown', {
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    })
+    act(() => window.dispatchEvent(spaceEvent))
+    expect(spaceEvent.defaultPrevented).toBe(true)
+    expect(engine.getState().status).toBe('paused')
+
+    act(() =>
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ']', bubbles: true, cancelable: true }),
+      ),
+    )
+    expect(engine.getState().playbackRate).toBe(1.05)
+    act(() =>
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: '[', bubbles: true, cancelable: true }),
+      ),
+    )
+    expect(engine.getState().playbackRate).toBe(1)
+
+    fireEvent.keyDown(window, { key: 'f' })
+    expect(page).toHaveAttribute('data-mode', 'focus')
+    fireEvent.keyDown(window, { key: 'f' })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+
+    const input = document.createElement('input')
+    document.body.append(input)
+    fireEvent.keyDown(input, { key: 'f' })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+    fireEvent.keyDown(window, { key: 'f', ctrlKey: true })
+    expect(page).toHaveAttribute('data-mode', 'liner')
+    input.remove()
+
+    view.unmount()
+    engine.dispose()
+  })
 })
 
 function propsFor(
@@ -235,5 +301,32 @@ function propsFor(
     catalogEdition: runtimeCatalogEdition,
     runtimeClient: client,
     homeHref: '/red-repeat/',
+  }
+}
+
+class FakeMedia implements AudioMediaAdapter {
+  src = ''
+  currentTime = 0
+  duration = Number.NaN
+  paused = true
+  playbackRate = 1
+  preservesPitch = false
+  play = vi.fn(async () => {
+    this.paused = false
+  })
+  pause = vi.fn(() => {
+    this.paused = true
+  })
+  load = vi.fn()
+  private readonly listeners = new Map<string, Set<() => void>>()
+
+  addEventListener(event: string, listener: () => void): void {
+    const eventListeners = this.listeners.get(event) ?? new Set<() => void>()
+    eventListeners.add(listener)
+    this.listeners.set(event, eventListeners)
+  }
+
+  removeEventListener(event: string, listener: () => void): void {
+    this.listeners.get(event)?.delete(listener)
   }
 }
