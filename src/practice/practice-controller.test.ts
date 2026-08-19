@@ -5,6 +5,7 @@ import {
   type AudioMediaAdapter,
 } from '../audio/audio-engine'
 import {
+  calculateShadowSilenceMs,
   PracticeController,
   type PracticeScheduler,
 } from './practice-controller'
@@ -184,7 +185,7 @@ describe('PracticeController', () => {
       kind: 'shadow',
       phase: 'source-before',
     })
-    expect(media.playbackRates).toEqual([0.7])
+    expect(media.playbackRates).toEqual([0.7, 1])
   })
 
   it('does not start Ramp for an invalid or empty range', () => {
@@ -196,6 +197,159 @@ describe('PracticeController', () => {
       activeController.startRamp({ startMs: 400, endMs: 400 }),
     ).toBe(false)
     expect(activeController.getState()).toEqual({ kind: 'idle' })
+  })
+
+  it('calculates Shadow silence with the specified clamps', () => {
+    const occurrence = createOccurrence()
+
+    expect(calculateShadowSilenceMs({ ...occurrence, endMs: 200 })).toBe(2000)
+    expect(calculateShadowSilenceMs({ ...occurrence, endMs: 3100 })).toBe(3450)
+    expect(calculateShadowSilenceMs({ ...occurrence, endMs: 9100 })).toBe(8000)
+  })
+
+  it('enters YOUR TURN after the first source practice range', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const scheduler = new FakePracticeScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    engine.loadSource('/audio.m4a')
+    activeController = new PracticeController(engine, { scheduler })
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    expect(media.currentTime).toBe(0.05)
+    expect(media.paused).toBe(false)
+    expect(frames.pendingCount()).toBe(1)
+
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toMatchObject({
+      kind: 'shadow',
+      phase: 'your-turn',
+      silenceDurationMs: 2000,
+      silenceDeadlineMs: 3000,
+    })
+    expect(media.paused).toBe(true)
+    expect(scheduler.pendingCount()).toBe(1)
+  })
+
+  it('waits for silence before replaying the source range and then completes', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const scheduler = new FakePracticeScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    engine.loadSource('/audio.m4a')
+    engine.setPlaybackRate(0.75)
+    activeController = new PracticeController(engine, { scheduler })
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    scheduler.advanceBy(1999)
+    await flushMicrotasks(8)
+    expect(activeController.getState()).toMatchObject({ phase: 'your-turn' })
+
+    scheduler.advanceBy(1)
+    await flushMicrotasks(8)
+    expect(activeController.getState()).toMatchObject({
+      kind: 'shadow',
+      phase: 'source-after',
+    })
+    expect(media.currentTime).toBe(0.05)
+    expect(media.playbackRates).toEqual([0.75, 0.75])
+
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toEqual({ kind: 'idle' })
+    expect(media.load).toHaveBeenCalledTimes(1)
+    expect(engine.getState().playbackRate).toBe(0.75)
+  })
+
+  it('cancels Shadow during source, silence, and replay without ghost playback', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const scheduler = new FakePracticeScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    engine.loadSource('/audio.m4a')
+    activeController = new PracticeController(engine, { scheduler })
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    activeController.cancel()
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+    expect(media.playbackRates).toEqual([1])
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+    activeController.cancel()
+    scheduler.advanceBy(8000)
+    await flushMicrotasks(8)
+    expect(media.playbackRates).toEqual([1, 1])
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+    scheduler.advanceBy(2000)
+    await flushMicrotasks(8)
+    expect(activeController.getState()).toMatchObject({ phase: 'source-after' })
+    activeController.cancel()
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toEqual({ kind: 'idle' })
+    expect(media.playbackRates).toEqual([1, 1, 1, 1])
+    expect(scheduler.pendingCount()).toBe(0)
+  })
+
+  it('cancels the silence timer on source replacement and play errors', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const scheduler = new FakePracticeScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    engine.loadSource('/audio.m4a')
+    activeController = new PracticeController(engine, { scheduler })
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+    engine.loadSource('/replacement.m4a')
+    scheduler.advanceBy(8000)
+    await flushMicrotasks(8)
+    expect(activeController.getState()).toEqual({ kind: 'idle' })
+    expect(media.playbackRates).toEqual([1])
+
+    activeController.startShadow(createOccurrence())
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+    media.play = vi.fn(() => Promise.reject(new Error('play blocked')))
+    scheduler.advanceBy(2000)
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toEqual({ kind: 'idle' })
+    expect(frames.pendingCount()).toBe(0)
   })
 })
 
@@ -273,6 +427,45 @@ class FakeFrameScheduler {
 
   pendingCount(): number {
     return this.callbacks.size
+  }
+}
+
+class FakePracticeScheduler implements PracticeScheduler {
+  private nextId = 0
+  private nowMs = 1000
+  private readonly timers = new Map<
+    number,
+    { callback: () => void; deadlineMs: number }
+  >()
+
+  setTimeout(callback: () => void, delayMs: number): number {
+    const id = this.nextId
+    this.nextId += 1
+    this.timers.set(id, { callback, deadlineMs: this.nowMs + delayMs })
+    return id
+  }
+
+  clearTimeout(handle: unknown): void {
+    this.timers.delete(handle as number)
+  }
+
+  now(): number {
+    return this.nowMs
+  }
+
+  advanceBy(durationMs: number): void {
+    this.nowMs += durationMs
+    const dueTimers = [...this.timers.entries()].filter(
+      ([, timer]) => timer.deadlineMs <= this.nowMs,
+    )
+    dueTimers.forEach(([id, timer]) => {
+      this.timers.delete(id)
+      timer.callback()
+    })
+  }
+
+  pendingCount(): number {
+    return this.timers.size
   }
 }
 

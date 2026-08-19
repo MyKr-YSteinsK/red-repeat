@@ -63,7 +63,9 @@ export class PracticeController {
   private hasActiveStrategy = false
   private generation = 0
   private silenceTimer: unknown
+  private silenceCompletion?: (completed: boolean) => void
   private disposed = false
+  private activeShadowOccurrence: Occurrence | undefined
 
   constructor(
     engine: AudioEngine,
@@ -112,14 +114,17 @@ export class PracticeController {
       return false
     }
 
-    this.beginStrategy()
+    const token = this.beginStrategy()
+    this.activeShadowOccurrence = { ...occurrence }
+    const silenceDurationMs = calculateShadowSilenceMs(occurrence)
     this.setState({
       kind: 'shadow',
       targetOccurrenceId: occurrence.id,
       phase: 'source-before',
-      silenceDurationMs: calculateShadowSilenceMs(occurrence),
+      silenceDurationMs,
       playbackRate: this.engine.getState().playbackRate,
     })
+    void this.runShadow(token)
     return true
   }
 
@@ -133,6 +138,7 @@ export class PracticeController {
     this.generation += 1
     this.hasActiveStrategy = false
     this.activeSourceUrl = undefined
+    this.activeShadowOccurrence = undefined
     this.clearSilenceTimer()
 
     if (previousState.kind === 'ramp') {
@@ -210,6 +216,95 @@ export class PracticeController {
     }
   }
 
+  private async runShadow(token: number): Promise<void> {
+    const occurrence = this.activeShadowOccurrence
+    if (!occurrence || !this.isCurrentStrategy(token)) {
+      return
+    }
+
+    const range = {
+      startMs: occurrence.playStartMs,
+      endMs: occurrence.playEndMs,
+    }
+
+    try {
+      const firstCompletion = await this.engine.playRangeUntilComplete(
+        range,
+        occurrence.id,
+      )
+      if (!this.isCurrentStrategy(token)) {
+        return
+      }
+      if (firstCompletion.status !== 'completed') {
+        this.cancel()
+        return
+      }
+
+      if (this.state.kind !== 'shadow') {
+        return
+      }
+      const silenceDurationMs = this.state.silenceDurationMs
+      const silenceDeadlineMs =
+        this.scheduler.now() + silenceDurationMs
+      this.setState({
+        ...this.state,
+        phase: 'your-turn',
+        silenceDeadlineMs,
+      })
+
+      const silenceCompleted = await this.waitForSilence(
+        token,
+        silenceDurationMs,
+      )
+      if (!silenceCompleted || !this.isCurrentStrategy(token)) {
+        return
+      }
+
+      const latestOccurrence = this.activeShadowOccurrence
+      if (!latestOccurrence || this.state.kind !== 'shadow') {
+        this.cancel()
+        return
+      }
+      this.setState({
+        ...this.state,
+        phase: 'source-after',
+        silenceDeadlineMs: undefined,
+      })
+
+      const secondCompletion = await this.engine.playRangeUntilComplete(
+        {
+          startMs: latestOccurrence.playStartMs,
+          endMs: latestOccurrence.playEndMs,
+        },
+        latestOccurrence.id,
+      )
+      if (!this.isCurrentStrategy(token)) {
+        return
+      }
+      if (secondCompletion.status !== 'completed') {
+        this.cancel()
+        return
+      }
+
+      this.cancel()
+    } catch {
+      if (this.isCurrentStrategy(token)) {
+        this.cancel()
+      }
+    }
+  }
+
+  private waitForSilence(token: number, durationMs: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.silenceCompletion = resolve
+      this.silenceTimer = this.scheduler.setTimeout(() => {
+        this.silenceTimer = undefined
+        this.silenceCompletion = undefined
+        resolve(this.isCurrentStrategy(token))
+      }, durationMs)
+    })
+  }
+
   private updateRampState(
     token: number,
     stageIndex: number,
@@ -258,12 +353,14 @@ export class PracticeController {
   }
 
   private clearSilenceTimer(): void {
-    if (this.silenceTimer === undefined) {
-      return
+    if (this.silenceTimer !== undefined) {
+      this.scheduler.clearTimeout(this.silenceTimer)
+      this.silenceTimer = undefined
     }
 
-    this.scheduler.clearTimeout(this.silenceTimer)
-    this.silenceTimer = undefined
+    const silenceCompletion = this.silenceCompletion
+    this.silenceCompletion = undefined
+    silenceCompletion?.(false)
   }
 
   private setState(nextState: PracticeStrategyState): void {
