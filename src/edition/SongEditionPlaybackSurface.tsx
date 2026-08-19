@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import { LinerLyrics } from './LinerLyrics'
 import { PlaybackDock } from './PlaybackDock'
+import {
+  PracticeController,
+  type PracticeStrategyState,
+} from '../practice/practice-controller'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledSongEdition } from '../runtime/song-edition'
@@ -27,12 +31,55 @@ export function SongEditionPlaybackSurface({
   onToggleReading,
 }: SongEditionPlaybackSurfaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
+  const [practiceController] = useState(() =>
+    playback.engine ? new PracticeController(playback.engine) : null,
+  )
+  const [practiceState, setPracticeState] = useState<PracticeStrategyState>(
+    () => practiceController?.getState() ?? { kind: 'idle' },
+  )
   const [internalMode, setInternalMode] = useState<SongEditionMode>('liner')
   const [internalReadingVisible, setInternalReadingVisible] = useState(false)
   const mode = controlledMode ?? internalMode
   const readingVisible = controlledReadingVisible ?? internalReadingVisible
   const changeMode =
     onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
+  const handleModeChange = (nextMode: SongEditionMode): void => {
+    if (nextMode !== 'focus') {
+      practiceController?.cancel()
+    }
+    changeMode(nextMode)
+  }
+
+  useEffect(() => {
+    if (!practiceController) {
+      return
+    }
+    return practiceController.subscribe(setPracticeState)
+  }, [practiceController])
+
+  useEffect(() => {
+    if (mode !== 'focus') {
+      practiceController?.cancel()
+    }
+  }, [mode, practiceController])
+
+  useEffect(() => {
+    practiceController?.cancel()
+  }, [model.edition.audio.url, model.edition.song.songId, practiceController])
+
+  useEffect(
+    () => () => {
+      practiceController?.dispose()
+    },
+    [practiceController],
+  )
+
+  const handleSelectOccurrence = (occurrence: Parameters<
+    typeof playback.selectOccurrence
+  >[0]): void => {
+    practiceController?.cancel()
+    playback.selectOccurrence(occurrence)
+  }
   const toggleReading =
     onToggleReading ?? (() => setInternalReadingVisible((visible) => !visible))
   const activeOccurrenceIds = new Set(
@@ -76,7 +123,7 @@ export function SongEditionPlaybackSurface({
             selectedOccurrenceId={playback.selectedOccurrenceId}
             readingVisible={readingVisible}
             onToggleReading={toggleReading}
-            onSelectOccurrence={playback.selectOccurrence}
+            onSelectOccurrence={handleSelectOccurrence}
           />
         </>
       )}
@@ -84,7 +131,9 @@ export function SongEditionPlaybackSurface({
         model={model}
         playback={playback}
         mode={mode}
-        onModeChange={changeMode}
+        onModeChange={handleModeChange}
+        practiceController={practiceController}
+        practiceState={practiceState}
       />
     </section>
   )

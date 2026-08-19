@@ -280,6 +280,79 @@ describe('Song Edition timeline playback binding', () => {
     expect(screen.getByRole('heading', { name: 'The work in time.' })).toBeInTheDocument()
   })
 
+  it('enables Focus practice for a valid anchor and coordinates transport controls', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+
+    await act(async () => {
+      media.currentTime = 0.65
+      frames.flush()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+
+    expect(screen.getByRole('button', { name: 'Ramp' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Shadow' })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Increase speed' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '2 lines loop' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Loop 1 line' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Shadow' }))
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(screen.getByRole('button', { name: 'Shadow' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next occurrence' }))
+    await waitFor(() => expect(engine.getState().activeOccurrenceId).toBe('o003'))
+    expect(screen.getByRole('button', { name: 'Shadow' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('disables Shadow without an active lyric anchor and cancels practice on Focus exit', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+
+    await act(async () => {
+      media.currentTime = 1.1
+      frames.flush()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    expect(screen.getByRole('button', { name: 'Shadow' })).toBeDisabled()
+
+    await act(async () => {
+      media.currentTime = 0.65
+      frames.flush()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(screen.queryByRole('button', { name: 'Shadow' })).not.toBeInTheDocument()
+
+    engine.setPlaybackRate(0.75)
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
+    expect(engine.getState().playbackRate).toBe(0.75)
+  })
+
   it('marks Section loop unavailable during an instrumental Section', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()

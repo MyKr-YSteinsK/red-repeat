@@ -10,12 +10,18 @@ import {
 import type { SongEditionPlaybackSnapshot } from './use-song-edition-playback'
 import type { AssembledSongEdition } from '../runtime/song-edition'
 import type { SongEditionMode } from './song-edition-mode'
+import type {
+  PracticeController,
+  PracticeStrategyState,
+} from '../practice/practice-controller'
 
 export interface PlaybackDockProps {
   model: AssembledSongEdition
   playback: SongEditionPlaybackSnapshot
   mode: SongEditionMode
   onModeChange: (mode: SongEditionMode) => void
+  practiceController: PracticeController | null
+  practiceState: PracticeStrategyState
 }
 
 export function PlaybackDock({
@@ -23,6 +29,8 @@ export function PlaybackDock({
   playback,
   mode,
   onModeChange,
+  practiceController,
+  practiceState,
 }: PlaybackDockProps) {
   const [loopScope, setLoopScope] = useState<LoopScope>('1')
   const [message, setMessage] = useState<string | undefined>()
@@ -43,6 +51,7 @@ export function PlaybackDock({
     playback.selectedOccurrenceId,
     playback.resolution,
   )
+  const strategyActive = practiceState.kind !== 'idle'
   const sectionRange = getLoopRange(
     model,
     'section',
@@ -60,11 +69,13 @@ export function PlaybackDock({
     if (!occurrence) {
       return
     }
+    practiceController?.cancel()
     playback.selectOccurrence(occurrence)
     scrollToOccurrence(occurrence.occurrence.id)
   }
 
   const playLoop = (scope: LoopScope): void => {
+    practiceController?.cancel()
     const range = getLoopRange(
       model,
       scope,
@@ -91,6 +102,9 @@ export function PlaybackDock({
   }
 
   const handleScopeChange = (scope: LoopScope): void => {
+    if (strategyActive) {
+      return
+    }
     setLoopScope(scope)
     if (playback.audioState.intent === 'loop') {
       playLoop(scope)
@@ -98,6 +112,7 @@ export function PlaybackDock({
   }
 
   const togglePlay = (): void => {
+    practiceController?.cancel()
     if (!playback.engine) {
       setMessage('Audio playback is unavailable in this environment.')
       return
@@ -112,6 +127,9 @@ export function PlaybackDock({
   }
 
   const stepSpeed = (direction: -1 | 1): void => {
+    if (strategyActive) {
+      return
+    }
     if (!playback.engine) {
       return
     }
@@ -131,6 +149,9 @@ export function PlaybackDock({
   }
 
   const setSpeedShortcut = (speed: number): void => {
+    if (strategyActive) {
+      return
+    }
     try {
       playback.engine?.setPlaybackRate(speed)
       setMessage(undefined)
@@ -197,7 +218,7 @@ export function PlaybackDock({
           className="dock-control"
           type="button"
           aria-label={`Loop ${getLoopScopeLabel(loopScope)}`}
-          disabled={!scopeRange}
+          disabled={!scopeRange || strategyActive}
           onClick={() => playLoop(loopScope)}
         >
           Loop
@@ -217,7 +238,7 @@ export function PlaybackDock({
                     : ''
                 }`}
                 aria-pressed={loopScope === scope}
-                disabled={unavailable}
+                disabled={unavailable || strategyActive}
                 onClick={() => handleScopeChange(scope)}
               >
                 {scope === 'section' ? 'Section' : `${scope} line`}
@@ -233,6 +254,7 @@ export function PlaybackDock({
           className="dock-speed-step"
           type="button"
           aria-label="Decrease speed"
+          disabled={strategyActive}
           onClick={() => stepSpeed(-1)}
         >
           −
@@ -244,6 +266,7 @@ export function PlaybackDock({
           className="dock-speed-step"
           type="button"
           aria-label="Increase speed"
+          disabled={strategyActive}
           onClick={() => stepSpeed(1)}
         >
           +
@@ -256,6 +279,7 @@ export function PlaybackDock({
               type="button"
               aria-label={`Set speed ${speed.toFixed(2)}x`}
               aria-pressed={playback.audioState.playbackRate === speed}
+              disabled={strategyActive}
               onClick={() => setSpeedShortcut(speed)}
             >
               {speed.toFixed(2)}
@@ -264,11 +288,66 @@ export function PlaybackDock({
         </div>
       </div>
 
+      {mode === 'focus' ? (
+        <div className="dock-practice-controls" aria-label="Practice strategies">
+          <button
+            className="dock-practice-control"
+            type="button"
+            aria-label="Ramp"
+            aria-pressed={practiceState.kind === 'ramp'}
+            disabled={!practiceController || !scopeRange}
+            onClick={() => {
+              if (practiceState.kind === 'ramp') {
+                practiceController?.cancel()
+              } else if (scopeRange) {
+                practiceController?.startRamp(scopeRange)
+              }
+            }}
+          >
+            Ramp
+          </button>
+          <button
+            className="dock-practice-control"
+            type="button"
+            aria-label="Shadow"
+            aria-pressed={practiceState.kind === 'shadow'}
+            disabled={!practiceController || !anchor}
+            onClick={() => {
+              if (practiceState.kind === 'shadow') {
+                practiceController?.cancel()
+              } else if (anchor) {
+                practiceController?.startShadow(anchor.occurrence)
+              }
+            }}
+          >
+            Shadow
+          </button>
+          <p className="dock-practice-status" aria-live="polite">
+            {describePracticeState(practiceState)}
+          </p>
+        </div>
+      ) : null}
+
       <p className="dock-message" aria-live="polite">
         {message ?? `${playback.audioState.playbackRate.toFixed(2)}x / ${getLoopScopeLabel(loopScope)}`}
       </p>
     </section>
   )
+}
+
+function describePracticeState(state: PracticeStrategyState): string {
+  if (state.kind === 'idle') {
+    return 'Practice idle'
+  }
+  if (state.kind === 'ramp') {
+    return `RAMP · ${state.stageSpeed.toFixed(2)}x · ${
+      state.repetitionIndex + 1
+    }/${2}`
+  }
+  if (state.phase === 'your-turn') {
+    return `YOUR TURN · ${Math.round(state.silenceDurationMs / 1000)}s`
+  }
+  return state.phase === 'source-before' ? 'LISTEN' : 'LISTEN AGAIN'
 }
 
 function scrollToOccurrence(occurrenceId: string): void {
