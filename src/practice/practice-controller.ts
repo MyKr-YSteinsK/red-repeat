@@ -91,7 +91,8 @@ export class PracticeController {
       return false
     }
 
-    this.beginStrategy()
+    const token = this.beginStrategy()
+    const originalPlaybackRate = this.engine.getState().playbackRate
     this.setState({
       kind: 'ramp',
       targetRange: { ...range },
@@ -100,8 +101,9 @@ export class PracticeController {
       stageSpeed: RAMP_STAGE_RATES[0],
       completedRepetitions: 0,
       totalRepetitions: RAMP_TOTAL_REPETITIONS,
-      originalPlaybackRate: this.engine.getState().playbackRate,
+      originalPlaybackRate,
     })
+    void this.runRamp({ ...range }, token)
     return true
   }
 
@@ -161,6 +163,85 @@ export class PracticeController {
     this.hasActiveStrategy = true
     this.activeSourceUrl = this.engine.getState().sourceUrl
     return this.generation
+  }
+
+  private async runRamp(range: AudioRange, token: number): Promise<void> {
+    try {
+      for (let stageIndex = 0; stageIndex < RAMP_STAGE_RATES.length; stageIndex += 1) {
+        const stageSpeed = RAMP_STAGE_RATES[stageIndex]
+        for (
+          let repetitionIndex = 0;
+          repetitionIndex < RAMP_REPETITIONS_PER_STAGE;
+          repetitionIndex += 1
+        ) {
+          if (!this.isCurrentStrategy(token)) {
+            return
+          }
+
+          this.engine.setPlaybackRate(stageSpeed)
+          this.updateRampState(
+            token,
+            stageIndex,
+            repetitionIndex,
+            stageSpeed,
+          )
+          const completion = await this.engine.playRangeUntilComplete(range)
+
+          if (!this.isCurrentStrategy(token)) {
+            return
+          }
+
+          if (completion.status !== 'completed') {
+            this.cancel()
+            return
+          }
+
+          this.updateRampProgress(token, 1)
+        }
+      }
+
+      if (this.isCurrentStrategy(token)) {
+        this.cancel()
+      }
+    } catch {
+      if (this.isCurrentStrategy(token)) {
+        this.cancel()
+      }
+    }
+  }
+
+  private updateRampState(
+    token: number,
+    stageIndex: number,
+    repetitionIndex: number,
+    stageSpeed: number,
+  ): void {
+    if (!this.isCurrentStrategy(token) || this.state.kind !== 'ramp') {
+      return
+    }
+
+    this.setState({
+      ...this.state,
+      stageIndex,
+      repetitionIndex,
+      stageSpeed,
+    })
+  }
+
+  private updateRampProgress(token: number, completedIncrement: number): void {
+    if (!this.isCurrentStrategy(token) || this.state.kind !== 'ramp') {
+      return
+    }
+
+    this.setState({
+      ...this.state,
+      completedRepetitions:
+        this.state.completedRepetitions + completedIncrement,
+    })
+  }
+
+  private isCurrentStrategy(token: number): boolean {
+    return !this.disposed && this.hasActiveStrategy && token === this.generation
   }
 
   private handleEngineState(nextState: AudioEngineState): void {
