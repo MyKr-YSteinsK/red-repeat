@@ -175,6 +175,7 @@ export function SongEditionPage({
         mode === 'immersive' ? ' is-immersive-mode' : ''
       }`}
       aria-labelledby="song-title"
+      data-theme={theme}
       data-mode={mode}
       data-focus-mode={mode === 'focus'}
     >
@@ -235,6 +236,7 @@ export function SongEditionPage({
         model={core.assembled}
         runtimeClient={runtimeClient}
         audioEngine={audioEngine}
+        theme={theme}
         mode={mode}
         onModeChange={changeMode}
         onRegisterKeyboardActions={registerKeyboardActions}

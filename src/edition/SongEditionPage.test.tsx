@@ -244,6 +244,7 @@ describe('Liner Song Edition opening', () => {
       await screen.findByRole('heading', { name: 'First Light' }),
     ).toBeInTheDocument()
     const page = screen.getByRole('main')
+    expect(page).toHaveAttribute('data-theme', 'nocturne')
     expect(
       screen.getByRole('button', { name: 'Use Nocturne theme' }),
     ).toHaveAttribute('aria-pressed', 'true')
@@ -252,6 +253,7 @@ describe('Liner Song Edition opening', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Use Cinema theme' }))
 
     expect(page).toHaveAttribute('data-mode', 'focus')
+    expect(page).toHaveAttribute('data-theme', 'cinema')
     expect(
       screen.getByRole('button', { name: 'Use Cinema theme' }),
     ).toHaveAttribute('aria-pressed', 'true')

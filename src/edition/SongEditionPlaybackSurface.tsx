@@ -12,11 +12,13 @@ import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledSongEdition } from '../runtime/song-edition'
 import type { SongEditionMode } from './song-edition-mode'
 import type { SongEditionKeyboardRegistration } from './song-edition-keyboard'
+import type { EditionTheme } from '../theme/theme-preference'
 
 export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
+  theme?: EditionTheme
   mode?: SongEditionMode
   onModeChange?: (mode: SongEditionMode) => void
   onRegisterKeyboardActions?: SongEditionKeyboardRegistration
@@ -28,6 +30,7 @@ export function SongEditionPlaybackSurface({
   model,
   runtimeClient,
   audioEngine,
+  theme: controlledTheme,
   mode: controlledMode,
   onModeChange,
   onRegisterKeyboardActions,
@@ -48,6 +51,7 @@ export function SongEditionPlaybackSurface({
     undefined,
   )
   const mode = controlledMode ?? internalMode
+  const theme = controlledTheme ?? 'liner'
   const readingVisible = controlledReadingVisible ?? internalReadingVisible
   const changeMode =
     onModeChange ?? ((nextMode: SongEditionMode) => setInternalMode(nextMode))
@@ -153,6 +157,7 @@ export function SongEditionPlaybackSurface({
         mode === 'immersive' ? ' is-immersive-mode' : ''
       }`}
       aria-label="Song timeline playback"
+      data-theme={theme}
       data-mode={mode}
       data-controls-hidden={!effectiveControlsVisible}
       onPointerMove={revealControls}
