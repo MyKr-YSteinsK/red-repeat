@@ -382,13 +382,10 @@ function TimelineDebuggerReady({
     }
     setTransportMessage(undefined)
     runEngineAction(() =>
-      playback.engine?.playRange(
-        {
-          startMs: selectedSection.startMs,
-          endMs: selectedSection.endMs,
-        },
-        selectedSection.id,
-      ),
+      playback.engine?.playRange({
+        startMs: selectedSection.startMs,
+        endMs: selectedSection.endMs,
+      }),
     )
   }
 

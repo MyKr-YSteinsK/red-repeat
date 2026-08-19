@@ -189,6 +189,7 @@ describe('Timeline Debugger live context', () => {
     expect(media.currentTime).toBe(1.4)
     fireEvent.click(screen.getByRole('button', { name: 'Play Section' }))
     await waitFor(() => expect(media.currentTime).toBe(1.1))
+    expect(activeEngine.getState().activeOccurrenceId).toBeUndefined()
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Decrease Section startMs by 100ms' }),
@@ -279,6 +280,60 @@ describe('Timeline Debugger live context', () => {
     })
     anchorClick.mockRestore()
   }, 15_000)
+
+  it('pauses debugger playback on unmount', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    activeEngine = createAudioEngine(media, { frameScheduler: frames })
+
+    const view = render(
+      <TimelineDebuggerPage
+        songId="first-light"
+        catalogState={{ status: 'ready', catalog: { contractVersion: 1, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        runtimeClient={runtimeClientFor()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        audioEngine={activeEngine}
+      />,
+    )
+
+    await screen.findByRole('heading', { name: 'Timeline Debugger' })
+    await waitFor(() => expect(media.src).toBe('/app/library-runtime/songs/first-light/audio.m4a'))
+    await activeEngine.playContinuous()
+    expect(media.paused).toBe(false)
+
+    view.unmount()
+    expect(media.pause).toHaveBeenCalled()
+    expect(media.paused).toBe(true)
+  })
+
+  it('does not pause a replacement source during debugger cleanup', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    activeEngine = createAudioEngine(media, { frameScheduler: frames })
+
+    const view = render(
+      <TimelineDebuggerPage
+        songId="first-light"
+        catalogState={{ status: 'ready', catalog: { contractVersion: 1, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        runtimeClient={runtimeClientFor()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        audioEngine={activeEngine}
+      />,
+    )
+
+    await screen.findByRole('heading', { name: 'Timeline Debugger' })
+    await waitFor(() => expect(media.src).toBe('/app/library-runtime/songs/first-light/audio.m4a'))
+    await activeEngine.playContinuous()
+
+    activeEngine.loadSource('/app/library-runtime/songs/other/audio.m4a')
+    const pauseCallCount = media.pause.mock.calls.length
+    expect(media.src).toBe('/app/library-runtime/songs/other/audio.m4a')
+    view.unmount()
+
+    expect(media.pause.mock.calls.length).toBe(pauseCallCount)
+  })
 })
 
 function runtimeClientFor(): RuntimeClient {

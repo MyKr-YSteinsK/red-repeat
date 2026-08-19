@@ -39,10 +39,19 @@ export function useTimelineDebuggerPlayback(
   }, [engine])
 
   useEffect(() => {
-    if (!engine || engine.getState().sourceUrl === sourceUrl) {
+    if (!engine) {
       return
     }
-    engine.loadSource(sourceUrl)
+
+    if (engine.getState().sourceUrl !== sourceUrl) {
+      engine.loadSource(sourceUrl)
+    }
+
+    return () => {
+      if (engine.getState().sourceUrl === sourceUrl) {
+        engine.pause()
+      }
+    }
   }, [engine, sourceUrl])
 
   const effectiveAudioState =
