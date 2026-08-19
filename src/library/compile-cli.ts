@@ -1,37 +1,82 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { compileLibrary } from './compiler'
+import {
+  resolveLibrarySourceRootFromArgs,
+  SourceRootCliError,
+} from './source-root'
 
-try {
-  const result = await compileLibrary()
+export interface LibraryCompileCliOptions {
+  sourceRoot?: string
+  outputRoot?: string
+  cacheRoot?: string
+  cwd?: string
+  envSourceRoot?: string
+}
 
-  for (const diagnostic of result.diagnostics) {
-    const location = [
-      diagnostic.songId,
-      diagnostic.sourcePath,
-      diagnostic.fieldPath,
-    ]
-      .filter(Boolean)
-      .join(' ')
-
-    console.log(
-      `${diagnostic.severity.toUpperCase()} ${diagnostic.code}${
-        location ? ` [${location}]` : ''
-      }: ${diagnostic.message}`,
+export async function runLibraryCompileCli(
+  args: readonly string[] = process.argv.slice(2),
+  options: LibraryCompileCliOptions = {},
+): Promise<number> {
+  try {
+    const { positionalArgs, sourceRoot } = resolveLibrarySourceRootFromArgs(
+      args,
+      options,
     )
-  }
+    if (positionalArgs.length > 0) {
+      throw new SourceRootCliError(
+        'Usage: npm run library:compile -- [--source-root <path>]',
+      )
+    }
 
-  if (result.valid) {
-    console.log(
-      `Library compile passed: ${result.songCount} edition(s), ${result.emittedFiles.length} runtime file(s).`,
-    )
-  } else {
+    const result = await compileLibrary({
+      sourceRoot,
+      outputRoot: options.outputRoot,
+      cacheRoot: options.cacheRoot,
+    })
+
+    for (const diagnostic of result.diagnostics) {
+      const location = [
+        diagnostic.songId,
+        diagnostic.sourcePath,
+        diagnostic.fieldPath,
+      ]
+        .filter(Boolean)
+        .join(' ')
+
+      console.log(
+        `${diagnostic.severity.toUpperCase()} ${diagnostic.code}${
+          location ? ` [${location}]` : ''
+        }: ${diagnostic.message}`,
+      )
+    }
+
+    if (result.valid) {
+      console.log(
+        `Library compile passed: ${result.songCount} edition(s), ${result.emittedFiles.length} runtime file(s).`,
+      )
+      return 0
+    }
+
     console.log(
       `Library compile failed: ${result.errors} error(s), ${result.warnings} warning(s).`,
     )
-    process.exitCode = 1
+    return 1
+  } catch (error) {
+    console.error(
+      `Library compile failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+    return 1
   }
-} catch (error) {
-  console.error(
-    `Library compile failed: ${error instanceof Error ? error.message : String(error)}`,
+}
+
+function isMainModule(): boolean {
+  return Boolean(
+    process.argv[1] &&
+      path.resolve(process.argv[1]) === fileURLToPath(import.meta.url),
   )
-  process.exitCode = 1
+}
+
+if (isMainModule()) {
+  process.exitCode = await runLibraryCompileCli()
 }

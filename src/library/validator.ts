@@ -24,9 +24,10 @@ import {
   type TimelineDocument,
   type VisualDocument,
 } from './schema'
+import { resolveLibrarySourceRoot } from './source-root'
 
 export function validateLibrary(
-  sourceRoot = path.resolve(process.cwd(), 'library'),
+  sourceRoot = resolveLibrarySourceRoot(),
 ): ValidationResult {
   const resolvedRoot = path.resolve(sourceRoot)
   const diagnostics: Diagnostic[] = []

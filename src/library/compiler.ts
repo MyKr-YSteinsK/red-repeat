@@ -36,6 +36,7 @@ import {
   type DiscoveredSongPackage,
   type JsonSourceFile,
 } from './source-package'
+import { resolveLibrarySourceRoot } from './source-root'
 import { validateLibrary } from './validator'
 
 export const DEFAULT_RUNTIME_OUTPUT_ROOT = path.resolve(
@@ -65,9 +66,9 @@ interface CompiledSong {
 export async function compileLibrary(
   options: CompileLibraryOptions = {},
 ): Promise<CompileLibraryResult> {
-  const sourceRoot = path.resolve(
-    options.sourceRoot ?? path.resolve(process.cwd(), 'library'),
-  )
+  const sourceRoot = resolveLibrarySourceRoot({
+    explicitSourceRoot: options.sourceRoot,
+  })
   const outputRoot = path.resolve(
     options.outputRoot ?? DEFAULT_RUNTIME_OUTPUT_ROOT,
   )

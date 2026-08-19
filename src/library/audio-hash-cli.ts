@@ -6,11 +6,11 @@ import {
   findCanonicalAudioSources,
 } from './source-package'
 import { SongIdSchema } from './schema'
-
-export const DEFAULT_LIBRARY_SOURCE_ROOT = path.resolve(
-  process.cwd(),
-  'library',
-)
+import {
+  resolveLibrarySourceRoot,
+  resolveLibrarySourceRootFromArgs,
+  SourceRootCliError,
+} from './source-root'
 
 export interface AudioSourceFingerprint {
   songId: string
@@ -37,7 +37,7 @@ export class AudioHashCliError extends Error {
 
 export function findAudioSourceFingerprint(
   songId: string,
-  sourceRoot = DEFAULT_LIBRARY_SOURCE_ROOT,
+  sourceRoot = resolveLibrarySourceRoot(),
 ): AudioSourceFingerprint {
   if (!SongIdSchema.safeParse(songId).success) {
     throw new AudioHashCliError(
@@ -90,15 +90,25 @@ export function findAudioSourceFingerprint(
 
 export function runAudioHashCli(
   args: readonly string[] = process.argv.slice(2),
-  options: { sourceRoot?: string } = {},
+  options: {
+    sourceRoot?: string
+    cwd?: string
+    envSourceRoot?: string
+  } = {},
 ): number {
-  if (args.length !== 1) {
-    console.error('Usage: npm run library:audio-hash -- <song-id>')
-    return 1
-  }
-
   try {
-    const result = findAudioSourceFingerprint(args[0], options.sourceRoot)
+    const { positionalArgs, sourceRoot } = resolveLibrarySourceRootFromArgs(
+      args,
+      options,
+    )
+    if (positionalArgs.length !== 1) {
+      throw new AudioHashCliError(
+        'INVALID_USAGE',
+        'Usage: npm run library:audio-hash -- <song-id> [--source-root <path>]',
+      )
+    }
+
+    const result = findAudioSourceFingerprint(positionalArgs[0], sourceRoot)
     console.log(
       [
         `songId: ${result.songId}`,
@@ -109,7 +119,12 @@ export function runAudioHashCli(
     return 0
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    const code = error instanceof AudioHashCliError ? error.code : 'SOURCE_READ_ERROR'
+    const code =
+      error instanceof AudioHashCliError
+        ? error.code
+        : error instanceof SourceRootCliError
+          ? 'INVALID_USAGE'
+          : 'SOURCE_READ_ERROR'
     console.error(`Audio hash failed [${code}]: ${message}`)
     return 1
   }

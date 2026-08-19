@@ -69,6 +69,29 @@ describe('library:audio-hash', () => {
     expect(output).toHaveBeenCalled()
     expect(fs.existsSync(sourcePath)).toBe(true)
   })
+
+  it('accepts the shared source-root flag and environment fallback', () => {
+    const { root } = createPackage()
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    expect(runAudioHashCli(['first-light', '--source-root', root])).toBe(0)
+    expect(
+      runAudioHashCli(['first-light'], {
+        cwd: path.join(root, 'working-directory'),
+        envSourceRoot: root,
+      }),
+    ).toBe(0)
+    expect(log).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects a missing source-root flag value', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    expect(runAudioHashCli(['first-light', '--source-root'])).toBe(1)
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('--source-root requires a value'),
+    )
+  })
 })
 
 function createTemporaryRoot(): string {
