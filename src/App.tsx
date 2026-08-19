@@ -13,6 +13,7 @@ import {
   RuntimeClientError,
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
+import { warmCatalogRuntime } from './pwa/runtime-cache'
 
 const DevTimelineDebuggerPage = import.meta.env.DEV
   ? lazy(async () => {
@@ -79,6 +80,19 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
       controller.abort()
     }
   }, [retryKey, runtimeClient])
+
+  useEffect(() => {
+    if (catalogState.status !== 'ready') {
+      return
+    }
+
+    const controller = new AbortController()
+    void warmCatalogRuntime(catalogState.catalog, runtimeClient, {
+      signal: controller.signal,
+    })
+
+    return () => controller.abort()
+  }, [catalogState, runtimeClient])
 
   const homeHref = createLibraryHref(window.location)
   const retryCatalog = (): void => {
