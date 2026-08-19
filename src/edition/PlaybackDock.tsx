@@ -213,83 +213,85 @@ export function PlaybackDock({
         </button>
       </div>
 
-      <div className="dock-loop-controls">
-        <button
-          className="dock-control"
-          type="button"
-          aria-label={`Loop ${getLoopScopeLabel(loopScope)}`}
-          disabled={!scopeRange || strategyActive}
-          onClick={() => playLoop(loopScope)}
-        >
-          Loop
-        </button>
-        <div className="loop-scope-group" role="group" aria-label="Loop scope">
-          {LOOP_SCOPES.map((scope) => {
-            const unavailable =
-              scope === 'section' ? !sectionRange : !anchor
-            return (
-              <button
-                className="loop-scope"
-                key={scope}
-                type="button"
-                aria-label={`${getLoopScopeLabel(scope)} loop${
-                  unavailable && scope === 'section'
-                    ? ': unavailable without lyric Occurrences'
-                    : ''
-                }`}
-                aria-pressed={loopScope === scope}
-                disabled={unavailable || strategyActive}
-                onClick={() => handleScopeChange(scope)}
-              >
-                {scope === 'section' ? 'Section' : `${scope} line`}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="dock-speed-controls">
-        <span className="dock-speed-label">Speed</span>
-        <button
-          className="dock-speed-step"
-          type="button"
-          aria-label="Decrease speed"
-          disabled={strategyActive}
-          onClick={() => stepSpeed(-1)}
-        >
-          −
-        </button>
-        <span className="dock-speed-value" aria-live="polite">
-          {playback.audioState.playbackRate.toFixed(2)}x
-        </span>
-        <button
-          className="dock-speed-step"
-          type="button"
-          aria-label="Increase speed"
-          disabled={strategyActive}
-          onClick={() => stepSpeed(1)}
-        >
-          +
-        </button>
-        <div className="speed-shortcuts" role="group" aria-label="Speed shortcuts">
-          {[0.65, 0.75, 0.85, 1].map((speed) => (
+      {mode !== 'immersive' ? (
+        <>
+          <div className="dock-loop-controls">
             <button
-              className="speed-shortcut"
-              key={speed}
+              className="dock-control"
               type="button"
-              aria-label={`Set speed ${speed.toFixed(2)}x`}
-              aria-pressed={playback.audioState.playbackRate === speed}
-              disabled={strategyActive}
-              onClick={() => setSpeedShortcut(speed)}
+              aria-label={`Loop ${getLoopScopeLabel(loopScope)}`}
+              disabled={!scopeRange || strategyActive}
+              onClick={() => playLoop(loopScope)}
             >
-              {speed.toFixed(2)}
+              Loop
             </button>
-          ))}
-        </div>
-      </div>
+            <div className="loop-scope-group" role="group" aria-label="Loop scope">
+              {LOOP_SCOPES.map((scope) => {
+                const unavailable =
+                  scope === 'section' ? !sectionRange : !anchor
+                return (
+                  <button
+                    className="loop-scope"
+                    key={scope}
+                    type="button"
+                    aria-label={`${getLoopScopeLabel(scope)} loop${
+                      unavailable && scope === 'section'
+                        ? ': unavailable without lyric Occurrences'
+                        : ''
+                    }`}
+                    aria-pressed={loopScope === scope}
+                    disabled={unavailable || strategyActive}
+                    onClick={() => handleScopeChange(scope)}
+                  >
+                    {scope === 'section' ? 'Section' : `${scope} line`}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-      {mode === 'focus' ? (
-        <div className="dock-practice-controls" aria-label="Practice strategies">
+          <div className="dock-speed-controls">
+            <span className="dock-speed-label">Speed</span>
+            <button
+              className="dock-speed-step"
+              type="button"
+              aria-label="Decrease speed"
+              disabled={strategyActive}
+              onClick={() => stepSpeed(-1)}
+            >
+              −
+            </button>
+            <span className="dock-speed-value" aria-live="polite">
+              {playback.audioState.playbackRate.toFixed(2)}x
+            </span>
+            <button
+              className="dock-speed-step"
+              type="button"
+              aria-label="Increase speed"
+              disabled={strategyActive}
+              onClick={() => stepSpeed(1)}
+            >
+              +
+            </button>
+            <div className="speed-shortcuts" role="group" aria-label="Speed shortcuts">
+              {[0.65, 0.75, 0.85, 1].map((speed) => (
+                <button
+                  className="speed-shortcut"
+                  key={speed}
+                  type="button"
+                  aria-label={`Set speed ${speed.toFixed(2)}x`}
+                  aria-pressed={playback.audioState.playbackRate === speed}
+                  disabled={strategyActive}
+                  onClick={() => setSpeedShortcut(speed)}
+                >
+                  {speed.toFixed(2)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {mode === 'focus' ? (
+            <div className="dock-practice-controls" aria-label="Practice strategies">
           <button
             className="dock-practice-control"
             type="button"
@@ -325,7 +327,9 @@ export function PlaybackDock({
           <p className="dock-practice-status" aria-live="polite">
             {describePracticeState(practiceState)}
           </p>
-        </div>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       <p className="dock-message" aria-live="polite">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import { LinerLyrics } from './LinerLyrics'
+import { ImmersiveLyrics } from './ImmersiveLyrics'
 import { PlaybackDock } from './PlaybackDock'
 import {
   PracticeController,
@@ -106,6 +107,8 @@ export function SongEditionPlaybackSurface({
           readingVisible={readingVisible}
           onToggleReading={toggleReading}
         />
+      ) : mode === 'immersive' ? (
+        <ImmersiveLyrics model={model} playback={playback} />
       ) : (
         <>
           <p className="playback-context" role="status">

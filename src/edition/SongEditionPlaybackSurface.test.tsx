@@ -423,7 +423,6 @@ describe('Song Edition timeline playback binding', () => {
       'data-mode',
       'immersive',
     )
-    expect(screen.getByRole('button', { name: 'Hide reading' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
     expect(screen.getByLabelText('Song timeline playback')).toHaveAttribute(
