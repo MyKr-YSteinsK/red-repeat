@@ -58,8 +58,11 @@ const edition: RuntimeEdition = {
 describe('PWA runtime cache warmup', () => {
   it('warms with an unqualified full GET and swallows failures', async () => {
     const fetchImpl = vi.fn(
-      async (_url: RequestInfo | URL, _init?: RequestInit) =>
-        new Response('audio', { status: 200 }),
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        void url
+        void init
+        return new Response('audio', { status: 200 })
+      },
     )
     const onError = vi.fn()
 
@@ -102,8 +105,11 @@ describe('PWA runtime cache warmup', () => {
 
   it('warms current catalog editions independently with bounded song concurrency', async () => {
     const fetchImpl = vi.fn(
-      async (_url: RequestInfo | URL, _init?: RequestInit) =>
-        new Response('ok', { status: 200 }),
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        void url
+        void init
+        return new Response('ok', { status: 200 })
+      },
     )
     const loadEdition = vi.fn(async (logicalPath: string) => {
       if (logicalPath.includes('missing')) {
