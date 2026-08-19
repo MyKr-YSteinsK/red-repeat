@@ -32,6 +32,9 @@ jobs:
       - name: Validate Library source
         run: npm run library:validate
 
+      - name: Verify repository hygiene
+        run: npm run repo:hygiene
+
       - name: Build
         run: npm run build
 

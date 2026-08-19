@@ -28,6 +28,29 @@ an absent or empty Library is valid at this stage. `npm run library:compile`
 generates the ignored `public/library-runtime/` deployable resources; production
 builds run it automatically.
 
+Real copyrighted Song Edition source belongs in `.private/library/` or another
+local path selected by `RED_REPEAT_LIBRARY_ROOT`. Do not commit real audio, full
+lyrics, or official artwork to this public repository. The CLI flag takes
+precedence over the environment variable, and both take precedence over the
+default public `library/` root:
+
+```bash
+npm run library:validate -- --source-root .private/library
+npm run library:compile -- --source-root .private/library
+
+RED_REPEAT_LIBRARY_ROOT=.private/library npm run library:validate
+RED_REPEAT_LIBRARY_ROOT=.private/library npm run library:compile
+```
+
+PowerShell:
+
+```powershell
+$env:RED_REPEAT_LIBRARY_ROOT = ".private/library"
+npm run library:validate
+npm run library:compile
+Remove-Item Env:RED_REPEAT_LIBRARY_ROOT
+```
+
 For deterministic CI installs, use `npm ci`.
 
 Production hosting is not configured yet.
