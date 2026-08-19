@@ -437,6 +437,113 @@
   border-top: 1px solid var(--color-line);
 }
 
+.song-edition[data-theme='cinema'] .song-opening {
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  gap: clamp(3rem, 9vw, 9rem);
+}
+
+.song-edition[data-theme='cinema'] .song-opening-copy {
+  max-width: 38rem;
+  padding-block: clamp(3rem, 10vw, 9rem) 2rem;
+}
+
+.song-edition[data-theme='cinema'] .song-opening-copy h1 {
+  font-size: clamp(4rem, 9vw, 8.8rem);
+  letter-spacing: -0.1em;
+}
+
+.song-edition[data-theme='cinema'] .song-cover-large {
+  max-height: min(72svh, 48rem);
+  object-fit: cover;
+}
+
+.song-edition[data-theme='cinema'][data-cover-treatment='clean']
+  .song-cover-large {
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.song-edition[data-theme='cinema'][data-cover-treatment='editorial']
+  .song-cover-large {
+  aspect-ratio: 4 / 5;
+  object-position: 50% 35%;
+}
+
+.song-edition[data-theme='cinema'][data-cover-treatment='atmospheric']
+  .song-cover-large {
+  aspect-ratio: 3 / 4;
+  filter: saturate(0.82) contrast(1.04);
+  object-position: 65% 50%;
+}
+
+.song-edition[data-theme='cinema'][data-cover-treatment='abstracted']
+  .song-cover-large {
+  aspect-ratio: 1 / 1;
+  filter: grayscale(0.18) contrast(1.08);
+  object-position: center;
+}
+
+.song-edition[data-theme='cinema'] .song-opening-rule {
+  width: min(78%, 58rem);
+  border-top-width: 2px;
+  border-top-color: var(--edition-signal);
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='left']
+  .song-opening-copy {
+  grid-column: 2;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='center'] {
+  --edition-max-reading: 70rem;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='center']
+  .song-opening {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='center']
+  .song-artwork,
+.song-edition[data-theme='cinema'][data-composition-variant='center']
+  .song-opening-copy {
+  width: min(100%, 42rem);
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='center']
+  .song-opening-copy {
+  padding-block: 1rem 0;
+  text-align: center;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='center']
+  .song-intro {
+  margin-inline: auto;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='offset-right']
+  .song-artwork {
+  transform: translateY(clamp(1rem, 4vw, 4rem));
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='split']
+  .song-opening {
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 1fr);
+  align-items: end;
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='wide-isolated']
+  .song-opening {
+  grid-template-columns: minmax(0, 1.5fr) minmax(15rem, 0.5fr);
+}
+
+.song-edition[data-theme='cinema'][data-composition-variant='edge']
+  .song-opening-copy {
+  align-self: end;
+  padding-bottom: 0;
+}
+
 .song-next-cue {
   margin: 1rem 0 0;
 }

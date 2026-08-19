@@ -298,6 +298,54 @@ describe('Liner Song Edition opening', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('keeps Cinema composition deterministic while preserving semantic opening order', async () => {
+    const cinemaCatalogEdition = {
+      ...catalogEdition,
+      recommendedTheme: 'cinema' as const,
+    }
+    const cinemaVisual: VisualDocument = {
+      recommendedTheme: 'cinema',
+      mood: ['late', 'cinematic'],
+      motifs: ['window light'],
+      coverTreatment: 'editorial',
+    }
+    const view = render(
+      <SongEditionPage
+        {...propsFor(edition, undefined, cinemaCatalogEdition, {
+          visual: cinemaVisual,
+        })}
+      />,
+    )
+
+    const title = await screen.findByRole('heading', { name: 'First Light' })
+    const page = screen.getByRole('main')
+    const opening = page.querySelector('.song-opening')
+    const firstVariant = page.getAttribute('data-composition-variant')
+
+    expect(page).toHaveAttribute('data-theme', 'cinema')
+    expect(page).toHaveAttribute('data-cover-treatment', 'editorial')
+    expect(firstVariant).toMatch(
+      /^(left|center|offset-right|split|wide-isolated|edge)$/,
+    )
+    expect(page.querySelector('.edition-signal')).toHaveTextContent(
+      'CINEMA / SONG EDITION',
+    )
+    expect(title.compareDocumentPosition(screen.getByText('A Composer'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(opening?.contains(title)).toBe(true)
+
+    view.rerender(
+      <SongEditionPage
+        {...propsFor(edition, undefined, cinemaCatalogEdition, {
+          visual: cinemaVisual,
+        })}
+      />,
+    )
+    await screen.findByRole('heading', { name: 'First Light' })
+    expect(page).toHaveAttribute('data-composition-variant', firstVariant)
+  })
+
   it('keeps source and time continuous through Immersive, auto-scroll, and Escape', async () => {
     try {
       const media = new FakeMedia()

@@ -190,7 +190,9 @@ export function SongEditionPage({
         <a className="text-link" href={homeHref}>
           Return to Library
         </a>
-        <p className="edition-signal">LINER / SONG EDITION</p>
+        <p className="edition-signal">
+          {theme.toUpperCase()} / SONG EDITION
+        </p>
         <ThemeSwitcher theme={theme} onChange={selectTheme} />
       </div>
 
