@@ -1,4 +1,8 @@
-import type { RuntimeCaching } from 'workbox-build'
+import type { VitePWAOptions } from 'vite-plugin-pwa'
+
+type RuntimeCaching = NonNullable<
+  VitePWAOptions['workbox']['runtimeCaching']
+>[number]
 
 export const RUNTIME_CACHE_NAMES = {
   catalog: 'red-repeat-catalog-v1',

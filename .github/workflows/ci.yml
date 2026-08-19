@@ -37,3 +37,9 @@ jobs:
 
       - name: Verify PWA artifact
         run: npm run pwa:inspect
+
+      - name: Build subpath artifact
+        run: npm run build -- --base=/red-repeat/
+
+      - name: Verify subpath PWA artifact
+        run: npm run pwa:inspect -- /red-repeat/
