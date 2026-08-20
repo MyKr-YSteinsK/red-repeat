@@ -22,6 +22,10 @@ export interface SongEditionPlaybackSnapshot {
   resolution: TimelineResolution
   selectedOccurrenceId?: string
   selectOccurrence: (occurrence: AssembledOccurrence) => void
+  playOccurrenceContinuously?: (
+    occurrence: AssembledOccurrence,
+    startMs?: number,
+  ) => void
 }
 
 interface DerivedPlaybackState {
@@ -97,7 +101,9 @@ export function useSongEditionPlayback(
       return
     }
 
-    engine.loadSource(sourceUrl)
+    if (engine.getState().sourceUrl !== sourceUrl) {
+      engine.loadSource(sourceUrl)
+    }
     return () => {
       if (engine.getState().sourceUrl === sourceUrl) {
         engine.pause()
@@ -119,6 +125,22 @@ export function useSongEditionPlayback(
     },
     [engine],
   )
+  const playOccurrenceContinuously = useCallback(
+    (
+      assembledOccurrence: AssembledOccurrence,
+      startMs = assembledOccurrence.occurrence.playStartMs,
+    ): void => {
+      setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      if (!engine) {
+        return
+      }
+
+      void engine.playContinuousFrom(startMs).catch(() => {
+        // The Engine publishes a recoverable error state for the UI.
+      })
+    },
+    [engine],
+  )
 
   return {
     engine,
@@ -126,6 +148,7 @@ export function useSongEditionPlayback(
     resolution: derivedState.resolution,
     selectedOccurrenceId,
     selectOccurrence,
+    playOccurrenceContinuously,
   }
 }
 

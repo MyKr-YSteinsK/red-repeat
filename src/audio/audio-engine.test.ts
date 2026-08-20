@@ -100,6 +100,71 @@ describe('Audio Engine foundation', () => {
     expect(media.playbackRate).toBe(0.75)
   })
 
+  it('keeps a playing continuous session playing after seek', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playContinuous()
+
+    await engine.seek(500)
+
+    expect(media.currentTime).toBe(0.5)
+    expect(media.play).toHaveBeenCalledTimes(2)
+    expect(engine.getState()).toMatchObject({
+      status: 'playing',
+      intent: 'continuous',
+      currentTimeMs: 500,
+    })
+    expect(frames.pendingCount()).toBe(1)
+  })
+
+  it('keeps a paused continuous session paused after seek', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    engine.loadSource('/audio.m4a')
+
+    await engine.seek(500)
+
+    expect(media.currentTime).toBe(0.5)
+    expect(media.play).not.toHaveBeenCalled()
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+      currentTimeMs: 500,
+    })
+  })
+
+  it('ignores stale seek playback completion after a newer seek', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engine.loadSource('/audio.m4a')
+    await engine.playContinuous()
+
+    let resolveSeekPlay: (() => void) | undefined
+    media.play = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          media.paused = false
+          resolveSeekPlay = resolve
+        }),
+    )
+    const staleSeek = engine.seek(500)
+    await flushMicrotasks()
+    const latestSeek = engine.seek(700)
+    await latestSeek
+    resolveSeekPlay?.()
+    await staleSeek
+
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      intent: 'continuous',
+      currentTimeMs: 700,
+    })
+    expect(frames.pendingCount()).toBe(0)
+  })
+
   it('does not depend on Web Audio APIs', () => {
     expect('AudioContext' in globalThis).toBe(false)
   })

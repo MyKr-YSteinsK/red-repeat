@@ -224,6 +224,17 @@ export class AudioEngine {
   playContinuous(): Promise<void> {
     this.assertUsable()
     this.assertSourceLoaded()
+    return this.startContinuousPlayback()
+  }
+
+  playContinuousFrom(timeMs: number): Promise<void> {
+    this.assertUsable()
+    this.assertSourceLoaded()
+    assertNonNegativeFinite(timeMs, 'continuous playback start time')
+    return this.startContinuousPlayback(timeMs)
+  }
+
+  private startContinuousPlayback(timeMs?: number): Promise<void> {
     const generation = this.beginOperation(true)
     this.setState({
       status: 'loading',
@@ -232,6 +243,9 @@ export class AudioEngine {
       activeRange: undefined,
       error: undefined,
     })
+    if (timeMs !== undefined) {
+      this.media.currentTime = timeMs / 1000
+    }
 
     return Promise.resolve()
       .then(() => this.media.play())
@@ -270,6 +284,7 @@ export class AudioEngine {
     this.assertUsable()
     this.assertSourceLoaded()
     assertNonNegativeFinite(timeMs, 'seek time')
+    const shouldResume = this.state.status === 'playing'
     const generation = this.beginOperation(true)
     this.setState({
       status: 'seeking',
@@ -281,11 +296,34 @@ export class AudioEngine {
     this.media.currentTime = timeMs / 1000
     await Promise.resolve()
 
-    if (this.isCurrentOperation(generation)) {
+    if (!this.isCurrentOperation(generation)) {
+      return
+    }
+
+    if (!shouldResume) {
       this.setState({
         status: 'paused',
         currentTimeMs: this.readCurrentTimeMs(),
       })
+      return
+    }
+
+    try {
+      await this.media.play()
+      if (!this.isCurrentOperation(generation)) {
+        return
+      }
+      this.setState({
+        status: 'playing',
+        currentTimeMs: this.readCurrentTimeMs(),
+      })
+      this.startPlaybackObservation(generation)
+    } catch (error) {
+      if (this.isCurrentOperation(generation)) {
+        const normalizedError = toError(error)
+        this.setState({ status: 'error', error: normalizedError })
+      }
+      throw error
     }
   }
 

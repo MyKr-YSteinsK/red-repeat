@@ -153,6 +153,27 @@ describe('Song Edition timeline playback binding', () => {
     expect(media.play).not.toHaveBeenCalled()
   })
 
+  it('keeps same-source position when the playback surface is replaced', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    const view = renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+    media.currentTime = 0.65
+    frames.flush()
+    engine.pause()
+    const loadCount = media.load.mock.calls.length
+
+    view.unmount()
+    renderSurface(engine)
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    expect(media.load).toHaveBeenCalledTimes(loadCount)
+    expect(media.currentTime).toBe(0.65)
+    expect(media.play).toHaveBeenCalledTimes(1)
+  })
+
   it('plays the exact clicked Occurrence practice range', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
