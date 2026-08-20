@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
+import { DEFAULT_PLAYBACK_RATE } from '../audio/audio-engine'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
 import {
@@ -23,6 +24,11 @@ import {
   type PracticePlaybackSessionState,
   type PracticeRepeatMode,
 } from '../practice/practice-playback-session'
+import {
+  getNextPracticePlaybackRate,
+  readPracticePlaybackRate,
+  savePracticePlaybackRate,
+} from '../practice/practice-rate'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { EditionTheme } from '../theme/theme-preference'
 
@@ -91,6 +97,20 @@ export function PracticeWorkspace({
       savePracticeLearningState(model.edition.song.songId, learningState)
     }
   }, [learningState, model.edition.song.songId])
+
+  useEffect(() => {
+    if (!playback.engine) {
+      return
+    }
+
+    try {
+      playback.engine.setPlaybackRate(
+        readPracticePlaybackRate(model.edition.song.songId),
+      )
+    } catch {
+      playback.engine.setPlaybackRate(DEFAULT_PLAYBACK_RATE)
+    }
+  }, [model.edition.song.songId, playback.engine])
 
   const setOccurrence = useCallback(
     (occurrenceId: string): void => {
@@ -284,6 +304,37 @@ export function PracticeWorkspace({
     [practicePlaybackSession],
   )
 
+  const changePlaybackRate = useCallback(
+    (requestedRate: number): void => {
+      if (!playback.engine) {
+        return
+      }
+
+      try {
+        const normalizedRate = playback.engine.setPlaybackRate(requestedRate)
+        savePracticePlaybackRate(model.edition.song.songId, normalizedRate)
+        setMessage(undefined)
+      } catch {
+        setMessage('播放速度无效。')
+      }
+    },
+    [model.edition.song.songId, playback.engine],
+  )
+
+  const adjustPlaybackRate = useCallback(
+    (direction: -1 | 1): void => {
+      if (!playback.engine) {
+        return
+      }
+      const nextRate = getNextPracticePlaybackRate(
+        playback.engine.getState().playbackRate,
+        direction,
+      )
+      changePlaybackRate(nextRate)
+    },
+    [changePlaybackRate, playback.engine],
+  )
+
   const stopPlayback = useCallback((): void => {
     practicePlaybackSession?.stop()
   }, [practicePlaybackSession])
@@ -393,7 +444,13 @@ export function PracticeWorkspace({
         return
       }
 
-      if (event.key.toLowerCase() === 'r') {
+      if (isRateIncreaseKey(event)) {
+        event.preventDefault()
+        adjustPlaybackRate(1)
+      } else if (isRateDecreaseKey(event)) {
+        event.preventDefault()
+        adjustPlaybackRate(-1)
+      } else if (event.key.toLowerCase() === 'r') {
         event.preventDefault()
         toggleInfinitePlayback()
       } else if (event.key === ' ' || event.code === 'Space') {
@@ -421,6 +478,7 @@ export function PracticeWorkspace({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
     learningState,
+    adjustPlaybackRate,
     navigateOccurrence,
     navigateUnit,
     playOccurrence,
@@ -621,6 +679,41 @@ export function PracticeWorkspace({
               一直
             </button>
           </div>
+          <div className="practice-rate-actions" aria-label="播放速度">
+            <button
+              className="practice-action"
+              type="button"
+              aria-label="减速"
+              onClick={() => adjustPlaybackRate(-1)}
+              disabled={!playback.engine}
+            >
+              −
+            </button>
+            {PRACTICE_RATE_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                className="practice-action"
+                type="button"
+                aria-pressed={playback.audioState.playbackRate === preset}
+                onClick={() => changePlaybackRate(preset)}
+                disabled={!playback.engine}
+              >
+                {preset.toFixed(2)}x
+              </button>
+            ))}
+            <button
+              className="practice-action"
+              type="button"
+              aria-label="加速"
+              onClick={() => adjustPlaybackRate(1)}
+              disabled={!playback.engine}
+            >
+              +
+            </button>
+          </div>
+          <p className="practice-rate-current" aria-live="polite">
+            当前速度：{playback.audioState.playbackRate.toFixed(2)}x
+          </p>
           <div className="practice-primary-actions">
             <button
               className="practice-action practice-action-primary"
@@ -1046,4 +1139,18 @@ function formatTargetSummary(
 
 function formatDuration(durationMs: number): string {
   return `${(durationMs / 1000).toFixed(2)} 秒`
+}
+
+const PRACTICE_RATE_PRESETS = [0.65, 0.75, 0.85, 1] as const
+
+function isRateIncreaseKey(event: KeyboardEvent): boolean {
+  return (
+    event.key === '+' ||
+    (event.key === '=' && event.shiftKey) ||
+    event.code === 'NumpadAdd'
+  )
+}
+
+function isRateDecreaseKey(event: KeyboardEvent): boolean {
+  return event.key === '-' || event.code === 'NumpadSubtract'
 }

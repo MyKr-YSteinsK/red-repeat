@@ -2357,6 +2357,13 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.practice-rate-actions {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
 .practice-primary-actions,
 .practice-adjacent-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2383,7 +2390,8 @@
 .practice-action:focus-visible,
 .practice-action-primary,
 .practice-target-actions .practice-action[aria-pressed='true'],
-.practice-repeat-actions .practice-action[aria-pressed='true'] {
+.practice-repeat-actions .practice-action[aria-pressed='true'],
+.practice-rate-actions .practice-action[aria-pressed='true'] {
   border-color: var(--color-red);
   color: var(--color-red);
 }
@@ -2404,7 +2412,8 @@
 }
 
 .practice-range-selection,
-.practice-target-summary {
+.practice-target-summary,
+.practice-rate-current {
   color: var(--color-muted);
   font-family: var(--font-mono);
   font-size: 0.64rem;
@@ -2414,6 +2423,11 @@
 
 .practice-range-selection {
   color: var(--color-red);
+}
+
+.practice-rate-current {
+  margin: 0.45rem 0 0;
+  text-align: right;
 }
 
 .practice-message {
@@ -2513,7 +2527,8 @@
   .practice-range-actions,
   .practice-target-actions,
   .practice-custom-range-actions,
-  .practice-repeat-actions {
+  .practice-repeat-actions,
+  .practice-rate-actions {
     margin-top: 0.75rem;
   }
 }
@@ -2629,6 +2644,10 @@
 
   .practice-repeat-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .practice-rate-actions {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .practice-keyboard-hint {

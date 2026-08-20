@@ -622,6 +622,112 @@ describe('PracticeWorkspace', () => {
       'o003',
     )
   })
+
+  it('provides practice speed presets, bounded step controls, and keyboard steps', () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    expect(media.play).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '0.75x' }))
+    expect(engine.getState().playbackRate).toBe(0.75)
+    expect(media.playbackRate).toBe(0.75)
+
+    fireEvent.click(screen.getByRole('button', { name: '加速' }))
+    expect(engine.getState().playbackRate).toBe(0.8)
+    fireEvent.click(screen.getByRole('button', { name: '减速' }))
+    expect(engine.getState().playbackRate).toBe(0.75)
+
+    for (let index = 0; index < 20; index += 1) {
+      fireEvent.click(screen.getByRole('button', { name: '加速' }))
+    }
+    expect(engine.getState().playbackRate).toBe(1.25)
+    for (let index = 0; index < 20; index += 1) {
+      fireEvent.click(screen.getByRole('button', { name: '减速' }))
+    }
+    expect(engine.getState().playbackRate).toBe(0.5)
+
+    fireEvent.keyDown(window, { key: '+' })
+    expect(engine.getState().playbackRate).toBe(0.55)
+    fireEvent.keyDown(window, { key: '-' })
+    expect(engine.getState().playbackRate).toBe(0.5)
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('restores a valid song rate without autoplay and falls back on invalid storage', () => {
+    const songRateKey = 'red-repeat:practice-rate:v1:first-light'
+    window.localStorage.setItem(songRateKey, '0.75')
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const view = render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    expect(engine.getState().playbackRate).toBe(0.75)
+    expect(media.play).not.toHaveBeenCalled()
+
+    view.unmount()
+    window.localStorage.setItem(songRateKey, '0.751')
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    expect(engine.getState().playbackRate).toBe(1)
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('changes the rate during repeat without replaying the current range and uses it next round', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
+    media.currentTime = 0.2
+    frames.flush()
+
+    fireEvent.click(screen.getByRole('button', { name: '0.85x' }))
+    expect(playRange).toHaveBeenCalledTimes(1)
+    expect(engine.getState().playbackRate).toBe(0.85)
+    expect(media.currentTime).toBe(0.2)
+
+    media.currentTime = 0.35
+    frames.flush()
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
+    expect(playRange).toHaveBeenCalledTimes(2)
+    expect(engine.getState().playbackRate).toBe(0.85)
+  })
 })
 
 const runtimeClient = {
