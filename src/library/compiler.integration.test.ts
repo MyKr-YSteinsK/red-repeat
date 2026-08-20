@@ -389,6 +389,16 @@ async function createFixture(
     intro: 'A synthetic fixture for compiler integration tests.',
   })
   writeJson(path.join(songRoot, 'lyrics.json'), lyrics)
+  writeJson(path.join(songRoot, 'practice.json'), {
+    units: [
+      {
+        id: 'p001',
+        sectionId: 'verse-1',
+        label: 'Verse 1',
+        occurrenceIds: ['o001'],
+      },
+    ],
+  })
   writeJson(path.join(songRoot, 'visual.json'), {
     recommendedTheme: 'cinema',
     mood: ['restrained'],

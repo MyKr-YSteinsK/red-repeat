@@ -18,6 +18,10 @@ export const OccurrenceIdSchema = z
   .string()
   .regex(/^o[0-9]+[A-Za-z0-9_-]*$/, 'must start with o and contain a numeric stem')
 
+export const PracticeUnitIdSchema = z
+  .string()
+  .regex(/^p[0-9]+[A-Za-z0-9_-]*$/, 'must start with p and contain a numeric stem')
+
 export const SectionIdSchema = z
   .string()
   .regex(/^[a-z][a-z0-9_-]*$/, 'must be a stable readable identifier')
@@ -163,6 +167,21 @@ export const TimelineSchema = z
     })
   })
 
+export const PracticeUnitSchema = z
+  .object({
+    id: PracticeUnitIdSchema,
+    sectionId: SectionIdSchema,
+    label: nonEmptyText,
+    occurrenceIds: z.array(OccurrenceIdSchema).min(1),
+  })
+  .strict()
+
+export const PracticeSchema = z
+  .object({
+    units: z.array(PracticeUnitSchema),
+  })
+  .strict()
+
 export const ThemeSchema = z.enum(['liner', 'cinema', 'nocturne'])
 export const SectionCueSchema = z
   .object({
@@ -203,6 +222,8 @@ export type LyricsDocument = z.infer<typeof LyricsSchema>
 export type Section = z.infer<typeof SectionSchema>
 export type Occurrence = z.infer<typeof OccurrenceSchema>
 export type TimelineDocument = z.infer<typeof TimelineSchema>
+export type PracticeUnit = z.infer<typeof PracticeUnitSchema>
+export type PracticeDocument = z.infer<typeof PracticeSchema>
 export type SectionCue = z.infer<typeof SectionCueSchema>
 export type VisualDocument = z.infer<typeof VisualSchema>
 
@@ -210,5 +231,6 @@ export const SOURCE_FILE_NAMES = {
   manifest: 'manifest.json',
   lyrics: 'lyrics.json',
   timeline: 'timeline.json',
+  practice: 'practice.json',
   visual: 'visual.json',
 } as const

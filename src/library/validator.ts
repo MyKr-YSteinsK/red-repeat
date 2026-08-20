@@ -18,9 +18,11 @@ import {
 import {
   LyricsSchema,
   ManifestSchema,
+  PracticeSchema,
   TimelineSchema,
   VisualSchema,
   type LyricsDocument,
+  type PracticeDocument,
   type TimelineDocument,
   type VisualDocument,
 } from './schema'
@@ -63,6 +65,13 @@ function validateSongPackage(
   const timeline = validateSourceFile(
     loadedFiles.timeline,
     TimelineSchema,
+    songPackage,
+    sourceRoot,
+    diagnostics,
+  )
+  const practice = validateSourceFile(
+    loadedFiles.practice,
+    PracticeSchema,
     songPackage,
     sourceRoot,
     diagnostics,
@@ -130,6 +139,17 @@ function validateSongPackage(
     validateVisualReferences(
       timeline,
       visual,
+      songPackage,
+      sourceRoot,
+      contextSongId,
+      diagnostics,
+    )
+  }
+
+  if (practice && timeline) {
+    validatePracticeReferences(
+      practice,
+      timeline,
       songPackage,
       sourceRoot,
       contextSongId,
@@ -424,6 +444,181 @@ function validateTimelineStructure(
       })
     }
   })
+}
+
+function validatePracticeReferences(
+  practice: PracticeDocument,
+  timeline: TimelineDocument,
+  songPackage: DiscoveredSongPackage,
+  sourceRoot: string,
+  songId: string,
+  diagnostics: Diagnostic[],
+): void {
+  const practicePath = toSourcePath(
+    sourceRoot,
+    path.join(songPackage.directoryPath, 'practice.json'),
+  )
+  const sectionIds = new Set(timeline.sections.map((section) => section.id))
+  const occurrencesById = new Map(
+    timeline.occurrences.map((occurrence) => [occurrence.id, occurrence]),
+  )
+  const unitIds = new Map<string, number>()
+  const assignedOccurrences = new Map<string, number>()
+  const occurrenceOrder = new Map(
+    timeline.occurrences.map((occurrence, index) => [
+      occurrence.id,
+      { occurrence, index },
+    ]),
+  )
+
+  practice.units.forEach((unit, unitIndex) => {
+    const firstUnitIndex = unitIds.get(unit.id)
+    if (firstUnitIndex !== undefined) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'PRACTICE_DUPLICATE_UNIT_ID',
+        songId,
+        sourcePath: practicePath,
+        fieldPath: `units[${unitIndex}].id`,
+        message: `Practice Unit "${unit.id}" duplicates the Unit declared at index ${firstUnitIndex}`,
+      })
+    } else {
+      unitIds.set(unit.id, unitIndex)
+    }
+
+    if (!sectionIds.has(unit.sectionId)) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'PRACTICE_UNKNOWN_SECTION',
+        songId,
+        sourcePath: practicePath,
+        fieldPath: `units[${unitIndex}].sectionId`,
+        message: `Practice Unit "${unit.id}" references unknown Section "${unit.sectionId}"`,
+      })
+    }
+
+    let previousOrder: { occurrence: TimelineDocument['occurrences'][number]; index: number } | undefined
+    let firstOrder: { occurrence: TimelineDocument['occurrences'][number]; index: number } | undefined
+
+    unit.occurrenceIds.forEach((occurrenceId, occurrenceIndex) => {
+      const occurrence = occurrencesById.get(occurrenceId)
+      const fieldPath = `units[${unitIndex}].occurrenceIds[${occurrenceIndex}]`
+
+      if (!occurrence) {
+        diagnostics.push({
+          severity: 'error',
+          code: 'PRACTICE_UNKNOWN_OCCURRENCE',
+          songId,
+          sourcePath: practicePath,
+          fieldPath,
+          message: `Practice Unit "${unit.id}" references unknown Occurrence "${occurrenceId}"`,
+        })
+        return
+      }
+
+      const firstAssignment = assignedOccurrences.get(occurrenceId)
+      if (firstAssignment !== undefined) {
+        diagnostics.push({
+          severity: 'error',
+          code:
+            firstAssignment === unitIndex
+              ? 'PRACTICE_DUPLICATE_OCCURRENCE'
+              : 'PRACTICE_OCCURRENCE_MULTI_ASSIGNMENT',
+          songId,
+          sourcePath: practicePath,
+          fieldPath,
+          message:
+            firstAssignment === unitIndex
+              ? `Occurrence "${occurrenceId}" is repeated within Practice Unit "${unit.id}"`
+              : `Occurrence "${occurrenceId}" is assigned to multiple Practice Units; first assigned at Unit index ${firstAssignment}`,
+        })
+      } else {
+        assignedOccurrences.set(occurrenceId, unitIndex)
+      }
+
+      if (occurrence.sectionId !== unit.sectionId) {
+        diagnostics.push({
+          severity: 'error',
+          code: 'PRACTICE_SECTION_MISMATCH',
+          songId,
+          sourcePath: practicePath,
+          fieldPath,
+          message: `Occurrence "${occurrenceId}" belongs to Section "${occurrence.sectionId}", not Practice Unit Section "${unit.sectionId}"`,
+        })
+      }
+
+      const order = occurrenceOrder.get(occurrenceId)
+      if (!order) {
+        return
+      }
+
+      firstOrder ??= order
+      if (previousOrder && compareOccurrenceOrder(previousOrder, order) > 0) {
+        diagnostics.push({
+          severity: 'error',
+          code: 'PRACTICE_OCCURRENCE_OUT_OF_ORDER',
+          songId,
+          sourcePath: practicePath,
+          fieldPath,
+          message: `Occurrence "${occurrenceId}" is out of chronological order within Practice Unit "${unit.id}"`,
+        })
+      }
+      previousOrder = order
+    })
+
+    const previousUnit = practice.units[unitIndex - 1]
+    if (previousUnit) {
+      const previousFirst = getFirstPracticeOccurrence(
+        previousUnit,
+        occurrenceOrder,
+      )
+      if (
+        firstOrder &&
+        previousFirst &&
+        compareOccurrenceOrder(previousFirst, firstOrder) > 0
+      ) {
+        diagnostics.push({
+          severity: 'error',
+          code: 'PRACTICE_UNIT_OUT_OF_ORDER',
+          songId,
+          sourcePath: practicePath,
+          fieldPath: `units[${unitIndex}].occurrenceIds[0]`,
+          message: `Practice Unit "${unit.id}" starts before the previous Practice Unit in source order`,
+        })
+      }
+    }
+  })
+
+  timeline.occurrences.forEach((occurrence, occurrenceIndex) => {
+    if (!assignedOccurrences.has(occurrence.id)) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'PRACTICE_OCCURRENCE_UNCOVERED',
+        songId,
+        sourcePath: practicePath,
+        fieldPath: 'units',
+        message: `Timeline Occurrence "${occurrence.id}" at index ${occurrenceIndex} is not covered by any Practice Unit`,
+      })
+    }
+  })
+}
+
+function getFirstPracticeOccurrence(
+  unit: PracticeDocument['units'][number],
+  occurrenceOrder: ReadonlyMap<
+    string,
+    { occurrence: TimelineDocument['occurrences'][number]; index: number }
+  >,
+): { occurrence: TimelineDocument['occurrences'][number]; index: number } | undefined {
+  const firstOccurrenceId = unit.occurrenceIds[0]
+  return firstOccurrenceId ? occurrenceOrder.get(firstOccurrenceId) : undefined
+}
+
+function compareOccurrenceOrder(
+  left: { occurrence: TimelineDocument['occurrences'][number]; index: number },
+  right: { occurrence: TimelineDocument['occurrences'][number]; index: number },
+): number {
+  return left.occurrence.startMs - right.occurrence.startMs || left.index - right.index
 }
 
 function validateVisualReferences(

@@ -44,6 +44,17 @@ const visual = {
   sectionCues: [{ sectionId: 'verse-1', cue: 'isolate' }],
 }
 
+const practice = {
+  units: [
+    {
+      id: 'p001',
+      sectionId: 'verse-1',
+      label: 'Verse 1',
+      occurrenceIds: ['o001'],
+    },
+  ],
+}
+
 afterEach(() => {
   temporaryRoots.splice(0).forEach((root) => {
     fs.rmSync(root, { recursive: true, force: true })
@@ -116,6 +127,139 @@ describe('Library Validator', () => {
     const result = validateLibrary(root)
 
     expectCode(result, 'MISSING_SOURCE_FILE')
+  })
+
+  it('reports a missing required practice.json', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    fs.rmSync(path.join(packageDirectory, 'practice.json'))
+
+    expectCode(validateLibrary(root), 'MISSING_SOURCE_FILE')
+  })
+
+  it('rejects invalid Practice Unit cross-file references and coverage', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'practice.json'), {
+      units: [
+        {
+          id: 'p001',
+          sectionId: 'missing-section',
+          label: 'Broken',
+          occurrenceIds: ['o999'],
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+
+    expectCode(result, 'PRACTICE_UNKNOWN_SECTION')
+    expectCode(result, 'PRACTICE_UNKNOWN_OCCURRENCE')
+    expectCode(result, 'PRACTICE_OCCURRENCE_UNCOVERED')
+  })
+
+  it('rejects duplicate, mismatched, and repeated Practice assignments', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      ...timeline,
+      sections: [
+        ...timeline.sections,
+        { id: 'chorus', label: 'Chorus', startMs: 4000, endMs: 6000 },
+      ],
+      occurrences: [
+        timeline.occurrences[0],
+        {
+          ...timeline.occurrences[0],
+          id: 'o002',
+          sectionId: 'chorus',
+          startMs: 4100,
+          endMs: 4500,
+          playStartMs: 4000,
+          playEndMs: 5000,
+        },
+      ],
+    })
+    writeJson(path.join(packageDirectory, 'practice.json'), {
+      units: [
+        {
+          id: 'p001',
+          sectionId: 'verse-1',
+          label: 'Verse 1',
+          occurrenceIds: ['o001', 'o001'],
+        },
+        {
+          id: 'p001',
+          sectionId: 'verse-1',
+          label: 'Duplicate',
+          occurrenceIds: ['o001'],
+        },
+        {
+          id: 'p002',
+          sectionId: 'verse-1',
+          label: 'Wrong Section',
+          occurrenceIds: ['o002'],
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+
+    expectCode(result, 'PRACTICE_DUPLICATE_UNIT_ID')
+    expectCode(result, 'PRACTICE_DUPLICATE_OCCURRENCE')
+    expectCode(result, 'PRACTICE_OCCURRENCE_MULTI_ASSIGNMENT')
+    expectCode(result, 'PRACTICE_SECTION_MISMATCH')
+  })
+
+  it('rejects Practice Unit occurrence and source ordering errors', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'timeline.json'), {
+      ...timeline,
+      occurrences: [
+        timeline.occurrences[0],
+        {
+          ...timeline.occurrences[0],
+          id: 'o002',
+          startMs: 3000,
+          endMs: 3500,
+          playStartMs: 2500,
+          playEndMs: 3800,
+        },
+      ],
+    })
+    writeJson(path.join(packageDirectory, 'practice.json'), {
+      units: [
+        {
+          id: 'p001',
+          sectionId: 'verse-1',
+          label: 'Later first',
+          occurrenceIds: ['o002'],
+        },
+        {
+          id: 'p002',
+          sectionId: 'verse-1',
+          label: 'Earlier second',
+          occurrenceIds: ['o001'],
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+
+    expectCode(result, 'PRACTICE_UNIT_OUT_OF_ORDER')
+
+    writeJson(path.join(packageDirectory, 'practice.json'), {
+      units: [
+        {
+          id: 'p001',
+          sectionId: 'verse-1',
+          label: 'Reversed',
+          occurrenceIds: ['o002', 'o001'],
+        },
+      ],
+    })
+    expectCode(validateLibrary(root), 'PRACTICE_OCCURRENCE_OUT_OF_ORDER')
   })
 
   it('reports missing and ambiguous media sources', () => {
@@ -365,6 +509,7 @@ function createValidPackage(root: string): string {
   writeJson(path.join(packageDirectory, 'manifest.json'), manifest)
   writeJson(path.join(packageDirectory, 'lyrics.json'), lyrics)
   writeJson(path.join(packageDirectory, 'timeline.json'), timeline)
+  writeJson(path.join(packageDirectory, 'practice.json'), practice)
   writeJson(path.join(packageDirectory, 'visual.json'), visual)
   fs.writeFileSync(
     path.join(packageDirectory, 'audio', 'source.mp3'),

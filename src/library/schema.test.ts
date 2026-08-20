@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   LyricsSchema,
   ManifestSchema,
+  PracticeSchema,
   TimelineSchema,
   VisualSchema,
 } from './schema'
@@ -52,12 +53,37 @@ const validVisual = {
   sectionCues: [{ sectionId: 'verse-1', cue: 'isolate' }],
 }
 
+const validPractice = {
+  units: [
+    {
+      id: 'p001',
+      sectionId: 'verse-1',
+      label: 'Verse 1',
+      occurrenceIds: ['o001'],
+    },
+  ],
+}
+
 describe('Song Edition source schemas', () => {
   it('accepts a valid minimal source package', () => {
     expect(ManifestSchema.safeParse(validManifest).success).toBe(true)
     expect(LyricsSchema.safeParse(validLyrics).success).toBe(true)
     expect(TimelineSchema.safeParse(validTimeline).success).toBe(true)
+    expect(PracticeSchema.safeParse(validPractice).success).toBe(true)
     expect(VisualSchema.safeParse(validVisual).success).toBe(true)
+  })
+
+  it('requires stable Practice Unit fields', () => {
+    expect(
+      PracticeSchema.safeParse({
+        units: [{ ...validPractice.units[0], id: 'unit-1' }],
+      }).success,
+    ).toBe(false)
+    expect(
+      PracticeSchema.safeParse({
+        units: [{ ...validPractice.units[0], occurrenceIds: [] }],
+      }).success,
+    ).toBe(false)
   })
 
   it('requires non-empty translations', () => {
