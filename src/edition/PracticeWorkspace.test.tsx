@@ -658,6 +658,135 @@ describe('PracticeWorkspace', () => {
     fireEvent.click(screen.getByRole('button', { name: '停止练习' }))
   })
 
+  it('opens the timing panel without autoplay, saves fine adjustments, and restores defaults', () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+    expect(screen.getByRole('region', { name: '微调播放切口' })).toBeInTheDocument()
+    expect(media.play).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: '起点增加 20 毫秒' }))
+    expect(screen.getAllByText('已微调').length).toBeGreaterThan(0)
+    const saved = JSON.parse(
+      window.localStorage.getItem(getTimingOverridesStorageKey('first-light')) ?? '{}',
+    )
+    expect(saved.occurrences.o001.playStartMs).toBe(70)
+    expect(media.play).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: '恢复本句默认' }))
+    expect(screen.queryByText('已微调')).not.toBeInTheDocument()
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
+    expect(screen.getByText('已恢复本句默认播放切口。')).toBeInTheDocument()
+  })
+
+  it('rejects an invalid boundary and can set a timing edge from current playback position', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+    fireEvent.click(screen.getByRole('button', { name: '终点减少 100 毫秒' }))
+    fireEvent.click(screen.getByRole('button', { name: '终点减少 100 毫秒' }))
+    fireEvent.click(screen.getByRole('button', { name: '终点减少 100 毫秒' }))
+    expect(screen.getByText('播放切口必须满足起点早于终点。')).toBeInTheDocument()
+
+    await waitFor(() => expect(engine.getState().sourceUrl).toBe('/app/library-runtime/audio.m4a'))
+    await engine.seek(123)
+    fireEvent.click(screen.getByRole('button', { name: '将当前播放位置设为起点' }))
+    const saved = JSON.parse(
+      window.localStorage.getItem(getTimingOverridesStorageKey('first-light')) ?? '{}',
+    )
+    expect(saved.occurrences.o001.playStartMs).toBe(123)
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('previews current and adjacent effective ranges as bounded one-shots', () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '本句' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 400, endMs: 750, occurrenceIds: ['o002'] },
+      'o002',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '上一句 → 本句' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '本句 → 下一句' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 400, endMs: 1150, occurrenceIds: ['o002', 'o003'] },
+      'o002',
+    )
+  })
+
+  it('preview cancels repeat, Ramp, and Shadow owners', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '本句' }))
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始渐速练习' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '停止练习' })).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: '本句' }))
+    expect(screen.getByRole('button', { name: '暂停' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始跟唱' }))
+    await waitFor(() => expect(playRange).toHaveBeenCalled())
+    fireEvent.click(screen.getByRole('button', { name: '本句' }))
+    expect(screen.queryByRole('button', { name: '停止练习' })).not.toBeInTheDocument()
+  })
+
   it('runs Ramp from the current target, disables speed changes, and restores the saved rate on Esc', async () => {
     window.localStorage.setItem('red-repeat:practice-rate:v1:first-light', '0.75')
     const media = new FakeMedia()

@@ -2441,6 +2441,117 @@
   line-height: 1.5;
 }
 
+.practice-timing-toggle {
+  width: 100%;
+  margin-top: 0.75rem;
+  text-align: left;
+}
+
+.practice-timing-panel {
+  min-width: 0;
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 96%, var(--color-red));
+}
+
+.practice-timing-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.practice-timing-heading h3,
+.practice-timing-kicker {
+  margin: 0;
+}
+
+.practice-timing-heading h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.practice-timing-kicker,
+.practice-timing-badge,
+.practice-timing-save,
+.practice-timing-warning,
+.practice-timing-comparison,
+.practice-timing-preview > span {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.practice-timing-badge,
+.practice-timing-warning {
+  color: var(--color-red);
+}
+
+.practice-timing-row {
+  display: grid;
+  grid-template-columns: auto repeat(2, minmax(0, 1fr)) minmax(4.2rem, auto) repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.7rem;
+}
+
+.practice-timing-row > span {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+}
+
+.practice-timing-row output {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.practice-timing-row .practice-action {
+  min-width: 0;
+  padding-inline: 0.2rem;
+}
+
+.practice-timing-position-button,
+.practice-timing-reset {
+  width: 100%;
+  margin-top: 0.45rem;
+}
+
+.practice-timing-comparison,
+.practice-timing-warning,
+.practice-timing-save {
+  margin: 0.7rem 0 0;
+}
+
+.practice-timing-preview {
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.7rem;
+}
+
+.practice-timing-preview .practice-action {
+  min-width: 0;
+  padding-inline: 0.25rem;
+}
+
+.practice-timing-modified {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+}
+
 .practice-range-selection {
   color: var(--color-red);
 }
@@ -2673,6 +2784,14 @@
 
   .practice-rate-actions {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .practice-timing-preview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-timing-preview > span {
+    grid-column: 1 / -1;
   }
 
   .practice-keyboard-hint {

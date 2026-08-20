@@ -29,7 +29,13 @@ import { usePracticeController } from './use-practice-controller'
 import { calculateShadowRangeSilenceMs } from '../practice/practice-controller'
 import {
   createEffectivePracticeTimingProvider,
+  createTimingOverridesDocument,
   readTimingOverrides,
+  resetTimingOverride,
+  saveTimingOverrides,
+  updateTimingOverride,
+  type TimingOverridesDocument,
+  type TimingOverridesReadResult,
 } from '../practice/practice-timing-overrides'
 import {
   getNextPracticePlaybackRate,
@@ -57,22 +63,37 @@ export function PracticeWorkspace({
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
   )
-  const timingOverrideDocument = useMemo(() => {
-    const result = readTimingOverrides(
+  const timingIdentity = useMemo(
+    () => ({
+      songId: model.edition.song.songId,
+      audioSourceHash: model.edition.audio.sourceHash,
+      baseTimelineUrl: model.edition.timelineUrl,
+    }),
+    [
+      model.edition.audio.sourceHash,
+      model.edition.song.songId,
+      model.edition.timelineUrl,
+    ],
+  )
+  const storedTimingResult = useMemo<TimingOverridesReadResult>(() => {
+    return readTimingOverrides(
+      timingIdentity,
       {
-        songId: model.edition.song.songId,
-        audioSourceHash: model.edition.audio.sourceHash,
-        baseTimelineUrl: model.edition.timelineUrl,
+        occurrences: model.timeline.occurrences,
       },
-      { occurrences: model.timeline.occurrences },
     )
-    return result.kind === 'compatible' ? result.document : undefined
   }, [
-    model.edition.audio.sourceHash,
-    model.edition.song.songId,
-    model.edition.timelineUrl,
     model.timeline.occurrences,
+    timingIdentity,
   ])
+  const [timingOverrideDocument, setTimingOverrideDocument] =
+    useState<TimingOverridesDocument | undefined>(() =>
+      storedTimingResult.kind === 'compatible'
+        ? storedTimingResult.document
+        : undefined,
+    )
+  const [timingPanelOpen, setTimingPanelOpen] = useState(false)
+  const [timingSaveAvailable, setTimingSaveAvailable] = useState(true)
   const practiceTimingProvider = useMemo(
     () =>
       createEffectivePracticeTimingProvider(
@@ -80,6 +101,18 @@ export function PracticeWorkspace({
         timingOverrideDocument,
       ),
     [model.timeline, timingOverrideDocument],
+  )
+
+  const persistTimingOverrideDocument = useCallback(
+    (nextDocument: TimingOverridesDocument): void => {
+      setTimingOverrideDocument(nextDocument)
+      setTimingSaveAvailable(
+        saveTimingOverrides(nextDocument, {
+          occurrences: model.timeline.occurrences,
+        }),
+      )
+    },
+    [model.timeline.occurrences],
   )
   const [learningState, setLearningState] = useState<PracticeLearningState | null>(
     () => loadSafeState(model, practiceIndex),
@@ -692,6 +725,80 @@ export function PracticeWorkspace({
         practiceTimingProvider,
       )
     : undefined
+  const currentTiming = practiceTimingProvider.getTiming(
+    currentOccurrence.occurrence,
+  )
+  const currentTimingOverride =
+    timingOverrideDocument?.occurrences[currentOccurrence.occurrence.id]
+  const currentTimingModified = Boolean(currentTimingOverride)
+  const currentChronologicalIndex = practiceIndex.chronologicalOccurrenceIds.indexOf(
+    currentOccurrence.occurrence.id,
+  )
+  const previewPreviousOccurrenceId =
+    practiceIndex.chronologicalOccurrenceIds[currentChronologicalIndex - 1]
+  const previewNextOccurrenceId =
+    practiceIndex.chronologicalOccurrenceIds[currentChronologicalIndex + 1]
+  const adjustCurrentTiming = (
+    field: 'playStartMs' | 'playEndMs',
+    deltaMs: number,
+  ): void => {
+    try {
+      const baseDocument =
+        timingOverrideDocument ?? createTimingOverridesDocument(timingIdentity)
+      const nextDocument = updateTimingOverride(
+        baseDocument,
+        currentOccurrence.occurrence,
+        field,
+        currentTiming[field] + deltaMs,
+      )
+      persistTimingOverrideDocument(nextDocument)
+      setMessage(undefined)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '播放切口无效。')
+    }
+  }
+  const setCurrentTimingFromPlayback = (
+    field: 'playStartMs' | 'playEndMs',
+  ): void => {
+    try {
+      const baseDocument =
+        timingOverrideDocument ?? createTimingOverridesDocument(timingIdentity)
+      const nextDocument = updateTimingOverride(
+        baseDocument,
+        currentOccurrence.occurrence,
+        field,
+        playback.engine?.getState().currentTimeMs ??
+          playback.audioState.currentTimeMs,
+      )
+      persistTimingOverrideDocument(nextDocument)
+      setMessage(undefined)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '当前播放位置不可用。')
+    }
+  }
+  const restoreCurrentTiming = (): void => {
+    const baseDocument =
+      timingOverrideDocument ?? createTimingOverridesDocument(timingIdentity)
+    const nextDocument = resetTimingOverride(
+      baseDocument,
+      currentOccurrence.occurrence.id,
+    )
+    persistTimingOverrideDocument(nextDocument)
+    setMessage('已恢复本句默认播放切口。')
+  }
+  const previewRange = (startOccurrenceId: string, endOccurrenceId: string): void => {
+    playScope(
+      { kind: 'customRange', startOccurrenceId, endOccurrenceId },
+      currentOccurrence.occurrence.id,
+    )
+  }
+  const nextCanonicalStartMs = previewNextOccurrenceId
+    ? model.occurrencesById[previewNextOccurrenceId]?.occurrence.startMs
+    : undefined
+  const overlapWarningMs =
+    nextCanonicalStartMs !== undefined && currentTiming.playEndMs > nextCanonicalStartMs
+      ? currentTiming.playEndMs - nextCanonicalStartMs
+      : 0
   const strategyProgress = describePracticeStrategy(practiceStrategyState)
   const repeatProgress = describePracticeRepeat(practicePlaybackState)
   const rangeSelectionLabel = rangeSelectionMode
@@ -750,6 +857,7 @@ export function PracticeWorkspace({
               isCurrent
               isInCustomRange={customRangeOccurrenceIds?.has(currentOccurrence.occurrence.id) ?? false}
               isRangeAnchor={rangeSelectionStartId === currentOccurrence.occurrence.id}
+              isTimingModified={currentTimingModified}
               rangeSelectionMode={rangeSelectionMode}
               onPlay={() => playOccurrence(currentOccurrence.occurrence.id)}
               onSelectRangeEndpoint={selectRangeEndpoint}
@@ -804,6 +912,177 @@ export function PracticeWorkspace({
           <p className="practice-target-summary" aria-live="polite">
             {formatTargetSummary(targetKind, selectedRange, practiceIndex)}
           </p>
+          <button
+            className="practice-action practice-timing-toggle"
+            type="button"
+            aria-expanded={timingPanelOpen}
+            onClick={() => setTimingPanelOpen((open) => !open)}
+          >
+            微调播放切口{currentTimingModified ? ' · 已微调' : ''}
+          </button>
+          {timingPanelOpen ? (
+            <section className="practice-timing-panel" aria-label="微调播放切口">
+              <div className="practice-timing-heading">
+                <div>
+                  <p className="practice-timing-kicker">播放切口</p>
+                  <h3>当前句</h3>
+                </div>
+                {currentTimingModified ? (
+                  <span className="practice-timing-badge">已微调</span>
+                ) : null}
+              </div>
+              <div className="practice-timing-row" aria-label="播放起点">
+                <span>起点</span>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="起点减少 100 毫秒"
+                  onClick={() => adjustCurrentTiming('playStartMs', -100)}
+                >
+                  −100
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="起点减少 20 毫秒"
+                  onClick={() => adjustCurrentTiming('playStartMs', -20)}
+                >
+                  −20
+                </button>
+                <output>{formatClockMs(currentTiming.playStartMs)}</output>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="起点增加 20 毫秒"
+                  onClick={() => adjustCurrentTiming('playStartMs', 20)}
+                >
+                  +20
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="起点增加 100 毫秒"
+                  onClick={() => adjustCurrentTiming('playStartMs', 100)}
+                >
+                  +100
+                </button>
+              </div>
+              <button
+                className="practice-action practice-timing-position-button"
+                type="button"
+                onClick={() => setCurrentTimingFromPlayback('playStartMs')}
+              >
+                将当前播放位置设为起点
+              </button>
+              <div className="practice-timing-row" aria-label="播放终点">
+                <span>终点</span>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="终点减少 100 毫秒"
+                  onClick={() => adjustCurrentTiming('playEndMs', -100)}
+                >
+                  −100
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="终点减少 20 毫秒"
+                  onClick={() => adjustCurrentTiming('playEndMs', -20)}
+                >
+                  −20
+                </button>
+                <output>{formatClockMs(currentTiming.playEndMs)}</output>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="终点增加 20 毫秒"
+                  onClick={() => adjustCurrentTiming('playEndMs', 20)}
+                >
+                  +20
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  aria-label="终点增加 100 毫秒"
+                  onClick={() => adjustCurrentTiming('playEndMs', 100)}
+                >
+                  +100
+                </button>
+              </div>
+              <button
+                className="practice-action practice-timing-position-button"
+                type="button"
+                onClick={() => setCurrentTimingFromPlayback('playEndMs')}
+              >
+                将当前播放位置设为终点
+              </button>
+              <p className="practice-timing-comparison">
+                系统：{formatClockMs(currentOccurrence.occurrence.playStartMs)}–{formatClockMs(currentOccurrence.occurrence.playEndMs)}
+                <br />
+                你的：{formatClockMs(currentTiming.playStartMs)}–{formatClockMs(currentTiming.playEndMs)}
+              </p>
+              {overlapWarningMs > 20 ? (
+                <p className="practice-timing-warning" role="status">
+                  可能包含下一句开头 · 越过约 {Math.round(overlapWarningMs)}ms
+                </p>
+              ) : null}
+              <div className="practice-timing-preview" aria-label="播放切口试听">
+                <span>试听</span>
+                <button
+                  className="practice-action"
+                  type="button"
+                  onClick={() => playOccurrence(currentOccurrence.occurrence.id)}
+                  disabled={!practicePlaybackSession}
+                >
+                  本句
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  onClick={() =>
+                    previewPreviousOccurrenceId
+                      ? previewRange(
+                          previewPreviousOccurrenceId,
+                          currentOccurrence.occurrence.id,
+                        )
+                      : undefined
+                  }
+                  disabled={!previewPreviousOccurrenceId || !practicePlaybackSession}
+                >
+                  上一句 → 本句
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  onClick={() =>
+                    previewNextOccurrenceId
+                      ? previewRange(
+                          currentOccurrence.occurrence.id,
+                          previewNextOccurrenceId,
+                        )
+                      : undefined
+                  }
+                  disabled={!previewNextOccurrenceId || !practicePlaybackSession}
+                >
+                  本句 → 下一句
+                </button>
+              </div>
+              <button
+                className="practice-action practice-timing-reset"
+                type="button"
+                onClick={restoreCurrentTiming}
+                disabled={!currentTimingModified}
+              >
+                恢复本句默认
+              </button>
+              <p className="practice-timing-save" role="status">
+                {timingSaveAvailable
+                  ? '✓ 已自动保存在本机'
+                  : '本机存储不可用，当前修改仅在本页有效'}
+              </p>
+            </section>
+          ) : null}
           {customRangeScope ? (
             <div className="practice-custom-range-actions">
               <button
@@ -1039,6 +1318,7 @@ export function PracticeWorkspace({
                   isCurrent={false}
                   isInCustomRange={customRangeOccurrenceIds?.has(assembledOccurrence.occurrence.id) ?? false}
                   isRangeAnchor={rangeSelectionStartId === assembledOccurrence.occurrence.id}
+                  isTimingModified={false}
                   rangeSelectionMode={rangeSelectionMode}
                   onPlay={() => playOccurrence(assembledOccurrence.occurrence.id)}
                   onSelectRangeEndpoint={selectRangeEndpoint}
@@ -1138,6 +1418,7 @@ function PracticeLyricRow({
   isCurrent,
   isInCustomRange,
   isRangeAnchor,
+  isTimingModified,
   rangeSelectionMode,
   onPlay,
   onSelectRangeEndpoint,
@@ -1147,6 +1428,7 @@ function PracticeLyricRow({
   isCurrent: boolean
   isInCustomRange: boolean
   isRangeAnchor: boolean
+  isTimingModified: boolean
   rangeSelectionMode: boolean
   onPlay: () => void
   onSelectRangeEndpoint: (occurrenceId: string) => void
@@ -1181,6 +1463,9 @@ function PracticeLyricRow({
       >
         {segment.lyrics}
       </button>
+      {isTimingModified ? (
+        <span className="practice-timing-modified">已微调</span>
+      ) : null}
       <p className="practice-translation">{segment.translation}</p>
       {segment.layers?.length ? (
         <div className="practice-readings" aria-label="Reading">
@@ -1425,6 +1710,14 @@ function getShadowSilenceDuration(
 
 function formatDuration(durationMs: number): string {
   return `${(durationMs / 1000).toFixed(2)} 秒`
+}
+
+function formatClockMs(timeMs: number): string {
+  const totalSeconds = Math.floor(timeMs / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  const milliseconds = timeMs % 1000
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`
 }
 
 const PRACTICE_RATE_PRESETS = [0.65, 0.75, 0.85, 1] as const
