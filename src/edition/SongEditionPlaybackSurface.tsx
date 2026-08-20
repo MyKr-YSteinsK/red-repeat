@@ -3,10 +3,6 @@ import type { AudioEngine } from '../audio/audio-engine'
 import { LinerLyrics } from './LinerLyrics'
 import { ImmersiveLyrics } from './ImmersiveLyrics'
 import { PlaybackDock } from './PlaybackDock'
-import {
-  PracticeController,
-  type PracticeStrategyState,
-} from '../practice/practice-controller'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledSongEdition } from '../runtime/song-edition'
@@ -14,6 +10,7 @@ import type { SongEditionMode } from './song-edition-mode'
 import type { SongEditionKeyboardRegistration } from './song-edition-keyboard'
 import type { EditionTheme } from '../theme/theme-preference'
 import { getSectionCue, resolveArtDirection } from '../theme/art-direction'
+import { usePracticeController } from './use-practice-controller'
 
 export interface SongEditionPlaybackSurfaceProps {
   model: AssembledSongEdition
@@ -39,12 +36,8 @@ export function SongEditionPlaybackSurface({
   onToggleReading,
 }: SongEditionPlaybackSurfaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [practiceController] = useState(() =>
-    playback.engine ? new PracticeController(playback.engine) : null,
-  )
-  const [practiceState, setPracticeState] = useState<PracticeStrategyState>(
-    () => practiceController?.getState() ?? { kind: 'idle' },
-  )
+  const { controller: practiceController, state: practiceState } =
+    usePracticeController(playback.engine)
   const [internalMode, setInternalMode] = useState<SongEditionMode>('liner')
   const [internalReadingVisible, setInternalReadingVisible] = useState(false)
   const [controlsVisible, setControlsVisible] = useState(true)
@@ -121,13 +114,6 @@ export function SongEditionPlaybackSurface({
     controlsVisible
 
   useEffect(() => {
-    if (!practiceController) {
-      return
-    }
-    return practiceController.subscribe(setPracticeState)
-  }, [practiceController])
-
-  useEffect(() => {
     if (mode !== 'focus') {
       practiceController?.cancel()
     }
@@ -136,13 +122,6 @@ export function SongEditionPlaybackSurface({
   useEffect(() => {
     practiceController?.cancel()
   }, [model.edition.audio.url, model.edition.song.songId, practiceController])
-
-  useEffect(
-    () => () => {
-      practiceController?.dispose()
-    },
-    [practiceController],
-  )
 
   const handleSelectOccurrence = (occurrence: Parameters<
     typeof playback.selectOccurrence

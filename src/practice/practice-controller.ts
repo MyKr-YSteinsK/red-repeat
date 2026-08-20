@@ -12,6 +12,11 @@ export const RAMP_TOTAL_REPETITIONS =
 
 export type ShadowPhase = 'source-before' | 'your-turn' | 'source-after'
 
+export interface ShadowRangeTarget {
+  range: AudioRange
+  activeOccurrenceId?: string
+}
+
 export interface PracticeScheduler {
   setTimeout(callback: () => void, delayMs: number): unknown
   clearTimeout(handle: unknown): void
@@ -35,7 +40,8 @@ export interface RampPracticeState {
 
 export interface ShadowPracticeState {
   kind: 'shadow'
-  targetOccurrenceId: string
+  targetOccurrenceId?: string
+  targetRange: AudioRange
   phase: ShadowPhase
   silenceDurationMs: number
   silenceDeadlineMs?: number
@@ -65,7 +71,7 @@ export class PracticeController {
   private silenceTimer: unknown
   private silenceCompletion?: (completed: boolean) => void
   private disposed = false
-  private activeShadowOccurrence: Occurrence | undefined
+  private activeShadowTarget: ShadowRangeTarget | undefined
 
   constructor(
     engine: AudioEngine,
@@ -114,18 +120,30 @@ export class PracticeController {
       return false
     }
 
-    const token = this.beginStrategy()
-    this.activeShadowOccurrence = { ...occurrence }
-    const silenceDurationMs = calculateShadowSilenceMs(occurrence)
-    this.setState({
-      kind: 'shadow',
-      targetOccurrenceId: occurrence.id,
-      phase: 'source-before',
-      silenceDurationMs,
-      playbackRate: this.engine.getState().playbackRate,
-    })
-    void this.runShadow(token)
-    return true
+    return this.startShadowTarget(
+      {
+        range: {
+          startMs: occurrence.playStartMs,
+          endMs: occurrence.playEndMs,
+        },
+        activeOccurrenceId: occurrence.id,
+      },
+      calculateShadowSilenceMs(occurrence),
+    )
+  }
+
+  startShadowRange(target: ShadowRangeTarget): boolean {
+    if (!isValidShadowRangeTarget(target) || this.disposed) {
+      return false
+    }
+
+    return this.startShadowTarget(
+      target,
+      calculateShadowRangeSilenceMs(
+        target.range,
+        this.engine.getState().playbackRate,
+      ),
+    )
   }
 
   cancel(): void {
@@ -138,7 +156,7 @@ export class PracticeController {
     this.generation += 1
     this.hasActiveStrategy = false
     this.activeSourceUrl = undefined
-    this.activeShadowOccurrence = undefined
+    this.activeShadowTarget = undefined
     this.clearSilenceTimer()
 
     if (previousState.kind === 'ramp') {
@@ -217,20 +235,15 @@ export class PracticeController {
   }
 
   private async runShadow(token: number): Promise<void> {
-    const occurrence = this.activeShadowOccurrence
-    if (!occurrence || !this.isCurrentStrategy(token)) {
+    const target = this.activeShadowTarget
+    if (!target || !this.isCurrentStrategy(token)) {
       return
-    }
-
-    const range = {
-      startMs: occurrence.playStartMs,
-      endMs: occurrence.playEndMs,
     }
 
     try {
       const firstCompletion = await this.engine.playRangeUntilComplete(
-        range,
-        occurrence.id,
+        target.range,
+        target.activeOccurrenceId,
       )
       if (!this.isCurrentStrategy(token)) {
         return
@@ -260,8 +273,8 @@ export class PracticeController {
         return
       }
 
-      const latestOccurrence = this.activeShadowOccurrence
-      if (!latestOccurrence || this.state.kind !== 'shadow') {
+      const latestTarget = this.activeShadowTarget
+      if (!latestTarget || this.state.kind !== 'shadow') {
         this.cancel()
         return
       }
@@ -272,11 +285,8 @@ export class PracticeController {
       })
 
       const secondCompletion = await this.engine.playRangeUntilComplete(
-        {
-          startMs: latestOccurrence.playStartMs,
-          endMs: latestOccurrence.playEndMs,
-        },
-        latestOccurrence.id,
+        latestTarget.range,
+        latestTarget.activeOccurrenceId,
       )
       if (!this.isCurrentStrategy(token)) {
         return
@@ -368,11 +378,44 @@ export class PracticeController {
     const snapshot = this.getState()
     this.listeners.forEach((listener) => listener(snapshot))
   }
+
+  private startShadowTarget(
+    target: ShadowRangeTarget,
+    silenceDurationMs: number,
+  ): boolean {
+    const token = this.beginStrategy()
+    this.activeShadowTarget = {
+      range: { ...target.range },
+      activeOccurrenceId: target.activeOccurrenceId,
+    }
+    this.setState({
+      kind: 'shadow',
+      targetOccurrenceId: target.activeOccurrenceId,
+      targetRange: { ...target.range },
+      phase: 'source-before',
+      silenceDurationMs,
+      playbackRate: this.engine.getState().playbackRate,
+    })
+    void this.runShadow(token)
+    return true
+  }
 }
 
 export function calculateShadowSilenceMs(occurrence: Occurrence): number {
   const actualDurationMs = occurrence.endMs - occurrence.startMs
   return Math.min(8000, Math.max(2000, Math.round(actualDurationMs * 1.15)))
+}
+
+export function calculateShadowRangeSilenceMs(
+  range: AudioRange,
+  playbackRate: number,
+): number {
+  if (!isValidAudioRange(range) || !Number.isFinite(playbackRate) || playbackRate <= 0) {
+    return 0
+  }
+
+  const sourceWallClockMs = (range.endMs - range.startMs) / playbackRate
+  return Math.max(1200, Math.round(sourceWallClockMs + 400))
 }
 
 function isValidAudioRange(range: AudioRange): boolean {
@@ -397,6 +440,10 @@ function isValidShadowOccurrence(occurrence: Occurrence): boolean {
   )
 }
 
+function isValidShadowRangeTarget(target: ShadowRangeTarget): boolean {
+  return isValidAudioRange(target.range)
+}
+
 function clonePracticeState(
   state: PracticeStrategyState,
 ): PracticeStrategyState {
@@ -411,7 +458,10 @@ function clonePracticeState(
     }
   }
 
-  return { ...state }
+  return {
+    ...state,
+    targetRange: { ...state.targetRange },
+  }
 }
 
 function createDefaultPracticeScheduler(): PracticeScheduler {

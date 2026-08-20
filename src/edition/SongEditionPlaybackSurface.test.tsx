@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
@@ -115,6 +116,31 @@ const model = assembleRuntimeSongEdition({
 })
 
 describe('Song Edition timeline playback binding', () => {
+  it('keeps the strategy controller usable across StrictMode effect replay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    render(
+      <StrictMode>
+        <SongEditionPlaybackSurface
+          model={model}
+          runtimeClient={runtimeClientFor()}
+          audioEngine={engine}
+        />
+      </StrictMode>,
+    )
+
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    fireEvent.click(screen.getAllByRole('button', { name: 'Play line Repeat me' })[1])
+    await waitFor(() => expect(engine.getState().status).toBe('playing'))
+    fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+
+    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
   it('loads exactly one source without autoplay', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)

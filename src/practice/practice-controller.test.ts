@@ -6,6 +6,7 @@ import {
 } from '../audio/audio-engine'
 import {
   calculateShadowSilenceMs,
+  calculateShadowRangeSilenceMs,
   PracticeController,
   type PracticeScheduler,
 } from './practice-controller'
@@ -207,6 +208,18 @@ describe('PracticeController', () => {
     expect(calculateShadowSilenceMs({ ...occurrence, endMs: 9100 })).toBe(8000)
   })
 
+  it('calculates range Shadow silence from wall-clock duration and rate', () => {
+    expect(
+      calculateShadowRangeSilenceMs({ startMs: 0, endMs: 30000 }, 1),
+    ).toBe(30400)
+    expect(
+      calculateShadowRangeSilenceMs({ startMs: 0, endMs: 30000 }, 0.75),
+    ).toBe(40400)
+    expect(
+      calculateShadowRangeSilenceMs({ startMs: 0, endMs: 400 }, 1),
+    ).toBe(1200)
+  })
+
   it('enters YOUR TURN after the first source practice range', async () => {
     const media = new FakeMedia()
     const frames = new FakeFrameScheduler()
@@ -272,6 +285,51 @@ describe('PracticeController', () => {
     expect(activeController.getState()).toEqual({ kind: 'idle' })
     expect(media.load).toHaveBeenCalledTimes(1)
     expect(engine.getState().playbackRate).toBe(0.75)
+  })
+
+  it('plays a range Shadow as one continuous source-before and source-after', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const scheduler = new FakePracticeScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    engine.loadSource('/audio.m4a')
+    engine.setPlaybackRate(0.75)
+    activeController = new PracticeController(engine, { scheduler })
+
+    expect(
+      activeController.startShadowRange({
+        range: { startMs: 50, endMs: 650 },
+        activeOccurrenceId: 'o-range',
+      }),
+    ).toBe(true)
+    await flushMicrotasks(8)
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toMatchObject({
+      kind: 'shadow',
+      targetOccurrenceId: 'o-range',
+      targetRange: { startMs: 50, endMs: 650 },
+      phase: 'your-turn',
+      silenceDurationMs: 1200,
+    })
+
+    scheduler.advanceBy(1200)
+    await flushMicrotasks(8)
+    expect(activeController.getState()).toMatchObject({
+      phase: 'source-after',
+      targetRange: { startMs: 50, endMs: 650 },
+    })
+    expect(media.currentTime).toBe(0.05)
+
+    media.currentTime = 0.65
+    frames.flush()
+    await flushMicrotasks(8)
+
+    expect(activeController.getState()).toEqual({ kind: 'idle' })
+    expect(media.playbackRates).toEqual([0.75, 0.75])
   })
 
   it('cancels Shadow during source, silence, and replay without ghost playback', async () => {
