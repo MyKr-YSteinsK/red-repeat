@@ -9,6 +9,7 @@ import {
   resolvePracticeRange,
   type PracticeIndex,
   type PracticeScope,
+  type ResolvedPracticeRange,
 } from '../practice/practice-scope'
 import {
   createInitialPracticeState,
@@ -41,6 +42,9 @@ export function PracticeWorkspace({
   const [learningState, setLearningState] = useState<PracticeLearningState | null>(
     () => loadSafeState(model, practiceIndex),
   )
+  const [mapOpen, setMapOpen] = useState(getInitialPracticeMapOpen)
+  const [playbackSession, setPlaybackSession] =
+    useState<PracticePlaybackSession | null>(null)
   const [message, setMessage] = useState<string | undefined>()
 
   useEffect(() => {
@@ -73,10 +77,17 @@ export function PracticeWorkspace({
           model.practice,
           model.timeline,
         )
+        setPlaybackSession({
+          range,
+          activeOccurrenceId,
+        })
         setMessage(undefined)
         void playback.engine
           .playRange(range, activeOccurrenceId)
-          .catch(() => setMessage('播放未能开始。'))
+          .catch(() => {
+            setPlaybackSession(null)
+            setMessage('播放未能开始。')
+          })
       } catch (error) {
         setMessage(error instanceof Error ? error.message : '练习范围无效。')
       }
@@ -122,6 +133,7 @@ export function PracticeWorkspace({
       )
       const firstOccurrenceId = unit?.occurrenceIds[0]
       if (firstOccurrenceId) {
+        setPlaybackSession(null)
         setOccurrence(firstOccurrenceId)
         setMessage(undefined)
       }
@@ -136,10 +148,42 @@ export function PracticeWorkspace({
     }
     if (playback.audioState.status === 'playing') {
       playback.engine.pause()
+      const session = playbackSession
+      if (session) {
+        const pausedAtMs = playback.engine.getState().currentTimeMs
+        setPlaybackSession(
+          isResumablePosition(session.range, pausedAtMs)
+            ? { ...session, resumableAtMs: pausedAtMs }
+            : null,
+        )
+      }
       return
     }
+
+    const session = playbackSession
+    if (session?.resumableAtMs !== undefined) {
+      const resumeStartMs = session.resumableAtMs
+      setPlaybackSession({
+        ...session,
+        resumableAtMs: undefined,
+      })
+      void playback.engine
+        .playRange(
+          {
+            ...session.range,
+            startMs: resumeStartMs,
+          },
+          session.activeOccurrenceId,
+        )
+        .catch(() => {
+          setPlaybackSession(null)
+          setMessage('播放未能开始。')
+        })
+      return
+    }
+
     playOccurrence(learningState.currentOccurrenceId)
-  }, [learningState, playOccurrence, playback.audioState.status, playback.engine])
+  }, [learningState, playOccurrence, playback.audioState.status, playback.engine, playbackSession])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -198,6 +242,9 @@ export function PracticeWorkspace({
   const currentUnitOccurrences = currentUnit.occurrenceIds
     .map((occurrenceId) => model.occurrencesById[occurrenceId])
     .filter((occurrence): occurrence is AssembledOccurrence => Boolean(occurrence))
+  const contextOccurrences = currentUnitOccurrences.filter(
+    ({ occurrence }) => occurrence.id !== currentOccurrence.occurrence.id,
+  )
   const coveredUntilOccurrenceId = learningState.coveredUntilByUnit[currentUnit.id]
   const previousUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'previous')
   const nextUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'next')
@@ -213,6 +260,10 @@ export function PracticeWorkspace({
     currentOccurrence.occurrence.id,
     'next',
   )
+  const resumableSession = playbackSession
+  const canResume =
+    resumableSession?.resumableAtMs !== undefined &&
+    isResumablePosition(resumableSession.range, resumableSession.resumableAtMs)
 
   return (
     <section
@@ -223,45 +274,6 @@ export function PracticeWorkspace({
       data-current-occurrence-id={currentOccurrence.occurrence.id}
     >
       <div className="practice-layout">
-        <details className="practice-map" open>
-          <summary>
-            <span>歌曲地图</span>
-            <span className="practice-map-current">{currentUnit.label}</span>
-          </summary>
-          <nav aria-label="学习段">
-            <ol>
-              {practiceIndex.units.map((unit, index) => {
-                const isCurrent = unit.id === currentUnit.id
-                const isVisited = Boolean(learningState.coveredUntilByUnit[unit.id])
-                return (
-                  <li key={unit.id}>
-                    <button
-                      className={`practice-unit-link${isCurrent ? ' is-current' : ''}`}
-                      type="button"
-                      aria-current={isCurrent ? 'step' : undefined}
-                      onClick={() => {
-                        const firstOccurrenceId = unit.occurrenceIds[0]
-                        if (firstOccurrenceId) {
-                          setOccurrence(firstOccurrenceId)
-                          setMessage(undefined)
-                        }
-                      }}
-                    >
-                      <span className="practice-unit-number">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <span className="practice-unit-label">{unit.label}</span>
-                      <span className="practice-unit-state">
-                        {isCurrent ? '当前' : isVisited ? '已访问' : '未访问'}
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ol>
-          </nav>
-        </details>
-
         <section className="practice-lyrics" aria-labelledby="practice-unit-title">
           <header className="practice-unit-heading">
             <div>
@@ -275,15 +287,12 @@ export function PracticeWorkspace({
               / {currentUnitOccurrences.length} 句
             </p>
           </header>
-          <ol className="practice-lyric-list">
-            {currentUnitOccurrences.map((assembledOccurrence) => (
-              <PracticeLyricRow
-                key={assembledOccurrence.occurrence.id}
-                assembledOccurrence={assembledOccurrence}
-                isCurrent={assembledOccurrence.occurrence.id === currentOccurrence.occurrence.id}
-                onPlay={() => playOccurrence(assembledOccurrence.occurrence.id)}
-              />
-            ))}
+          <ol className="practice-current-lyric">
+            <PracticeLyricRow
+              assembledOccurrence={currentOccurrence}
+              isCurrent
+              onPlay={() => playOccurrence(currentOccurrence.occurrence.id)}
+            />
           </ol>
         </section>
 
@@ -307,7 +316,11 @@ export function PracticeWorkspace({
               onClick={togglePlayback}
               disabled={!playback.engine}
             >
-              {playback.audioState.status === 'playing' ? '暂停' : '播放 / 继续'}
+              {playback.audioState.status === 'playing'
+                ? '暂停'
+                : canResume
+                  ? '继续'
+                  : '播放'}
             </button>
           </div>
           <div className="practice-adjacent-actions">
@@ -368,6 +381,73 @@ export function PracticeWorkspace({
             Space 播放 · ↑↓ 切句 · Enter 再听 · PageUp / PageDown 切段
           </p>
         </aside>
+
+        {contextOccurrences.length > 0 ? (
+          <section
+            className="practice-lyrics-context"
+            aria-label={`${currentUnit.label} 其余歌词`}
+          >
+            <ol className="practice-lyric-list">
+              {contextOccurrences.map((assembledOccurrence) => (
+                <PracticeLyricRow
+                  key={assembledOccurrence.occurrence.id}
+                  assembledOccurrence={assembledOccurrence}
+                  isCurrent={false}
+                  onPlay={() => playOccurrence(assembledOccurrence.occurrence.id)}
+                />
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        <details
+          className="practice-map"
+          open={mapOpen}
+          onToggle={(event) => setMapOpen(event.currentTarget.open)}
+        >
+          <summary
+            aria-label={`歌曲地图，${String(unitIndex + 1).padStart(2, '0')} / ${String(practiceIndex.units.length).padStart(2, '0')}，${currentUnit.label}，${mapOpen ? '收起' : '展开'}`}
+          >
+            <span>歌曲地图</span>
+            <span className="practice-map-current">
+              {String(unitIndex + 1).padStart(2, '0')} / {String(practiceIndex.units.length).padStart(2, '0')} · {currentUnit.label}
+            </span>
+            <span className="practice-map-toggle">{mapOpen ? '收起' : '展开'}</span>
+          </summary>
+          <nav aria-label="学习段">
+            <ol>
+              {practiceIndex.units.map((unit, index) => {
+                const isCurrent = unit.id === currentUnit.id
+                const isVisited = Boolean(learningState.coveredUntilByUnit[unit.id])
+                return (
+                  <li key={unit.id}>
+                    <button
+                      className={`practice-unit-link${isCurrent ? ' is-current' : ''}`}
+                      type="button"
+                      aria-current={isCurrent ? 'step' : undefined}
+                      onClick={() => {
+                        const firstOccurrenceId = unit.occurrenceIds[0]
+                        if (firstOccurrenceId) {
+                          setPlaybackSession(null)
+                          setOccurrence(firstOccurrenceId)
+                          setMessage(undefined)
+                        }
+                      }}
+                    >
+                      <span className="practice-unit-number">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="practice-unit-label">{unit.label}</span>
+                      <span className="practice-unit-state">
+                        {isCurrent ? '当前' : isVisited ? '已访问' : '未访问'}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+          </nav>
+        </details>
       </div>
 
       <nav className="practice-pager" aria-label="学习段分页">
@@ -484,4 +564,28 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target.isContentEditable ||
     ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
   )
+}
+
+interface PracticePlaybackSession {
+  range: ResolvedPracticeRange
+  activeOccurrenceId?: string
+  resumableAtMs?: number
+}
+
+function isResumablePosition(
+  range: ResolvedPracticeRange,
+  positionMs: number,
+): boolean {
+  return (
+    Number.isFinite(positionMs) &&
+    positionMs > range.startMs &&
+    positionMs < range.endMs
+  )
+}
+
+function getInitialPracticeMapOpen(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return true
+  }
+  return window.matchMedia('(min-width: 641px)').matches
 }

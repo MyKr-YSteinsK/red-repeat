@@ -4,6 +4,7 @@ import {
   createAudioEngine,
   type AudioEngine,
   type AudioMediaAdapter,
+  type FrameScheduler,
 } from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
@@ -103,6 +104,31 @@ const model = assembleRuntimeSongEdition({
   features: [],
 })
 
+const resumeTimeline: TimelineDocument = {
+  audioSourceHash: 'a'.repeat(64),
+  sections: [{ id: 'resume-verse', label: 'Resume Verse', startMs: 0, endMs: 3200 }],
+  occurrences: [
+    occurrence('o001', 's001', 'resume-verse', 1100, 1900, 1000, 2000),
+    occurrence('o002', 's002', 'resume-verse', 2100, 2900, 2000, 3000),
+  ],
+}
+
+const resumePractice: PracticeDocument = {
+  units: [
+    { id: 'p001', sectionId: 'resume-verse', label: 'Resume Unit', occurrenceIds: ['o001', 'o002'] },
+  ],
+}
+
+const resumeModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics,
+  timeline: resumeTimeline,
+  practice: resumePractice,
+  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
+  features: [],
+})
+
 describe('PracticeWorkspace', () => {
   it('completes current sentence, covered range, unit, and next-unit actions', async () => {
     const media = new FakeMedia()
@@ -197,6 +223,175 @@ describe('PracticeWorkspace', () => {
     expect(screen.queryByRole('button', { name: 'Focus' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
   })
+
+  it('keeps the mobile map compact while preserving the current unit context', () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: () => ({ matches: false }),
+    })
+    try {
+      render(
+        <PracticeWorkspace
+          model={model}
+          runtimeClient={runtimeClient}
+          theme="liner"
+        />,
+      )
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+
+    const mapToggle = screen.getByText('歌曲地图').closest('summary')
+    expect(mapToggle).not.toBeNull()
+    expect(mapToggle).toHaveAccessibleName(/01 \/ 03/)
+    const mapDetails = mapToggle!.parentElement as HTMLDetailsElement
+    expect(mapDetails).not.toHaveAttribute('open')
+    expect(screen.getByText('展开')).toBeInTheDocument()
+    expect(screen.getByText('01 / 03 · 主歌 A')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '主歌 A' })).toBeInTheDocument()
+    expect(screen.getByText('First line')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '再听这句' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '↓ 下一句' })).toBeInTheDocument()
+
+    fireEvent.click(mapToggle!)
+    fireEvent(mapDetails, new Event('toggle'))
+    expect(screen.getByText('收起')).toBeInTheDocument()
+    expect(mapDetails).toHaveAttribute('open')
+    expect(screen.getByRole('heading', { name: '主歌 A' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /02主歌 B/ }))
+    expect(screen.getByRole('heading', { name: '主歌 B' })).toBeInTheDocument()
+
+    const collapseMap = screen.getByText('歌曲地图').closest('summary')
+    expect(collapseMap).not.toBeNull()
+    fireEvent.click(collapseMap!)
+    fireEvent(mapDetails, new Event('toggle'))
+    expect(screen.getByText('展开')).toBeInTheDocument()
+    expect(mapDetails).not.toHaveAttribute('open')
+    expect(screen.getByRole('heading', { name: '主歌 B' })).toBeInTheDocument()
+
+    const reopenMap = screen.getByText('歌曲地图').closest('summary')
+    expect(reopenMap).not.toBeNull()
+    fireEvent.click(reopenMap!)
+    fireEvent(mapDetails, new Event('toggle'))
+    expect(mapDetails).toHaveAttribute('open')
+    expect(screen.getByRole('heading', { name: '主歌 B' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
+      'data-current-occurrence-id',
+      'o003',
+    )
+  })
+
+  it('resumes a paused current occurrence from the observed timestamp', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRange')
+
+    render(
+      <PracticeWorkspace
+        model={resumeModel}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
+      'o001',
+    )
+
+    media.currentTime = 1.45
+    frames.flush()
+    expect(engine.getState().currentTimeMs).toBe(1450)
+
+    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '继续' })).toBeInTheDocument(),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '继续' }))
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 1450, endMs: 2000, occurrenceIds: ['o001'] },
+        'o001',
+      ),
+    )
+  })
+
+  it('preserves a range end and clears resume state on restart, navigation, and completion', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRange')
+
+    render(
+      <PracticeWorkspace
+        model={resumeModel}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '↓ 下一句' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByRole('button', { name: '已学到这里 · 连续播放' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 1000, endMs: 3000, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+
+    media.currentTime = 2.45
+    frames.flush()
+    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '继续' })).toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '继续' }))
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 2450, endMs: 3000, occurrenceIds: ['o001', 'o002'] },
+        'o002',
+      ),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(4))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
+      'o001',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '再听这句' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
+      'o001',
+    )
+
+    media.currentTime = 3
+    frames.flush()
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument(),
+    )
+    fireEvent.keyDown(window, { key: ' ', code: 'Space' })
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
+        'o001',
+      ),
+    )
+  })
 })
 
 const runtimeClient = {
@@ -239,5 +434,26 @@ class FakeMedia implements AudioMediaAdapter {
 
   removeEventListener(event: string, listener: () => void): void {
     this.listeners.get(event)?.delete(listener)
+  }
+}
+
+class FakeFrameScheduler implements FrameScheduler {
+  private pendingCallback: (() => void) | undefined
+
+  requestFrame(callback: () => void): unknown {
+    this.pendingCallback = callback
+    return callback
+  }
+
+  cancelFrame(handle: unknown): void {
+    if (handle === this.pendingCallback) {
+      this.pendingCallback = undefined
+    }
+  }
+
+  flush(): void {
+    const callback = this.pendingCallback
+    this.pendingCallback = undefined
+    callback?.()
   }
 }

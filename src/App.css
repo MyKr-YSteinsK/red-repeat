@@ -2049,12 +2049,32 @@
 .practice-layout {
   display: grid;
   grid-template-columns: minmax(11rem, 0.78fr) minmax(0, 1.75fr) minmax(14rem, 0.9fr);
+  grid-template-areas: "map lyrics controls" "map context controls";
   align-items: start;
   gap: clamp(1rem, 2.5vw, 2.5rem);
 }
 
 .practice-map,
+.practice-controls,
+.practice-lyrics,
+.practice-lyrics-context {
+  min-width: 0;
+}
+
+.practice-map {
+  grid-area: map;
+}
+
+.practice-lyrics {
+  grid-area: lyrics;
+}
+
+.practice-lyrics-context {
+  grid-area: context;
+}
+
 .practice-controls {
+  grid-area: controls;
   position: sticky;
   top: 1rem;
 }
@@ -2088,6 +2108,12 @@
   font-size: 0.62rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.practice-map-toggle {
+  flex: 0 0 auto;
+  color: var(--color-red);
+  font-size: 0.62rem;
 }
 
 .practice-map nav {
@@ -2193,6 +2219,7 @@
   margin: 0;
 }
 
+.practice-current-lyric,
 .practice-lyric-list {
   display: grid;
   gap: 0;
@@ -2419,10 +2446,10 @@
 @media (max-width: 900px) {
   .practice-layout {
     grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr);
+    grid-template-areas: "map lyrics" "map context" "controls controls";
   }
 
   .practice-controls {
-    grid-column: 1 / -1;
     position: sticky;
     bottom: 0;
     top: auto;
@@ -2503,27 +2530,17 @@
   }
 
   .practice-layout {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "lyrics" "controls" "context" "map";
     gap: 0.9rem;
   }
 
-  .practice-map,
   .practice-lyrics,
-  .practice-controls {
-    width: 100%;
-  }
-
+  .practice-lyrics-context,
+  .practice-controls,
   .practice-map {
-    order: 1;
-  }
-
-  .practice-controls {
-    order: 2;
-  }
-
-  .practice-lyrics {
-    order: 3;
+    width: 100%;
   }
 
   .practice-map {
@@ -2550,7 +2567,9 @@
 
   .practice-controls {
     display: block;
+    position: static;
     padding: 0.8rem;
+    box-shadow: none;
   }
 
   .practice-primary-actions,
