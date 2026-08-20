@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
@@ -130,6 +131,36 @@ const resumeModel = assembleRuntimeSongEdition({
 })
 
 describe('PracticeWorkspace', () => {
+  it('keeps the playback session usable across StrictMode effect replay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <StrictMode>
+        <PracticeWorkspace
+          model={model}
+          runtimeClient={runtimeClient}
+          audioEngine={engine}
+          theme="liner"
+        />
+      </StrictMode>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '播放第 o002 句' }))
+
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 400, endMs: 750, occurrenceIds: ['o002'] },
+        'o002',
+      ),
+    )
+    expect(
+      screen.queryByText('practice playback session has been disposed'),
+    ).not.toBeInTheDocument()
+  })
+
   it('completes current sentence, covered range, unit, and next-unit actions', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)

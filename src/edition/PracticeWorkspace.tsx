@@ -80,7 +80,7 @@ export function PracticeWorkspace({
     )
     return () => {
       unsubscribe()
-      practicePlaybackSession.dispose()
+      practicePlaybackSession.cancel()
     }
   }, [practicePlaybackSession])
 
