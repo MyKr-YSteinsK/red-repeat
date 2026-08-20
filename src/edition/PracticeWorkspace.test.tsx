@@ -787,6 +787,153 @@ describe('PracticeWorkspace', () => {
     expect(screen.queryByRole('button', { name: '停止练习' })).not.toBeInTheDocument()
   })
 
+  it('imports compatible sparse overrides without autoplay and restores all defaults', async () => {
+    const importedDocument = updateTimingOverride(
+      createTimingOverridesDocument({
+        songId: edition.song.songId,
+        audioSourceHash: edition.audio.sourceHash,
+        baseTimelineUrl: edition.timelineUrl,
+      }),
+      timeline.occurrences[0],
+      'playStartMs',
+      20,
+    )
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+    fireEvent.change(screen.getByLabelText('导入个人微调文件'), {
+      target: {
+        files: [
+          new File([serializeTimingOverrides(importedDocument)], 'first-light.timing-overrides.json', {
+            type: 'application/json',
+          }),
+        ],
+      },
+    })
+    await waitFor(() => expect(screen.getByText('已导入个人微调。')).toBeInTheDocument())
+    expect(media.play).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 20, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+    fireEvent.click(screen.getByText('个人微调 · 已调整 1 句'))
+    fireEvent.click(screen.getByRole('button', { name: '全部恢复默认' }))
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('does not overwrite valid local data with malformed imports', async () => {
+    let existing = createTimingOverridesDocument({
+      songId: edition.song.songId,
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: edition.timelineUrl,
+    })
+    existing = updateTimingOverride(existing, timeline.occurrences[0], 'playStartMs', 70)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(edition.song.songId),
+      serializeTimingOverrides(existing),
+    )
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /^微调播放切口/ }))
+    fireEvent.change(screen.getByLabelText('导入个人微调文件'), {
+      target: { files: [new File(['{bad json'], 'bad.json', { type: 'application/json' })] },
+    })
+    await waitFor(() => expect(screen.getByText(/导入失败：/)).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 70, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+  })
+
+  it('requires an explicit choice for Timeline-stale imports and never applies audio-stale data', async () => {
+    const staleTimeline = updateTimingOverride(
+      createTimingOverridesDocument({
+        songId: edition.song.songId,
+        audioSourceHash: edition.audio.sourceHash,
+        baseTimelineUrl: '/library-runtime/old-timeline.json',
+      }),
+      timeline.occurrences[0],
+      'playStartMs',
+      20,
+    )
+    const audioStale = updateTimingOverride(
+      createTimingOverridesDocument({
+        songId: edition.song.songId,
+        audioSourceHash: 'd'.repeat(64),
+        baseTimelineUrl: edition.timelineUrl,
+      }),
+      timeline.occurrences[0],
+      'playStartMs',
+      10,
+    )
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '微调播放切口' }))
+    const input = screen.getByLabelText('导入个人微调文件')
+    fireEvent.change(input, {
+      target: { files: [new File([serializeTimingOverrides(staleTimeline)], 'stale.json', { type: 'application/json' })] },
+    })
+    await waitFor(() => expect(screen.getByText(/默认切分已经更新/)).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: '继续使用个人微调' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '继续使用个人微调' }))
+    await waitFor(() => expect(screen.getByText('已继续使用个人微调。')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 20, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '普通重复' }))
+    fireEvent.change(input, {
+      target: { files: [new File([serializeTimingOverrides(audioStale)], 'audio-stale.json', { type: 'application/json' })] },
+    })
+    await waitFor(() => expect(screen.getByText(/音源已经变化/)).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: '清除旧微调并重新开始' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '清除旧微调并重新开始' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+  })
+
   it('runs Ramp from the current target, disables speed changes, and restores the saved rate on Esc', async () => {
     window.localStorage.setItem('red-repeat:practice-rate:v1:first-light', '0.75')
     const media = new FakeMedia()

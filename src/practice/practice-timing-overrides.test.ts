@@ -45,6 +45,19 @@ describe('practice timing overrides', () => {
     expect(withBoth.occurrences).toEqual({
       o018: { playStartMs: 36_420, playEndMs: 39_860 },
     })
+    expect(serializeTimingOverrides(withBoth)).toBe(`{
+  "schemaVersion": 1,
+  "songId": "work-millennium-parade",
+  "audioSourceHash": "${'a'.repeat(64)}",
+  "baseTimelineUrl": "/library-runtime/work-millennium-parade/timeline.a.json",
+  "occurrences": {
+    "o018": {
+      "playEndMs": 39860,
+      "playStartMs": 36420
+    }
+  }
+}
+`)
     expect(parseTimingOverridesDocument(serializeTimingOverrides(withBoth), {
       occurrences: [occurrence],
     })).toEqual(withBoth)

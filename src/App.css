@@ -2530,6 +2530,60 @@
   margin: 0.7rem 0 0;
 }
 
+.practice-timing-conflict {
+  margin-top: 0.75rem;
+  padding: 0.7rem;
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+
+.practice-timing-conflict p {
+  margin: 0;
+}
+
+.practice-timing-conflict-actions,
+.practice-timing-management-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.practice-timing-conflict-actions .practice-action,
+.practice-timing-management-actions .practice-action {
+  min-width: 0;
+}
+
+.practice-timing-management {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.practice-timing-management summary {
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
+.practice-timing-management-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.practice-timing-import {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .practice-timing-preview {
   display: grid;
   grid-template-columns: auto repeat(3, minmax(0, 1fr));

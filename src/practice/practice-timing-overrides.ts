@@ -104,6 +104,16 @@ export function readTimingOverrides(
   if (document.songId !== identity.songId) {
     return { kind: 'invalid', reason: 'song-mismatch' }
   }
+  return classifyTimingOverridesDocument(document, identity)
+}
+
+export function classifyTimingOverridesDocument(
+  document: TimingOverridesDocument,
+  identity: TimingOverrideIdentity,
+): Exclude<TimingOverridesReadResult, { kind: 'none' | 'invalid' }> {
+  if (document.songId !== identity.songId) {
+    throw new Error('个人微调与当前歌曲不匹配。')
+  }
   if (document.audioSourceHash !== identity.audioSourceHash) {
     return { kind: 'audio-stale', document }
   }
@@ -290,10 +300,14 @@ export function resetTimingOverride(
 
 export function clearTimingOverrides(
   identity: TimingOverrideIdentity,
-  storage: TimingOverrideStorage = getBrowserStorageOrNoop(),
+  storage?: TimingOverrideStorage,
 ): boolean {
+  const resolvedStorage = storage ?? getBrowserStorage()
+  if (!resolvedStorage) {
+    return false
+  }
   try {
-    storage.removeItem(getTimingOverridesStorageKey(identity.songId))
+    resolvedStorage.removeItem(getTimingOverridesStorageKey(identity.songId))
     return true
   } catch {
     return false
@@ -404,14 +418,4 @@ function getBrowserStorage(): TimingOverrideStorage | undefined {
   } catch {
     return undefined
   }
-}
-
-function getBrowserStorageOrNoop(): TimingOverrideStorage {
-  return (
-    getBrowserStorage() ?? {
-      getItem: () => null,
-      setItem: () => undefined,
-      removeItem: () => undefined,
-    }
-  )
 }

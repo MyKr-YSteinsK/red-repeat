@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import { DEFAULT_PLAYBACK_RATE } from '../audio/audio-engine'
 import type { RuntimeClient } from '../runtime/runtime-client'
@@ -28,12 +35,18 @@ import {
 import { usePracticeController } from './use-practice-controller'
 import { calculateShadowRangeSilenceMs } from '../practice/practice-controller'
 import {
+  acknowledgeTimelineStale,
+  classifyTimingOverridesDocument,
+  clearTimingOverrides,
   createEffectivePracticeTimingProvider,
   createTimingOverridesDocument,
+  parseTimingOverridesDocument,
   readTimingOverrides,
   resetTimingOverride,
   saveTimingOverrides,
+  serializeTimingOverrides,
   updateTimingOverride,
+  validateTimingOverridesDocument,
   type TimingOverridesDocument,
   type TimingOverridesReadResult,
 } from '../practice/practice-timing-overrides'
@@ -92,6 +105,10 @@ export function PracticeWorkspace({
         ? storedTimingResult.document
         : undefined,
     )
+  const [timingConflict, setTimingConflict] = useState<TimingConflict>(() =>
+    isTimingConflict(storedTimingResult) ? storedTimingResult : undefined,
+  )
+  const timingImportInputRef = useRef<HTMLInputElement>(null)
   const [timingPanelOpen, setTimingPanelOpen] = useState(false)
   const [timingSaveAvailable, setTimingSaveAvailable] = useState(true)
   const practiceTimingProvider = useMemo(
@@ -106,6 +123,7 @@ export function PracticeWorkspace({
   const persistTimingOverrideDocument = useCallback(
     (nextDocument: TimingOverridesDocument): void => {
       setTimingOverrideDocument(nextDocument)
+      setTimingConflict(undefined)
       setTimingSaveAvailable(
         saveTimingOverrides(nextDocument, {
           occurrences: model.timeline.occurrences,
@@ -786,6 +804,105 @@ export function PracticeWorkspace({
     persistTimingOverrideDocument(nextDocument)
     setMessage('已恢复本句默认播放切口。')
   }
+  const acknowledgeStaleTimeline = (): void => {
+    if (timingConflict?.kind !== 'timeline-stale') {
+      return
+    }
+    try {
+      const acknowledged = acknowledgeTimelineStale(
+        timingConflict.document,
+        timingIdentity,
+      )
+      const validated = validateTimingOverridesDocument(acknowledged, {
+        occurrences: model.timeline.occurrences,
+      })
+      persistTimingOverrideDocument(validated)
+      setMessage('已继续使用个人微调。')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '个人微调无法应用到新版默认切分。')
+    }
+  }
+  const useCurrentTimelineDefaults = (): void => {
+    persistTimingOverrideDocument(createTimingOverridesDocument(timingIdentity))
+    setMessage('已切换到新版默认播放切口。')
+  }
+  const clearAudioStaleOverrides = (): void => {
+    const cleared = clearTimingOverrides(timingIdentity)
+    setTimingOverrideDocument(createTimingOverridesDocument(timingIdentity))
+    setTimingConflict(undefined)
+    setTimingSaveAvailable(cleared)
+    setMessage(
+      cleared
+        ? '已清除旧音源的个人微调。'
+        : '旧个人微调未能从本机存储清除，但本页不会应用它。',
+    )
+  }
+  const exportTimingOverrides = (): void => {
+    const document =
+      timingOverrideDocument ??
+      timingConflict?.document ??
+      createTimingOverridesDocument(timingIdentity)
+    if (
+      typeof Blob === 'undefined' ||
+      typeof URL === 'undefined' ||
+      typeof URL.createObjectURL !== 'function'
+    ) {
+      setMessage('当前环境不支持导出个人微调。')
+      return
+    }
+    const blob = new Blob([serializeTimingOverrides(document)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = window.document.createElement('a')
+    anchor.href = url
+    anchor.download = `${timingIdentity.songId}.timing-overrides.json`
+    anchor.click()
+    if (typeof URL.revokeObjectURL === 'function') {
+      URL.revokeObjectURL(url)
+    }
+    setMessage('已导出个人微调。')
+  }
+  const handleTimingImport = (event: ChangeEvent<HTMLInputElement>): void => {
+    const input = event.currentTarget
+    const file = input.files?.[0]
+    if (!file) {
+      return
+    }
+    void file.text()
+      .then((raw) => {
+        try {
+          const imported = parseTimingOverridesDocument(raw, {
+            occurrences: model.timeline.occurrences,
+          })
+          const classified = classifyTimingOverridesDocument(
+            imported,
+            timingIdentity,
+          )
+          if (classified.kind === 'compatible') {
+            persistTimingOverrideDocument(classified.document)
+            setMessage('已导入个人微调。')
+          } else {
+            setTimingConflict(classified)
+            setMessage(
+              classified.kind === 'timeline-stale'
+                ? '导入的个人微调基于旧 Timeline，请选择处理方式。'
+                : '导入的个人微调来自不同音源，暂未应用。',
+            )
+          }
+        } catch (error) {
+          setMessage(
+            error instanceof Error
+              ? `导入失败：${error.message}`
+              : '导入失败：个人微调文件无效。',
+          )
+        }
+      })
+      .catch(() => setMessage('导入失败：无法读取个人微调文件。'))
+      .finally(() => {
+        input.value = ''
+      })
+  }
   const previewRange = (startOccurrenceId: string, endOccurrenceId: string): void => {
     playScope(
       { kind: 'customRange', startOccurrenceId, endOccurrenceId },
@@ -799,6 +916,9 @@ export function PracticeWorkspace({
     nextCanonicalStartMs !== undefined && currentTiming.playEndMs > nextCanonicalStartMs
       ? currentTiming.playEndMs - nextCanonicalStartMs
       : 0
+  const timingOverrideCount = Object.keys(
+    timingOverrideDocument?.occurrences ?? timingConflict?.document.occurrences ?? {},
+  ).length
   const strategyProgress = describePracticeStrategy(practiceStrategyState)
   const repeatProgress = describePracticeRepeat(practicePlaybackState)
   const rangeSelectionLabel = rangeSelectionMode
@@ -920,6 +1040,41 @@ export function PracticeWorkspace({
           >
             微调播放切口{currentTimingModified ? ' · 已微调' : ''}
           </button>
+          {timingConflict?.kind === 'timeline-stale' ? (
+            <section className="practice-timing-conflict" role="status">
+              <p>
+                这首歌的默认切分已经更新。你的个人微调基于旧版本，当前暂未应用。
+              </p>
+              <div className="practice-timing-conflict-actions">
+                <button
+                  className="practice-action"
+                  type="button"
+                  onClick={acknowledgeStaleTimeline}
+                >
+                  继续使用个人微调
+                </button>
+                <button
+                  className="practice-action"
+                  type="button"
+                  onClick={useCurrentTimelineDefaults}
+                >
+                  使用新版默认
+                </button>
+              </div>
+            </section>
+          ) : null}
+          {timingConflict?.kind === 'audio-stale' ? (
+            <section className="practice-timing-conflict" role="status">
+              <p>这首歌的音源已经变化。旧个人微调不会自动应用。</p>
+              <button
+                className="practice-action"
+                type="button"
+                onClick={clearAudioStaleOverrides}
+              >
+                清除旧微调并重新开始
+              </button>
+            </section>
+          ) : null}
           {timingPanelOpen ? (
             <section className="practice-timing-panel" aria-label="微调播放切口">
               <div className="practice-timing-heading">
@@ -1081,6 +1236,41 @@ export function PracticeWorkspace({
                   ? '✓ 已自动保存在本机'
                   : '本机存储不可用，当前修改仅在本页有效'}
               </p>
+              <details className="practice-timing-management">
+                <summary>个人微调 · 已调整 {timingOverrideCount} 句</summary>
+                <div className="practice-timing-management-actions">
+                  <button
+                    className="practice-action"
+                    type="button"
+                    onClick={exportTimingOverrides}
+                  >
+                    导出
+                  </button>
+                  <button
+                    className="practice-action"
+                    type="button"
+                    onClick={() => timingImportInputRef.current?.click()}
+                  >
+                    导入
+                  </button>
+                  <button
+                    className="practice-action"
+                    type="button"
+                    onClick={useCurrentTimelineDefaults}
+                    disabled={timingOverrideCount === 0}
+                  >
+                    全部恢复默认
+                  </button>
+                </div>
+                <input
+                  ref={timingImportInputRef}
+                  className="practice-timing-import"
+                  type="file"
+                  accept="application/json,.json"
+                  aria-label="导入个人微调文件"
+                  onChange={handleTimingImport}
+                />
+              </details>
             </section>
           ) : null}
           {customRangeScope ? (
@@ -1723,6 +1913,17 @@ function formatClockMs(timeMs: number): string {
 const PRACTICE_RATE_PRESETS = [0.65, 0.75, 0.85, 1] as const
 
 type PracticeMethod = 'repeat' | 'ramp' | 'shadow'
+
+type TimingConflict = Extract<
+  TimingOverridesReadResult,
+  { kind: 'timeline-stale' | 'audio-stale' }
+> | undefined
+
+function isTimingConflict(
+  result: TimingOverridesReadResult,
+): result is Exclude<TimingConflict, undefined> {
+  return result.kind === 'timeline-stale' || result.kind === 'audio-stale'
+}
 
 function describePracticeStrategy(
   state: import('../practice/practice-controller').PracticeStrategyState,
