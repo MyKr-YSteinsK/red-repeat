@@ -418,6 +418,93 @@ describe('FullSongWorkspace', () => {
     }
   })
 
+  it('distinguishes touch taps from manual browsing and resumes follow after a lyric click', async () => {
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      const { engine, frames } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      const stream = screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!
+
+      fireEvent.touchStart(stream)
+      expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
+
+      fireEvent.touchMove(stream)
+      expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+      const callsBeforeResume = scrollIntoView.mock.calls.length
+
+      fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Stay near' }))
+      await waitFor(() => expect(engine.getState().status).toBe('playing'))
+      expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
+
+      await act(async () => {
+        mediaFor(engine).currentTime = 0.75
+        frames.flush()
+      })
+      await waitFor(() =>
+        expect(scrollIntoView.mock.calls.length).toBeGreaterThan(callsBeforeResume),
+      )
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
+      }
+    }
+  })
+
+  it('uses automatic scrolling when reduced motion is preferred', async () => {
+    const originalMatchMedia = window.matchMedia
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn(() => ({ matches: true })),
+    })
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      const { engine, frames } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      await engine.playContinuous()
+
+      await act(async () => {
+        mediaFor(engine).currentTime = 0.15
+        frames.flush()
+      })
+      await waitFor(() =>
+        expect(scrollIntoView).toHaveBeenCalledWith({
+          block: 'center',
+          behavior: 'auto',
+        }),
+      )
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
+      }
+    }
+  })
+
   it('does not expose the old full-song practice modes or mega dock controls', () => {
     renderWorkspace()
 

@@ -82,6 +82,7 @@ export function FullSongWorkspace({
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      setFollowLyrics(true)
       setMessage(undefined)
       const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
       playback.playOccurrenceContinuously?.(assembledOccurrence, timing.playStartMs)
@@ -255,7 +256,7 @@ function FullSongLyrics({
     <div
       className="full-song-lyrics-stream"
       onWheel={onManualBrowse}
-      onTouchStart={onManualBrowse}
+      onTouchMove={onManualBrowse}
     >
       {model.sections.map(({ section, occurrences }, sectionIndex) => (
         <section
