@@ -6,6 +6,7 @@ import {
   RuntimeClientError,
 } from '../runtime/runtime-client'
 import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
+import { PracticeWorkspace } from './PracticeWorkspace'
 import { FeatureSection } from './FeatureMarkdown'
 import { ThemeSwitcher } from '../theme/ThemeSwitcher'
 import { resolveArtDirection } from '../theme/art-direction'
@@ -21,6 +22,8 @@ import type {
 import type { SongEditionMode } from './song-edition-mode'
 import { useSongEditionCore } from './use-song-edition-core'
 
+type SongEditionTab = 'practice' | 'all' | 'explain'
+
 export interface SongEditionPageProps {
   catalogEdition: CatalogEdition
   runtimeClient: RuntimeClient
@@ -35,6 +38,7 @@ export function SongEditionPage({
   audioEngine,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
+  const [tab, setTab] = useState<SongEditionTab>('practice')
   const [mode, setMode] = useState<SongEditionMode>('liner')
   const [readingVisible, setReadingVisible] = useState(false)
   const [themeSelection, setThemeSelection] = useState<
@@ -72,6 +76,10 @@ export function SongEditionPage({
   }, [])
 
   useEffect(() => {
+    if (tab === 'practice') {
+      return
+    }
+
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (
         event.defaultPrevented ||
@@ -132,7 +140,7 @@ export function SongEditionPage({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [changeMode, mode])
+  }, [changeMode, mode, tab])
 
   if (state.status === 'loading') {
     return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
@@ -173,9 +181,9 @@ export function SongEditionPage({
   const artDirection = resolveArtDirection(song.songId, core.visual, theme)
   return (
     <main
-      className={`song-edition${mode === 'focus' ? ' is-focus-mode' : ''}${
-        mode === 'immersive' ? ' is-immersive-mode' : ''
-      }`}
+      className={`song-edition is-practice-page${
+        mode === 'focus' && tab === 'all' ? ' is-focus-mode' : ''
+      }${mode === 'immersive' && tab === 'all' ? ' is-immersive-mode' : ''}`}
       aria-labelledby="song-title"
       data-theme={theme}
       data-density={artDirection.density}
@@ -183,82 +191,89 @@ export function SongEditionPage({
       data-motion={artDirection.motion}
       data-cover-treatment={artDirection.coverTreatment}
       data-composition-variant={artDirection.compositionVariant}
-      data-mode={mode}
-      data-focus-mode={mode === 'focus'}
+      data-mode={tab === 'all' ? mode : tab}
+      data-focus-mode={tab === 'all' && mode === 'focus'}
     >
-      <div className="song-topline">
-        <a className="text-link" href={homeHref}>
-          Return to Library
-        </a>
-        <p className="edition-signal">
-          {theme.toUpperCase()} / SONG EDITION
-        </p>
-        <ThemeSwitcher theme={theme} onChange={selectTheme} />
-      </div>
-
-      <section className="song-opening">
-        <div className="song-artwork">
+      <header className="practice-page-header">
+        <div className="practice-page-identity">
+          <a className="text-link" href={homeHref}>
+            返回曲库
+          </a>
+          <div className="practice-page-song">
+            <p className="eyebrow">学唱 / SONG EDITION</p>
+            <h1 id="song-title">{song.title}</h1>
+            <p className="practice-page-artist">{song.artist}</p>
+            {song.album || song.year !== undefined ? (
+              <p className="practice-page-meta">
+                {song.album ?? 'Song Edition'}
+                {song.year !== undefined ? ` / ${song.year}` : ''}
+              </p>
+            ) : null}
+          </div>
           <img
-            className="song-cover-large"
-            src={runtimeClient.resolveAsset(core.edition.artwork.coverLargeUrl)}
+            className="practice-page-cover"
+            src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
             alt={`${song.title} cover artwork`}
           />
-          {core.edition.artwork.heroLargeUrl ? (
-            <img
-              className="song-hero-large"
-              src={runtimeClient.resolveAsset(core.edition.artwork.heroLargeUrl)}
-              alt=""
-            />
-          ) : null}
         </div>
-
-        <div className="song-opening-copy">
-          <p className="eyebrow">EDITION / {theme}</p>
-          <h1 id="song-title">{song.title}</h1>
-          <p className="song-artist">{song.artist}</p>
-          {song.album || song.year !== undefined ? (
-            <p className="song-album">
-              {song.album ?? 'Song Edition'}
-              {song.year !== undefined ? ` / ${song.year}` : ''}
-            </p>
-          ) : null}
-          {song.intro ? <p className="song-intro">{song.intro}</p> : null}
-          <dl className="edition-metadata">
-            <div>
-              <dt>Edition</dt>
-              <dd>{catalogEdition.songId}</dd>
-            </div>
-            <div>
-              <dt>Theme</dt>
-              <dd>{formatThemeLabel(theme)}</dd>
-            </div>
-          </dl>
-          <p className="song-opening-note">
-            A focused reading of the work, held in time.
-          </p>
+        <div className="practice-page-tools">
+          <nav className="edition-task-nav" aria-label="歌曲任务">
+            <button
+              type="button"
+              className={tab === 'practice' ? 'is-active' : ''}
+              aria-current={tab === 'practice' ? 'page' : undefined}
+              onClick={() => setTab('practice')}
+            >
+              学唱
+            </button>
+            <button
+              type="button"
+              className={tab === 'all' ? 'is-active' : ''}
+              aria-current={tab === 'all' ? 'page' : undefined}
+              onClick={() => setTab('all')}
+            >
+              全曲
+            </button>
+            <button
+              type="button"
+              className={tab === 'explain' ? 'is-active' : ''}
+              aria-current={tab === 'explain' ? 'page' : undefined}
+              onClick={() => setTab('explain')}
+            >
+              讲解
+            </button>
+          </nav>
+          <ThemeSwitcher theme={theme} onChange={selectTheme} />
         </div>
-      </section>
+      </header>
 
-      <div className="song-opening-rule" aria-hidden="true" />
-      <p className="song-next-cue">Lyrics and timeline follow below.</p>
-      <SongEditionPlaybackSurface
-        model={core.assembled}
-        runtimeClient={runtimeClient}
-        audioEngine={audioEngine}
-        theme={theme}
-        mode={mode}
-        onModeChange={changeMode}
-        onRegisterKeyboardActions={registerKeyboardActions}
-        readingVisible={readingVisible}
-        onToggleReading={() => setReadingVisible((visible) => !visible)}
-      />
-      {mode === 'liner' ? (
+      {tab === 'practice' ? (
+        <PracticeWorkspace
+          key={core.edition.contentHash}
+          model={core.assembled}
+          runtimeClient={runtimeClient}
+          audioEngine={audioEngine}
+          theme={theme}
+        />
+      ) : tab === 'all' ? (
+        <SongEditionPlaybackSurface
+          model={core.assembled}
+          runtimeClient={runtimeClient}
+          audioEngine={audioEngine}
+          theme={theme}
+          mode={mode}
+          onModeChange={changeMode}
+          onRegisterKeyboardActions={registerKeyboardActions}
+          readingVisible={readingVisible}
+          onToggleReading={() => setReadingVisible((visible) => !visible)}
+        />
+      ) : (
         <FeatureSection
           model={core.assembled}
           features={core.features}
           featureErrors={core.featureErrors}
         />
-      ) : null}
+      )}
     </main>
   )
 }
@@ -298,8 +313,4 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target.isContentEditable ||
     ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
   )
-}
-
-function formatThemeLabel(theme: EditionTheme): string {
-  return `${theme.slice(0, 1).toUpperCase()}${theme.slice(1)}`
 }
