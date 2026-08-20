@@ -3141,6 +3141,7 @@
 
   .practice-page-tools .theme-switcher {
     flex: 0 0 auto;
+    width: auto;
   }
 
   .practice-page-tools .theme-switcher-label {
