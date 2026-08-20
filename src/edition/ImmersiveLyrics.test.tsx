@@ -52,11 +52,12 @@ const model = assembleRuntimeSongEdition({
     editionUrl: '/edition.json',
   } satisfies CatalogEdition,
   edition: {
-    contractVersion: 1,
+    contractVersion: 2,
     contentHash: 'a'.repeat(64),
     song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
     lyricsUrl: '/lyrics.json',
     timelineUrl: '/timeline.json',
+    practiceUrl: '/practice.json',
     visualUrl: '/visual.json',
     features: [],
     audio: {
@@ -121,6 +122,7 @@ const model = assembleRuntimeSongEdition({
       },
     ],
   } satisfies TimelineDocument,
+  practice: { units: [] },
   visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features: [],
 })

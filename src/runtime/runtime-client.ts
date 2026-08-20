@@ -7,9 +7,11 @@ import {
 } from '../library/runtime-schema'
 import {
   LyricsSchema,
+  PracticeSchema,
   TimelineSchema,
   VisualSchema,
   type LyricsDocument,
+  type PracticeDocument,
   type TimelineDocument,
   type VisualDocument,
 } from '../library/schema'
@@ -106,6 +108,13 @@ export class RuntimeClient {
     options: RuntimeLoadOptions = {},
   ): Promise<TimelineDocument> {
     return this.loadJson(logicalRuntimePath, TimelineSchema.parse, options)
+  }
+
+  loadPractice(
+    logicalRuntimePath: string,
+    options: RuntimeLoadOptions = {},
+  ): Promise<PracticeDocument> {
+    return this.loadJson(logicalRuntimePath, PracticeSchema.parse, options)
   }
 
   loadVisual(

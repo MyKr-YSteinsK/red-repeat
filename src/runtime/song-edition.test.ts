@@ -6,6 +6,7 @@ import type {
 import type {
   LyricsDocument,
   TimelineDocument,
+  PracticeDocument,
   VisualDocument,
 } from '../library/schema'
 import {
@@ -25,7 +26,7 @@ const catalogEdition: CatalogEdition = {
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -36,6 +37,7 @@ const edition: RuntimeEdition = {
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
   visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [
     {
@@ -89,6 +91,7 @@ const timeline: TimelineDocument = {
 }
 
 const visual: VisualDocument = { recommendedTheme: 'liner' }
+const practice: PracticeDocument = { units: [] }
 
 const featureContents = [
   {
@@ -193,6 +196,7 @@ function createInput(
     edition,
     lyrics,
     timeline,
+    practice,
     visual,
     features: featureContents,
     ...overrides,

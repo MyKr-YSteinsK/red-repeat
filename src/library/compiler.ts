@@ -24,6 +24,7 @@ import {
 import {
   LyricsSchema,
   ManifestSchema,
+  PracticeSchema,
   TimelineSchema,
   VisualSchema,
   type SongManifest,
@@ -119,7 +120,7 @@ export async function compileLibrary(
   }
 
   const catalogPayload = {
-    contractVersion: 1 as const,
+    contractVersion: 2 as const,
     editions: compiledSongs
       .map(({ catalogEdition }) => catalogEdition)
       .sort((left, right) => left.songId.localeCompare(right.songId)),
@@ -173,6 +174,7 @@ async function compileSongPackage(options: {
   const manifest = parseSourceFile(loaded.manifest, ManifestSchema)
   const lyrics = parseSourceFile(loaded.lyrics, LyricsSchema)
   const timeline = parseSourceFile(loaded.timeline, TimelineSchema)
+  const practice = parseSourceFile(loaded.practice, PracticeSchema)
   const visual = parseSourceFile(loaded.visual, VisualSchema)
   const audioSource = findCanonicalAudioSources(options.songPackage)[0]
   const coverSource = findPackageFiles(
@@ -238,6 +240,11 @@ async function compileSongPackage(options: {
     'timeline',
     timeline,
   )
+  const practiceFilename = writeStructuredResource(
+    songOutputRoot,
+    'practice',
+    practice,
+  )
   const visualFilename = writeStructuredResource(
     songOutputRoot,
     'visual',
@@ -249,10 +256,11 @@ async function compileSongPackage(options: {
     manifest.songId,
   )
   const editionPayload = {
-    contractVersion: 1 as const,
+    contractVersion: 2 as const,
     song: toRuntimeSongMetadata(manifest),
     lyricsUrl: runtimeUrl(manifest.songId, lyricsFilename),
     timelineUrl: runtimeUrl(manifest.songId, timelineFilename),
+    practiceUrl: runtimeUrl(manifest.songId, practiceFilename),
     visualUrl: runtimeUrl(manifest.songId, visualFilename),
     features,
     audio: {

@@ -33,7 +33,7 @@ const catalogEdition: CatalogEdition = {
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -42,6 +42,7 @@ const edition: RuntimeEdition = {
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.json',
   visualUrl: '/library-runtime/songs/first-light/visual.json',
   features: [],
   audio: {
@@ -108,6 +109,7 @@ const model = assembleRuntimeSongEdition({
       },
     ],
   } satisfies TimelineDocument,
+  practice: { units: [] },
   visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features: [],
 })

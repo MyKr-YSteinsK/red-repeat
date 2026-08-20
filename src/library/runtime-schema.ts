@@ -5,7 +5,7 @@ const contentHash = z.string().regex(/^[a-f0-9]{64}$/)
 const runtimeUrl = z.string().regex(/^\/library-runtime\/.+/)
 const nonEmptyText = z.string().trim().min(1)
 
-export const RuntimeContractVersion = z.literal(1)
+export const RuntimeContractVersion = z.literal(2)
 
 export const RuntimeFeatureDescriptorSchema = z
   .object({
@@ -60,6 +60,7 @@ export const RuntimeEditionSchema = z
     song: RuntimeSongMetadataSchema,
     lyricsUrl: runtimeUrl,
     timelineUrl: runtimeUrl,
+    practiceUrl: runtimeUrl,
     visualUrl: runtimeUrl,
     features: z.array(RuntimeFeatureDescriptorSchema),
     audio: RuntimeAudioDescriptorSchema,

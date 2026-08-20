@@ -28,11 +28,12 @@ const catalogEdition: CatalogEdition = {
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.json',
   visualUrl: '/library-runtime/songs/first-light/visual.json',
   features: [],
   audio: {
@@ -98,7 +99,7 @@ describe('Timeline Debugger live context', () => {
     render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 1, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
@@ -289,7 +290,7 @@ describe('Timeline Debugger live context', () => {
     const view = render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 1, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
@@ -315,7 +316,7 @@ describe('Timeline Debugger live context', () => {
     const view = render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 1, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}

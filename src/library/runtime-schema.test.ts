@@ -6,7 +6,7 @@ import {
 } from './runtime-schema'
 
 const runtimeEdition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -15,7 +15,8 @@ const runtimeEdition = {
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.b.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.c.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.c.json',
+  visualUrl: '/library-runtime/songs/first-light/visual.d.json',
   features: [],
   audio: {
     url: '/library-runtime/songs/first-light/audio.d.m4a',
@@ -41,7 +42,7 @@ describe('runtime contract', () => {
     expect(RuntimeEditionSchema.safeParse(runtimeEdition).success).toBe(true)
 
     const catalogPayload = {
-      contractVersion: 1 as const,
+      contractVersion: 2 as const,
       editions: [
         {
           songId: 'first-light',
@@ -60,6 +61,24 @@ describe('runtime contract', () => {
     }
 
     expect(CatalogSchema.safeParse(catalog).success).toBe(true)
+  })
+
+  it('does not silently accept the retired v1 contract', () => {
+    expect(
+      RuntimeEditionSchema.safeParse({ ...runtimeEdition, contractVersion: 1 })
+        .success,
+    ).toBe(false)
+
+    const catalogPayload = {
+      contractVersion: 1,
+      editions: [],
+    }
+    expect(
+      CatalogSchema.safeParse({
+        ...catalogPayload,
+        contentHash: hashJson(catalogPayload),
+      }).success,
+    ).toBe(false)
   })
 
   it('hashes equivalent object key order identically', () => {

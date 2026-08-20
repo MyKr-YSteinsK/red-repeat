@@ -61,6 +61,7 @@ describe('Library Compiler media pipeline', () => {
         song: firstEdition.edition.song,
         lyricsUrl: firstEdition.edition.lyricsUrl,
         timelineUrl: firstEdition.edition.timelineUrl,
+        practiceUrl: firstEdition.edition.practiceUrl,
         visualUrl: firstEdition.edition.visualUrl,
         features: firstEdition.edition.features,
         audio: firstEdition.edition.audio,
@@ -99,6 +100,25 @@ describe('Library Compiler media pipeline', () => {
     expect(secondResult.valid).toBe(true)
     expect(secondSnapshot).toEqual(firstSnapshot)
     expect(secondEdition.edition.audio.url).toBe(firstEdition.edition.audio.url)
+
+    writeJson(path.join(fixture.songRoot, 'practice.json'), {
+      units: [
+        {
+          id: 'p001',
+          sectionId: 'verse-1',
+          label: 'Verse 1 revised',
+          occurrenceIds: ['o001'],
+        },
+      ],
+    })
+    const practiceResult = await compileLibrary(fixture.options)
+    const practiceEdition = readCompiledEdition(fixture.outputRoot).edition
+
+    expect(practiceResult.valid).toBe(true)
+    expect(practiceEdition.practiceUrl).not.toBe(firstEdition.edition.practiceUrl)
+    expect(practiceEdition.lyricsUrl).toBe(firstEdition.edition.lyricsUrl)
+    expect(practiceEdition.timelineUrl).toBe(firstEdition.edition.timelineUrl)
+    expect(practiceEdition.audio.url).toBe(firstEdition.edition.audio.url)
 
     writeJson(path.join(fixture.songRoot, 'lyrics.json'), {
       ...fixture.lyrics,
@@ -506,6 +526,7 @@ function readCompiledEdition(outputRoot: string): {
   const editionUrls = [
     edition.lyricsUrl,
     edition.timelineUrl,
+    edition.practiceUrl,
     edition.visualUrl,
     edition.audio.url,
     edition.artwork.coverSmallUrl,

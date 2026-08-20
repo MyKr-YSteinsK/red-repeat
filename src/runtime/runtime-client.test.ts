@@ -6,7 +6,7 @@ import {
 } from './runtime-client'
 
 const catalog = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   editions: [
     {
@@ -23,7 +23,7 @@ const catalog = {
 }
 
 const edition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'b'.repeat(64),
   song: {
     songId: 'first-light',
@@ -35,6 +35,7 @@ const edition = {
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
   visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [
     {
@@ -97,6 +98,10 @@ const visual = {
   sectionCues: [{ sectionId: 'verse', cue: 'isolate' }],
 }
 
+const practice = {
+  units: [],
+}
+
 describe('Runtime Client', () => {
   it('loads a catalog through the resolver at the root base', async () => {
     const fetchImpl = vi.fn(async () => jsonResponse(catalog))
@@ -141,6 +146,7 @@ describe('Runtime Client', () => {
       .mockResolvedValueOnce(jsonResponse(edition))
       .mockResolvedValueOnce(jsonResponse(lyrics))
       .mockResolvedValueOnce(jsonResponse(timeline))
+      .mockResolvedValueOnce(jsonResponse(practice))
       .mockResolvedValueOnce(jsonResponse(visual))
       .mockResolvedValueOnce(new Response('# Liner note\n'))
     const client = createRuntimeClient({
@@ -152,6 +158,7 @@ describe('Runtime Client', () => {
     await client.loadEdition(catalog.editions[0].editionUrl)
     await client.loadLyrics(edition.lyricsUrl)
     await client.loadTimeline(edition.timelineUrl)
+    await client.loadPractice(edition.practiceUrl)
     await client.loadVisual(edition.visualUrl)
     await expect(client.loadFeature(edition.features[0])).resolves.toBe(
       '# Liner note\n',
@@ -162,6 +169,7 @@ describe('Runtime Client', () => {
       '/red-repeat/library-runtime/songs/first-light/edition.a.json',
       '/red-repeat/library-runtime/songs/first-light/lyrics.a.json',
       '/red-repeat/library-runtime/songs/first-light/timeline.a.json',
+      '/red-repeat/library-runtime/songs/first-light/practice.a.json',
       '/red-repeat/library-runtime/songs/first-light/visual.a.json',
       '/red-repeat/library-runtime/songs/first-light/features/liner-note.md',
     ])

@@ -165,6 +165,7 @@ async function warmSongRuntime(
     catalogEdition.coverUrl,
     edition.lyricsUrl,
     edition.timelineUrl,
+    edition.practiceUrl,
     edition.visualUrl,
     ...edition.features.map((feature) => feature.url),
     edition.artwork.coverSmallUrl,

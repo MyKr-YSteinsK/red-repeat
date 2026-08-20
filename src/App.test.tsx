@@ -13,13 +13,13 @@ import {
 } from './runtime/runtime-client'
 
 const emptyCatalog = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   editions: [],
 }
 
 const populatedCatalog = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'b'.repeat(64),
   editions: [
     {
@@ -44,7 +44,7 @@ const populatedCatalog = {
 }
 
 const runtimeEditionForApp = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'c'.repeat(64),
   song: {
     songId: 'first-light',
@@ -55,6 +55,7 @@ const runtimeEditionForApp = {
   },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
   visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [],
   audio: {
@@ -305,6 +306,9 @@ function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populate
       sections: [],
       occurrences: [],
     })
+  }
+  if (url.endsWith('/practice.a.json')) {
+    return jsonResponse({ units: [] })
   }
   return jsonResponse({ recommendedTheme: 'liner' })
 }

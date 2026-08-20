@@ -6,6 +6,7 @@ import type {
 import type {
   LyricsDocument,
   Occurrence,
+  PracticeDocument,
   Section,
   Segment,
   TimelineDocument,
@@ -34,6 +35,7 @@ export interface AssembledSongEdition {
   edition: RuntimeEdition
   lyrics: LyricsDocument
   timeline: TimelineDocument
+  practice: PracticeDocument
   visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
   segmentsById: Readonly<Record<string, Segment>>
@@ -53,6 +55,7 @@ export interface AssembleSongEditionInput {
   edition: RuntimeEdition
   lyrics: LyricsDocument
   timeline: TimelineDocument
+  practice: PracticeDocument
   visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
   allowMissingFeatureContent?: boolean
@@ -107,6 +110,7 @@ export function assembleRuntimeSongEdition(
     edition: input.edition,
     lyrics: input.lyrics,
     timeline: input.timeline,
+    practice: input.practice,
     visual: input.visual,
     features: assembleFeatures(
       input.edition.features,

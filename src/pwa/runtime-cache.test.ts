@@ -8,7 +8,7 @@ import {
 } from './runtime-cache'
 
 const catalog: Catalog = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'a'.repeat(64),
   editions: [
     {
@@ -23,11 +23,12 @@ const catalog: Catalog = {
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 1,
+  contractVersion: 2,
   contentHash: 'b'.repeat(64),
   song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.b.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.b.json',
+  practiceUrl: '/library-runtime/songs/first-light/practice.b.json',
   visualUrl: '/library-runtime/songs/first-light/visual.b.json',
   features: [
     {
@@ -149,6 +150,7 @@ describe('PWA runtime cache warmup', () => {
       '/red-repeat/library-runtime/songs/first-light/cover-small.a.webp',
       '/red-repeat/library-runtime/songs/first-light/lyrics.b.json',
       '/red-repeat/library-runtime/songs/first-light/timeline.b.json',
+      '/red-repeat/library-runtime/songs/first-light/practice.b.json',
       '/red-repeat/library-runtime/songs/first-light/visual.b.json',
       '/red-repeat/library-runtime/songs/first-light/features/note.c.md',
       '/red-repeat/library-runtime/songs/first-light/cover-large.e.webp',

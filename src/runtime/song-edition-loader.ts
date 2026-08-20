@@ -1,6 +1,7 @@
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
   LyricsDocument,
+  PracticeDocument,
   TimelineDocument,
   VisualDocument,
 } from '../library/schema'
@@ -20,6 +21,7 @@ export interface RuntimeSongEditionCore {
   edition: RuntimeEdition
   lyrics: LyricsDocument
   timeline: TimelineDocument
+  practice: PracticeDocument
   visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
   featureErrors: readonly RuntimeFeatureLoadError[]
@@ -37,9 +39,10 @@ export async function loadRuntimeSongEditionCore(
   options: RuntimeLoadOptions = {},
 ): Promise<RuntimeSongEditionCore> {
   const edition = await client.loadEdition(catalogEdition.editionUrl, options)
-  const [lyrics, timeline, visual] = await Promise.all([
+  const [lyrics, timeline, practice, visual] = await Promise.all([
     client.loadLyrics(edition.lyricsUrl, options),
     client.loadTimeline(edition.timelineUrl, options),
+    client.loadPractice(edition.practiceUrl, options),
     client.loadVisual(edition.visualUrl, options),
   ])
   const featureResults = await Promise.all(
@@ -62,6 +65,7 @@ export async function loadRuntimeSongEditionCore(
     edition,
     lyrics,
     timeline,
+    practice,
     visual,
     features,
     featureErrors,
