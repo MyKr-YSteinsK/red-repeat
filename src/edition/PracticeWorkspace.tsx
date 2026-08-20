@@ -9,6 +9,7 @@ import {
   resolvePracticeRange,
   type PracticeIndex,
   type PracticeScope,
+  type ResolvedPracticeRange,
 } from '../practice/practice-scope'
 import {
   createInitialPracticeState,
@@ -47,6 +48,10 @@ export function PracticeWorkspace({
   )
   const [mapOpen, setMapOpen] = useState(getInitialPracticeMapOpen)
   const [message, setMessage] = useState<string | undefined>()
+  const [targetKind, setTargetKind] = useState<PracticeTargetKind>('currentOccurrence')
+  const [customRangeScope, setCustomRangeScope] = useState<CustomRangeScope>()
+  const [rangeSelectionStartId, setRangeSelectionStartId] = useState<string>()
+  const [rangeSelectionMode, setRangeSelectionMode] = useState(false)
   const practicePlaybackSession = useMemo(
     () =>
       playback.engine ? new PracticePlaybackSession(playback.engine) : null,
@@ -113,9 +118,137 @@ export function PracticeWorkspace({
   const playOccurrence = useCallback(
     (occurrenceId: string): void => {
       setOccurrence(occurrenceId)
+      if (targetKind !== 'customRange') {
+        setTargetKind('currentOccurrence')
+      }
       playScope({ kind: 'currentOccurrence', occurrenceId }, occurrenceId)
     },
-    [playScope, setOccurrence],
+    [playScope, setOccurrence, targetKind],
+  )
+
+  const beginRangeSelection = useCallback(
+    (startOccurrenceId?: string): void => {
+      practicePlaybackSession?.cancel()
+      setTargetKind('customRange')
+      setRangeSelectionMode(true)
+      setRangeSelectionStartId(startOccurrenceId)
+      setMessage(
+        startOccurrenceId
+          ? `已选择 ${startOccurrenceId} 为起点，请选择终点。`
+          : '自选范围：请选择起点。',
+      )
+    },
+    [practicePlaybackSession],
+  )
+
+  const selectRangeEndpoint = useCallback(
+    (occurrenceId: string): void => {
+      if (!rangeSelectionMode) {
+        playOccurrence(occurrenceId)
+        return
+      }
+
+      const startOccurrenceId = rangeSelectionStartId
+      if (!startOccurrenceId) {
+        setRangeSelectionStartId(occurrenceId)
+        setMessage(`已选择 ${occurrenceId} 为起点，请选择终点。`)
+        return
+      }
+
+      try {
+        const nextCustomRange = normalizeCustomRangeScope(
+          practiceIndex,
+          startOccurrenceId,
+          occurrenceId,
+        )
+        setCustomRangeScope(nextCustomRange)
+        setTargetKind('customRange')
+        setRangeSelectionMode(false)
+        setRangeSelectionStartId(undefined)
+        practicePlaybackSession?.cancel()
+        const range = resolvePracticeRange(
+          nextCustomRange,
+          model.practice,
+          model.timeline,
+        )
+        setMessage(
+          `自选范围已设置：${range.occurrenceIds[0]} → ${range.occurrenceIds[range.occurrenceIds.length - 1]} · ${range.occurrenceIds.length} 句 · ${formatDuration(range.endMs - range.startMs)}。`,
+        )
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : '自选范围无效。')
+      }
+    },
+    [
+      model.practice,
+      model.timeline,
+      playOccurrence,
+      practiceIndex,
+      practicePlaybackSession,
+      rangeSelectionMode,
+      rangeSelectionStartId,
+    ],
+  )
+
+  const selectTarget = useCallback(
+    (nextTargetKind: PracticeTargetKind): void => {
+      practicePlaybackSession?.cancel()
+      if (nextTargetKind === 'customRange') {
+        beginRangeSelection(customRangeScope?.startOccurrenceId)
+        return
+      }
+      setTargetKind(nextTargetKind)
+      setRangeSelectionMode(false)
+      setRangeSelectionStartId(undefined)
+      setMessage(undefined)
+    },
+    [
+      beginRangeSelection,
+      customRangeScope?.startOccurrenceId,
+      practicePlaybackSession,
+    ],
+  )
+
+  const clearCustomRange = useCallback((): void => {
+    practicePlaybackSession?.cancel()
+    setCustomRangeScope(undefined)
+    setRangeSelectionStartId(undefined)
+    setRangeSelectionMode(false)
+    setTargetKind('currentOccurrence')
+    setMessage('已清除自选范围。')
+  }, [practicePlaybackSession])
+
+  const startTarget = useCallback(
+    (nextTargetKind: PracticeTargetKind = targetKind): void => {
+      if (nextTargetKind === 'customRange' && !customRangeScope) {
+        beginRangeSelection()
+        return
+      }
+
+      const resolvedTarget = getTargetScope(
+        nextTargetKind,
+        learningState?.currentOccurrenceId,
+        practiceIndex.unitsById.get(learningState?.practiceUnitId ?? ''),
+        learningState
+          ? learningState.coveredUntilByUnit[learningState.practiceUnitId]
+          : undefined,
+        customRangeScope,
+      )
+      if (!resolvedTarget) {
+        setMessage('当前练习目标还没有可播放的范围。')
+        return
+      }
+
+      setTargetKind(nextTargetKind)
+      playScope(resolvedTarget.scope, resolvedTarget.activeOccurrenceId)
+    },
+    [
+      beginRangeSelection,
+      customRangeScope,
+      learningState,
+      playScope,
+      practiceIndex.unitsById,
+      targetKind,
+    ],
   )
 
   const navigateOccurrence = useCallback(
@@ -150,10 +283,23 @@ export function PracticeWorkspace({
       if (firstOccurrenceId) {
         practicePlaybackSession?.cancel()
         setOccurrence(firstOccurrenceId)
-        setMessage(undefined)
+        setMessage(
+          rangeSelectionMode
+            ? rangeSelectionStartId
+              ? `已保留起点 ${rangeSelectionStartId}，请在当前学习段选择终点。`
+              : '自选范围：请选择起点。'
+            : undefined,
+        )
       }
     },
-    [learningState, practiceIndex, practicePlaybackSession, setOccurrence],
+    [
+      learningState,
+      practiceIndex,
+      practicePlaybackSession,
+      rangeSelectionMode,
+      rangeSelectionStartId,
+      setOccurrence,
+    ],
   )
 
   const togglePlayback = useCallback((): void => {
@@ -170,12 +316,12 @@ export function PracticeWorkspace({
       return
     }
 
-    playOccurrence(learningState.currentOccurrenceId)
+    startTarget()
   }, [
     learningState,
-    playOccurrence,
     practicePlaybackSession,
     practicePlaybackState.status,
+    startTarget,
   ])
 
   useEffect(() => {
@@ -254,6 +400,26 @@ export function PracticeWorkspace({
     'next',
   )
   const canResume = practicePlaybackState.status === 'paused'
+  const selectedTarget = getTargetScope(
+    targetKind,
+    currentOccurrence.occurrence.id,
+    currentUnit,
+    coveredUntilOccurrenceId,
+    customRangeScope,
+  )
+  const selectedRange = selectedTarget
+    ? resolveSafePracticeRange(selectedTarget.scope, model)
+    : undefined
+  const rangeSelectionLabel = rangeSelectionMode
+    ? rangeSelectionStartId
+      ? `已选起点：${rangeSelectionStartId}，请选择终点`
+      : '请选择起点'
+    : undefined
+  const customRangeOccurrenceIds = customRangeScope
+    ? new Set(
+        resolveSafePracticeRange(customRangeScope, model)?.occurrenceIds ?? [],
+      )
+    : undefined
 
   return (
     <section
@@ -281,7 +447,11 @@ export function PracticeWorkspace({
             <PracticeLyricRow
               assembledOccurrence={currentOccurrence}
               isCurrent
+              isInCustomRange={customRangeOccurrenceIds?.has(currentOccurrence.occurrence.id) ?? false}
+              isRangeAnchor={rangeSelectionStartId === currentOccurrence.occurrence.id}
+              rangeSelectionMode={rangeSelectionMode}
               onPlay={() => playOccurrence(currentOccurrence.occurrence.id)}
+              onSelectRangeEndpoint={selectRangeEndpoint}
             />
           </ol>
         </section>
@@ -291,6 +461,66 @@ export function PracticeWorkspace({
           <p className="practice-current-label">
             当前：{currentOccurrence.occurrence.id} · {currentOccurrence.segment.lyrics}
           </p>
+          <div className="practice-target-actions" aria-label="练习目标">
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={targetKind === 'currentOccurrence'}
+              onClick={() => selectTarget('currentOccurrence')}
+            >
+              当前句
+            </button>
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={targetKind === 'coveredRange'}
+              onClick={() => selectTarget('coveredRange')}
+            >
+              已学到这里
+            </button>
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={targetKind === 'practiceUnit'}
+              onClick={() => selectTarget('practiceUnit')}
+            >
+              当前学习段
+            </button>
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={targetKind === 'customRange'}
+              onClick={() => selectTarget('customRange')}
+            >
+              自选范围
+            </button>
+          </div>
+          {rangeSelectionLabel ? (
+            <p className="practice-range-selection" role="status">
+              {rangeSelectionLabel}
+            </p>
+          ) : null}
+          <p className="practice-target-summary" aria-live="polite">
+            {formatTargetSummary(targetKind, selectedRange)}
+          </p>
+          {customRangeScope ? (
+            <div className="practice-custom-range-actions">
+              <button
+                className="practice-action"
+                type="button"
+                onClick={() => beginRangeSelection(customRangeScope.startOccurrenceId)}
+              >
+                修改自选范围
+              </button>
+              <button
+                className="practice-action"
+                type="button"
+                onClick={clearCustomRange}
+              >
+                清除自选范围
+              </button>
+            </div>
+          ) : null}
           <div className="practice-primary-actions">
             <button
               className="practice-action practice-action-primary"
@@ -335,16 +565,7 @@ export function PracticeWorkspace({
             <button
               className="practice-action"
               type="button"
-              onClick={() =>
-                playScope(
-                  {
-                    kind: 'coveredRange',
-                    practiceUnitId: currentUnit.id,
-                    endOccurrenceId: coveredUntilOccurrenceId,
-                  },
-                  coveredUntilOccurrenceId,
-                )
-              }
+              onClick={() => startTarget('coveredRange')}
               disabled={!coveredUntilOccurrenceId || !practicePlaybackSession}
             >
               已学到这里 · 连续播放
@@ -353,10 +574,7 @@ export function PracticeWorkspace({
               className="practice-action"
               type="button"
               onClick={() =>
-                playScope(
-                  { kind: 'practiceUnit', practiceUnitId: currentUnit.id },
-                  currentUnit.occurrenceIds[currentUnit.occurrenceIds.length - 1],
-                )
+                startTarget('practiceUnit')
               }
               disabled={!practicePlaybackSession}
             >
@@ -383,7 +601,11 @@ export function PracticeWorkspace({
                   key={assembledOccurrence.occurrence.id}
                   assembledOccurrence={assembledOccurrence}
                   isCurrent={false}
+                  isInCustomRange={customRangeOccurrenceIds?.has(assembledOccurrence.occurrence.id) ?? false}
+                  isRangeAnchor={rangeSelectionStartId === assembledOccurrence.occurrence.id}
+                  rangeSelectionMode={rangeSelectionMode}
                   onPlay={() => playOccurrence(assembledOccurrence.occurrence.id)}
+                  onSelectRangeEndpoint={selectRangeEndpoint}
                 />
               ))}
             </ol>
@@ -418,9 +640,15 @@ export function PracticeWorkspace({
                       onClick={() => {
                         const firstOccurrenceId = unit.occurrenceIds[0]
                         if (firstOccurrenceId) {
-                           practicePlaybackSession?.cancel()
+                          practicePlaybackSession?.cancel()
                           setOccurrence(firstOccurrenceId)
-                          setMessage(undefined)
+                          setMessage(
+                            rangeSelectionMode
+                              ? rangeSelectionStartId
+                                ? `已保留起点 ${rangeSelectionStartId}，请在当前学习段选择终点。`
+                                : '自选范围：请选择起点。'
+                              : undefined,
+                          )
                         }
                       }}
                     >
@@ -468,23 +696,47 @@ export function PracticeWorkspace({
 function PracticeLyricRow({
   assembledOccurrence,
   isCurrent,
+  isInCustomRange,
+  isRangeAnchor,
+  rangeSelectionMode,
   onPlay,
+  onSelectRangeEndpoint,
 }: {
   assembledOccurrence: AssembledOccurrence
   isCurrent: boolean
+  isInCustomRange: boolean
+  isRangeAnchor: boolean
+  rangeSelectionMode: boolean
   onPlay: () => void
+  onSelectRangeEndpoint: (occurrenceId: string) => void
 }) {
   const { occurrence, segment } = assembledOccurrence
+  const rowClassName = [
+    'practice-lyric-row',
+    isCurrent ? 'is-current' : '',
+    isInCustomRange ? 'is-in-custom-range' : '',
+    isRangeAnchor ? 'is-range-anchor' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
   return (
     <li
-      className={`practice-lyric-row${isCurrent ? ' is-current' : ''}`}
+      className={rowClassName}
       data-occurrence-id={occurrence.id}
     >
       <button
         className="practice-original"
         type="button"
-        onClick={onPlay}
-        aria-label={`播放第 ${occurrence.id} 句`}
+        onClick={() =>
+          rangeSelectionMode
+            ? onSelectRangeEndpoint(occurrence.id)
+            : onPlay()
+        }
+        aria-label={
+          rangeSelectionMode
+            ? `选择第 ${occurrence.id} 句作为范围端点`
+            : `播放第 ${occurrence.id} 句`
+        }
       >
         {segment.lyrics}
       </button>
@@ -568,4 +820,121 @@ function createIdlePlaybackState(): PracticePlaybackSessionState {
     status: 'idle',
     completedRepetitions: 0,
   }
+}
+
+type PracticeTargetKind =
+  | 'currentOccurrence'
+  | 'coveredRange'
+  | 'practiceUnit'
+  | 'customRange'
+
+type CustomRangeScope = Extract<PracticeScope, { kind: 'customRange' }>
+
+function getTargetScope(
+  targetKind: PracticeTargetKind,
+  currentOccurrenceId: string | undefined,
+  currentUnit: PracticeIndex['units'][number] | undefined,
+  coveredUntilOccurrenceId: string | undefined,
+  customRangeScope: CustomRangeScope | undefined,
+): { scope: PracticeScope; activeOccurrenceId?: string } | undefined {
+  if (targetKind === 'currentOccurrence' && currentOccurrenceId) {
+    return {
+      scope: { kind: 'currentOccurrence', occurrenceId: currentOccurrenceId },
+      activeOccurrenceId: currentOccurrenceId,
+    }
+  }
+
+  if (
+    targetKind === 'coveredRange' &&
+    currentUnit &&
+    coveredUntilOccurrenceId
+  ) {
+    return {
+      scope: {
+        kind: 'coveredRange',
+        practiceUnitId: currentUnit.id,
+        endOccurrenceId: coveredUntilOccurrenceId,
+      },
+      activeOccurrenceId: coveredUntilOccurrenceId,
+    }
+  }
+
+  if (targetKind === 'practiceUnit' && currentUnit) {
+    const activeOccurrenceId = currentUnit.occurrenceIds.at(-1)
+    return {
+      scope: { kind: 'practiceUnit', practiceUnitId: currentUnit.id },
+      activeOccurrenceId,
+    }
+  }
+
+  if (targetKind === 'customRange' && customRangeScope) {
+    return {
+      scope: customRangeScope,
+      activeOccurrenceId: customRangeScope.endOccurrenceId,
+    }
+  }
+
+  return undefined
+}
+
+function resolveSafePracticeRange(
+  scope: PracticeScope,
+  model: AssembledSongEdition,
+): ResolvedPracticeRange | undefined {
+  try {
+    return resolvePracticeRange(scope, model.practice, model.timeline)
+  } catch {
+    return undefined
+  }
+}
+
+function normalizeCustomRangeScope(
+  practiceIndex: PracticeIndex,
+  firstOccurrenceId: string,
+  secondOccurrenceId: string,
+): CustomRangeScope {
+  const firstIndex = practiceIndex.chronologicalOccurrenceIds.indexOf(
+    firstOccurrenceId,
+  )
+  const secondIndex = practiceIndex.chronologicalOccurrenceIds.indexOf(
+    secondOccurrenceId,
+  )
+  if (firstIndex < 0 || secondIndex < 0) {
+    throw new Error('自选范围引用了未知的 Occurrence。')
+  }
+
+  return firstIndex <= secondIndex
+    ? {
+        kind: 'customRange',
+        startOccurrenceId: firstOccurrenceId,
+        endOccurrenceId: secondOccurrenceId,
+      }
+    : {
+        kind: 'customRange',
+        startOccurrenceId: secondOccurrenceId,
+        endOccurrenceId: firstOccurrenceId,
+      }
+}
+
+function formatTargetSummary(
+  targetKind: PracticeTargetKind,
+  range: ResolvedPracticeRange | undefined,
+): string {
+  const label = {
+    currentOccurrence: '当前句',
+    coveredRange: '已学到这里',
+    practiceUnit: '当前学习段',
+    customRange: '自选范围',
+  }[targetKind]
+  if (!range) {
+    return `${label}：尚未选择范围`
+  }
+
+  const startOccurrenceId = range.occurrenceIds[0]
+  const endOccurrenceId = range.occurrenceIds[range.occurrenceIds.length - 1]
+  return `${label}：${startOccurrenceId} → ${endOccurrenceId} · ${range.occurrenceIds.length} 句 · ${formatDuration(range.endMs - range.startMs)}`
+}
+
+function formatDuration(durationMs: number): string {
+  return `${(durationMs / 1000).toFixed(2)} 秒`
 }

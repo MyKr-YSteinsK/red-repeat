@@ -2239,6 +2239,16 @@
   background: color-mix(in srgb, var(--color-red) 4%, transparent);
 }
 
+.practice-lyric-row.is-in-custom-range {
+  border-left-color: color-mix(in srgb, var(--color-red) 48%, var(--color-line));
+  background: color-mix(in srgb, var(--color-red) 2%, transparent);
+}
+
+.practice-lyric-row.is-range-anchor {
+  border-left-color: var(--color-red);
+  background: color-mix(in srgb, var(--color-red) 8%, transparent);
+}
+
 .practice-original {
   display: block;
   max-width: 100%;
@@ -2328,10 +2338,17 @@
 
 .practice-primary-actions,
 .practice-adjacent-actions,
-.practice-range-actions {
+.practice-range-actions,
+.practice-target-actions,
+.practice-custom-range-actions {
   display: grid;
   gap: 0.45rem;
   margin-top: 1rem;
+}
+
+.practice-target-actions,
+.practice-custom-range-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .practice-primary-actions,
@@ -2358,7 +2375,8 @@
 
 .practice-action:hover,
 .practice-action:focus-visible,
-.practice-action-primary {
+.practice-action-primary,
+.practice-target-actions .practice-action[aria-pressed='true'] {
   border-color: var(--color-red);
   color: var(--color-red);
 }
@@ -2372,8 +2390,23 @@
 
 .practice-covered,
 .practice-message,
-.practice-keyboard-hint {
+.practice-keyboard-hint,
+.practice-range-selection,
+.practice-target-summary {
   margin: 1rem 0 0;
+}
+
+.practice-range-selection,
+.practice-target-summary {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.practice-range-selection {
+  color: var(--color-red);
 }
 
 .practice-message {
@@ -2470,7 +2503,9 @@
 
   .practice-primary-actions,
   .practice-adjacent-actions,
-  .practice-range-actions {
+  .practice-range-actions,
+  .practice-target-actions,
+  .practice-custom-range-actions {
     margin-top: 0.75rem;
   }
 }
@@ -2577,7 +2612,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .practice-range-actions {
+  .practice-range-actions,
+  .practice-target-actions,
+  .practice-custom-range-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

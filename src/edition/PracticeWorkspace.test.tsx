@@ -393,6 +393,87 @@ describe('PracticeWorkspace', () => {
       ),
     )
   })
+
+  it('selects a same-unit custom range in either endpoint order and keeps it after a one-shot click', () => {
+    const engine = createAudioEngine(new FakeMedia())
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+    )
+
+    expect(screen.getByText(/自选范围：o001 → o002 · 2 句 · 0.70 秒/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '自选范围' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(
+      document.querySelector('[data-occurrence-id="o001"]'),
+    ).toHaveClass('is-in-custom-range')
+
+    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+    expect(screen.getByText(/自选范围：o001 → o002/)).toBeInTheDocument()
+  })
+
+  it('keeps a custom-range anchor across unit navigation and plays a continuous cross-unit range', () => {
+    const engine = createAudioEngine(new FakeMedia())
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /02主歌 B/ }))
+    expect(screen.getByText(/已保留起点 o002/)).toBeInTheDocument()
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o003 句作为范围端点' }),
+    )
+
+    expect(screen.getByText(/自选范围：o002 → o003 · 2 句 · 0.75 秒/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 400, endMs: 1150, occurrenceIds: ['o002', 'o003'] },
+      'o003',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /01主歌 A/ }))
+    expect(screen.getByText(/自选范围：o002 → o003/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '清除自选范围' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '清除自选范围' }))
+    expect(screen.getByRole('button', { name: '自选范围' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(screen.getByText(/当前句：o001/)).toBeInTheDocument()
+  })
 })
 
 const runtimeClient = {
