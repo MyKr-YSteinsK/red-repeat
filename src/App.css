@@ -1927,6 +1927,238 @@
   }
 }
 
+/* Full Song: a quiet, continuous lyric stream. */
+.full-song-workspace {
+  margin-top: clamp(2.5rem, 6vw, 5rem);
+}
+
+.full-song-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.full-song-heading h2 {
+  margin: 0.55rem 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 0.96;
+}
+
+.full-song-reading-toggle {
+  min-height: 2.25rem;
+  padding: 0.45rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-ink);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.full-song-reading-toggle:hover,
+.full-song-reading-toggle:focus-visible,
+.full-song-reading-toggle[aria-pressed='true'] {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.full-song-lyrics-stream {
+  max-width: 52rem;
+}
+
+.full-song-section {
+  padding: clamp(2.25rem, 5vw, 4rem) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.full-song-section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 1.8rem;
+}
+
+.full-song-section-heading h3,
+.full-song-section-index {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.full-song-section-heading h3 {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.full-song-section-index {
+  color: var(--color-red);
+}
+
+.full-song-occurrence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.65rem;
+}
+
+.full-song-occurrence {
+  min-width: 0;
+  padding: 0.15rem 0 0.15rem 0.9rem;
+  border-left: 2px solid transparent;
+  transition: border-color 160ms ease, opacity 160ms ease;
+}
+
+.full-song-occurrence:not(.is-active) {
+  opacity: 0.72;
+}
+
+.full-song-occurrence.is-active {
+  border-left-color: color-mix(in srgb, var(--color-red) 45%, var(--color-line));
+  opacity: 1;
+}
+
+.full-song-occurrence.is-primary-active {
+  border-left-color: var(--color-red);
+}
+
+.full-song-occurrence.is-selected {
+  background: color-mix(in srgb, var(--color-red) 5%, transparent);
+}
+
+.full-song-original {
+  display: block;
+  max-width: 100%;
+  min-height: 2rem;
+  padding: 0;
+  border: 0;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.45rem);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.full-song-original:hover,
+.full-song-original:focus-visible {
+  color: var(--color-red);
+}
+
+.full-song-translation {
+  margin: 0.35rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.full-song-reading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin-top: 0.55rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.full-song-reading p {
+  margin: 0;
+}
+
+.full-song-reading span {
+  margin-right: 0.45rem;
+  color: var(--color-red);
+}
+
+.full-song-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.full-song-quick-actions button {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.full-song-quick-actions button:hover,
+.full-song-quick-actions button:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.full-song-instrumental-marker {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+}
+
+.full-song-instrumental-marker span {
+  width: 0.42rem;
+  height: 0.42rem;
+  background: var(--color-red);
+}
+
+.full-song-message {
+  margin: 1rem 0 0;
+  color: var(--color-red);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .full-song-workspace {
+    margin-top: 2rem;
+  }
+
+  .full-song-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .full-song-heading h2 {
+    font-size: 2rem;
+  }
+
+  .full-song-reading-toggle {
+    align-self: flex-start;
+  }
+
+  .full-song-section {
+    padding-block: 2rem;
+  }
+
+  .full-song-occurrence-list {
+    gap: 1.35rem;
+  }
+
+  .full-song-original {
+    font-size: 1.25rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .playback-dock {
     transition: opacity 0ms;
