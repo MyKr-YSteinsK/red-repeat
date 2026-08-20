@@ -128,7 +128,7 @@ describe('SongEditionPage 学唱入口', () => {
     render(<SongEditionPage {...propsFor(undefined, engine)} />)
     await screen.findByRole('heading', { name: 'First Light' })
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
     expect(media.currentTime).toBe(0.05)
 

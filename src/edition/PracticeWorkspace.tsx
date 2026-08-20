@@ -93,12 +93,19 @@ export function PracticeWorkspace({
   }, [practicePlaybackSession])
 
   useEffect(() => {
-    cancelPracticeOperations(practicePlaybackSession, practiceController)
+    practicePlaybackSession?.cancel()
+  }, [
+    model.edition.audio.url,
+    model.edition.song.songId,
+    practicePlaybackSession,
+  ])
+
+  useEffect(() => {
+    practiceController?.cancel()
   }, [
     model.edition.audio.url,
     model.edition.song.songId,
     practiceController,
-    practicePlaybackSession,
   ])
 
   useEffect(() => {
