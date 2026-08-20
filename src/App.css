@@ -2270,6 +2270,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    padding-bottom: calc(15rem + env(safe-area-inset-bottom));
   }
 
   .full-song-section {
@@ -2285,13 +2286,14 @@
   }
 
   .full-song-player {
-    position: sticky;
+    position: fixed;
+    left: 0;
+    right: 0;
     bottom: 0;
     top: auto;
     z-index: 4;
-    width: calc(100% + 2.5rem);
-    margin-top: 1.5rem;
-    margin-inline: -1.25rem;
+    width: 100%;
+    margin: 0;
     padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
     border-inline: 0;
     box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
