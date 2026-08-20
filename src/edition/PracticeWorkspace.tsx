@@ -11,6 +11,7 @@ import {
   type PracticeIndex,
   type PracticeScope,
   type ResolvedPracticeRange,
+  type PracticeTimingProvider,
 } from '../practice/practice-scope'
 import {
   createInitialPracticeState,
@@ -26,6 +27,10 @@ import {
 } from '../practice/practice-playback-session'
 import { usePracticeController } from './use-practice-controller'
 import { calculateShadowRangeSilenceMs } from '../practice/practice-controller'
+import {
+  createEffectivePracticeTimingProvider,
+  readTimingOverrides,
+} from '../practice/practice-timing-overrides'
 import {
   getNextPracticePlaybackRate,
   readPracticePlaybackRate,
@@ -51,6 +56,30 @@ export function PracticeWorkspace({
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
+  )
+  const timingOverrideDocument = useMemo(() => {
+    const result = readTimingOverrides(
+      {
+        songId: model.edition.song.songId,
+        audioSourceHash: model.edition.audio.sourceHash,
+        baseTimelineUrl: model.edition.timelineUrl,
+      },
+      { occurrences: model.timeline.occurrences },
+    )
+    return result.kind === 'compatible' ? result.document : undefined
+  }, [
+    model.edition.audio.sourceHash,
+    model.edition.song.songId,
+    model.edition.timelineUrl,
+    model.timeline.occurrences,
+  ])
+  const practiceTimingProvider = useMemo(
+    () =>
+      createEffectivePracticeTimingProvider(
+        model.timeline,
+        timingOverrideDocument,
+      ),
+    [model.timeline, timingOverrideDocument],
   )
   const [learningState, setLearningState] = useState<PracticeLearningState | null>(
     () => loadSafeState(model, practiceIndex),
@@ -166,6 +195,7 @@ export function PracticeWorkspace({
           scope,
           model.practice,
           model.timeline,
+          practiceTimingProvider,
         )
         practicePlaybackSession.start(
           { range, activeOccurrenceId },
@@ -176,7 +206,13 @@ export function PracticeWorkspace({
         setMessage(error instanceof Error ? error.message : '练习范围无效。')
       }
     },
-    [model.practice, model.timeline, practiceController, practicePlaybackSession],
+    [
+      model.practice,
+      model.timeline,
+      practiceController,
+      practicePlaybackSession,
+      practiceTimingProvider,
+    ],
   )
 
   const playOccurrence = useCallback(
@@ -236,6 +272,7 @@ export function PracticeWorkspace({
           nextCustomRange,
           model.practice,
           model.timeline,
+          practiceTimingProvider,
         )
         setMessage(
           `${formatTargetSummary('customRange', range, practiceIndex)}。`,
@@ -251,6 +288,7 @@ export function PracticeWorkspace({
       practiceIndex,
       practicePlaybackSession,
       practiceController,
+      practiceTimingProvider,
       rangeSelectionMode,
       rangeSelectionStartId,
     ],
@@ -313,6 +351,7 @@ export function PracticeWorkspace({
             resolvedTarget.scope,
             model.practice,
             model.timeline,
+            practiceTimingProvider,
           ),
           activeOccurrenceId: resolvedTarget.activeOccurrenceId,
         }
@@ -326,6 +365,7 @@ export function PracticeWorkspace({
       model.practice,
       model.timeline,
       practiceIndex.unitsById,
+      practiceTimingProvider,
       targetKind,
     ],
   )
@@ -646,7 +686,11 @@ export function PracticeWorkspace({
     customRangeScope,
   )
   const selectedRange = selectedTarget
-    ? resolveSafePracticeRange(selectedTarget.scope, model)
+    ? resolveSafePracticeRange(
+        selectedTarget.scope,
+        model,
+        practiceTimingProvider,
+      )
     : undefined
   const strategyProgress = describePracticeStrategy(practiceStrategyState)
   const repeatProgress = describePracticeRepeat(practicePlaybackState)
@@ -657,7 +701,11 @@ export function PracticeWorkspace({
     : undefined
   const customRangeOccurrenceIds = customRangeScope
     ? new Set(
-        resolveSafePracticeRange(customRangeScope, model)?.occurrenceIds ?? [],
+        resolveSafePracticeRange(
+          customRangeScope,
+          model,
+          practiceTimingProvider,
+        )?.occurrenceIds ?? [],
       )
     : undefined
   const isPracticePlaybackActive =
@@ -1273,9 +1321,15 @@ function getTargetScope(
 function resolveSafePracticeRange(
   scope: PracticeScope,
   model: AssembledSongEdition,
+  timingProvider?: PracticeTimingProvider,
 ): ResolvedPracticeRange | undefined {
   try {
-    return resolvePracticeRange(scope, model.practice, model.timeline)
+    return resolvePracticeRange(
+      scope,
+      model.practice,
+      model.timeline,
+      timingProvider,
+    )
   } catch {
     return undefined
   }

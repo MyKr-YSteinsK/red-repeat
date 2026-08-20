@@ -5,6 +5,10 @@ import {
   getAdjacentPracticeUnit,
   resolvePracticeRange,
 } from './practice-scope'
+import {
+  createEffectivePracticeTimingProvider,
+  createTimingOverridesDocument,
+} from './practice-timing-overrides'
 
 const timeline = {
   audioSourceHash: 'a'.repeat(64),
@@ -61,6 +65,45 @@ describe('Practice Scope', () => {
   it('does not create intermediate stops for a multi-occurrence range', () => {
     const range = resolvePracticeRange({ kind: 'practiceUnit', practiceUnitId: 'p001' }, practice, timeline)
     expect(range).toEqual({ startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] })
+  })
+
+  it('resolves every scope from the same effective first/last timing envelope', () => {
+    const originalFirst = timeline.occurrences[0]
+    const originalLast = timeline.occurrences[1]
+    const overrides = createTimingOverridesDocument({
+      songId: 'song',
+      audioSourceHash: timeline.audioSourceHash,
+      baseTimelineUrl: '/library-runtime/song/timeline.json',
+    })
+    overrides.occurrences = {
+      o001: { playStartMs: 80 },
+      o002: { playEndMs: 780 },
+      o003: { playStartMs: 760, playEndMs: 1080 },
+    }
+    const provider = createEffectivePracticeTimingProvider(timeline, overrides)
+
+    expect(resolvePracticeRange({ kind: 'currentOccurrence', occurrenceId: 'o001' }, practice, timeline, provider)).toEqual({
+      startMs: 80,
+      endMs: 350,
+      occurrenceIds: ['o001'],
+    })
+    expect(resolvePracticeRange({ kind: 'coveredRange', practiceUnitId: 'p001', endOccurrenceId: 'o002' }, practice, timeline, provider)).toEqual({
+      startMs: 80,
+      endMs: 780,
+      occurrenceIds: ['o001', 'o002'],
+    })
+    expect(resolvePracticeRange({ kind: 'practiceUnit', practiceUnitId: 'p001' }, practice, timeline, provider)).toEqual({
+      startMs: 80,
+      endMs: 780,
+      occurrenceIds: ['o001', 'o002'],
+    })
+    expect(resolvePracticeRange({ kind: 'customRange', startOccurrenceId: 'o002', endOccurrenceId: 'o004' }, practice, timeline, provider)).toEqual({
+      startMs: 400,
+      endMs: 1550,
+      occurrenceIds: ['o002', 'o003', 'o004'],
+    })
+    expect(originalFirst.playStartMs).toBe(50)
+    expect(originalLast.playEndMs).toBe(750)
   })
 
   it('rejects unknown, empty, reverse, and invalid ranges', () => {

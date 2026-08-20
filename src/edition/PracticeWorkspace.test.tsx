@@ -16,6 +16,12 @@ import type {
 } from '../library/schema'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
+import {
+  createTimingOverridesDocument,
+  getTimingOverridesStorageKey,
+  serializeTimingOverrides,
+  updateTimingOverride,
+} from '../practice/practice-timing-overrides'
 import { PracticeWorkspace } from './PracticeWorkspace'
 
 let activeEngine: AudioEngine | undefined
@@ -540,8 +546,6 @@ describe('PracticeWorkspace', () => {
       { startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] },
       'o002',
     )
-    fireEvent.click(screen.getByRole('button', { name: '停止' }))
-
     fireEvent.click(screen.getByRole('button', { name: '当前学习段' }))
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     expect(playRange).toHaveBeenLastCalledWith(
@@ -592,6 +596,66 @@ describe('PracticeWorkspace', () => {
     fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
     expect(screen.queryByLabelText('循环次数')).not.toBeInTheDocument()
     expect(screen.getByText(/听原声 → 轮到你 → 再听原声/)).toBeInTheDocument()
+  })
+
+  it('uses one compatible effective timing provider for current, range, Ramp, and Shadow', async () => {
+    let overrides = createTimingOverridesDocument({
+      songId: edition.song.songId,
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: edition.timelineUrl,
+    })
+    overrides = updateTimingOverride(overrides, timeline.occurrences[0], 'playStartMs', 20)
+    overrides = updateTimingOverride(overrides, timeline.occurrences[0], 'playEndMs', 380)
+    overrides = updateTimingOverride(overrides, timeline.occurrences[1], 'playEndMs', 790)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(edition.song.songId),
+      serializeTimingOverrides(overrides),
+    )
+
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 20, endMs: 380, occurrenceIds: ['o001'] },
+      'o001',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '当前学习段' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 20, endMs: 790, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始渐速练习' }))
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 20, endMs: 790, occurrenceIds: ['o001', 'o002'] },
+      ),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '停止练习' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始跟唱' }))
+    await waitFor(() =>
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 20, endMs: 790, occurrenceIds: ['o001', 'o002'] },
+        'o002',
+      ),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '停止练习' }))
   })
 
   it('runs Ramp from the current target, disables speed changes, and restores the saved rate on Esc', async () => {
