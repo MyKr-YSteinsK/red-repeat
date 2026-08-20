@@ -1,0 +1,190 @@
+import type { PracticeDocument } from '../library/schema'
+import {
+  createPracticeIndex,
+  type PracticeIndex,
+} from './practice-scope'
+
+export const PRACTICE_STATE_SCHEMA_VERSION = 1 as const
+
+export interface PracticeLearningState {
+  schemaVersion: typeof PRACTICE_STATE_SCHEMA_VERSION
+  practiceUnitId: string
+  currentOccurrenceId: string
+  coveredUntilByUnit: Readonly<Record<string, string>>
+}
+
+export interface PracticeStorage {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+}
+
+export function createInitialPracticeState(
+  index: PracticeIndex,
+): PracticeLearningState {
+  const firstUnit = index.units[0]
+  const firstOccurrenceId = firstUnit?.occurrenceIds[0]
+  if (!firstUnit || !firstOccurrenceId) {
+    throw new Error('Practice document must contain a usable Practice Unit')
+  }
+
+  return {
+    schemaVersion: PRACTICE_STATE_SCHEMA_VERSION,
+    practiceUnitId: firstUnit.id,
+    currentOccurrenceId: firstOccurrenceId,
+    coveredUntilByUnit: { [firstUnit.id]: firstOccurrenceId },
+  }
+}
+
+export function setCurrentPracticeOccurrence(
+  state: PracticeLearningState,
+  index: PracticeIndex,
+  occurrenceId: string,
+): PracticeLearningState {
+  const practiceUnitId = index.unitIdByOccurrenceId.get(occurrenceId)
+  if (!practiceUnitId) {
+    throw new Error(`Occurrence ${occurrenceId} is not covered by Practice`)
+  }
+
+  const nextCovered = { ...state.coveredUntilByUnit }
+  const occurrenceIds = index.occurrenceIdsByUnitId.get(practiceUnitId)
+  if (!occurrenceIds) {
+    throw new Error(`Practice Unit ${practiceUnitId} is not indexed`)
+  }
+
+  const nextIndex = occurrenceIds.indexOf(occurrenceId)
+  const coveredId = nextCovered[practiceUnitId]
+  const coveredIndex = coveredId ? occurrenceIds.indexOf(coveredId) : -1
+  if (nextIndex > coveredIndex) {
+    nextCovered[practiceUnitId] = occurrenceId
+  }
+
+  return {
+    schemaVersion: PRACTICE_STATE_SCHEMA_VERSION,
+    practiceUnitId,
+    currentOccurrenceId: occurrenceId,
+    coveredUntilByUnit: nextCovered,
+  }
+}
+
+export function loadPracticeLearningState(
+  songId: string,
+  practice: PracticeDocument,
+  timeline: Parameters<typeof createPracticeIndex>[1],
+  storage?: PracticeStorage,
+): PracticeLearningState {
+  const index = createPracticeIndex(practice, timeline)
+  const fallback = createInitialPracticeState(index)
+  const persistence = storage ?? getBrowserStorage()
+  if (!persistence) {
+    return fallback
+  }
+
+  try {
+    const raw = persistence.getItem(storageKey(songId))
+    if (!raw) {
+      return fallback
+    }
+    return normalizePersistedState(JSON.parse(raw) as unknown, index, fallback)
+  } catch {
+    return fallback
+  }
+}
+
+export function savePracticeLearningState(
+  songId: string,
+  state: PracticeLearningState,
+  storage?: PracticeStorage,
+): void {
+  const persistence = storage ?? getBrowserStorage()
+  if (!persistence) {
+    return
+  }
+
+  try {
+    persistence.setItem(storageKey(songId), JSON.stringify(state))
+  } catch {
+    // Local persistence is an enhancement; playback remains usable.
+  }
+}
+
+function normalizePersistedState(
+  value: unknown,
+  index: PracticeIndex,
+  fallback: PracticeLearningState,
+): PracticeLearningState {
+  if (!isRecord(value) || value.schemaVersion !== PRACTICE_STATE_SCHEMA_VERSION) {
+    return fallback
+  }
+
+  const currentOccurrenceId =
+    typeof value.currentOccurrenceId === 'string'
+      ? value.currentOccurrenceId
+      : undefined
+  const storedUnitId =
+    typeof value.practiceUnitId === 'string' ? value.practiceUnitId : undefined
+  const currentUnitId = currentOccurrenceId
+    ? index.unitIdByOccurrenceId.get(currentOccurrenceId)
+    : undefined
+  const practiceUnitId = currentUnitId ?? storedUnitId
+  if (!practiceUnitId || !index.unitsById.has(practiceUnitId)) {
+    return fallback
+  }
+
+  const resolvedCurrentOccurrenceId = currentUnitId
+    ? currentOccurrenceId
+    : index.occurrenceIdsByUnitId.get(practiceUnitId)?.[0]
+  if (!resolvedCurrentOccurrenceId) {
+    return fallback
+  }
+
+  const coveredUntilByUnit = normalizeCoveredUntil(
+    value.coveredUntilByUnit,
+    index,
+  )
+  if (!coveredUntilByUnit[practiceUnitId]) {
+    coveredUntilByUnit[practiceUnitId] = resolvedCurrentOccurrenceId
+  }
+
+  return {
+    schemaVersion: PRACTICE_STATE_SCHEMA_VERSION,
+    practiceUnitId,
+    currentOccurrenceId: resolvedCurrentOccurrenceId,
+    coveredUntilByUnit,
+  }
+}
+
+function normalizeCoveredUntil(
+  value: unknown,
+  index: PracticeIndex,
+): Record<string, string> {
+  if (!isRecord(value)) {
+    return {}
+  }
+
+  const result: Record<string, string> = {}
+  Object.entries(value).forEach(([unitId, occurrenceId]) => {
+    if (typeof occurrenceId !== 'string') {
+      return
+    }
+    const occurrenceIds = index.occurrenceIdsByUnitId.get(unitId)
+    if (occurrenceIds?.includes(occurrenceId)) {
+      result[unitId] = occurrenceId
+    }
+  })
+  return result
+}
+
+function storageKey(songId: string): string {
+  return `red-repeat:practice:${songId}`
+}
+
+function getBrowserStorage(): PracticeStorage | undefined {
+  if (typeof globalThis.localStorage === 'undefined') {
+    return undefined
+  }
+  return globalThis.localStorage
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
