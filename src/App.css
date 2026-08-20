@@ -2340,15 +2340,21 @@
 .practice-adjacent-actions,
 .practice-range-actions,
 .practice-target-actions,
-.practice-custom-range-actions {
+.practice-custom-range-actions,
+.practice-repeat-actions {
   display: grid;
   gap: 0.45rem;
   margin-top: 1rem;
 }
 
 .practice-target-actions,
-.practice-custom-range-actions {
+.practice-custom-range-actions,
+.practice-repeat-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.practice-repeat-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .practice-primary-actions,
@@ -2376,7 +2382,8 @@
 .practice-action:hover,
 .practice-action:focus-visible,
 .practice-action-primary,
-.practice-target-actions .practice-action[aria-pressed='true'] {
+.practice-target-actions .practice-action[aria-pressed='true'],
+.practice-repeat-actions .practice-action[aria-pressed='true'] {
   border-color: var(--color-red);
   color: var(--color-red);
 }
@@ -2505,7 +2512,8 @@
   .practice-adjacent-actions,
   .practice-range-actions,
   .practice-target-actions,
-  .practice-custom-range-actions {
+  .practice-custom-range-actions,
+  .practice-repeat-actions {
     margin-top: 0.75rem;
   }
 }
@@ -2614,8 +2622,13 @@
 
   .practice-range-actions,
   .practice-target-actions,
-  .practice-custom-range-actions {
+  .practice-custom-range-actions,
+  .practice-repeat-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-repeat-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .practice-keyboard-hint {

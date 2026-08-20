@@ -383,7 +383,7 @@ describe('PracticeWorkspace', () => {
     media.currentTime = 3
     frames.flush()
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '播放' })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: '开始' })).toBeInTheDocument(),
     )
     fireEvent.keyDown(window, { key: ' ', code: 'Space' })
     await waitFor(() =>
@@ -458,7 +458,7 @@ describe('PracticeWorkspace', () => {
     )
 
     expect(screen.getByText(/自选范围：o002 → o003 · 2 句 · 0.75 秒/)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 400, endMs: 1150, occurrenceIds: ['o002', 'o003'] },
       'o003',
@@ -473,6 +473,154 @@ describe('PracticeWorkspace', () => {
       'false',
     )
     expect(screen.getByText(/当前句：o001/)).toBeInTheDocument()
+  })
+
+  it('uses the selected repeat mode for current, covered, unit, and custom targets', () => {
+    const engine = createAudioEngine(new FakeMedia())
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 350, occurrenceIds: ['o001'] },
+      'o001',
+    )
+    expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '停止' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '↓ 下一句' }))
+    fireEvent.click(screen.getByRole('button', { name: '已学到这里' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '停止' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '当前学习段' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '停止' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 50, endMs: 750, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+    expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+  })
+
+  it('supports infinite custom playback, current-round pause/resume, and stop', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={resumeModel}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '一直' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
+
+    media.currentTime = 1.45
+    frames.flush()
+    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
+    expect(screen.getByRole('button', { name: '继续' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '继续' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 1450, endMs: 3000, occurrenceIds: ['o001', 'o002'] },
+      'o002',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '停止' }))
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '开始' })).toBeInTheDocument()
+  })
+
+  it('cancels repeat on lyric/unit navigation and keeps R/Enter scoped to Practice', () => {
+    const engine = createAudioEngine(new FakeMedia())
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    fireEvent.click(screen.getByRole('button', { name: '↓ 下一句' }))
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 400, endMs: 750, occurrenceIds: ['o002'] },
+      'o002',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    fireEvent.click(screen.getByRole('button', { name: /02主歌 B/ }))
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'r' })
+    expect(screen.getByRole('button', { name: '一直' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'r' })
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    fireEvent.keyDown(window, { key: 'Enter' })
+    expect(screen.queryByRole('button', { name: '停止' })).not.toBeInTheDocument()
+    expect(playRange).toHaveBeenLastCalledWith(
+      { startMs: 800, endMs: 1150, occurrenceIds: ['o003'] },
+      'o003',
+    )
   })
 })
 

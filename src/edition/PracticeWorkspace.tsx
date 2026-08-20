@@ -21,6 +21,7 @@ import {
 import {
   PracticePlaybackSession,
   type PracticePlaybackSessionState,
+  type PracticeRepeatMode,
 } from '../practice/practice-playback-session'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { EditionTheme } from '../theme/theme-preference'
@@ -52,6 +53,7 @@ export function PracticeWorkspace({
   const [customRangeScope, setCustomRangeScope] = useState<CustomRangeScope>()
   const [rangeSelectionStartId, setRangeSelectionStartId] = useState<string>()
   const [rangeSelectionMode, setRangeSelectionMode] = useState(false)
+  const [repeatMode, setRepeatMode] = useState<PracticeRepeatMode>(1)
   const practicePlaybackSession = useMemo(
     () =>
       playback.engine ? new PracticePlaybackSession(playback.engine) : null,
@@ -77,6 +79,14 @@ export function PracticeWorkspace({
   }, [practicePlaybackSession])
 
   useEffect(() => {
+    practicePlaybackSession?.cancel()
+  }, [
+    model.edition.audio.url,
+    model.edition.song.songId,
+    practicePlaybackSession,
+  ])
+
+  useEffect(() => {
     if (learningState) {
       savePracticeLearningState(model.edition.song.songId, learningState)
     }
@@ -94,7 +104,11 @@ export function PracticeWorkspace({
   )
 
   const playScope = useCallback(
-    (scope: PracticeScope, activeOccurrenceId?: string): void => {
+    (
+      scope: PracticeScope,
+      activeOccurrenceId?: string,
+      nextRepeatMode: PracticeRepeatMode = 1,
+    ): void => {
       if (!practicePlaybackSession) {
         setMessage('当前环境无法播放音频。')
         return
@@ -106,7 +120,10 @@ export function PracticeWorkspace({
           model.practice,
           model.timeline,
         )
-        practicePlaybackSession.start({ range, activeOccurrenceId })
+        practicePlaybackSession.start(
+          { range, activeOccurrenceId },
+          nextRepeatMode,
+        )
         setMessage(undefined)
       } catch (error) {
         setMessage(error instanceof Error ? error.message : '练习范围无效。')
@@ -218,7 +235,10 @@ export function PracticeWorkspace({
   }, [practicePlaybackSession])
 
   const startTarget = useCallback(
-    (nextTargetKind: PracticeTargetKind = targetKind): void => {
+    (
+      nextTargetKind: PracticeTargetKind = targetKind,
+      nextRepeatMode: PracticeRepeatMode = repeatMode,
+    ): void => {
       if (nextTargetKind === 'customRange' && !customRangeScope) {
         beginRangeSelection()
         return
@@ -239,7 +259,11 @@ export function PracticeWorkspace({
       }
 
       setTargetKind(nextTargetKind)
-      playScope(resolvedTarget.scope, resolvedTarget.activeOccurrenceId)
+      playScope(
+        resolvedTarget.scope,
+        resolvedTarget.activeOccurrenceId,
+        nextRepeatMode,
+      )
     },
     [
       beginRangeSelection,
@@ -247,9 +271,42 @@ export function PracticeWorkspace({
       learningState,
       playScope,
       practiceIndex.unitsById,
+      repeatMode,
       targetKind,
     ],
   )
+
+  const changeRepeatMode = useCallback(
+    (nextRepeatMode: PracticeRepeatMode): void => {
+      practicePlaybackSession?.cancel()
+      setRepeatMode(nextRepeatMode)
+    },
+    [practicePlaybackSession],
+  )
+
+  const stopPlayback = useCallback((): void => {
+    practicePlaybackSession?.stop()
+  }, [practicePlaybackSession])
+
+  const toggleInfinitePlayback = useCallback((): void => {
+    if (
+      practicePlaybackState.repeatMode === 'infinite' &&
+      (practicePlaybackState.status === 'playing' ||
+        practicePlaybackState.status === 'paused')
+    ) {
+      stopPlayback()
+      return
+    }
+
+    setRepeatMode('infinite')
+    startTarget(targetKind, 'infinite')
+  }, [
+    practicePlaybackState.repeatMode,
+    practicePlaybackState.status,
+    startTarget,
+    stopPlayback,
+    targetKind,
+  ])
 
   const navigateOccurrence = useCallback(
     (direction: 'previous' | 'next'): void => {
@@ -336,7 +393,10 @@ export function PracticeWorkspace({
         return
       }
 
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key.toLowerCase() === 'r') {
+        event.preventDefault()
+        toggleInfinitePlayback()
+      } else if (event.key === ' ' || event.code === 'Space') {
         event.preventDefault()
         togglePlayback()
       } else if (event.key === 'ArrowUp') {
@@ -359,7 +419,14 @@ export function PracticeWorkspace({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [learningState, navigateOccurrence, navigateUnit, playOccurrence, togglePlayback])
+  }, [
+    learningState,
+    navigateOccurrence,
+    navigateUnit,
+    playOccurrence,
+    toggleInfinitePlayback,
+    togglePlayback,
+  ])
 
   if (!learningState || practiceIndex.units.length === 0) {
     return (
@@ -420,6 +487,13 @@ export function PracticeWorkspace({
         resolveSafePracticeRange(customRangeScope, model)?.occurrenceIds ?? [],
       )
     : undefined
+  const isPracticePlaybackActive =
+    practicePlaybackState.status === 'playing' ||
+    practicePlaybackState.status === 'paused'
+  const isRepeatingPlayback =
+    isPracticePlaybackActive &&
+    (practicePlaybackState.repeatMode === 3 ||
+      practicePlaybackState.repeatMode === 'infinite')
 
   return (
     <section
@@ -521,6 +595,32 @@ export function PracticeWorkspace({
               </button>
             </div>
           ) : null}
+          <div className="practice-repeat-actions" aria-label="循环次数">
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={repeatMode === 1}
+              onClick={() => changeRepeatMode(1)}
+            >
+              1次
+            </button>
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={repeatMode === 3}
+              onClick={() => changeRepeatMode(3)}
+            >
+              3次
+            </button>
+            <button
+              className="practice-action"
+              type="button"
+              aria-pressed={repeatMode === 'infinite'}
+              onClick={() => changeRepeatMode('infinite')}
+            >
+              一直
+            </button>
+          </div>
           <div className="practice-primary-actions">
             <button
               className="practice-action practice-action-primary"
@@ -540,8 +640,17 @@ export function PracticeWorkspace({
                 ? '暂停'
                 : canResume
                   ? '继续'
-                  : '播放'}
+                  : '开始'}
             </button>
+            {isRepeatingPlayback ? (
+              <button
+                className="practice-action"
+                type="button"
+                onClick={stopPlayback}
+              >
+                停止
+              </button>
+            ) : null}
           </div>
           <div className="practice-adjacent-actions">
             <button
@@ -586,7 +695,7 @@ export function PracticeWorkspace({
           </p>
           {message ? <p className="practice-message" role="status">{message}</p> : null}
           <p className="practice-keyboard-hint">
-            Space 播放 · ↑↓ 切句 · Enter 再听 · PageUp / PageDown 切段
+            Space 播放/暂停 · R 一直循环 · ↑↓ 切句 · Enter 再听 · PageUp / PageDown 切段
           </p>
         </aside>
 
