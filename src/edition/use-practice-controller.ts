@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import {
   PracticeController,
@@ -15,15 +15,17 @@ export interface PracticeControllerSnapshot {
 export function usePracticeController(
   engine: AudioEngine | null,
 ): PracticeControllerSnapshot {
-  const [controller, setController] = useState<PracticeController | null>(null)
+  const [controller, setController] = useReducer(
+    (_current: PracticeController | null, next: PracticeController | null) =>
+      next,
+    null,
+  )
   const [state, setState] = useState<PracticeStrategyState>(
     IDLE_PRACTICE_STATE,
   )
 
   useEffect(() => {
     if (!engine) {
-      setController(null)
-      setState(IDLE_PRACTICE_STATE)
       return
     }
 
@@ -34,9 +36,7 @@ export function usePracticeController(
     return () => {
       unsubscribe()
       nextController.dispose()
-      setController((current) =>
-        current === nextController ? null : current,
-      )
+      setController(null)
       setState(IDLE_PRACTICE_STATE)
     }
   }, [engine])

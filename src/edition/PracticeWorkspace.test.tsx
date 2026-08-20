@@ -148,7 +148,7 @@ describe('PracticeWorkspace', () => {
       </StrictMode>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o002 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
 
     await waitFor(() =>
       expect(playRange).toHaveBeenLastCalledWith(
@@ -181,7 +181,7 @@ describe('PracticeWorkspace', () => {
     expect(screen.getByText('第一句')).toBeInTheDocument()
     expect(screen.getByText('Reading')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 50, endMs: 350, occurrenceIds: ['o001'] },
       'o001',
@@ -221,7 +221,7 @@ describe('PracticeWorkspace', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
     fireEvent.click(screen.getByRole('button', { name: '↓ 下一句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
@@ -333,7 +333,7 @@ describe('PracticeWorkspace', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledTimes(1))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
@@ -397,7 +397,7 @@ describe('PracticeWorkspace', () => {
       ),
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledTimes(4))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
@@ -441,13 +441,15 @@ describe('PracticeWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 02 句作为范围端点' }),
     )
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
     )
 
-    expect(screen.getByText(/自选范围：o001 → o002 · 2 句 · 0.70 秒/)).toBeInTheDocument()
+    expect(document.querySelector('.practice-target-summary')).toHaveTextContent(
+      '自选范围：01–02 句 · 2 句 · 0.70 秒',
+    )
     expect(screen.getByRole('button', { name: '自选范围' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -456,12 +458,12 @@ describe('PracticeWorkspace', () => {
       document.querySelector('[data-occurrence-id="o001"]'),
     ).toHaveClass('is-in-custom-range')
 
-    fireEvent.click(screen.getByRole('button', { name: '播放第 o001 句' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 50, endMs: 350, occurrenceIds: ['o001'] },
       'o001',
     )
-    expect(screen.getByText(/自选范围：o001 → o002/)).toBeInTheDocument()
+    expect(screen.getByText(/自选范围：01–02 句/)).toBeInTheDocument()
   })
 
   it('keeps a custom-range anchor across unit navigation and plays a continuous cross-unit range', () => {
@@ -480,15 +482,17 @@ describe('PracticeWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 02 句作为范围端点' }),
     )
     fireEvent.click(screen.getByRole('button', { name: /02主歌 B/ }))
-    expect(screen.getByText(/已保留起点 o002/)).toBeInTheDocument()
+    expect(screen.getByText(/已保留起点 第 02 句/)).toBeInTheDocument()
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o003 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
     )
 
-    expect(screen.getByText(/自选范围：o002 → o003 · 2 句 · 0.75 秒/)).toBeInTheDocument()
+    expect(document.querySelector('.practice-target-summary')).toHaveTextContent(
+      '自选范围：主歌 A 02 → 主歌 B 01 · 2 句 · 0.75 秒',
+    )
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 400, endMs: 1150, occurrenceIds: ['o002', 'o003'] },
@@ -496,14 +500,14 @@ describe('PracticeWorkspace', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: /01主歌 A/ }))
-    expect(screen.getByText(/自选范围：o002 → o003/)).toBeInTheDocument()
+    expect(screen.getByText(/自选范围：主歌 A 02 → 主歌 B 01/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '清除自选范围' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '清除自选范围' }))
     expect(screen.getByRole('button', { name: '自选范围' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
-    expect(screen.getByText(/当前句：o001/)).toBeInTheDocument()
+    expect(screen.getByText(/当前句：第 01 句/)).toBeInTheDocument()
   })
 
   it('uses the selected repeat mode for current, covered, unit, and custom targets', () => {
@@ -548,10 +552,10 @@ describe('PracticeWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
     )
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 02 句作为范围端点' }),
     )
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     expect(playRange).toHaveBeenLastCalledWith(
@@ -559,6 +563,111 @@ describe('PracticeWorkspace', () => {
       'o002',
     )
     expect(screen.getByRole('button', { name: '停止' })).toBeInTheDocument()
+  })
+
+  it('keeps practice methods orthogonal to repeat controls', () => {
+    const engine = createAudioEngine(new FakeMedia())
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '普通重复' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByLabelText('循环次数')).toBeInTheDocument()
+    expect(screen.queryByText('0.70x ×2 → 0.85x ×2 → 1.00x ×2')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    expect(screen.queryByLabelText('循环次数')).not.toBeInTheDocument()
+    expect(screen.getByText('0.70x ×2 → 0.85x ×2 → 1.00x ×2')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
+    expect(screen.queryByLabelText('循环次数')).not.toBeInTheDocument()
+    expect(screen.getByText(/听原声 → 轮到你 → 再听原声/)).toBeInTheDocument()
+  })
+
+  it('runs Ramp from the current target, disables speed changes, and restores the saved rate on Esc', async () => {
+    window.localStorage.setItem('red-repeat:practice-rate:v1:first-light', '0.75')
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始渐速练习' }))
+
+    await waitFor(() => {
+      expect(engine.getState().playbackRate).toBe(0.7)
+      expect(screen.getByText(/渐速练习 · 第 1 \/ 6 次 · 0.70x/)).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '0.85x' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '停止练习' })).toBeInTheDocument()
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() => {
+      expect(engine.getState().playbackRate).toBe(0.75)
+      expect(screen.getByRole('button', { name: '开始渐速练习' })).toBeInTheDocument()
+    })
+    expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe('0.75')
+  })
+
+  it('runs range Shadow as one target and stops before the replay phase', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /02主歌 B/ }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始跟唱' }))
+
+    await waitFor(() => {
+      expect(playRange).toHaveBeenLastCalledWith(
+        { startMs: 50, endMs: 1150, occurrenceIds: ['o001', 'o002', 'o003'] },
+        'o003',
+      )
+      expect(screen.getByText('正在听原声')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '0.85x' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: '停止练习' }))
+    await waitFor(() =>
+      expect(screen.queryByText('正在听原声')).not.toBeInTheDocument(),
+    )
+    expect(playRange).toHaveBeenCalledTimes(1)
   })
 
   it('supports infinite custom playback, current-round pause/resume, and stop', async () => {
@@ -579,10 +688,10 @@ describe('PracticeWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '自选范围' }))
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o001 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 01 句作为范围端点' }),
     )
     fireEvent.click(
-      screen.getByRole('button', { name: '选择第 o002 句作为范围端点' }),
+      screen.getByRole('button', { name: '选择第 02 句作为范围端点' }),
     )
     fireEvent.click(screen.getByRole('button', { name: '一直' }))
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
@@ -651,6 +760,41 @@ describe('PracticeWorkspace', () => {
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 800, endMs: 1150, occurrenceIds: ['o003'] },
       'o003',
+    )
+  })
+
+  it('shows lightweight progress for three repetitions and infinite playback', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    activeEngine = engine
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '3次' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    await waitFor(() => expect(screen.getByText('第 1 / 3 次')).toBeInTheDocument())
+    media.currentTime = 0.35
+    frames.flush()
+    await waitFor(() => expect(screen.getByText('第 2 / 3 次')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: '停止' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '一直' }))
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    await waitFor(() =>
+      expect(screen.getByText('正在循环 · 已完成 0 次')).toBeInTheDocument(),
+    )
+    media.currentTime = 0.35
+    frames.flush()
+    await waitFor(() =>
+      expect(screen.getByText('正在循环 · 已完成 1 次')).toBeInTheDocument(),
     )
   })
 

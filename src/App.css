@@ -2341,20 +2341,40 @@
 .practice-range-actions,
 .practice-target-actions,
 .practice-custom-range-actions,
-.practice-repeat-actions {
+.practice-repeat-actions,
+.practice-method-actions {
   display: grid;
   gap: 0.45rem;
   margin-top: 1rem;
 }
 
 .practice-target-actions,
-.practice-custom-range-actions,
-.practice-repeat-actions {
+.practice-custom-range-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.practice-method-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .practice-repeat-actions {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.practice-method-profile,
+.practice-strategy-progress,
+.practice-repeat-progress {
+  margin: 0.8rem 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.practice-strategy-progress,
+.practice-repeat-progress {
+  color: var(--color-red);
 }
 
 .practice-rate-actions {
@@ -2638,8 +2658,13 @@
   .practice-range-actions,
   .practice-target-actions,
   .practice-custom-range-actions,
-  .practice-repeat-actions {
+  .practice-repeat-actions,
+  .practice-method-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-method-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .practice-repeat-actions {

@@ -320,11 +320,11 @@ export function PlaybackDock({
           </div>
 
           {mode === 'focus' ? (
-            <div className="dock-practice-controls" aria-label="Practice strategies">
+            <div className="dock-practice-controls" aria-label="练习方式">
           <button
             className="dock-practice-control"
             type="button"
-            aria-label="Ramp"
+            aria-label="渐速练习"
             aria-pressed={practiceState.kind === 'ramp'}
             disabled={!practiceController || !scopeRange}
             onClick={() => {
@@ -335,12 +335,12 @@ export function PlaybackDock({
               }
             }}
           >
-            Ramp
+            渐速练习
           </button>
           <button
             className="dock-practice-control"
             type="button"
-            aria-label="Shadow"
+            aria-label="跟唱留白"
             aria-pressed={practiceState.kind === 'shadow'}
             disabled={!practiceController || !anchor}
             onClick={() => {
@@ -351,7 +351,7 @@ export function PlaybackDock({
               }
             }}
           >
-            Shadow
+            跟唱留白
           </button>
           <p className="dock-practice-status" aria-live="polite">
             {describePracticeState(practiceState)}
@@ -370,17 +370,17 @@ export function PlaybackDock({
 
 function describePracticeState(state: PracticeStrategyState): string {
   if (state.kind === 'idle') {
-    return 'Practice idle'
+    return '练习未开始'
   }
   if (state.kind === 'ramp') {
-    return `RAMP · ${state.stageSpeed.toFixed(2)}x · ${
+    return `渐速练习 · ${state.stageSpeed.toFixed(2)}x · 第 ${
       state.repetitionIndex + 1
-    }/${2}`
+   } / 2 次`
   }
   if (state.phase === 'your-turn') {
-    return `YOUR TURN · ${Math.round(state.silenceDurationMs / 1000)}s`
+    return `轮到你 · 约 ${Math.ceil(state.silenceDurationMs / 1000)} 秒`
   }
-  return state.phase === 'source-before' ? 'LISTEN' : 'LISTEN AGAIN'
+  return state.phase === 'source-before' ? '正在听原声' : '再听一次'
 }
 
 function scrollToOccurrence(occurrenceId: string): void {

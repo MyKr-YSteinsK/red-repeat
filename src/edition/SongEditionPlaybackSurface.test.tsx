@@ -133,9 +133,9 @@ describe('Song Edition timeline playback binding', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Play line Repeat me' })[1])
     await waitFor(() => expect(engine.getState().status).toBe('playing'))
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
 
-    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
@@ -306,15 +306,15 @@ describe('Song Edition timeline playback binding', () => {
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
     await act(async () => {
       await flushMicrotasks()
     })
-    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: 'Shadow' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toBeInTheDocument()
 
     const stateBeforeImmersive = engine.getState()
     fireEvent.click(screen.getByRole('button', { name: 'Immersive' }))
@@ -455,11 +455,11 @@ describe('Song Edition timeline playback binding', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
 
-    expect(screen.getByRole('button', { name: 'Ramp' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Shadow' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '渐速练习' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toBeEnabled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
-    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
@@ -467,19 +467,19 @@ describe('Song Edition timeline playback binding', () => {
     expect(screen.getByRole('button', { name: '2 lines loop' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Loop 1 line' })).toBeDisabled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Shadow' }))
-    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+    fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
-    expect(screen.getByRole('button', { name: 'Shadow' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Next occurrence' }))
     await waitFor(() => expect(engine.getState().activeOccurrenceId).toBe('o003'))
-    expect(screen.getByRole('button', { name: 'Shadow' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
@@ -507,7 +507,7 @@ describe('Song Edition timeline playback binding', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
     fireEvent.click(screen.getByRole('button', { name: '2 lines loop' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
 
     await waitFor(() => expect(frames.pendingCount()).toBe(1))
     for (let repetition = 0; repetition < 6; repetition += 1) {
@@ -528,7 +528,7 @@ describe('Song Edition timeline playback binding', () => {
       'data-mode',
       'focus',
     )
-    expect(screen.getByRole('button', { name: 'Ramp' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
@@ -570,7 +570,7 @@ describe('Song Edition timeline playback binding', () => {
       vi.useFakeTimers()
 
       fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-      fireEvent.click(screen.getByRole('button', { name: 'Shadow' }))
+      fireEvent.click(screen.getByRole('button', { name: '跟唱留白' }))
       await act(async () => {
         await flushMicrotasks()
       })
@@ -581,7 +581,7 @@ describe('Song Edition timeline playback binding', () => {
         frames.flush()
         await flushMicrotasks()
       })
-      expect(screen.getByText(/YOUR TURN/)).toBeInTheDocument()
+      expect(screen.getByText(/轮到你/)).toBeInTheDocument()
       expect(engine.getState().status).toBe('paused')
 
       fireEvent.click(screen.getByRole('button', { name: 'Next occurrence' }))
@@ -632,7 +632,7 @@ describe('Song Edition timeline playback binding', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Exit Immersive' }))
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    expect(screen.getByRole('button', { name: 'Shadow' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toBeDisabled()
     expect(engine.getState().status).toBe('playing')
   })
 
@@ -650,7 +650,7 @@ describe('Song Edition timeline playback binding', () => {
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
     await act(async () => {
       await flushMicrotasks()
     })
@@ -672,7 +672,7 @@ describe('Song Edition timeline playback binding', () => {
       currentTimeMs: stateBeforeImmersive.currentTimeMs,
       playbackRate: 0.75,
     })
-    expect(screen.queryByRole('button', { name: 'Ramp' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '渐速练习' })).not.toBeInTheDocument()
   })
 
   it('disables Shadow without an active lyric anchor and cancels practice on Focus exit', async () => {
@@ -688,18 +688,18 @@ describe('Song Edition timeline playback binding', () => {
       frames.flush()
     })
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    expect(screen.getByRole('button', { name: 'Shadow' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '跟唱留白' })).toBeDisabled()
 
     await act(async () => {
       media.currentTime = 0.65
       frames.flush()
     })
     fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
-    expect(screen.queryByRole('button', { name: 'Shadow' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '跟唱留白' })).not.toBeInTheDocument()
 
     engine.setPlaybackRate(0.75)
     fireEvent.click(screen.getByRole('button', { name: 'Focus' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Ramp' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
     fireEvent.click(screen.getByRole('button', { name: 'Exit Focus' }))
     expect(engine.getState().playbackRate).toBe(0.75)
   })
