@@ -9,7 +9,6 @@ import {
   resolvePracticeRange,
   type PracticeIndex,
   type PracticeScope,
-  type ResolvedPracticeRange,
 } from '../practice/practice-scope'
 import {
   createInitialPracticeState,
@@ -18,6 +17,10 @@ import {
   setCurrentPracticeOccurrence,
   type PracticeLearningState,
 } from '../practice/practice-state'
+import {
+  PracticePlaybackSession,
+  type PracticePlaybackSessionState,
+} from '../practice/practice-playback-session'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { EditionTheme } from '../theme/theme-preference'
 
@@ -43,9 +46,30 @@ export function PracticeWorkspace({
     () => loadSafeState(model, practiceIndex),
   )
   const [mapOpen, setMapOpen] = useState(getInitialPracticeMapOpen)
-  const [playbackSession, setPlaybackSession] =
-    useState<PracticePlaybackSession | null>(null)
   const [message, setMessage] = useState<string | undefined>()
+  const practicePlaybackSession = useMemo(
+    () =>
+      playback.engine ? new PracticePlaybackSession(playback.engine) : null,
+    [playback.engine],
+  )
+  const [practicePlaybackState, setPracticePlaybackState] =
+    useState<PracticePlaybackSessionState>(() =>
+      practicePlaybackSession?.getState() ?? createIdlePlaybackState(),
+    )
+
+  useEffect(() => {
+    if (!practicePlaybackSession) {
+      return
+    }
+
+    const unsubscribe = practicePlaybackSession.subscribe(
+      setPracticePlaybackState,
+    )
+    return () => {
+      unsubscribe()
+      practicePlaybackSession.dispose()
+    }
+  }, [practicePlaybackSession])
 
   useEffect(() => {
     if (learningState) {
@@ -66,7 +90,7 @@ export function PracticeWorkspace({
 
   const playScope = useCallback(
     (scope: PracticeScope, activeOccurrenceId?: string): void => {
-      if (!playback.engine) {
+      if (!practicePlaybackSession) {
         setMessage('当前环境无法播放音频。')
         return
       }
@@ -77,22 +101,13 @@ export function PracticeWorkspace({
           model.practice,
           model.timeline,
         )
-        setPlaybackSession({
-          range,
-          activeOccurrenceId,
-        })
+        practicePlaybackSession.start({ range, activeOccurrenceId })
         setMessage(undefined)
-        void playback.engine
-          .playRange(range, activeOccurrenceId)
-          .catch(() => {
-            setPlaybackSession(null)
-            setMessage('播放未能开始。')
-          })
       } catch (error) {
         setMessage(error instanceof Error ? error.message : '练习范围无效。')
       }
     },
-    [model.practice, model.timeline, playback.engine],
+    [model.practice, model.timeline, practicePlaybackSession],
   )
 
   const playOccurrence = useCallback(
@@ -133,57 +148,35 @@ export function PracticeWorkspace({
       )
       const firstOccurrenceId = unit?.occurrenceIds[0]
       if (firstOccurrenceId) {
-        setPlaybackSession(null)
+        practicePlaybackSession?.cancel()
         setOccurrence(firstOccurrenceId)
         setMessage(undefined)
       }
     },
-    [learningState, practiceIndex, setOccurrence],
+    [learningState, practiceIndex, practicePlaybackSession, setOccurrence],
   )
 
   const togglePlayback = useCallback((): void => {
-    if (!playback.engine || !learningState) {
+    if (!practicePlaybackSession || !learningState) {
       setMessage('当前环境无法播放音频。')
       return
     }
-    if (playback.audioState.status === 'playing') {
-      playback.engine.pause()
-      const session = playbackSession
-      if (session) {
-        const pausedAtMs = playback.engine.getState().currentTimeMs
-        setPlaybackSession(
-          isResumablePosition(session.range, pausedAtMs)
-            ? { ...session, resumableAtMs: pausedAtMs }
-            : null,
-        )
-      }
+    if (practicePlaybackState.status === 'playing') {
+      practicePlaybackSession.pause()
       return
     }
-
-    const session = playbackSession
-    if (session?.resumableAtMs !== undefined) {
-      const resumeStartMs = session.resumableAtMs
-      setPlaybackSession({
-        ...session,
-        resumableAtMs: undefined,
-      })
-      void playback.engine
-        .playRange(
-          {
-            ...session.range,
-            startMs: resumeStartMs,
-          },
-          session.activeOccurrenceId,
-        )
-        .catch(() => {
-          setPlaybackSession(null)
-          setMessage('播放未能开始。')
-        })
+    if (practicePlaybackState.status === 'paused') {
+      practicePlaybackSession.resume()
       return
     }
 
     playOccurrence(learningState.currentOccurrenceId)
-  }, [learningState, playOccurrence, playback.audioState.status, playback.engine, playbackSession])
+  }, [
+    learningState,
+    playOccurrence,
+    practicePlaybackSession,
+    practicePlaybackState.status,
+  ])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -260,10 +253,7 @@ export function PracticeWorkspace({
     currentOccurrence.occurrence.id,
     'next',
   )
-  const resumableSession = playbackSession
-  const canResume =
-    resumableSession?.resumableAtMs !== undefined &&
-    isResumablePosition(resumableSession.range, resumableSession.resumableAtMs)
+  const canResume = practicePlaybackState.status === 'paused'
 
   return (
     <section
@@ -306,7 +296,7 @@ export function PracticeWorkspace({
               className="practice-action practice-action-primary"
               type="button"
               onClick={() => playOccurrence(currentOccurrence.occurrence.id)}
-              disabled={!playback.engine}
+              disabled={!practicePlaybackSession}
             >
               再听这句
             </button>
@@ -314,9 +304,9 @@ export function PracticeWorkspace({
               className="practice-action"
               type="button"
               onClick={togglePlayback}
-              disabled={!playback.engine}
+              disabled={!practicePlaybackSession}
             >
-              {playback.audioState.status === 'playing'
+              {practicePlaybackState.status === 'playing'
                 ? '暂停'
                 : canResume
                   ? '继续'
@@ -355,7 +345,7 @@ export function PracticeWorkspace({
                   coveredUntilOccurrenceId,
                 )
               }
-              disabled={!coveredUntilOccurrenceId || !playback.engine}
+              disabled={!coveredUntilOccurrenceId || !practicePlaybackSession}
             >
               已学到这里 · 连续播放
             </button>
@@ -368,7 +358,7 @@ export function PracticeWorkspace({
                   currentUnit.occurrenceIds[currentUnit.occurrenceIds.length - 1],
                 )
               }
-              disabled={!playback.engine}
+              disabled={!practicePlaybackSession}
             >
               当前学习段 · 整段播放
             </button>
@@ -428,7 +418,7 @@ export function PracticeWorkspace({
                       onClick={() => {
                         const firstOccurrenceId = unit.occurrenceIds[0]
                         if (firstOccurrenceId) {
-                          setPlaybackSession(null)
+                           practicePlaybackSession?.cancel()
                           setOccurrence(firstOccurrenceId)
                           setMessage(undefined)
                         }
@@ -566,26 +556,16 @@ function isEditableTarget(target: EventTarget | null): boolean {
   )
 }
 
-interface PracticePlaybackSession {
-  range: ResolvedPracticeRange
-  activeOccurrenceId?: string
-  resumableAtMs?: number
-}
-
-function isResumablePosition(
-  range: ResolvedPracticeRange,
-  positionMs: number,
-): boolean {
-  return (
-    Number.isFinite(positionMs) &&
-    positionMs > range.startMs &&
-    positionMs < range.endMs
-  )
-}
-
 function getInitialPracticeMapOpen(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return true
   }
   return window.matchMedia('(min-width: 641px)').matches
+}
+
+function createIdlePlaybackState(): PracticePlaybackSessionState {
+  return {
+    status: 'idle',
+    completedRepetitions: 0,
+  }
 }

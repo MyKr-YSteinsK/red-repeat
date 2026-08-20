@@ -134,7 +134,7 @@ describe('PracticeWorkspace', () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
-    const playRange = vi.spyOn(engine, 'playRange')
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
 
     render(
       <PracticeWorkspace
@@ -291,7 +291,7 @@ describe('PracticeWorkspace', () => {
     const frames = new FakeFrameScheduler()
     const engine = createAudioEngine(media, { frameScheduler: frames })
     activeEngine = engine
-    const playRange = vi.spyOn(engine, 'playRange')
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
 
     render(
       <PracticeWorkspace
@@ -332,7 +332,7 @@ describe('PracticeWorkspace', () => {
     const frames = new FakeFrameScheduler()
     const engine = createAudioEngine(media, { frameScheduler: frames })
     activeEngine = engine
-    const playRange = vi.spyOn(engine, 'playRange')
+    const playRange = vi.spyOn(engine, 'playRangeUntilComplete')
 
     render(
       <PracticeWorkspace
@@ -374,6 +374,7 @@ describe('PracticeWorkspace', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: '再听这句' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(5))
     expect(playRange).toHaveBeenLastCalledWith(
       { startMs: 1000, endMs: 2000, occurrenceIds: ['o001'] },
       'o001',
