@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
   RuntimeClient,
   RuntimeClientError,
 } from '../runtime/runtime-client'
-import { SongEditionPlaybackSurface } from './SongEditionPlaybackSurface'
+import { FullSongWorkspace } from './FullSongWorkspace'
 import { PracticeWorkspace } from './PracticeWorkspace'
 import { FeatureSection } from './FeatureMarkdown'
 import { ThemeSwitcher } from '../theme/ThemeSwitcher'
@@ -15,11 +15,6 @@ import {
   writeThemePreference,
   type EditionTheme,
 } from '../theme/theme-preference'
-import type {
-  SongEditionKeyboardActions,
-  SongEditionKeyboardRegistration,
-} from './song-edition-keyboard'
-import type { SongEditionMode } from './song-edition-mode'
 import { useSongEditionCore } from './use-song-edition-core'
 
 type SongEditionTab = 'practice' | 'all' | 'explain'
@@ -39,15 +34,12 @@ export function SongEditionPage({
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
   const [tab, setTab] = useState<SongEditionTab>('practice')
-  const [mode, setMode] = useState<SongEditionMode>('liner')
-  const [readingVisible, setReadingVisible] = useState(false)
   const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
     string | undefined
   >()
   const [themeSelection, setThemeSelection] = useState<
     { songId: string; theme: EditionTheme } | undefined
   >()
-  const keyboardActions = useRef<SongEditionKeyboardActions | null>(null)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
   const currentSongId =
     state.status === 'ready' ? state.core.edition.song.songId : undefined
@@ -63,87 +55,6 @@ export function SongEditionPage({
     },
     [currentSongId],
   )
-
-  const registerKeyboardActions = useCallback<SongEditionKeyboardRegistration>(
-    (actions) => {
-      keyboardActions.current = actions
-    },
-    [],
-  )
-
-  const changeMode = useCallback((nextMode: SongEditionMode): void => {
-    if (nextMode !== 'focus') {
-      keyboardActions.current?.cancelPractice()
-    }
-    setMode(nextMode)
-  }, [])
-
-  useEffect(() => {
-    if (tab === 'practice') {
-      return
-    }
-
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (
-        event.defaultPrevented ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        isEditableTarget(event.target)
-      ) {
-        return
-      }
-
-      if (event.key === 'Escape') {
-        if (mode !== 'liner') {
-          event.preventDefault()
-          changeMode('liner')
-        }
-        return
-      }
-
-      const actions = keyboardActions.current
-      const key = event.key.toLowerCase()
-      if (event.key === ' ' || event.code === 'Space') {
-        event.preventDefault()
-        actions?.togglePlay()
-        return
-      }
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        actions?.previous()
-        return
-      }
-      if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        actions?.next()
-        return
-      }
-      if (key === 'l') {
-        event.preventDefault()
-        actions?.toggleLoop()
-        return
-      }
-      if (key === 'f') {
-        event.preventDefault()
-        changeMode(mode === 'focus' ? 'liner' : 'focus')
-        return
-      }
-      if (event.key === '[') {
-        event.preventDefault()
-        actions?.decreaseSpeed()
-        return
-      }
-      if (event.key === ']') {
-        event.preventDefault()
-        actions?.increaseSpeed()
-        return
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [changeMode, mode, tab])
 
   if (state.status === 'loading') {
     return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
@@ -184,9 +95,7 @@ export function SongEditionPage({
   const artDirection = resolveArtDirection(song.songId, core.visual, theme)
   return (
     <main
-      className={`song-edition is-practice-page${
-        mode === 'focus' && tab === 'all' ? ' is-focus-mode' : ''
-      }${mode === 'immersive' && tab === 'all' ? ' is-immersive-mode' : ''}`}
+      className="song-edition is-practice-page"
       aria-labelledby="song-title"
       data-theme={theme}
       data-density={artDirection.density}
@@ -194,8 +103,7 @@ export function SongEditionPage({
       data-motion={artDirection.motion}
       data-cover-treatment={artDirection.coverTreatment}
       data-composition-variant={artDirection.compositionVariant}
-      data-mode={tab === 'all' ? mode : tab}
-      data-focus-mode={tab === 'all' && mode === 'focus'}
+      data-mode={tab}
     >
       <header className="practice-page-header">
         <div className="practice-page-identity">
@@ -264,16 +172,15 @@ export function SongEditionPage({
           onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
         />
       ) : tab === 'all' ? (
-        <SongEditionPlaybackSurface
+        <FullSongWorkspace
           model={core.assembled}
           runtimeClient={runtimeClient}
           audioEngine={audioEngine}
           theme={theme}
-          mode={mode}
-          onModeChange={changeMode}
-          onRegisterKeyboardActions={registerKeyboardActions}
-          readingVisible={readingVisible}
-          onToggleReading={() => setReadingVisible((visible) => !visible)}
+          onStartPracticeUnit={(practiceUnitId) => {
+            setPracticeNavigationRequest(practiceUnitId)
+            setTab('practice')
+          }}
         />
       ) : (
         <FeatureSection
@@ -310,15 +217,4 @@ function describeEditionError(error: unknown): string {
     return `Runtime ${error.kind} while reading ${error.logicalPath}.`
   }
   return 'The edition resources returned an unexpected error.'
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-
-  return (
-    target.isContentEditable ||
-    ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
-  )
 }

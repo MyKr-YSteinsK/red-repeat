@@ -228,6 +228,41 @@ describe('FullSongWorkspace', () => {
     expect(engine.getState().activeRange).toBeUndefined()
   })
 
+  it('keeps same-source position when the workspace is replaced', async () => {
+    const media = new FakeMedia()
+    const frames = new FakeFrameScheduler()
+    const engine = createAudioEngine(media, { frameScheduler: frames })
+    engines.push(engine)
+    mediaByEngine.set(engine, media)
+    const view = render(
+      <FullSongWorkspace
+        model={model}
+        runtimeClient={runtimeClientFor()}
+        audioEngine={engine}
+      />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    await engine.playContinuous()
+    media.currentTime = 0.65
+    frames.flush()
+    engine.pause()
+    const loadCount = media.load.mock.calls.length
+
+    view.unmount()
+    render(
+      <FullSongWorkspace
+        model={model}
+        runtimeClient={runtimeClientFor()}
+        audioEngine={engine}
+      />,
+    )
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    expect(media.load).toHaveBeenCalledTimes(loadCount)
+    expect(media.currentTime).toBe(0.65)
+    expect(media.play).toHaveBeenCalledOnce()
+  })
+
   it('uses a compatible Timing Override for continuous click and bounded replay', async () => {
     window.localStorage.setItem(
       getTimingOverridesStorageKey('first-light'),

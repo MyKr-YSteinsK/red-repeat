@@ -91,8 +91,7 @@ const timeline: TimelineDocument = {
 
 const practice: PracticeDocument = {
   units: [
-    { id: 'p001', sectionId: 'verse', label: '主歌 A', occurrenceIds: ['o001'] },
-    { id: 'p002', sectionId: 'verse', label: '主歌 B', occurrenceIds: ['o002'] },
+    { id: 'p001', sectionId: 'verse', label: '主歌 A', occurrenceIds: ['o001', 'o002'] },
   ],
 }
 
@@ -114,10 +113,82 @@ describe('SongEditionPage 学唱入口', () => {
     await screen.findByRole('heading', { name: 'First Light' })
 
     fireEvent.click(screen.getByRole('button', { name: '全曲' }))
-    expect(screen.getByLabelText('Song timeline playback')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Full song lyrics' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: '全曲播放器' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Focus' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
+    fireEvent.keyDown(window, { key: 'f' })
+    fireEvent.keyDown(window, { key: 'l' })
+    expect(screen.queryByText('渐速练习')).not.toBeInTheDocument()
+    expect(screen.queryByText('Loop')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '讲解' }))
     expect(screen.queryByRole('region', { name: '学唱工作台' })).not.toBeInTheDocument()
     expect(screen.getByText('A small note.')).toBeInTheDocument()
+  })
+
+  it('hands a selected Full Song line to the first occurrence of its Practice Unit', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    render(<SongEditionPage {...propsFor(undefined, engine)} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: '从这里连续播放：Second line' }),
+    )
+    await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
+    fireEvent.click(screen.getByRole('button', { name: '开始学这一段 →' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
+        'data-current-occurrence-id',
+        'o001',
+      )
+    })
+    expect(media.play).toHaveBeenCalledOnce()
+  })
+
+  it('keeps the same audio session across Full Song to Practice without reload, reset, or autoplay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    render(<SongEditionPage {...propsFor(undefined, engine)} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    await waitFor(() => expect(media.load).toHaveBeenCalledOnce())
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
+    media.currentTime = 0.62
+    const loadCount = media.load.mock.calls.length
+    const playCount = media.play.mock.calls.length
+
+    fireEvent.click(screen.getByRole('button', { name: '学唱' }))
+    await screen.findByRole('region', { name: '学唱工作台' })
+
+    expect(media.load).toHaveBeenCalledTimes(loadCount)
+    expect(media.currentTime).toBe(0.62)
+    expect(media.play).toHaveBeenCalledTimes(playCount)
+  })
+
+  it('keeps Full Song structure stable when Theme skin changes', async () => {
+    render(<SongEditionPage {...propsFor()} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+
+    const before = screen
+      .getByRole('region', { name: 'Full song lyrics' })
+      .querySelectorAll('[data-occurrence-id]').length
+    fireEvent.click(screen.getByRole('button', { name: 'Use Nocturne theme' }))
+
+    expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
+    expect(
+      screen
+        .getByRole('region', { name: 'Full song lyrics' })
+        .querySelectorAll('[data-occurrence-id]').length,
+    ).toBe(before)
+    expect(screen.getByRole('complementary', { name: '全曲播放器' })).toBeInTheDocument()
   })
 
   it('plays the clicked real occurrence and preserves the engine across Theme changes', async () => {
