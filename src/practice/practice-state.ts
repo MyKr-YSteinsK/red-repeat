@@ -66,6 +66,25 @@ export function setCurrentPracticeOccurrence(
   }
 }
 
+export function focusPracticeUnitStart(
+  state: PracticeLearningState,
+  index: PracticeIndex,
+  practiceUnitId: string,
+): PracticeLearningState {
+  const unit = index.unitsById.get(practiceUnitId)
+  const firstOccurrenceId = unit?.occurrenceIds[0]
+  if (!unit || !firstOccurrenceId) {
+    throw new Error(`Practice Unit ${practiceUnitId} is not usable`)
+  }
+
+  return {
+    schemaVersion: PRACTICE_STATE_SCHEMA_VERSION,
+    practiceUnitId: unit.id,
+    currentOccurrenceId: firstOccurrenceId,
+    coveredUntilByUnit: state.coveredUntilByUnit,
+  }
+}
+
 export function loadPracticeLearningState(
   songId: string,
   practice: PracticeDocument,

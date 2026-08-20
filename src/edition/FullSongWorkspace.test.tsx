@@ -23,6 +23,7 @@ afterEach(() => {
   cleanup()
   engines.forEach((engine) => engine.dispose())
   engines.length = 0
+  mediaByEngine.clear()
   window.localStorage.clear()
 })
 
@@ -301,6 +302,85 @@ describe('FullSongWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '开始学这一段 →' }))
     expect(onStartPracticeUnit).toHaveBeenCalledWith('p001')
+  })
+
+  it('provides compact playback, accessible progress seeking, and shared speed controls', async () => {
+    const { engine } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    const player = screen.getByRole('complementary', { name: '全曲播放器' })
+    const progress = screen.getByRole('slider', { name: '播放进度' })
+    expect(player).toBeInTheDocument()
+    expect(progress).toHaveAttribute('max', '2600')
+    expect(screen.getByText('00:00 / 00:02')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(engine.getState().status).toBe('playing'))
+    fireEvent.change(progress, { target: { value: '900' } })
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        currentTimeMs: 900,
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '加速' }))
+    expect(engine.getState().playbackRate).toBe(1.05)
+    fireEvent.click(screen.getByRole('button', { name: '设置速度 0.65x' }))
+    expect(engine.getState().playbackRate).toBe(0.65)
+    expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe(
+      '0.65',
+    )
+  })
+
+  it('follows semantic primary changes, then stops stealing the viewport after manual browse', async () => {
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      const { engine, frames } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      await engine.playContinuous()
+
+      await act(async () => {
+        mediaFor(engine).currentTime = 0.15
+        frames.flush()
+      })
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled())
+      const callsBeforeManualBrowse = scrollIntoView.mock.calls.length
+
+      fireEvent.wheel(screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!)
+      expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+
+      await act(async () => {
+        mediaFor(engine).currentTime = 0.75
+        frames.flush()
+      })
+      expect(
+        document.querySelector('[data-occurrence-id="o002"]'),
+      ).toHaveClass('is-primary-active')
+      expect(scrollIntoView).toHaveBeenCalledTimes(callsBeforeManualBrowse)
+
+      fireEvent.click(screen.getByRole('button', { name: '回到当前句' }))
+      await waitFor(() =>
+        expect(scrollIntoView.mock.calls.length).toBeGreaterThan(
+          callsBeforeManualBrowse,
+        ),
+      )
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
+      }
+    }
   })
 
   it('does not expose the old full-song practice modes or mega dock controls', () => {

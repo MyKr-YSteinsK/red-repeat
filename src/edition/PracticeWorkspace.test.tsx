@@ -246,6 +246,47 @@ describe('PracticeWorkspace', () => {
     expect(media.play).toHaveBeenCalledTimes(playCountBeforeRemount)
   })
 
+  it('focuses a requested Unit at its first Occurrence without autoplay or progress changes', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    window.localStorage.setItem(
+      'red-repeat:practice:first-light',
+      JSON.stringify({
+        schemaVersion: 1,
+        practiceUnitId: 'p001',
+        currentOccurrenceId: 'o002',
+        coveredUntilByUnit: {
+          p001: 'o002',
+          p003: 'o004',
+        },
+      }),
+    )
+    const consumed = vi.fn()
+
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        theme="liner"
+        requestedPracticeUnitId="p002"
+        onRequestedPracticeUnitConsumed={consumed}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
+        'data-current-occurrence-id',
+        'o003',
+      )
+    })
+    expect(screen.getByRole('heading', { name: '主歌 B' })).toBeInTheDocument()
+    expect(screen.getByText('已学到这里：尚未开始')).toBeInTheDocument()
+    expect(consumed).toHaveBeenCalled()
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
   it('keeps core controls available without Focus or Immersive modes', () => {
     render(
       <PracticeWorkspace

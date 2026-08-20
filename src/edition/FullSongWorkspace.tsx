@@ -1,5 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
-import type { AudioEngine } from '../audio/audio-engine'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  DEFAULT_PLAYBACK_RATE,
+  type AudioEngine,
+} from '../audio/audio-engine'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type {
   AssembledOccurrence,
@@ -14,8 +17,14 @@ import {
   readTimingOverrides,
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
+import {
+  getNextPracticePlaybackRate,
+  readPracticePlaybackRate,
+  savePracticePlaybackRate,
+} from '../practice/practice-rate'
 import type { EditionTheme } from '../theme/theme-preference'
 import { getSectionCue, resolveArtDirection } from '../theme/art-direction'
+import { useAudioProgress } from './use-audio-progress'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
 export interface FullSongWorkspaceProps {
@@ -36,6 +45,7 @@ export function FullSongWorkspace({
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [readingVisible, setReadingVisible] = useState(false)
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<string>()
+  const [followLyrics, setFollowLyrics] = useState(true)
   const [message, setMessage] = useState<string>()
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
@@ -145,22 +155,46 @@ export function FullSongWorkspace({
         >
           {readingVisible ? '隐藏读音' : '显示读音'}
         </button>
+        {!followLyrics ? (
+          <button
+            className="full-song-return-current"
+            type="button"
+            onClick={() => setFollowLyrics(true)}
+          >
+            回到当前句
+          </button>
+        ) : null}
       </div>
 
-      <FullSongLyrics
-        model={model}
-        artDirection={artDirection}
-        activeOccurrenceIds={activeOccurrenceIds}
-        primaryOccurrenceId={primaryOccurrenceId}
-        selectedOccurrenceId={selectedOccurrenceId}
-        readingVisible={readingVisible}
-        practiceIndex={practiceIndex}
-        onSelectOccurrence={handleSelectOccurrence}
-        onReplayOccurrence={handleReplayOccurrence}
-        onStartPracticeUnit={
-          onStartPracticeUnit ? handleStartPractice : undefined
-        }
-      />
+      <div className="full-song-layout">
+        <FullSongLyrics
+          model={model}
+          artDirection={artDirection}
+          activeOccurrenceIds={activeOccurrenceIds}
+          primaryOccurrenceId={primaryOccurrenceId}
+          selectedOccurrenceId={selectedOccurrenceId}
+          readingVisible={readingVisible}
+          followLyrics={followLyrics}
+          onManualBrowse={() => setFollowLyrics(false)}
+          practiceIndex={practiceIndex}
+          onSelectOccurrence={handleSelectOccurrence}
+          onReplayOccurrence={handleReplayOccurrence}
+          onStartPracticeUnit={
+            onStartPracticeUnit ? handleStartPractice : undefined
+          }
+        />
+        <FullSongPlayer
+          model={model}
+          engine={playback.engine}
+          sectionLabel={playback.resolution.currentSection?.label ?? '间奏 / 空白'}
+          lineLabel={
+            primaryOccurrenceId
+              ? model.occurrencesById[primaryOccurrenceId]?.segment.lyrics ??
+                '无歌词'
+              : '无歌词'
+          }
+        />
+      </div>
       {message ? (
         <p className="full-song-message" role="status">
           {message}
@@ -177,6 +211,8 @@ interface FullSongLyricsProps {
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
   readingVisible: boolean
+  followLyrics: boolean
+  onManualBrowse: () => void
   practiceIndex: PracticeIndex
   onSelectOccurrence: (occurrence: AssembledOccurrence) => void
   onReplayOccurrence: (occurrence: AssembledOccurrence) => void
@@ -190,13 +226,37 @@ function FullSongLyrics({
   primaryOccurrenceId,
   selectedOccurrenceId,
   readingVisible,
+  followLyrics,
+  onManualBrowse,
   practiceIndex,
   onSelectOccurrence,
   onReplayOccurrence,
   onStartPracticeUnit,
 }: FullSongLyricsProps) {
+  const occurrenceElements = useRef(new Map<string, HTMLElement>())
+
+  useEffect(() => {
+    if (!followLyrics || !primaryOccurrenceId) {
+      return
+    }
+
+    const element = occurrenceElements.current.get(primaryOccurrenceId)
+    if (!element || typeof element.scrollIntoView !== 'function') {
+      return
+    }
+
+    element.scrollIntoView({
+      block: 'center',
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    })
+  }, [followLyrics, primaryOccurrenceId])
+
   return (
-    <div className="full-song-lyrics-stream">
+    <div
+      className="full-song-lyrics-stream"
+      onWheel={onManualBrowse}
+      onTouchStart={onManualBrowse}
+    >
       {model.sections.map(({ section, occurrences }, sectionIndex) => (
         <section
           className="full-song-section"
@@ -230,6 +290,18 @@ function FullSongLyrics({
                   hasPracticeUnit={practiceIndex.unitIdByOccurrenceId.has(
                     assembledOccurrence.occurrence.id,
                   )}
+                  refCallback={(element) => {
+                    if (element) {
+                      occurrenceElements.current.set(
+                        assembledOccurrence.occurrence.id,
+                        element,
+                      )
+                    } else {
+                      occurrenceElements.current.delete(
+                        assembledOccurrence.occurrence.id,
+                      )
+                    }
+                  }}
                   onSelect={onSelectOccurrence}
                   onReplay={onReplayOccurrence}
                   onStartPractice={onStartPracticeUnit}
@@ -250,6 +322,7 @@ function FullSongOccurrence({
   selectedOccurrenceId,
   readingVisible,
   hasPracticeUnit,
+  refCallback,
   onSelect,
   onReplay,
   onStartPractice,
@@ -260,6 +333,7 @@ function FullSongOccurrence({
   selectedOccurrenceId?: string
   readingVisible: boolean
   hasPracticeUnit: boolean
+  refCallback: (element: HTMLElement | null) => void
   onSelect: (occurrence: AssembledOccurrence) => void
   onReplay: (occurrence: AssembledOccurrence) => void
   onStartPractice?: (occurrence: AssembledOccurrence) => void
@@ -280,6 +354,7 @@ function FullSongOccurrence({
 
   return (
     <article
+      ref={refCallback}
       className={className}
       data-occurrence-id={occurrence.id}
       data-active-kind={isPrimary ? 'primary' : isActive ? 'secondary' : 'none'}
@@ -320,5 +395,156 @@ function FullSongOccurrence({
         </div>
       ) : null}
     </article>
+  )
+}
+
+function FullSongPlayer({
+  model,
+  engine,
+  sectionLabel,
+  lineLabel,
+}: {
+  model: AssembledSongEdition
+  engine: AudioEngine | null
+  sectionLabel: string
+  lineLabel: string
+}) {
+  const progress = useAudioProgress(engine)
+  const durationMs = progress.durationMs ?? model.edition.audio.durationMs
+  const currentTimeMs = Math.min(
+    Math.max(0, progress.currentTimeMs),
+    durationMs,
+  )
+  const isPlaying = progress.status === 'playing'
+
+  useEffect(() => {
+    if (!engine) {
+      return
+    }
+
+    try {
+      engine.setPlaybackRate(
+        readPracticePlaybackRate(model.edition.song.songId),
+      )
+    } catch {
+      engine.setPlaybackRate(DEFAULT_PLAYBACK_RATE)
+    }
+  }, [engine, model.edition.song.songId])
+
+  const togglePlayback = (): void => {
+    if (!engine) {
+      return
+    }
+
+    if (isPlaying) {
+      engine.pause()
+      return
+    }
+
+    void engine.playContinuous().catch(() => undefined)
+  }
+
+  const seek = (timeMs: number): void => {
+    if (!engine || durationMs <= 0) {
+      return
+    }
+    void engine.seek(Math.min(Math.max(0, timeMs), durationMs)).catch(() => undefined)
+  }
+
+  const changeRate = (direction: -1 | 1): void => {
+    if (!engine) {
+      return
+    }
+    const nextRate = getNextPracticePlaybackRate(progress.playbackRate, direction)
+    engine.setPlaybackRate(nextRate)
+    savePracticePlaybackRate(model.edition.song.songId, nextRate)
+  }
+
+  const setRate = (rate: number): void => {
+    if (!engine) {
+      return
+    }
+    engine.setPlaybackRate(rate)
+    savePracticePlaybackRate(model.edition.song.songId, rate)
+  }
+
+  return (
+    <aside className="full-song-player" aria-label="全曲播放器">
+      <div className="full-song-player-topline">
+        <span>全曲播放</span>
+        <span>
+          {formatPlayerTime(currentTimeMs)} / {formatPlayerTime(durationMs)}
+        </span>
+      </div>
+      <button
+        className="full-song-player-toggle"
+        type="button"
+        onClick={togglePlayback}
+        disabled={!engine}
+      >
+        {isPlaying ? '暂停' : '播放'}
+      </button>
+      <input
+        className="full-song-player-progress"
+        type="range"
+        min="0"
+        max={durationMs}
+        step="100"
+        value={currentTimeMs}
+        aria-label="播放进度"
+        disabled={!engine || durationMs <= 0}
+        onChange={(event) => seek(Number(event.currentTarget.value))}
+      />
+      <div className="full-song-player-context" aria-live="polite">
+        <span>当前段：{sectionLabel}</span>
+        <span>当前句：{lineLabel}</span>
+      </div>
+      <div className="full-song-player-speed" aria-label="播放速度">
+        <button
+          type="button"
+          aria-label="减速"
+          onClick={() => changeRate(-1)}
+          disabled={!engine}
+        >
+          −
+        </button>
+        <span>{progress.playbackRate.toFixed(2)}x</span>
+        <button
+          type="button"
+          aria-label="加速"
+          onClick={() => changeRate(1)}
+          disabled={!engine}
+        >
+          +
+        </button>
+        {[0.65, 0.75, 0.85, 1].map((rate) => (
+          <button
+            key={rate}
+            type="button"
+            aria-label={`设置速度 ${rate.toFixed(2)}x`}
+            aria-pressed={progress.playbackRate === rate}
+            onClick={() => setRate(rate)}
+            disabled={!engine}
+          >
+            {rate.toFixed(2)}x
+          </button>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
+function formatPlayerTime(timeMs: number): string {
+  const totalSeconds = Math.floor(Math.max(0, timeMs) / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
 }

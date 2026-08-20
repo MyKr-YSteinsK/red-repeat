@@ -22,6 +22,7 @@ import {
 } from '../practice/practice-scope'
 import {
   createInitialPracticeState,
+  focusPracticeUnitStart,
   loadPracticeLearningState,
   savePracticeLearningState,
   setCurrentPracticeOccurrence,
@@ -63,6 +64,8 @@ export interface PracticeWorkspaceProps {
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
   theme: EditionTheme
+  requestedPracticeUnitId?: string
+  onRequestedPracticeUnitConsumed?: () => void
 }
 
 export function PracticeWorkspace({
@@ -70,6 +73,8 @@ export function PracticeWorkspace({
   runtimeClient,
   audioEngine,
   theme,
+  requestedPracticeUnitId,
+  onRequestedPracticeUnitConsumed,
 }: PracticeWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const practiceIndex = useMemo(
@@ -135,6 +140,7 @@ export function PracticeWorkspace({
   const [learningState, setLearningState] = useState<PracticeLearningState | null>(
     () => loadSafeState(model, practiceIndex),
   )
+  const consumedPracticeUnitRequest = useRef<string | undefined>(undefined)
   const [mapOpen, setMapOpen] = useState(getInitialPracticeMapOpen)
   const [message, setMessage] = useState<string | undefined>()
   const [targetKind, setTargetKind] = useState<PracticeTargetKind>('currentOccurrence')
@@ -157,6 +163,63 @@ export function PracticeWorkspace({
     state: practiceStrategyState,
   } = usePracticeController(playback.engine)
   const strategyActive = practiceStrategyState.kind !== 'idle'
+
+  useEffect(() => {
+    if (!requestedPracticeUnitId) {
+      consumedPracticeUnitRequest.current = undefined
+      return
+    }
+    if (consumedPracticeUnitRequest.current === requestedPracticeUnitId) {
+      return
+    }
+
+    let active = true
+    void Promise.resolve().then(() => {
+      if (!active || consumedPracticeUnitRequest.current === requestedPracticeUnitId) {
+        return
+      }
+      consumedPracticeUnitRequest.current = requestedPracticeUnitId
+
+      const requestedUnit = practiceIndex.unitsById.get(requestedPracticeUnitId)
+      const firstOccurrenceId = requestedUnit?.occurrenceIds[0]
+      if (!firstOccurrenceId) {
+        onRequestedPracticeUnitConsumed?.()
+        return
+      }
+
+      cancelPracticeOperations(practicePlaybackSession, practiceController)
+      setLearningState((current) => {
+        if (!current) {
+          return current
+        }
+        try {
+          return focusPracticeUnitStart(
+            current,
+            practiceIndex,
+            requestedPracticeUnitId,
+          )
+        } catch {
+          return current
+        }
+      })
+      setTargetKind('currentOccurrence')
+      setCustomRangeScope(undefined)
+      setRangeSelectionMode(false)
+      setRangeSelectionStartId(undefined)
+      setMessage(undefined)
+      onRequestedPracticeUnitConsumed?.()
+    })
+
+    return () => {
+      active = false
+    }
+  }, [
+    onRequestedPracticeUnitConsumed,
+    practiceController,
+    practiceIndex,
+    practicePlaybackSession,
+    requestedPracticeUnitId,
+  ])
 
   useEffect(() => {
     if (!practicePlaybackSession) {

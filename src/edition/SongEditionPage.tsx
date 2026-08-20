@@ -41,6 +41,9 @@ export function SongEditionPage({
   const [tab, setTab] = useState<SongEditionTab>('practice')
   const [mode, setMode] = useState<SongEditionMode>('liner')
   const [readingVisible, setReadingVisible] = useState(false)
+  const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
+    string | undefined
+  >()
   const [themeSelection, setThemeSelection] = useState<
     { songId: string; theme: EditionTheme } | undefined
   >()
@@ -222,7 +225,10 @@ export function SongEditionPage({
               type="button"
               className={tab === 'practice' ? 'is-active' : ''}
               aria-current={tab === 'practice' ? 'page' : undefined}
-              onClick={() => setTab('practice')}
+              onClick={() => {
+                setPracticeNavigationRequest(undefined)
+                setTab('practice')
+              }}
             >
               学唱
             </button>
@@ -254,6 +260,8 @@ export function SongEditionPage({
           runtimeClient={runtimeClient}
           audioEngine={audioEngine}
           theme={theme}
+          requestedPracticeUnitId={practiceNavigationRequest}
+          onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
         />
       ) : tab === 'all' ? (
         <SongEditionPlaybackSurface
