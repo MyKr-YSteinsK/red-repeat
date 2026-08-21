@@ -7,7 +7,7 @@ import {
 } from '../runtime/runtime-client'
 import { FullSongWorkspace } from './FullSongWorkspace'
 import { PracticeWorkspace } from './PracticeWorkspace'
-import { FeatureSection } from './FeatureMarkdown'
+import { ExplainWorkspace } from './ExplainWorkspace'
 import { ThemeSwitcher } from '../theme/ThemeSwitcher'
 import { resolveArtDirection } from '../theme/art-direction'
 import {
@@ -183,10 +183,17 @@ export function SongEditionPage({
           }}
         />
       ) : (
-        <FeatureSection
+        <ExplainWorkspace
           model={core.assembled}
+          runtimeClient={runtimeClient}
           features={core.features}
           featureErrors={core.featureErrors}
+          audioEngine={audioEngine}
+          theme={theme}
+          onStartPracticeUnit={(practiceUnitId) => {
+            setPracticeNavigationRequest(practiceUnitId)
+            setTab('practice')
+          }}
         />
       )}
     </main>

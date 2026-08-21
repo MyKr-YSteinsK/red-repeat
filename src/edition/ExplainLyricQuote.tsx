@@ -66,12 +66,13 @@ export function ExplainLyricQuote({
 
   useEffect(
     () => () => {
-      const activeOccurrenceId = audioEngine?.getState().activeOccurrenceId
+      const state = audioEngine?.getState()
+      operationRef.current += 1
       if (
         audioEngine &&
-        audioEngine.getState().intent === 'range' &&
-        activeOccurrenceId &&
-        occurrenceIds.has(activeOccurrenceId)
+        state?.intent === 'range' &&
+        state.activeOccurrenceId &&
+        occurrenceIds.has(state.activeOccurrenceId)
       ) {
         audioEngine.pause()
       }
@@ -131,6 +132,15 @@ export function ExplainLyricQuote({
 
   const selectOccurrence = (nextOccurrenceId: string): void => {
     operationRef.current += 1
+    const state = audioEngine?.getState()
+    if (
+      audioEngine &&
+      state?.intent === 'range' &&
+      state.activeOccurrenceId &&
+      occurrenceIds.has(state.activeOccurrenceId)
+    ) {
+      audioEngine.pause()
+    }
     setPlayingOccurrenceId(undefined)
     setMessage(undefined)
     setSelectedOccurrenceId(nextOccurrenceId)
