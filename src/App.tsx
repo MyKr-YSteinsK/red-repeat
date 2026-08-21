@@ -1,6 +1,18 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import './App.css'
 import type { Catalog, CatalogEdition } from './library/runtime-schema'
+import { loadCatalogPracticeResume } from './library/catalog-resume'
+import {
+  readPracticeResumeMetadata,
+  type PracticeResumeSummary,
+} from './practice/practice-state'
 import {
   createEditionHref,
   createLibraryHref,
@@ -215,7 +227,13 @@ function LibraryRoute({
     return <EmptyLibrary />
   }
 
-  return <CatalogLibrary catalog={catalog} runtimeClient={runtimeClient} />
+  return (
+    <CatalogLibrary
+      key={catalog.contentHash}
+      catalog={catalog}
+      runtimeClient={runtimeClient}
+    />
+  )
 }
 
 function EmptyLibrary() {
@@ -253,27 +271,124 @@ function CatalogLibrary({
   catalog: Catalog
   runtimeClient: RuntimeClient
 }) {
+  const [query, setQuery] = useState('')
+  const [resumeBySongId, setResumeBySongId] = useState<
+    Readonly<Record<string, PracticeResumeSummary>>
+  >({})
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+    const candidates = catalog.editions.filter((edition) =>
+      Boolean(readPracticeResumeMetadata(edition.songId)),
+    )
+
+    candidates.forEach((edition) => {
+      void loadCatalogPracticeResume(runtimeClient, edition, {
+        signal: controller.signal,
+      }).then((summary) => {
+        if (!active || !summary) {
+          return
+        }
+        setResumeBySongId((current) => ({
+          ...current,
+          [edition.songId]: summary,
+        }))
+      })
+    })
+
+    return () => {
+      active = false
+      controller.abort()
+    }
+  }, [catalog, runtimeClient])
+
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  const filteredEditions = catalog.editions.filter((edition) =>
+    matchesCatalogSearch(edition, normalizedQuery),
+  )
+  const recentEditions = useMemo(
+    () =>
+      catalog.editions
+        .filter((edition) => resumeBySongId[edition.songId] !== undefined)
+        .sort(
+          (left, right) =>
+            (resumeBySongId[right.songId]?.updatedAt ?? 0) -
+            (resumeBySongId[left.songId]?.updatedAt ?? 0),
+        )
+        .slice(0, 5),
+    [catalog.editions, resumeBySongId],
+  )
+
   return (
     <main className="library library-populated" aria-labelledby="library-title">
       <div className="library-heading">
-        <p className="eyebrow">LIBRARY / INDEX</p>
-        <h1 id="library-title">Songs worth returning to.</h1>
-        <p className="library-lede">
-          A private shelf of Song Editions, kept close to the work.
-        </p>
+        <p className="eyebrow">曲库</p>
+        <h1 id="library-title">我的歌曲</h1>
+        <p className="library-lede">选择一首歌，开始或继续学唱。</p>
+        <label className="library-search">
+          <span>搜索歌曲或歌手</span>
+          <input
+            type="search"
+            value={query}
+            placeholder="搜索歌曲或歌手"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
       </div>
 
-      <section className="catalog-list" aria-label="Song Editions">
-        {catalog.editions.map((edition, index) => (
-          <CatalogEditionLink
-            key={edition.songId}
-            edition={edition}
-            index={index}
-            runtimeClient={runtimeClient}
-          />
-        ))}
-      </section>
+      {normalizedQuery === '' && recentEditions.length > 0 ? (
+        <CatalogSection title="最近学习" className="recent-learning">
+          {recentEditions.map((edition) => (
+            <CatalogEditionLink
+              key={edition.songId}
+              edition={edition}
+              index={catalog.editions.indexOf(edition)}
+              runtimeClient={runtimeClient}
+              resume={resumeBySongId[edition.songId]}
+            />
+          ))}
+        </CatalogSection>
+      ) : null}
+
+      <CatalogSection title="全部歌曲">
+        {filteredEditions.length > 0 ? (
+          filteredEditions.map((edition) => (
+            <CatalogEditionLink
+              key={edition.songId}
+              edition={edition}
+              index={catalog.editions.indexOf(edition)}
+              runtimeClient={runtimeClient}
+              resume={resumeBySongId[edition.songId]}
+            />
+          ))
+        ) : (
+          <div className="catalog-no-results" role="status">
+            <strong>没有找到歌曲</strong>
+            <span>试试其他歌曲名或歌手。</span>
+          </div>
+        )}
+      </CatalogSection>
     </main>
+  )
+}
+
+function CatalogSection({
+  title,
+  className,
+  children,
+}: {
+  title: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <section className={`catalog-section${className ? ` ${className}` : ''}`}>
+      <h2>{title}</h2>
+      <div className="catalog-list" aria-label={title}>
+        {children}
+      </div>
+    </section>
   )
 }
 
@@ -281,16 +396,19 @@ function CatalogEditionLink({
   edition,
   index,
   runtimeClient,
+  resume,
 }: {
   edition: CatalogEdition
   index: number
   runtimeClient: RuntimeClient
+  resume?: PracticeResumeSummary
 }) {
+  const action = resume ? '继续学唱' : '开始学唱'
   return (
     <a
       className="catalog-entry"
       href={createEditionHref(edition.songId, window.location)}
-      aria-label={`Open ${edition.title} Song Edition`}
+      aria-label={`${action} ${edition.title}`}
     >
       <span className="catalog-index" aria-hidden="true">
         {String(index + 1).padStart(2, '0')}
@@ -304,16 +422,36 @@ function CatalogEditionLink({
       <span className="catalog-copy">
         <span className="catalog-title">{edition.title}</span>
         <span className="catalog-artist">{edition.artist}</span>
-        <span className="catalog-meta">
-          {edition.album ?? 'Song Edition'}
-          {edition.year !== undefined ? ` / ${edition.year}` : ''}
-        </span>
+        {edition.album || edition.year !== undefined ? (
+          <span className="catalog-meta">
+            {edition.album ?? ''}
+            {edition.album && edition.year !== undefined ? ' / ' : ''}
+            {edition.year ?? ''}
+          </span>
+        ) : null}
+        {resume ? (
+          <span className="catalog-resume">
+            上次：{resume.unitLabel} · 第{resume.lineIndex}句
+          </span>
+        ) : null}
+        <span className="catalog-action">{action}</span>
       </span>
-      <span className="catalog-theme">{edition.recommendedTheme} edition</span>
       <span className="catalog-arrow" aria-hidden="true">
         ↗
       </span>
     </a>
+  )
+}
+
+function matchesCatalogSearch(
+  edition: CatalogEdition,
+  normalizedQuery: string,
+): boolean {
+  if (!normalizedQuery) {
+    return true
+  }
+  return [edition.title, edition.artist].some((value) =>
+    value.toLocaleLowerCase().includes(normalizedQuery),
   )
 }
 
