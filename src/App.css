@@ -1580,6 +1580,98 @@
   color: var(--color-ink);
 }
 
+.feature-article-title {
+  max-width: 42rem;
+  margin: 1.5rem 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.feature-lyric-reference,
+.explain-lyric-quote {
+  max-width: 42rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.feature-lyric-reference p,
+.explain-lyric-quote p {
+  margin: 0;
+}
+
+.feature-lyric-reference-translation,
+.explain-lyric-quote-translation {
+  margin-top: 0.35rem !important;
+  color: var(--color-muted);
+  font-size: 0.85em;
+}
+
+.feature-lyric-reference-reading,
+.explain-lyric-quote-reading {
+  margin-top: 0.35rem !important;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+}
+
+.feature-lyric-reference.is-unavailable,
+.explain-lyric-quote.is-unavailable {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.explain-lyric-quote-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.explain-lyric-quote-controls label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+}
+
+.explain-lyric-quote-controls select,
+.explain-lyric-quote-controls button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.explain-lyric-quote-controls button:hover,
+.explain-lyric-quote-controls button:focus-visible,
+.explain-lyric-quote-controls select:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.explain-lyric-quote-message,
+.explain-lyric-quote-unavailable {
+  margin-top: 0.7rem !important;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
 .library-heading {
   max-width: 46rem;
 }
