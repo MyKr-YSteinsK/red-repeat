@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   createInitialPracticeState,
   loadPracticeLearningState,
+  readPracticeResumeMetadata,
+  resolvePracticeResumeSummary,
   savePracticeLearningState,
   setCurrentPracticeOccurrence,
   type PracticeStorage,
@@ -50,6 +52,89 @@ describe('Practice learning state', () => {
     expect(loadPracticeLearningState('first-light', practice, timeline, storage)).toEqual(state)
   })
 
+  it('persists a sortable updatedAt for a newly selected Practice position', () => {
+    const storage = new MemoryStorage()
+    const index = createPracticeIndex(practice, timeline)
+    const state = setCurrentPracticeOccurrence(
+      createInitialPracticeState(index),
+      index,
+      'o002',
+    )
+
+    expect(state.updatedAt).toEqual(expect.any(Number))
+    savePracticeLearningState('first-light', state, storage)
+
+    expect(readPracticeResumeMetadata('first-light', storage)).toEqual({
+      updatedAt: state.updatedAt,
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+    })
+  })
+
+  it('reads v1 state without updatedAt and never writes during resume reads', () => {
+    const storage = new MemoryStorage()
+    storage.value = JSON.stringify({
+      schemaVersion: 1,
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p001: 'o002' },
+    })
+
+    expect(
+      loadPracticeLearningState('first-light', practice, timeline, storage),
+    ).toMatchObject({
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+    })
+    expect(readPracticeResumeMetadata('first-light', storage)).toBeUndefined()
+    expect(storage.writeCount).toBe(0)
+  })
+
+  it('resolves a user-facing line summary without changing covered progress', () => {
+    const storage = new MemoryStorage()
+    const index = createPracticeIndex(practice, timeline)
+    const state = setCurrentPracticeOccurrence(
+      createInitialPracticeState(index),
+      index,
+      'o002',
+    )
+    savePracticeLearningState('first-light', state, storage)
+    const before = storage.value
+    const metadata = readPracticeResumeMetadata('first-light', storage)
+
+    expect(metadata).toBeDefined()
+    expect(
+      resolvePracticeResumeSummary(metadata!, practice, timeline),
+    ).toMatchObject({
+      updatedAt: state.updatedAt,
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+      unitLabel: 'First',
+      lineIndex: 2,
+      lineCount: 2,
+    })
+    expect(storage.value).toBe(before)
+  })
+
+  it('does not produce a summary for stale Practice Unit or Occurrence ids', () => {
+    const staleMetadata = {
+      updatedAt: 123,
+      practiceUnitId: 'missing',
+      occurrenceId: 'missing',
+    }
+
+    expect(
+      resolvePracticeResumeSummary(staleMetadata, practice, timeline),
+    ).toBeUndefined()
+    expect(
+      resolvePracticeResumeSummary(
+        { ...staleMetadata, practiceUnitId: 'p001', occurrenceId: 'o003' },
+        practice,
+        timeline,
+      ),
+    ).toBeUndefined()
+  })
+
   it('falls back safely for corrupt or stale state', () => {
     const storage = new MemoryStorage()
     storage.value = '{broken'
@@ -89,6 +174,7 @@ describe('Practice learning state', () => {
 
 class MemoryStorage implements PracticeStorage {
   value: string | null = null
+  writeCount = 0
 
   getItem(): string | null {
     return this.value
@@ -96,6 +182,7 @@ class MemoryStorage implements PracticeStorage {
 
   setItem(_key: string, value: string): void {
     this.value = value
+    this.writeCount += 1
   }
 }
 

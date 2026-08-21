@@ -11,6 +11,20 @@ export interface PracticeLearningState {
   practiceUnitId: string
   currentOccurrenceId: string
   coveredUntilByUnit: Readonly<Record<string, string>>
+  /** The last explicitly saved Practice position, when one exists. */
+  updatedAt?: number
+}
+
+export interface PracticeResumeMetadata {
+  updatedAt: number
+  practiceUnitId: string
+  occurrenceId: string
+}
+
+export interface PracticeResumeSummary extends PracticeResumeMetadata {
+  unitLabel: string
+  lineIndex: number
+  lineCount: number
 }
 
 export interface PracticeStorage {
@@ -63,6 +77,7 @@ export function setCurrentPracticeOccurrence(
     practiceUnitId,
     currentOccurrenceId: occurrenceId,
     coveredUntilByUnit: nextCovered,
+    updatedAt: Date.now(),
   }
 }
 
@@ -82,6 +97,76 @@ export function focusPracticeUnitStart(
     practiceUnitId: unit.id,
     currentOccurrenceId: firstOccurrenceId,
     coveredUntilByUnit: state.coveredUntilByUnit,
+    updatedAt: Date.now(),
+  }
+}
+
+/**
+ * Read only the persisted position metadata. This function never normalizes,
+ * writes, or otherwise changes Practice state.
+ */
+export function readPracticeResumeMetadata(
+  songId: string,
+  storage?: PracticeStorage,
+): PracticeResumeMetadata | undefined {
+  const persistence = storage ?? getBrowserStorage()
+  if (!persistence) {
+    return undefined
+  }
+
+  try {
+    const raw = persistence.getItem(storageKey(songId))
+    if (!raw) {
+      return undefined
+    }
+    const value = JSON.parse(raw) as unknown
+    if (!isRecord(value) || value.schemaVersion !== PRACTICE_STATE_SCHEMA_VERSION) {
+      return undefined
+    }
+
+    const updatedAt = value.updatedAt
+    const practiceUnitId = value.practiceUnitId
+    const occurrenceId = value.currentOccurrenceId
+    if (
+      !isValidUpdatedAt(updatedAt) ||
+      typeof practiceUnitId !== 'string' ||
+      typeof occurrenceId !== 'string'
+    ) {
+      return undefined
+    }
+
+    return { updatedAt, practiceUnitId, occurrenceId }
+  } catch {
+    return undefined
+  }
+}
+
+export function resolvePracticeResumeSummary(
+  metadata: PracticeResumeMetadata,
+  practice: PracticeDocument,
+  timeline: Parameters<typeof createPracticeIndex>[1],
+): PracticeResumeSummary | undefined {
+  try {
+    const index = createPracticeIndex(practice, timeline)
+    const unit = index.unitsById.get(metadata.practiceUnitId)
+    const occurrenceIds = index.occurrenceIdsByUnitId.get(metadata.practiceUnitId)
+    if (!unit || !occurrenceIds) {
+      return undefined
+    }
+
+    const lineIndex = occurrenceIds.indexOf(metadata.occurrenceId)
+    if (lineIndex < 0) {
+      return undefined
+    }
+
+    return {
+      ...metadata,
+      unitLabel: unit.label,
+      lineIndex: lineIndex + 1,
+      lineCount: occurrenceIds.length,
+    }
+  } catch {
+    return undefined
   }
 }
 
@@ -169,6 +254,9 @@ function normalizePersistedState(
     practiceUnitId,
     currentOccurrenceId: resolvedCurrentOccurrenceId,
     coveredUntilByUnit,
+    ...(isValidUpdatedAt(value.updatedAt)
+      ? { updatedAt: value.updatedAt }
+      : {}),
   }
 }
 
@@ -206,4 +294,8 @@ function getBrowserStorage(): PracticeStorage | undefined {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
+}
+
+function isValidUpdatedAt(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
 }
