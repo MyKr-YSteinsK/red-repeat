@@ -86,7 +86,53 @@ describe('Practice learning state', () => {
       practiceUnitId: 'p001',
       currentOccurrenceId: 'o002',
     })
+    expect(readPracticeResumeMetadata('first-light', storage)).toEqual({
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+    })
+    expect(storage.writeCount).toBe(0)
+  })
+
+  it('resolves a legacy resume summary without manufacturing updatedAt', () => {
+    const storage = new MemoryStorage()
+    storage.value = JSON.stringify({
+      schemaVersion: 1,
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p001: 'o002' },
+    })
+    const metadata = readPracticeResumeMetadata('first-light', storage)
+
+    expect(metadata).toEqual({ practiceUnitId: 'p001', occurrenceId: 'o002' })
+    expect(
+      resolvePracticeResumeSummary(metadata!, practice, timeline),
+    ).toEqual({
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+      unitLabel: 'First',
+      lineIndex: 2,
+      lineCount: 2,
+    })
+    expect(storage.writeCount).toBe(0)
+  })
+
+  it('rejects invalid resume timestamps while accepting a missing legacy timestamp', () => {
+    const storage = new MemoryStorage()
+    const legacyState = {
+      schemaVersion: 1,
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p001: 'o002' },
+    }
+
+    storage.value = JSON.stringify({ ...legacyState, updatedAt: null })
     expect(readPracticeResumeMetadata('first-light', storage)).toBeUndefined()
+
+    storage.value = JSON.stringify(legacyState)
+    expect(readPracticeResumeMetadata('first-light', storage)).toEqual({
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+    })
     expect(storage.writeCount).toBe(0)
   })
 

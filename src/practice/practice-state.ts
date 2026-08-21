@@ -16,9 +16,10 @@ export interface PracticeLearningState {
 }
 
 export interface PracticeResumeMetadata {
-  updatedAt: number
   practiceUnitId: string
   occurrenceId: string
+  /** Present for positions saved after timestamped resume support was added. */
+  updatedAt?: number
 }
 
 export interface PracticeResumeSummary extends PracticeResumeMetadata {
@@ -128,14 +129,18 @@ export function readPracticeResumeMetadata(
     const practiceUnitId = value.practiceUnitId
     const occurrenceId = value.currentOccurrenceId
     if (
-      !isValidUpdatedAt(updatedAt) ||
+      (updatedAt !== undefined && !isValidUpdatedAt(updatedAt)) ||
       typeof practiceUnitId !== 'string' ||
       typeof occurrenceId !== 'string'
     ) {
       return undefined
     }
 
-    return { updatedAt, practiceUnitId, occurrenceId }
+    return {
+      practiceUnitId,
+      occurrenceId,
+      ...(updatedAt !== undefined ? { updatedAt } : {}),
+    }
   } catch {
     return undefined
   }
