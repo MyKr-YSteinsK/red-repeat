@@ -1,9 +1,21 @@
+import type { ElementType, ReactNode } from 'react'
 import type {
-  AssembledOccurrence,
   AssembledSongEdition,
   RuntimeFeatureContent,
 } from '../runtime/song-edition'
 import type { RuntimeFeatureLoadError } from '../runtime/song-edition-loader'
+
+export type ExplainBlock =
+  | { kind: 'heading'; level: number; text: string }
+  | { kind: 'paragraph'; text: string }
+  | { kind: 'list'; items: readonly string[] }
+  | { kind: 'lyric-reference'; segmentId: string }
+
+export interface ExplainArticle {
+  id: string
+  title: string
+  blocks: readonly ExplainBlock[]
+}
 
 export interface FeatureSectionProps {
   model: AssembledSongEdition
@@ -11,6 +23,20 @@ export interface FeatureSectionProps {
   featureErrors: readonly RuntimeFeatureLoadError[]
 }
 
+export interface ExplainArticleBodyProps {
+  article: ExplainArticle
+  model: AssembledSongEdition
+  renderLyricReference?: (
+    segmentId: string,
+    referenceIndex: number,
+  ) => ReactNode
+}
+
+/**
+ * The old all-articles section remains as a compatibility renderer while the
+ * Song Edition page moves to ExplainWorkspace. Its parser and block renderer
+ * are shared by the new workspace, so Feature content keeps one safe boundary.
+ */
 export function FeatureSection({
   model,
   features,
@@ -36,13 +62,65 @@ export function FeatureSection({
           ))}
         </div>
       ) : null}
-      {features.map((feature) => (
-        <article className="feature-article" key={feature.descriptor.id}>
-          <p className="feature-label">{feature.descriptor.id}</p>
-          <MarkdownBlocks content={feature.content} model={model} />
-        </article>
-      ))}
+      {features.map((feature) => {
+        const article = parseFeatureArticle(feature)
+        return (
+          <article className="feature-article" key={feature.descriptor.id}>
+            <p className="feature-label">{article.id}</p>
+            <h2 className="feature-article-title">
+              <InlineMarkdown text={article.title} />
+            </h2>
+            <ExplainArticleBody article={article} model={model} />
+          </article>
+        )
+      })}
     </section>
+  )
+}
+
+export function ExplainArticleBody({
+  article,
+  model,
+  renderLyricReference,
+}: ExplainArticleBodyProps) {
+  return (
+    <div className="feature-markdown">
+      {article.blocks.map((block, index) => {
+        if (block.kind === 'heading') {
+          return (
+            <ExplainHeading key={`heading-${index}`} level={block.level}>
+              <InlineMarkdown text={block.text} />
+            </ExplainHeading>
+          )
+        }
+        if (block.kind === 'list') {
+          return (
+            <ul key={`list-${index}`}>
+              {block.items.map((item, itemIndex) => (
+                <li key={`item-${itemIndex}`}>
+                  <InlineMarkdown text={item} />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        if (block.kind === 'paragraph') {
+          return (
+            <p key={`paragraph-${index}`}>
+              <InlineMarkdown text={block.text} />
+            </p>
+          )
+        }
+
+        return (
+          <div key={`lyric-reference-${index}`}>
+            {renderLyricReference?.(block.segmentId, index) ?? (
+              <DefaultLyricReference model={model} segmentId={block.segmentId} />
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -53,63 +131,169 @@ export function MarkdownBlocks({
   content: string
   model: AssembledSongEdition
 }) {
-  const blocks = parseMarkdownBlocks(content)
   return (
-    <div className="feature-markdown">
-      {blocks.map((block, index) => {
-        if (block.kind === 'heading') {
-          return (
-            <h3 key={`heading-${index}`}>
-              <InlineMarkdown text={block.text} model={model} />
-            </h3>
-          )
-        }
-        if (block.kind === 'list') {
-          return (
-            <ul key={`list-${index}`}>
-              {block.items.map((item, itemIndex) => (
-                <li key={`item-${itemIndex}`}>
-                  <InlineMarkdown text={item} model={model} />
-                </li>
-              ))}
-            </ul>
-          )
-        }
-        return (
-          <p key={`paragraph-${index}`}>
-            <InlineMarkdown text={block.text} model={model} />
-          </p>
-        )
-      })}
-    </div>
+    <ExplainArticleBody
+      article={{ id: 'markdown', title: '', blocks: parseMarkdownBlocks(content) }}
+      model={model}
+    />
   )
 }
 
-function InlineMarkdown({
-  text,
-  model,
-}: {
+export function parseFeatureArticle(
+  feature: RuntimeFeatureContent,
+): ExplainArticle {
+  const parsedBlocks = parseMarkdownBlocks(feature.content)
+  const firstHeadingIndex = parsedBlocks.findIndex(
+    (block) => block.kind === 'heading',
+  )
+  const firstHeading =
+    firstHeadingIndex >= 0 ? parsedBlocks[firstHeadingIndex] : undefined
+
+  return {
+    id: feature.descriptor.id,
+    title:
+      firstHeading?.kind === 'heading'
+        ? firstHeading.text
+        : featureDescriptorTitle(feature.descriptor.id),
+    blocks:
+      firstHeadingIndex >= 0
+        ? parsedBlocks.filter((_, index) => index !== firstHeadingIndex)
+        : parsedBlocks,
+  }
+}
+
+export function parseMarkdownBlocks(content: string): ExplainBlock[] {
+  const lines = content.replace(/\r\n?/g, '\n').split('\n')
+  const blocks: ExplainBlock[] = []
+  let index = 0
+
+  while (index < lines.length) {
+    const line = lines[index].trim()
+    if (!line) {
+      index += 1
+      continue
+    }
+
+    const heading = /^(#{1,6})\s+(.+)$/.exec(line)
+    if (heading) {
+      appendTextAndReferences(
+        blocks,
+        { kind: 'heading', level: heading[1].length },
+        heading[2],
+      )
+      index += 1
+      continue
+    }
+
+    if (/^[-*+]\s+/.test(line)) {
+      const items: string[] = []
+      const references: string[] = []
+      while (index < lines.length) {
+        const item = /^[-*+]\s+(.+)$/.exec(lines[index].trim())
+        if (!item) {
+          break
+        }
+        const extracted = extractSegmentReferences(item[1])
+        if (extracted.text) {
+          items.push(extracted.text)
+        }
+        references.push(...extracted.references)
+        index += 1
+      }
+      if (items.length > 0) {
+        blocks.push({ kind: 'list', items })
+      }
+      references.forEach((segmentId) => {
+        blocks.push({ kind: 'lyric-reference', segmentId })
+      })
+      continue
+    }
+
+    const paragraphLines: string[] = []
+    while (index < lines.length) {
+      const paragraphLine = lines[index].trim()
+      if (
+        !paragraphLine ||
+        /^(#{1,6})\s+/.test(paragraphLine) ||
+        /^[-*+]\s+/.test(paragraphLine)
+      ) {
+        break
+      }
+      paragraphLines.push(paragraphLine)
+      index += 1
+    }
+    appendTextAndReferences(
+      blocks,
+      { kind: 'paragraph' },
+      paragraphLines.join(' '),
+    )
+  }
+
+  return blocks
+}
+
+function appendTextAndReferences(
+  blocks: ExplainBlock[],
+  block: { kind: 'heading'; level: number } | { kind: 'paragraph' },
+  text: string,
+): void {
+  const extracted = extractSegmentReferences(text)
+  if (extracted.text) {
+    blocks.push({ ...block, text: extracted.text })
+  }
+  extracted.references.forEach((segmentId) => {
+    blocks.push({ kind: 'lyric-reference', segmentId })
+  })
+}
+
+function extractSegmentReferences(text: string): {
   text: string
-  model: AssembledSongEdition
+  references: string[]
+} {
+  const references: string[] = []
+  const textWithoutReferences = text.replace(
+    /\[\[segment:([^\]]+)\]\]/g,
+    (_match, rawSegmentId: string) => {
+      const segmentId = rawSegmentId.trim()
+      if (segmentId) {
+        references.push(segmentId)
+      }
+      return ''
+    },
+  )
+
+  return {
+    text: textWithoutReferences.replace(/[ \t]{2,}/g, ' ').trim(),
+    references,
+  }
+}
+
+function featureDescriptorTitle(id: string): string {
+  const withoutSortPrefix = id.replace(/^\s*\d+(?:[-_.\s]+)+/, '').trim()
+  const readable = withoutSortPrefix.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ')
+  return readable.trim() || id
+}
+
+function ExplainHeading({
+  level,
+  children,
+}: {
+  level: number
+  children: ReactNode
 }) {
+  const Heading = `h${Math.min(6, Math.max(3, level + 1))}` as ElementType
+  return <Heading>{children}</Heading>
+}
+
+function InlineMarkdown({ text }: { text: string }) {
   const tokens = text.split(
-    /(\[\[segment:[^\]]+\]\]|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g,
+    /(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g,
   )
   return (
     <>
       {tokens.map((token, index) => {
         if (!token) {
           return null
-        }
-        const crossReference = /^\[\[segment:([^\]]+)\]\]$/.exec(token)
-        if (crossReference) {
-          return (
-            <SegmentReference
-              key={`reference-${index}`}
-              model={model}
-              segmentId={crossReference[1]}
-            />
-          )
         }
         if (token.startsWith('**') && token.endsWith('**')) {
           return <strong key={`strong-${index}`}>{token.slice(2, -2)}</strong>
@@ -129,7 +313,7 @@ function InlineMarkdown({
   )
 }
 
-function SegmentReference({
+function DefaultLyricReference({
   model,
   segmentId,
 }: {
@@ -137,104 +321,22 @@ function SegmentReference({
   segmentId: string
 }) {
   const segment = model.segmentsById[segmentId]
-  const target = findFirstRenderedOccurrence(model, segmentId)
-  if (!segment || !target) {
-    return <span className="feature-reference">{segmentId}</span>
+  if (!segment) {
+    return (
+      <div className="feature-lyric-reference is-unavailable" role="note">
+        这条歌词引用暂不可用。
+      </div>
+    )
   }
 
+  const reading = segment.layers?.[0]?.text
   return (
-    <button
-      className="feature-reference"
-      type="button"
-      data-segment-reference={segmentId}
-      aria-label={`Jump to ${segmentId}`}
-      onClick={() => scrollToOccurrence(target)}
-    >
-      {segmentId}
-    </button>
+    <div className="feature-lyric-reference" role="group" aria-label="歌词引用">
+      <p className="feature-lyric-reference-original">{segment.lyrics}</p>
+      <p className="feature-lyric-reference-translation">{segment.translation}</p>
+      {reading ? (
+        <p className="feature-lyric-reference-reading">{reading}</p>
+      ) : null}
+    </div>
   )
-}
-
-function findFirstRenderedOccurrence(
-  model: AssembledSongEdition,
-  segmentId: string,
-): AssembledOccurrence | null {
-  return (
-    model.sections
-      .flatMap(({ occurrences }) => occurrences)
-      .find(({ segment }) => segment.id === segmentId) ?? null
-  )
-}
-
-function scrollToOccurrence(occurrence: AssembledOccurrence): void {
-  const element = document.querySelector(
-    `[data-occurrence-id="${occurrence.occurrence.id}"]`,
-  )
-  if (!element || typeof element.scrollIntoView !== 'function') {
-    return
-  }
-  const reducedMotion = window.matchMedia?.(
-    '(prefers-reduced-motion: reduce)',
-  ).matches
-  element.scrollIntoView({
-    behavior: reducedMotion ? 'auto' : 'smooth',
-    block: 'center',
-  })
-}
-
-type MarkdownBlock =
-  | { kind: 'heading'; text: string }
-  | { kind: 'paragraph'; text: string }
-  | { kind: 'list'; items: string[] }
-
-function parseMarkdownBlocks(content: string): MarkdownBlock[] {
-  const lines = content.replace(/\r\n?/g, '\n').split('\n')
-  const blocks: MarkdownBlock[] = []
-  let index = 0
-
-  while (index < lines.length) {
-    const line = lines[index].trim()
-    if (!line) {
-      index += 1
-      continue
-    }
-
-    const heading = /^#{1,6}\s+(.+)$/.exec(line)
-    if (heading) {
-      blocks.push({ kind: 'heading', text: heading[1] })
-      index += 1
-      continue
-    }
-
-    if (/^[-*+]\s+/.test(line)) {
-      const items: string[] = []
-      while (index < lines.length) {
-        const item = /^[-*+]\s+(.+)$/.exec(lines[index].trim())
-        if (!item) {
-          break
-        }
-        items.push(item[1])
-        index += 1
-      }
-      blocks.push({ kind: 'list', items })
-      continue
-    }
-
-    const paragraphLines: string[] = []
-    while (index < lines.length) {
-      const paragraphLine = lines[index].trim()
-      if (
-        !paragraphLine ||
-        /^#{1,6}\s+/.test(paragraphLine) ||
-        /^[-*+]\s+/.test(paragraphLine)
-      ) {
-        break
-      }
-      paragraphLines.push(paragraphLine)
-      index += 1
-    }
-    blocks.push({ kind: 'paragraph', text: paragraphLines.join(' ') })
-  }
-
-  return blocks
 }

@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
   LyricsDocument,
@@ -7,7 +7,11 @@ import type {
   VisualDocument,
 } from '../library/schema'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
-import { FeatureSection } from './FeatureMarkdown'
+import {
+  ExplainArticleBody,
+  FeatureSection,
+  parseFeatureArticle,
+} from './FeatureMarkdown'
 
 afterEach(() => {
   cleanup()
@@ -99,15 +103,35 @@ const model = assembleRuntimeSongEdition({
 })
 
 describe('Feature Markdown baseline', () => {
-  it('renders no Feature zone when the edition has no Features', () => {
-    const { container } = render(
-      <FeatureSection model={model} features={[]} featureErrors={[]} />,
-    )
+  it('uses the first heading as the article title and removes it from the body', () => {
+    const article = parseFeatureArticle({
+      descriptor: featureDescriptor,
+      content: '# Context\n\nThe body remains here.\n\n## Detail',
+    })
 
-    expect(container.firstChild).toBeNull()
+    expect(article.title).toBe('Context')
+    expect(article.blocks).toEqual([
+      { kind: 'paragraph', text: 'The body remains here.' },
+      { kind: 'heading', level: 2, text: 'Detail' },
+    ])
   })
 
-  it('renders headings, paragraphs, lists, emphasis, and raw HTML as text', () => {
+  it('falls back to a readable descriptor title without a numeric sort prefix', () => {
+    const article = parseFeatureArticle({
+      descriptor: {
+        id: '01-作品背景',
+        url: featureDescriptor.url,
+      },
+      content: '没有显式标题。',
+    })
+
+    expect(article.title).toBe('作品背景')
+    expect(article.blocks).toEqual([
+      { kind: 'paragraph', text: '没有显式标题。' },
+    ])
+  })
+
+  it('renders headings, paragraphs, lists, emphasis, strong, and raw HTML as text', () => {
     render(
       <FeatureSection
         model={model}
@@ -128,34 +152,44 @@ describe('Feature Markdown baseline', () => {
     expect(screen.queryByRole('script')).not.toBeInTheDocument()
   })
 
-  it('renders a Segment cross-reference that jumps to the first rendered Occurrence', () => {
-    render(
-      <>
-        <div data-occurrence-id="o001" />
-        <FeatureSection
-          model={model}
-          features={[{
-            descriptor: featureDescriptor,
-            content: 'Return to [[segment:s021]] when the refrain arrives.',
-          }]}
-          featureErrors={[]}
-        />
-      </>,
-    )
-    const firstOccurrence = document.querySelector(
-      '[data-occurrence-id="o001"]',
-    ) as HTMLElement
-    const scrollIntoView = vi.fn()
-    Object.defineProperty(firstOccurrence, 'scrollIntoView', {
-      value: scrollIntoView,
+  it('turns single and multiple Segment references into ordered block references', () => {
+    const article = parseFeatureArticle({
+      descriptor: featureDescriptor,
+      content: 'Read [[segment:s021]] and [[segment:s022]] now.',
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Jump to s021' }))
+    expect(article.blocks).toEqual([
+      { kind: 'paragraph', text: 'Read and now.' },
+      { kind: 'lyric-reference', segmentId: 's021' },
+      { kind: 'lyric-reference', segmentId: 's022' },
+    ])
+  })
 
-    expect(scrollIntoView).toHaveBeenCalledWith({
-      behavior: 'smooth',
-      block: 'center',
+  it('keeps list items valid when a list item contains a lyric reference', () => {
+    const article = parseFeatureArticle({
+      descriptor: featureDescriptor,
+      content: '- Keep [[segment:s021]] nearby\n- Keep the context.',
     })
+
+    expect(article.blocks).toEqual([
+      { kind: 'list', items: ['Keep nearby', 'Keep the context.'] },
+      { kind: 'lyric-reference', segmentId: 's021' },
+    ])
+    render(<ExplainArticleBody article={article} model={model} />)
+    expect(screen.getByRole('list').querySelectorAll(':scope > li')).toHaveLength(2)
+    expect(screen.getByRole('group', { name: '歌词引用' })).toBeInTheDocument()
+  })
+
+  it('shows a clear non-interactive fallback for a missing Segment without leaking its ID', () => {
+    const article = parseFeatureArticle({
+      descriptor: featureDescriptor,
+      content: '[[segment:s999]]',
+    })
+
+    render(<ExplainArticleBody article={article} model={model} />)
+
+    expect(screen.getByRole('note')).toHaveTextContent('这条歌词引用暂不可用。')
+    expect(screen.queryByText('s999')).not.toBeInTheDocument()
   })
 
   it('keeps Feature load errors local to the editorial zone', () => {
@@ -170,5 +204,13 @@ describe('Feature Markdown baseline', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'liner-note is temporarily unavailable',
     )
+  })
+
+  it('renders no Feature zone when the edition has no Features', () => {
+    const { container } = render(
+      <FeatureSection model={model} features={[]} featureErrors={[]} />,
+    )
+
+    expect(container.firstChild).toBeNull()
   })
 })
