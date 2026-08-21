@@ -306,7 +306,7 @@ function CatalogLibrary({
   const recentEditions = useMemo(
     () =>
       catalog.editions
-        .filter((edition) => resumeBySongId[edition.songId] !== undefined)
+        .filter((edition) => resumeBySongId[edition.songId]?.updatedAt !== undefined)
         .sort(
           (left, right) =>
             (resumeBySongId[right.songId]?.updatedAt ?? 0) -

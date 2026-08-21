@@ -352,6 +352,72 @@ describe('App Library consumer', () => {
     ).toBe(false)
   })
 
+  it('shows a legacy resume summary without classifying it as recent or writing a timestamp', async () => {
+    const legacyState = JSON.stringify({
+      schemaVersion: 1,
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p001: 'o002' },
+    })
+    window.localStorage.setItem('red-repeat:practice:first-light', legacyState)
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+
+    try {
+      render(
+        <App
+          runtimeClient={createRuntimeClient({
+            fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)),
+          })}
+        />,
+      )
+
+      expect(
+        await screen.findByRole('link', { name: '继续学唱 First Light' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('上次：主歌 B · 第2句')).toBeInTheDocument()
+      expect(
+        screen.queryByRole('heading', { name: '最近学习' }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: '开始学唱 Second Signal' }),
+      ).toBeInTheDocument()
+      expect(window.localStorage.getItem('red-repeat:practice:first-light')).toBe(
+        legacyState,
+      )
+      expect(setItemSpy).not.toHaveBeenCalled()
+    } finally {
+      setItemSpy.mockRestore()
+    }
+  })
+
+  it('falls back to start when a legacy resume position is stale', async () => {
+    window.localStorage.setItem(
+      'red-repeat:practice:first-light',
+      JSON.stringify({
+        schemaVersion: 1,
+        practiceUnitId: 'missing',
+        currentOccurrenceId: 'missing',
+        coveredUntilByUnit: { missing: 'missing' },
+      }),
+    )
+
+    render(
+      <App
+        runtimeClient={createRuntimeClient({
+          fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)),
+        })}
+      />,
+    )
+
+    expect(
+      await screen.findByRole('link', { name: '开始学唱 First Light' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/上次：/)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: '最近学习' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('isolates a single resume enrichment failure and keeps its card usable', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
