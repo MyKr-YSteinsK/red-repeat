@@ -162,7 +162,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
 function SiteHeader({ homeHref }: { homeHref: string }) {
   return (
     <header className="site-header">
-      <a className="brand-lockup" href={homeHref} aria-label="RED:REPEAT home">
+      <a className="brand-lockup" href={homeHref} aria-label="返回曲库">
         <span className="brand-signal" aria-hidden="true" />
         <span className="brand-wordmark">
           <span>RED</span>
@@ -172,7 +172,7 @@ function SiteHeader({ homeHref }: { homeHref: string }) {
           <span>REPEAT</span>
         </span>
       </a>
-      <p className="imprint">A MYKR EDITION</p>
+      <p className="imprint">MYKR 制作</p>
     </header>
   )
 }
@@ -190,12 +190,12 @@ function LibraryRoute({
     return (
       <main className="library library-status" aria-labelledby="library-title">
         <div className="library-heading">
-          <p className="eyebrow">LIBRARY / INDEX</p>
-          <h1 id="library-title">Loading the archive.</h1>
-          <p className="library-lede">Reading the current Song Editions.</p>
+          <p className="eyebrow">曲库</p>
+          <h1 id="library-title">正在打开曲库…</h1>
+          <p className="library-lede">正在读取歌曲列表。</p>
         </div>
         <p className="status-line" role="status">
-          Loading catalog…
+          正在加载…
         </p>
       </main>
     )
@@ -205,17 +205,15 @@ function LibraryRoute({
     return (
       <main className="library library-status" aria-labelledby="library-title">
         <div className="library-heading">
-          <p className="eyebrow">LIBRARY / INDEX</p>
-          <h1 id="library-title">The archive is unavailable.</h1>
-          <p className="library-lede">
-            The catalog could not be read. You can try the runtime source again.
-          </p>
+          <p className="eyebrow">曲库</p>
+          <h1 id="library-title">曲库暂时无法打开</h1>
+          <p className="library-lede">暂时无法读取歌曲列表，请稍后重试。</p>
         </div>
-        <section className="error-state" role="alert" aria-label="Library error">
-          <p className="empty-kicker">RECOVERABLE ERROR</p>
+        <section className="error-state" role="alert" aria-label="曲库错误">
+          <p className="empty-kicker">可恢复错误</p>
           <p>{describeRuntimeError(state.error)}</p>
           <button type="button" className="text-button" onClick={onRetry}>
-            Retry catalog
+            重试
           </button>
         </section>
       </main>
@@ -240,11 +238,9 @@ function EmptyLibrary() {
   return (
     <main className="library" aria-labelledby="library-title">
       <div className="library-heading">
-        <p className="eyebrow">LIBRARY / INDEX</p>
-        <h1 id="library-title">Your library is empty.</h1>
-        <p className="library-lede">
-          Song Editions will appear here when you add them.
-        </p>
+        <p className="eyebrow">曲库</p>
+        <h1 id="library-title">还没有歌曲</h1>
+        <p className="library-lede">添加歌曲后，它们会显示在这里。</p>
       </div>
 
       <section className="empty-state" aria-labelledby="empty-state-title">
@@ -252,11 +248,11 @@ function EmptyLibrary() {
           00
         </p>
         <div className="empty-copy">
-          <p className="empty-kicker">ARCHIVE STATUS</p>
-          <h2 id="empty-state-title">Begin with one song worth returning to.</h2>
-          <p>Your first Song Edition will have a place here.</p>
+          <p className="empty-kicker">曲库状态</p>
+          <h2 id="empty-state-title">从一首值得反复学唱的歌开始。</h2>
+          <p>你的第一首歌会出现在这里。</p>
         </div>
-        <p className="empty-signal" aria-label="Library status: empty">
+        <p className="empty-signal" aria-label="曲库状态：空">
           00 / 00
         </p>
       </section>
@@ -472,12 +468,12 @@ function EditionRoute({
     return (
       <main className="library library-status" aria-labelledby="edition-title">
         <div className="library-heading">
-          <p className="eyebrow">SONG EDITION / OPENING</p>
-          <h1 id="edition-title">Loading the edition.</h1>
-          <p className="library-lede">Reading the selected work.</p>
+          <p className="eyebrow">歌曲 / 打开中</p>
+          <h1 id="edition-title">正在打开歌曲…</h1>
+          <p className="library-lede">正在读取歌曲内容。</p>
         </div>
         <a className="text-link" href={homeHref}>
-          Return to Library
+          返回曲库
         </a>
       </main>
     )
@@ -487,21 +483,19 @@ function EditionRoute({
     return (
       <main className="library library-status" aria-labelledby="edition-title">
         <div className="library-heading">
-          <p className="eyebrow">SONG EDITION / CATALOG ERROR</p>
-          <h1 id="edition-title">The archive is unavailable.</h1>
-          <p className="library-lede">
-            The selected edition could not be opened because the catalog could not be read.
-          </p>
+          <p className="eyebrow">歌曲 / 错误</p>
+          <h1 id="edition-title">歌曲暂时无法打开</h1>
+          <p className="library-lede">无法读取这首歌的内容，请重试。</p>
         </div>
-        <section className="error-state" role="alert" aria-label="Catalog error">
-          <p className="empty-kicker">RECOVERABLE ERROR</p>
+        <section className="error-state" role="alert" aria-label="歌曲错误">
+          <p className="empty-kicker">可恢复错误</p>
           <p>{describeRuntimeError(state.error)}</p>
           <div className="song-status-actions">
             <button type="button" className="text-button" onClick={onRetry}>
-              Retry catalog
+              重试
             </button>
             <a className="text-link" href={homeHref}>
-              Return to Library
+              返回曲库
             </a>
           </div>
         </section>
@@ -516,11 +510,11 @@ function EditionRoute({
     return (
       <main className="library library-status" aria-labelledby="edition-title">
         <div className="library-heading">
-          <p className="eyebrow">SONG EDITION / NOT FOUND</p>
-          <h1 id="edition-title">This edition is not in the archive.</h1>
+          <p className="eyebrow">歌曲 / 未找到</p>
+          <h1 id="edition-title">曲库里没有这首歌</h1>
         </div>
         <a className="text-link" href={homeHref}>
-          Return to Library
+          返回曲库
         </a>
       </main>
     )
@@ -540,10 +534,9 @@ function SiteFooter({ editionCount }: { editionCount: number }) {
   return (
     <footer className="site-footer">
       <p>
-        A focused archive for <span className="footer-signal">returning</span>{' '}
-        to songs.
+        一个专注于<span className="footer-signal">反复学唱</span>的曲库。
       </p>
-      <p>LIBRARY / {String(editionCount).padStart(2, '0')}</p>
+      <p>曲库 / {String(editionCount).padStart(2, '0')}</p>
     </footer>
   )
 }

@@ -9,7 +9,6 @@ import type {
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import {
   ExplainArticleBody,
-  FeatureSection,
   parseFeatureArticle,
 } from './FeatureMarkdown'
 
@@ -132,19 +131,16 @@ describe('Feature Markdown baseline', () => {
   })
 
   it('renders headings, paragraphs, lists, emphasis, strong, and raw HTML as text', () => {
+    const article = parseFeatureArticle({
+      descriptor: featureDescriptor,
+      content:
+        '# Context\n\nA *quiet* and **clear** note.\n\n## Detail\n\n- first\n- second\n\n<script>alert(1)</script>',
+    })
     render(
-      <FeatureSection
-        model={model}
-        features={[{
-          descriptor: featureDescriptor,
-          content:
-            '# Context\n\nA *quiet* and **clear** note.\n\n- first\n- second\n\n<script>alert(1)</script>',
-        }]}
-        featureErrors={[]}
-      />,
+      <ExplainArticleBody article={article} model={model} />,
     )
 
-    expect(screen.getByRole('heading', { name: 'Context' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Detail' })).toBeInTheDocument()
     expect(screen.getByText('quiet')).toBeInTheDocument()
     expect(screen.getByText('clear')).toBeInTheDocument()
     expect(screen.getByRole('list')).toBeInTheDocument()
@@ -192,25 +188,4 @@ describe('Feature Markdown baseline', () => {
     expect(screen.queryByText('s999')).not.toBeInTheDocument()
   })
 
-  it('keeps Feature load errors local to the editorial zone', () => {
-    render(
-      <FeatureSection
-        model={model}
-        features={[]}
-        featureErrors={[{ descriptor: featureDescriptor, error: new Error('offline') }]}
-      />,
-    )
-
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'liner-note is temporarily unavailable',
-    )
-  })
-
-  it('renders no Feature zone when the edition has no Features', () => {
-    const { container } = render(
-      <FeatureSection model={model} features={[]} featureErrors={[]} />,
-    )
-
-    expect(container.firstChild).toBeNull()
-  })
 })

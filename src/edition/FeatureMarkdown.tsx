@@ -3,7 +3,6 @@ import type {
   AssembledSongEdition,
   RuntimeFeatureContent,
 } from '../runtime/song-edition'
-import type { RuntimeFeatureLoadError } from '../runtime/song-edition-loader'
 
 export type ExplainBlock =
   | { kind: 'heading'; level: number; text: string }
@@ -17,12 +16,6 @@ export interface ExplainArticle {
   blocks: readonly ExplainBlock[]
 }
 
-export interface FeatureSectionProps {
-  model: AssembledSongEdition
-  features: readonly RuntimeFeatureContent[]
-  featureErrors: readonly RuntimeFeatureLoadError[]
-}
-
 export interface ExplainArticleBodyProps {
   article: ExplainArticle
   model: AssembledSongEdition
@@ -30,52 +23,6 @@ export interface ExplainArticleBodyProps {
     segmentId: string,
     referenceIndex: number,
   ) => ReactNode
-}
-
-/**
- * The old all-articles section remains as a compatibility renderer while the
- * Song Edition page moves to ExplainWorkspace. Its parser and block renderer
- * are shared by the new workspace, so Feature content keeps one safe boundary.
- */
-export function FeatureSection({
-  model,
-  features,
-  featureErrors,
-}: FeatureSectionProps) {
-  if (features.length === 0 && featureErrors.length === 0) {
-    return null
-  }
-
-  return (
-    <section className="feature-section" aria-labelledby="features-title">
-      <div className="feature-heading">
-        <p className="eyebrow">FEATURE / NOTES</p>
-        <h2 id="features-title">A little more about the work.</h2>
-      </div>
-      {featureErrors.length > 0 ? (
-        <div className="feature-errors" role="status">
-          {featureErrors.map(({ descriptor }) => (
-            <p key={descriptor.id}>
-              {descriptor.id} is temporarily unavailable. The lyric reading remains
-              available.
-            </p>
-          ))}
-        </div>
-      ) : null}
-      {features.map((feature) => {
-        const article = parseFeatureArticle(feature)
-        return (
-          <article className="feature-article" key={feature.descriptor.id}>
-            <p className="feature-label">{article.id}</p>
-            <h2 className="feature-article-title">
-              <InlineMarkdown text={article.title} />
-            </h2>
-            <ExplainArticleBody article={article} model={model} />
-          </article>
-        )
-      })}
-    </section>
-  )
 }
 
 export function ExplainArticleBody({
@@ -121,21 +68,6 @@ export function ExplainArticleBody({
         )
       })}
     </div>
-  )
-}
-
-export function MarkdownBlocks({
-  content,
-  model,
-}: {
-  content: string
-  model: AssembledSongEdition
-}) {
-  return (
-    <ExplainArticleBody
-      article={{ id: 'markdown', title: '', blocks: parseMarkdownBlocks(content) }}
-      model={model}
-    />
   )
 }
 

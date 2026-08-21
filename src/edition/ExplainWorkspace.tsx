@@ -59,9 +59,9 @@ export function ExplainWorkspace({
     return (
       <section className="explain-workspace" aria-label="讲解工作台" data-theme={theme}>
         <div className="explain-empty">
-          <p className="eyebrow">讲解 / NOTES</p>
+          <p className="eyebrow">讲解</p>
           <h2>这首歌暂时没有讲解内容。</h2>
-          <p>当前 Song Edition 仍可使用学唱与全曲功能。</p>
+          <p>当前歌曲仍可使用学唱与全曲功能。</p>
         </div>
       </section>
     )
@@ -86,7 +86,7 @@ export function ExplainWorkspace({
     >
       <header className="explain-workspace-heading">
         <div>
-          <p className="eyebrow">讲解 / NOTES</p>
+          <p className="eyebrow">讲解</p>
           <h2>从作品里听见更多。</h2>
         </div>
         {topics.length > 1 ? (

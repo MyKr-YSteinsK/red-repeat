@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
   waitFor,
 } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -112,13 +113,13 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={clientFor(emptyCatalog)} />)
 
     expect(
-      await screen.findByRole('heading', { name: 'Your library is empty.' }),
+      await screen.findByRole('heading', { name: '还没有歌曲' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Song Editions will appear here when you add them.'),
+      screen.getByText('添加歌曲后，它们会显示在这里。'),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Your first Song Edition will have a place here.'),
+      screen.getByText('你的第一首歌会出现在这里。'),
     ).toBeInTheDocument()
   })
 
@@ -134,10 +135,10 @@ describe('App Library consumer', () => {
 
     render(<App runtimeClient={client} />)
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading catalog')
+    expect(screen.getByRole('status')).toHaveTextContent('正在加载…')
     resolveResponse?.(jsonResponse(emptyCatalog))
     expect(
-      await screen.findByRole('heading', { name: 'Your library is empty.' }),
+      await screen.findByRole('heading', { name: '还没有歌曲' }),
     ).toBeInTheDocument()
   })
 
@@ -153,10 +154,10 @@ describe('App Library consumer', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Runtime network while reading /library-runtime/catalog.json.',
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Retry catalog' }))
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
 
     expect(
-      await screen.findByRole('heading', { name: 'Your library is empty.' }),
+      await screen.findByRole('heading', { name: '还没有歌曲' }),
     ).toBeInTheDocument()
     expect(fetchImpl).toHaveBeenCalledTimes(2)
   })
@@ -173,15 +174,15 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
 
     expect(
-      await screen.findByRole('alert', { name: 'Catalog error' }),
+      await screen.findByRole('alert', { name: '歌曲错误' }),
     ).toHaveTextContent(
       'Runtime network while reading /library-runtime/catalog.json.',
     )
     expect(
-      screen.queryByRole('heading', { name: 'Loading the edition.' }),
+      screen.queryByRole('heading', { name: '正在打开歌曲…' }),
     ).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Retry catalog' }))
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
 
     expect(
       await screen.findByRole('heading', { name: 'First Light' }),
@@ -194,11 +195,11 @@ describe('App Library consumer', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'This edition is not in the archive.',
+        name: '曲库里没有这首歌',
       }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('alert', { name: 'Catalog error' }),
+      screen.queryByRole('alert', { name: '歌曲错误' }),
     ).not.toBeInTheDocument()
   })
 
@@ -220,7 +221,7 @@ describe('App Library consumer', () => {
     expect(screen.getByText('First Light')).toBeInTheDocument()
     expect(screen.getByText('a'.repeat(64))).toBeInTheDocument()
     expect(screen.getByText('d'.repeat(64))).toBeInTheDocument()
-    expect(screen.queryByText('Songs worth returning to.')).not.toBeInTheDocument()
+    expect(screen.queryByText('我的歌曲')).not.toBeInTheDocument()
   })
 
   it('shows an explicit debugger state for an unknown runtime edition', async () => {
@@ -297,11 +298,11 @@ describe('App Library consumer', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('A Composer')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('link', { name: 'RED:REPEAT home' }))
-      await waitFor(() => {
-        expect(
-        screen.getByRole('heading', { name: '我的歌曲' }),
-      ).toBeInTheDocument()
+    fireEvent.click(
+      within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }),
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: '我的歌曲' })).toBeInTheDocument()
     })
   })
 

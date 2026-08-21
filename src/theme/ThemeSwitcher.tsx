@@ -6,22 +6,22 @@ export interface ThemeSwitcherProps {
 }
 
 const THEME_LABELS: Record<EditionTheme, string> = {
-  liner: 'Liner',
-  cinema: 'Cinema',
-  nocturne: 'Nocturne',
+  liner: '经典',
+  cinema: '影院',
+  nocturne: '夜间',
 }
 
 export function ThemeSwitcher({ theme, onChange }: ThemeSwitcherProps) {
   return (
-    <div className="theme-switcher" role="group" aria-label="Edition style">
-      <span className="theme-switcher-label">EDITION STYLE</span>
+    <div className="theme-switcher" role="group" aria-label="显示风格">
+      <span className="theme-switcher-label">显示风格</span>
       <div className="theme-switcher-options">
         {EDITION_THEMES.map((option) => (
           <button
             className="theme-switcher-option"
             key={option}
             type="button"
-            aria-label={`Use ${THEME_LABELS[option]} theme`}
+            aria-label={`使用${THEME_LABELS[option]}显示风格`}
             aria-pressed={theme === option}
             onClick={() => onChange(option)}
           >

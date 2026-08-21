@@ -11,12 +11,12 @@ describe('ThemeSwitcher', () => {
     const onChange = vi.fn()
     render(<ThemeSwitcher theme="cinema" onChange={onChange} />)
 
-    expect(screen.getByRole('group', { name: 'Edition style' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Use Cinema theme' })).toHaveAttribute(
+    expect(screen.getByRole('group', { name: '显示风格' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '使用影院显示风格' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: 'Use Liner theme' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '使用经典显示风格' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
@@ -26,7 +26,7 @@ describe('ThemeSwitcher', () => {
     const onChange = vi.fn()
     render(<ThemeSwitcher theme="liner" onChange={onChange} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Use Nocturne theme' }))
+    fireEvent.click(screen.getByRole('button', { name: '使用夜间显示风格' }))
     expect(onChange).toHaveBeenCalledWith('nocturne')
     expect(onChange).toHaveBeenCalledTimes(1)
   })

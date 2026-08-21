@@ -113,7 +113,7 @@ describe('SongEditionPage 学唱入口', () => {
     await screen.findByRole('heading', { name: 'First Light' })
 
     fireEvent.click(screen.getByRole('button', { name: '全曲' }))
-    expect(screen.getByRole('region', { name: 'Full song lyrics' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: '全曲歌词' })).toBeInTheDocument()
     expect(screen.getByRole('complementary', { name: '全曲播放器' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Focus' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
@@ -178,14 +178,14 @@ describe('SongEditionPage 学唱入口', () => {
     fireEvent.click(screen.getByRole('button', { name: '全曲' }))
 
     const before = screen
-      .getByRole('region', { name: 'Full song lyrics' })
+      .getByRole('region', { name: '全曲歌词' })
       .querySelectorAll('[data-occurrence-id]').length
-    fireEvent.click(screen.getByRole('button', { name: 'Use Nocturne theme' }))
+    fireEvent.click(screen.getByRole('button', { name: '使用夜间显示风格' }))
 
     expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
     expect(
       screen
-        .getByRole('region', { name: 'Full song lyrics' })
+        .getByRole('region', { name: '全曲歌词' })
         .querySelectorAll('[data-occurrence-id]').length,
     ).toBe(before)
     expect(screen.getByRole('complementary', { name: '全曲播放器' })).toBeInTheDocument()
@@ -203,7 +203,7 @@ describe('SongEditionPage 学唱入口', () => {
     await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
     expect(media.currentTime).toBe(0.05)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Use Nocturne theme' }))
+    fireEvent.click(screen.getByRole('button', { name: '使用夜间显示风格' }))
     expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
     expect(media.load).toHaveBeenCalledTimes(loadCountBeforeRender + 1)
     expect(screen.getByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
@@ -213,10 +213,13 @@ describe('SongEditionPage 学唱入口', () => {
     render(<SongEditionPage {...propsFor(new Error('offline'))} />)
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
+      '无法读取这首歌的内容，请重试。',
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent(
       'The edition resources returned an unexpected error.',
     )
-    expect(screen.getByRole('button', { name: 'Retry edition' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Return to Library' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '重试' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '返回曲库' })).toHaveAttribute(
       'href',
       '/red-repeat/',
     )

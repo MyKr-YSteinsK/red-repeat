@@ -758,7 +758,7 @@ export function PracticeWorkspace({
       <section className="practice-empty" aria-label="学唱">
         <p className="eyebrow">学唱</p>
         <h2>这首歌还没有可用的学习段。</h2>
-        <p>请先为所有歌词 Occurrence 建立 Practice Unit。</p>
+        <p>请先为所有歌词句建立学习段。</p>
       </section>
     )
   }
@@ -1721,7 +1721,7 @@ function PracticeLyricRow({
       ) : null}
       <p className="practice-translation">{segment.translation}</p>
       {segment.layers?.length ? (
-        <div className="practice-readings" aria-label="Reading">
+        <div className="practice-readings" aria-label="读音">
           {segment.layers.map((layer) => (
             <p key={layer.id}>
               <span>{layer.label}</span> {layer.text}

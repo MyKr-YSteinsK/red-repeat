@@ -138,14 +138,14 @@ export function FullSongWorkspace({
   return (
     <section
       className="full-song-workspace"
-      aria-label="Full song lyrics"
+      aria-label="全曲歌词"
       data-theme={theme}
       data-current-section-id={playback.resolution.currentSection?.id}
       data-selected-occurrence-id={selectedOccurrenceId}
     >
       <div className="full-song-heading">
         <div>
-          <p className="eyebrow">FULL SONG / LYRICS</p>
+          <p className="eyebrow">全曲</p>
           <h2>跟着整首歌走。</h2>
         </div>
         <button

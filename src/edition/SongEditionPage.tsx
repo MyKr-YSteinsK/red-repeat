@@ -57,7 +57,7 @@ export function SongEditionPage({
   )
 
   if (state.status === 'loading') {
-    return <SongEditionStatus catalogEdition={catalogEdition} homeHref={homeHref} />
+    return <SongEditionStatus homeHref={homeHref} />
   }
 
   if (state.status === 'error') {
@@ -67,19 +67,20 @@ export function SongEditionPage({
         aria-labelledby="song-title"
         role="alert"
       >
-        <p className="eyebrow">SONG EDITION / ERROR</p>
-        <h1 id="song-title">This edition could not be opened.</h1>
-        <p className="song-status-copy">{describeEditionError(state.error)}</p>
+        <p className="eyebrow">歌曲 / 错误</p>
+        <h1 id="song-title">歌曲暂时无法打开</h1>
+        <p className="song-status-copy">无法读取这首歌的内容，请重试。</p>
+        <p className="song-status-detail">{describeEditionError(state.error)}</p>
         <div className="song-status-actions">
           <button
             className="text-button"
             type="button"
             onClick={() => setRetryKey((value) => value + 1)}
           >
-            Retry edition
+            重试
           </button>
           <a className="text-link" href={homeHref}>
-            Return to Library
+            返回曲库
           </a>
         </div>
       </main>
@@ -111,20 +112,21 @@ export function SongEditionPage({
             返回曲库
           </a>
           <div className="practice-page-song">
-            <p className="eyebrow">学唱 / SONG EDITION</p>
+            <p className="eyebrow">学唱</p>
             <h1 id="song-title">{song.title}</h1>
             <p className="practice-page-artist">{song.artist}</p>
             {song.album || song.year !== undefined ? (
               <p className="practice-page-meta">
-                {song.album ?? 'Song Edition'}
-                {song.year !== undefined ? ` / ${song.year}` : ''}
+                {song.album ?? ''}
+                {song.album && song.year !== undefined ? ' / ' : ''}
+                {song.year ?? ''}
               </p>
             ) : null}
           </div>
           <img
             className="practice-page-cover"
             src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
-            alt={`${song.title} cover artwork`}
+            alt={`${song.title}封面`}
           />
         </div>
         <div className="practice-page-tools">
@@ -201,19 +203,17 @@ export function SongEditionPage({
 }
 
 function SongEditionStatus({
-  catalogEdition,
   homeHref,
 }: {
-  catalogEdition: CatalogEdition
   homeHref: string
 }) {
   return (
     <main className="song-edition song-edition-status" aria-labelledby="song-title">
-      <p className="eyebrow">SONG EDITION / OPENING</p>
-      <h1 id="song-title">Opening {catalogEdition.title}.</h1>
-      <p className="song-status-copy">Reading the edition resources.</p>
+      <p className="eyebrow">歌曲 / 打开中</p>
+      <h1 id="song-title">正在打开歌曲…</h1>
+      <p className="song-status-copy">正在读取歌曲内容。</p>
       <a className="text-link" href={homeHref}>
-        Return to Library
+        返回曲库
       </a>
     </main>
   )
