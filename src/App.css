@@ -1121,6 +1121,20 @@
   background: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
+@media (min-width: 641px) {
+  .full-song-layout {
+    display: block;
+    padding-right: calc(18rem + clamp(2rem, 6vw, 5rem));
+  }
+
+  .full-song-player {
+    position: fixed;
+    top: clamp(5rem, 12vh, 7rem);
+    right: calc(clamp(1.25rem, 5vw, 5rem) + max(0px, (100vw - 74rem) / 2));
+    width: min(18rem, calc(100vw - 2rem));
+  }
+}
+
 .full-song-player-topline,
 .full-song-player-context,
 .full-song-player-speed {
