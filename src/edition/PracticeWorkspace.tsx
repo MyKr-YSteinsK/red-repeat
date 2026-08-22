@@ -115,6 +115,7 @@ export function PracticeWorkspace({
   )
   const timingImportInputRef = useRef<HTMLInputElement>(null)
   const [timingPanelOpen, setTimingPanelOpen] = useState(false)
+  const [mobileControlsExpanded, setMobileControlsExpanded] = useState(false)
   const [timingSaveAvailable, setTimingSaveAvailable] = useState(true)
   const practiceTimingProvider = useMemo(
     () =>
@@ -1049,7 +1050,19 @@ export function PracticeWorkspace({
           </section>
         </div>
 
-        <aside className="practice-controls" aria-label="练习控制">
+        <aside
+          className="practice-controls"
+          aria-label="练习控制"
+          data-mobile-expanded={mobileControlsExpanded}
+        >
+          <button
+            className="practice-action practice-mobile-controls-toggle"
+            type="button"
+            aria-expanded={mobileControlsExpanded}
+            onClick={() => setMobileControlsExpanded((expanded) => !expanded)}
+          >
+            {mobileControlsExpanded ? '收起练习控制' : '展开练习控制'}
+          </button>
           <div className="practice-target-actions" aria-label="练习目标">
             <button
               className="practice-action"

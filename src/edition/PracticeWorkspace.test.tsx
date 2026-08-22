@@ -316,6 +316,31 @@ describe('PracticeWorkspace', () => {
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
   })
 
+  it('keeps the mobile control drawer collapsed until explicitly opened', () => {
+    render(
+      <PracticeWorkspace
+        model={model}
+        runtimeClient={runtimeClient}
+        theme="liner"
+      />,
+    )
+
+    const controls = screen.getByRole('complementary', { name: '练习控制' })
+    expect(controls).toHaveAttribute('data-mobile-expanded', 'false')
+    expect(screen.getByRole('button', { name: '展开练习控制' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '展开练习控制' }))
+
+    expect(controls).toHaveAttribute('data-mobile-expanded', 'true')
+    expect(screen.getByRole('button', { name: '收起练习控制' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+  })
+
   it('keeps the lyric stream in place and only uses minimal scroll correction for clicked lines', () => {
     const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
     const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect
