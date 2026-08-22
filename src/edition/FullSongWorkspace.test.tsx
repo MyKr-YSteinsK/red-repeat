@@ -154,7 +154,7 @@ const model = assembleRuntimeSongEdition({
 })
 
 describe('FullSongWorkspace', () => {
-  it('renders the complete lyric stream with translation, reading toggle, and instrumental marker', async () => {
+  it('renders the complete lyric stream with readable translation and reading layers', async () => {
     const { engine } = renderWorkspace()
 
     await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
@@ -163,10 +163,6 @@ describe('FullSongWorkspace', () => {
     expect(screen.getByText('再来一次')).toBeInTheDocument()
     expect(screen.getByText('器乐段')).toBeInTheDocument()
     expect(screen.queryByText('Only a private note.')).not.toBeInTheDocument()
-    expect(screen.queryByText('リピート・ミー')).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '显示读音' }))
-    expect(screen.getByRole('button', { name: '隐藏读音' })).toBeInTheDocument()
     expect(screen.getByText('リピート・ミー')).toBeInTheDocument()
   })
 
@@ -215,6 +211,28 @@ describe('FullSongWorkspace', () => {
     expect(
       document.querySelector('[data-occurrence-id="o002"]'),
     ).toHaveClass('is-selected')
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.75
+      frames.flush()
+    })
+    await waitFor(() => {
+      expect(document.querySelector('[data-occurrence-id="o002"]')).toHaveClass(
+        'is-primary-active',
+        'is-selected',
+      )
+    })
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 1
+      frames.flush()
+    })
+    await waitFor(() => {
+      expect(document.querySelector('[data-occurrence-id="o003"]')).toHaveClass(
+        'is-primary-active',
+        'is-selected',
+      )
+    })
 
     await act(async () => {
       mediaFor(engine).currentTime = 1.1

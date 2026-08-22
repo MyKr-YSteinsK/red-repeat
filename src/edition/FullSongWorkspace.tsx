@@ -43,10 +43,10 @@ export function FullSongWorkspace({
   onStartPracticeUnit,
 }: FullSongWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [readingVisible, setReadingVisible] = useState(false)
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<string>()
   const [followLyrics, setFollowLyrics] = useState(true)
   const [message, setMessage] = useState<string>()
+  const pendingFollowOccurrenceId = useRef<string | undefined>(undefined)
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
@@ -82,6 +82,7 @@ export function FullSongWorkspace({
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      pendingFollowOccurrenceId.current = assembledOccurrence.occurrence.id
       setFollowLyrics(true)
       setMessage(undefined)
       const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
@@ -89,6 +90,22 @@ export function FullSongWorkspace({
     },
     [playback, timingProvider],
   )
+
+  const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
+  useEffect(() => {
+    if (!followLyrics || !primaryOccurrenceId) {
+      return
+    }
+
+    const pendingOccurrenceId = pendingFollowOccurrenceId.current
+    if (pendingOccurrenceId) {
+      if (pendingOccurrenceId !== primaryOccurrenceId) {
+        return
+      }
+      pendingFollowOccurrenceId.current = undefined
+    }
+    setSelectedOccurrenceId(primaryOccurrenceId)
+  }, [followLyrics, primaryOccurrenceId])
 
   const handleReplayOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
@@ -133,7 +150,6 @@ export function FullSongWorkspace({
     () => new Set(playback.resolution.activeOccurrences.map(({ id }) => id)),
     [playback.resolution.activeOccurrences],
   )
-  const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
 
   return (
     <section
@@ -142,20 +158,13 @@ export function FullSongWorkspace({
       data-theme={theme}
       data-current-section-id={playback.resolution.currentSection?.id}
       data-selected-occurrence-id={selectedOccurrenceId}
+      data-follow-lyrics={followLyrics}
     >
       <div className="full-song-heading">
         <div>
           <p className="eyebrow">全曲</p>
           <h2>跟着整首歌走。</h2>
         </div>
-        <button
-          className="full-song-reading-toggle"
-          type="button"
-          aria-pressed={readingVisible}
-          onClick={() => setReadingVisible((visible) => !visible)}
-        >
-          {readingVisible ? '隐藏读音' : '显示读音'}
-        </button>
         {!followLyrics ? (
           <button
             className="full-song-return-current"
@@ -174,7 +183,6 @@ export function FullSongWorkspace({
           activeOccurrenceIds={activeOccurrenceIds}
           primaryOccurrenceId={primaryOccurrenceId}
           selectedOccurrenceId={selectedOccurrenceId}
-          readingVisible={readingVisible}
           followLyrics={followLyrics}
           onManualBrowse={() => setFollowLyrics(false)}
           practiceIndex={practiceIndex}
@@ -211,7 +219,6 @@ interface FullSongLyricsProps {
   activeOccurrenceIds: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
-  readingVisible: boolean
   followLyrics: boolean
   onManualBrowse: () => void
   practiceIndex: PracticeIndex
@@ -226,7 +233,6 @@ function FullSongLyrics({
   activeOccurrenceIds,
   primaryOccurrenceId,
   selectedOccurrenceId,
-  readingVisible,
   followLyrics,
   onManualBrowse,
   practiceIndex,
@@ -287,7 +293,6 @@ function FullSongLyrics({
                   activeOccurrenceIds={activeOccurrenceIds}
                   primaryOccurrenceId={primaryOccurrenceId}
                   selectedOccurrenceId={selectedOccurrenceId}
-                  readingVisible={readingVisible}
                   hasPracticeUnit={practiceIndex.unitIdByOccurrenceId.has(
                     assembledOccurrence.occurrence.id,
                   )}
@@ -321,7 +326,6 @@ function FullSongOccurrence({
   activeOccurrenceIds,
   primaryOccurrenceId,
   selectedOccurrenceId,
-  readingVisible,
   hasPracticeUnit,
   refCallback,
   onSelect,
@@ -332,7 +336,6 @@ function FullSongOccurrence({
   activeOccurrenceIds: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
-  readingVisible: boolean
   hasPracticeUnit: boolean
   refCallback: (element: HTMLElement | null) => void
   onSelect: (occurrence: AssembledOccurrence) => void
@@ -370,7 +373,7 @@ function FullSongOccurrence({
         {segment.lyrics}
       </button>
       <p className="full-song-translation">{segment.translation}</p>
-      {readingVisible && segment.layers?.length ? (
+      {segment.layers?.length ? (
         <div className="full-song-reading" aria-label="读音">
           {segment.layers.map((layer) => (
             <p key={layer.id}>
