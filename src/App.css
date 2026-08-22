@@ -1384,7 +1384,7 @@
 .practice-layout {
   display: grid;
   grid-template-columns: minmax(11rem, 0.78fr) minmax(0, 1.75fr) minmax(14rem, 0.9fr);
-  grid-template-areas: "map lyrics controls" "map context controls";
+  grid-template-areas: "map lyrics controls";
   align-items: start;
   gap: clamp(1rem, 2.5vw, 2.5rem);
 }
@@ -1392,7 +1392,7 @@
 .practice-map,
 .practice-controls,
 .practice-lyrics,
-.practice-lyrics-context {
+.practice-lyrics-column {
   min-width: 0;
 }
 
@@ -1400,12 +1400,12 @@
   grid-area: map;
 }
 
-.practice-lyrics {
+.practice-lyrics-column {
   grid-area: lyrics;
-}
-
-.practice-lyrics-context {
-  grid-area: context;
+  max-height: calc(100svh - 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline-end: 0.5rem;
 }
 
 .practice-controls {
@@ -2020,7 +2020,7 @@
 @media (max-width: 900px) {
   .practice-layout {
     grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr);
-    grid-template-areas: "map lyrics" "map context" "controls controls";
+    grid-template-areas: "map lyrics" "map lyrics" "controls controls";
   }
 
   .practice-controls {
@@ -2157,12 +2157,12 @@
   .practice-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "lyrics" "controls" "context" "map";
+    grid-template-areas: "lyrics" "controls" "map";
     gap: 0.9rem;
   }
 
+  .practice-lyrics-column,
   .practice-lyrics,
-  .practice-lyrics-context,
   .practice-controls,
   .practice-map {
     width: 100%;
@@ -2170,6 +2170,12 @@
 
   .practice-map {
     position: static;
+  }
+
+  .practice-lyrics-column {
+    max-height: none;
+    overflow: visible;
+    padding-inline-end: 0;
   }
 
   .practice-map nav {
@@ -2192,9 +2198,21 @@
 
   .practice-controls {
     display: block;
-    position: static;
-    padding: 0.8rem;
-    box-shadow: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    width: 100%;
+    max-height: min(62svh, 33rem);
+    overflow-y: auto;
+    padding: 0.8rem 1.25rem calc(0.8rem + env(safe-area-inset-bottom));
+    border-inline: 0;
+    box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .practice-workspace {
+    padding-bottom: calc(min(62svh, 33rem) + 1rem);
   }
 
   .practice-primary-actions,

@@ -773,9 +773,6 @@ export function PracticeWorkspace({
   const currentUnitOccurrences = currentUnit.occurrenceIds
     .map((occurrenceId) => model.occurrencesById[occurrenceId])
     .filter((occurrence): occurrence is AssembledOccurrence => Boolean(occurrence))
-  const contextOccurrences = currentUnitOccurrences.filter(
-    ({ occurrence }) => occurrence.id !== currentOccurrence.occurrence.id,
-  )
   const coveredUntilOccurrenceId = learningState.coveredUntilByUnit[currentUnit.id]
   const previousUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'previous')
   const nextUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'next')
@@ -1015,44 +1012,44 @@ export function PracticeWorkspace({
       data-current-occurrence-id={currentOccurrence.occurrence.id}
     >
       <div className="practice-layout">
-        <section className="practice-lyrics" aria-labelledby="practice-unit-title">
-          <header className="practice-unit-heading">
-            <div>
-              <p className="eyebrow">当前学习段 / {String(unitIndex + 1).padStart(2, '0')}</p>
-              <h2 id="practice-unit-title">{currentUnit.label}</h2>
-            </div>
-            <p className="practice-unit-count">
-              {currentUnitOccurrences.findIndex(
-                ({ occurrence }) => occurrence.id === currentOccurrence.occurrence.id,
-              ) + 1}{' '}
-              / {currentUnitOccurrences.length} 句
-            </p>
-          </header>
-          <ol className="practice-current-lyric">
-            <PracticeLyricRow
-              assembledOccurrence={currentOccurrence}
-              lyricNumber={
-                currentUnitOccurrences.findIndex(
-                  ({ occurrence }) =>
-                    occurrence.id === currentOccurrence.occurrence.id,
-                ) + 1
-              }
-              isCurrent
-              isInCustomRange={customRangeOccurrenceIds?.has(currentOccurrence.occurrence.id) ?? false}
-              isRangeAnchor={rangeSelectionStartId === currentOccurrence.occurrence.id}
-              isTimingModified={currentTimingModified}
-              rangeSelectionMode={rangeSelectionMode}
-              onPlay={() => playOccurrence(currentOccurrence.occurrence.id)}
-              onSelectRangeEndpoint={selectRangeEndpoint}
-            />
-          </ol>
-        </section>
+        <div className="practice-lyrics-column">
+          <section className="practice-lyrics" aria-labelledby="practice-unit-title">
+            <header className="practice-unit-heading">
+              <div>
+                <p className="eyebrow">当前学习段 / {String(unitIndex + 1).padStart(2, '0')}</p>
+                <h2 id="practice-unit-title">{currentUnit.label}</h2>
+              </div>
+              <p className="practice-unit-count">
+                {currentUnitOccurrences.findIndex(
+                  ({ occurrence }) => occurrence.id === currentOccurrence.occurrence.id,
+                ) + 1}{' '}
+                / {currentUnitOccurrences.length} 句
+              </p>
+            </header>
+            <ol className="practice-lyric-list">
+              {currentUnitOccurrences.map((assembledOccurrence) => {
+                const occurrenceId = assembledOccurrence.occurrence.id
+                const isCurrent = occurrenceId === currentOccurrence.occurrence.id
+                return (
+                  <PracticeLyricRow
+                    key={occurrenceId}
+                    assembledOccurrence={assembledOccurrence}
+                    lyricNumber={currentUnit.occurrenceIds.indexOf(occurrenceId) + 1}
+                    isCurrent={isCurrent}
+                    isInCustomRange={customRangeOccurrenceIds?.has(occurrenceId) ?? false}
+                    isRangeAnchor={rangeSelectionStartId === occurrenceId}
+                    isTimingModified={isCurrent && currentTimingModified}
+                    rangeSelectionMode={rangeSelectionMode}
+                    onPlay={() => playOccurrence(occurrenceId)}
+                    onSelectRangeEndpoint={selectRangeEndpoint}
+                  />
+                )
+              })}
+            </ol>
+          </section>
+        </div>
 
         <aside className="practice-controls" aria-label="练习控制">
-          <p className="practice-control-kicker">练习控制</p>
-          <p className="practice-current-label">
-            当前：{formatPracticeLocation(practiceIndex, currentOccurrence.occurrence.id)} · {currentOccurrence.segment.lyrics}
-          </p>
           <div className="practice-target-actions" aria-label="练习目标">
             <button
               className="practice-action"
@@ -1548,38 +1545,7 @@ export function PracticeWorkspace({
             已学到这里：{formatCoveredRange(currentUnit, coveredUntilOccurrenceId)}
           </p>
           {message ? <p className="practice-message" role="status">{message}</p> : null}
-          <p className="practice-keyboard-hint">
-            Space 播放/暂停 · R 一直循环 · ↑↓ 切句 · Enter 再听 · PageUp / PageDown 切段
-          </p>
         </aside>
-
-        {contextOccurrences.length > 0 ? (
-          <section
-            className="practice-lyrics-context"
-            aria-label={`${currentUnit.label} 其余歌词`}
-          >
-            <ol className="practice-lyric-list">
-              {contextOccurrences.map((assembledOccurrence) => (
-                <PracticeLyricRow
-                  key={assembledOccurrence.occurrence.id}
-                  assembledOccurrence={assembledOccurrence}
-                  lyricNumber={
-                    currentUnit.occurrenceIds.indexOf(
-                      assembledOccurrence.occurrence.id,
-                    ) + 1
-                  }
-                  isCurrent={false}
-                  isInCustomRange={customRangeOccurrenceIds?.has(assembledOccurrence.occurrence.id) ?? false}
-                  isRangeAnchor={rangeSelectionStartId === assembledOccurrence.occurrence.id}
-                  isTimingModified={false}
-                  rangeSelectionMode={rangeSelectionMode}
-                  onPlay={() => playOccurrence(assembledOccurrence.occurrence.id)}
-                  onSelectRangeEndpoint={selectRangeEndpoint}
-                />
-              ))}
-            </ol>
-          </section>
-        ) : null}
 
         <details
           className="practice-map"
@@ -1687,6 +1653,7 @@ function PracticeLyricRow({
   onSelectRangeEndpoint: (occurrenceId: string) => void
 }) {
   const { occurrence, segment } = assembledOccurrence
+  const rowRef = useRef<HTMLLIElement>(null)
   const rowClassName = [
     'practice-lyric-row',
     isCurrent ? 'is-current' : '',
@@ -1697,6 +1664,7 @@ function PracticeLyricRow({
     .join(' ')
   return (
     <li
+      ref={rowRef}
       className={rowClassName}
       data-occurrence-id={occurrence.id}
     >
@@ -1706,7 +1674,12 @@ function PracticeLyricRow({
         onClick={() =>
           rangeSelectionMode
             ? onSelectRangeEndpoint(occurrence.id)
-            : onPlay()
+            : (() => {
+                if (rowRef.current) {
+                  scrollPracticeLyricIntoView(rowRef.current)
+                }
+                onPlay()
+              })()
         }
         aria-label={
           rangeSelectionMode
@@ -1742,6 +1715,29 @@ function PracticeLyricRow({
       ) : null}
     </li>
   )
+}
+
+function scrollPracticeLyricIntoView(element: HTMLElement): void {
+  const container = element.closest<HTMLElement>('.practice-lyrics-column')
+  const elementRect = element.getBoundingClientRect()
+  const containerRect = container?.getBoundingClientRect()
+  const visibleTop = Math.max(containerRect?.top ?? 0, 0)
+  const visibleBottom = Math.min(
+    containerRect?.bottom ?? window.innerHeight,
+    window.innerHeight,
+  )
+  const isFullyVisible =
+    elementRect.top >= visibleTop && elementRect.bottom <= visibleBottom
+  if (isFullyVisible || typeof element.scrollIntoView !== 'function') {
+    return
+  }
+
+  const isOutsideViewport =
+    elementRect.bottom < visibleTop || elementRect.top > visibleBottom
+  element.scrollIntoView({
+    block: isOutsideViewport ? 'center' : 'nearest',
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+  })
 }
 
 function formatCoveredRange(
@@ -1784,6 +1780,14 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return (
     target.isContentEditable ||
     ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+  )
+}
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
   )
 }
 

@@ -111,6 +111,20 @@ const model = assembleRuntimeSongEdition({
   features: [],
 })
 
+const scrollModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics,
+  timeline,
+  practice: {
+    units: [
+      { id: 'p001', sectionId: 'verse', label: '主歌 A', occurrenceIds: ['o001', 'o002', 'o003'] },
+    ],
+  },
+  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
+  features: [],
+})
+
 const resumeTimeline: TimelineDocument = {
   audioSourceHash: 'a'.repeat(64),
   sections: [{ id: 'resume-verse', label: 'Resume Verse', startMs: 0, endMs: 3200 }],
@@ -300,6 +314,79 @@ describe('PracticeWorkspace', () => {
     expect(screen.getByRole('button', { name: '↓ 下一句' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Focus' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
+  })
+
+  it('keeps the lyric stream in place and only uses minimal scroll correction for clicked lines', () => {
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect
+    const scrollIntoView = vi.fn()
+    let scrollMode: 'visible' | 'partial' | 'outside' = 'visible'
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        if (this.classList.contains('practice-lyrics-column')) {
+          return createRect(100, 500)
+        }
+        if (this.dataset.occurrenceId === 'o003') {
+          if (scrollMode === 'partial') {
+            return createRect(470, 540)
+          }
+          if (scrollMode === 'outside') {
+            return createRect(700, 770)
+          }
+        }
+        return createRect(200, 300)
+      },
+    })
+
+    try {
+      render(
+        <PracticeWorkspace
+          model={scrollModel}
+          runtimeClient={runtimeClient}
+          theme="liner"
+        />,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(
+        [...document.querySelectorAll<HTMLElement>('.practice-lyric-row')].map(
+          (row) => row.dataset.occurrenceId,
+        ),
+      ).toEqual(['o001', 'o002', 'o003'])
+
+      scrollMode = 'partial'
+      fireEvent.click(screen.getByRole('button', { name: '播放第 03 句' }))
+      expect(scrollIntoView).toHaveBeenLastCalledWith({
+        block: 'nearest',
+        behavior: 'smooth',
+      })
+
+      scrollMode = 'outside'
+      fireEvent.click(screen.getByRole('button', { name: '播放第 03 句' }))
+      expect(scrollIntoView).toHaveBeenLastCalledWith({
+        block: 'center',
+        behavior: 'smooth',
+      })
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
+      }
+      Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+        configurable: true,
+        value: originalGetBoundingClientRect,
+      })
+    }
   })
 
   it('keeps the mobile map compact while preserving the current unit context', () => {
@@ -1289,6 +1376,20 @@ describe('PracticeWorkspace', () => {
 const runtimeClient = {
   resolveAsset: (logicalPath: string) => `/app${logicalPath}`,
 } as unknown as RuntimeClient
+
+function createRect(top: number, bottom: number): DOMRect {
+  return {
+    bottom,
+    height: bottom - top,
+    left: 0,
+    right: 320,
+    top,
+    width: 320,
+    x: 0,
+    y: top,
+    toJSON: () => ({}),
+  }
+}
 
 function occurrence(
   id: string,
