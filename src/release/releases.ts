@@ -1,48 +1,90 @@
+export type ReleaseLevel = 'patch' | 'minor' | 'major'
+
 export interface ReleaseNote {
   version: string
   date: string
+  commit: string
+  level: ReleaseLevel
   title: string
   summary: string
-  items: readonly string[]
+  changes: readonly string[]
 }
 
+// Ordered by the real release history, newest first. This is a product ledger,
+// not a Plan index: several commits are intentionally represented by one entry,
+// while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
     version: '1.0.0',
     date: '2026-08-23',
+    commit: '4f9ebd1',
+    level: 'major',
     title: 'RED:REPEAT 1.0',
     summary: '收口为适合长期使用的固定产品模式，并建立从人工 timing 到 Codex source 修复的闭环。',
-    items: [
+    changes: [
       'Practice 简化为单句、连续、渐速和 0.60x / 0.80x / 1.00x。',
       'Full Song 收口播放跟随、器乐段、回顶部和重置语义。',
-      '新增 Settings、系统信息、Changelog、播放切口调试和 Codex 微调导出。',
+      '新增 Settings、系统信息、播放切口调试和 Codex 微调导出。',
       '统一 Practice、Full Song、Explain 的 Effective Timing，并在 Edition 更新后自动清理旧微调。',
     ],
   },
   {
     version: '0.9.1',
     date: '2026-08-23',
-    title: '播放器层级修复',
+    commit: 'e95ad0b',
+    level: 'patch',
+    title: '全曲标签层级修复',
     summary: '修复全曲模式中标签与固定播放器的层级关系。',
-    items: ['Full Song tabs remain reachable above the fixed player.'],
+    changes: ['让 Full Song tabs 在固定播放器上方保持可达。'],
   },
   {
     version: '0.9.0',
     date: '2026-08-23',
-    title: '公开曲库发布',
-    summary: '公开 library、GitHub Pages、离线下载和正式 PWA 图标。',
-    items: [
+    commit: '3d7e053',
+    level: 'minor',
+    title: '公开曲库与安装体验',
+    summary: '把真实曲库、GitHub Pages、离线下载和正式 PWA 图标接入公开产品壳。',
+    changes: [
       '公开 library/ 成为正式 Runtime source。',
       '首页直接进入曲库，并支持按歌曲下载 Runtime。',
       '补齐 MyKr 品牌字段与正式安装图标。',
     ],
   },
   {
+    version: '0.8.3',
+    date: '2026-08-23',
+    commit: 'e579d61',
+    level: 'patch',
+    title: '桌面全曲播放器可见性修复',
+    summary: '修复桌面布局中全曲播放器可能被内容遮挡的问题。',
+    changes: ['让 Full Song 播放器在桌面端保持可见。'],
+  },
+  {
+    version: '0.8.2',
+    date: '2026-08-22',
+    commit: '5acedff',
+    level: 'patch',
+    title: '旧学习状态边界修复',
+    summary: '把旧 Resume 数据与近期学习状态分开处理，避免迁移信息污染当前产品壳。',
+    changes: ['识别 legacy resume，并在不改写旧数据的情况下提供可用的继续学习入口。'],
+  },
+  {
+    version: '0.8.1',
+    date: '2026-08-22',
+    commit: '9294ca5',
+    level: 'patch',
+    title: '旧 Resume 识别修复',
+    summary: '修复历史学习记录不能被当前曲库识别的问题。',
+    changes: ['为旧格式练习记录增加兼容读取路径。'],
+  },
+  {
     version: '0.8.0',
-    date: '2026-08-21',
-    title: '产品壳与移动体验',
-    summary: '完成中文曲库、Resume、移动端工作台和全曲播放器收口。',
-    items: [
+    date: '2026-08-22',
+    commit: '8365396',
+    level: 'minor',
+    title: '中文产品壳与移动工作台',
+    summary: '完成中文曲库、Resume、移动端工作台和产品级歌曲入口收口。',
+    changes: [
       '首页支持继续学唱与旧学习状态迁移。',
       'Practice 独立滚动，Full Song 使用固定播放器。',
       '修正移动端歌词层级与播放焦点同步。',
@@ -50,70 +92,150 @@ export const RELEASES: readonly ReleaseNote[] = [
   },
   {
     version: '0.7.0',
-    date: '2026-08-21',
-    title: '讲解模式',
+    date: '2026-08-22',
+    commit: '169986c',
+    level: 'minor',
+    title: '讲解工作台',
     summary: '加入 Feature 文章、原地歌词引用和讲解工作台。',
-    items: [
-      'Feature 支持结构化文章与主题切换。',
+    changes: [
+      'Feature 支持结构化文章与歌词引用。',
       '讲解中的歌词引用可以 bounded playback。',
       '歌词引用可以把用户带回对应 Practice Unit。',
     ],
   },
   {
+    version: '0.6.2',
+    date: '2026-08-21',
+    commit: 'da13211',
+    level: 'patch',
+    title: '全曲歌词触摸跟随修复',
+    summary: '修正移动端触摸歌词时的跟随和播放切换语义。',
+    changes: ['触摸歌词后保持当前句、播放位置和滚动焦点一致。'],
+  },
+  {
+    version: '0.6.1',
+    date: '2026-08-21',
+    commit: '4b2c3e7',
+    level: 'patch',
+    title: '全曲移动播放器首屏修复',
+    summary: '让移动端进入全曲模式后可以直接看到核心播放器。',
+    changes: ['调整移动端歌曲任务导航与播放器首屏布局。'],
+  },
+  {
     version: '0.6.0',
-    date: '2026-08-20',
-    title: '全曲模式',
-    summary: '建立全曲连续歌词播放器和当前句跟随。',
-    items: [
+    date: '2026-08-21',
+    commit: '8c0fa85',
+    level: 'minor',
+    title: '全曲连续歌词播放器',
+    summary: '建立全曲连续歌词工作区、当前句跟随和学习段跳转。',
+    changes: [
       '支持全曲连续播放、当前句高亮和移动播放器。',
       '支持从全曲模式跳入 Practice Unit。',
     ],
   },
   {
     version: '0.5.0',
-    date: '2026-08-20',
+    date: '2026-08-21',
+    commit: 'a5c8f48',
+    level: 'minor',
     title: '高级 Practice 能力',
-    summary: '加入范围、速度、Ramp、Shadow 与个人 Timing 基础能力。',
-    items: [
+    summary: '完成范围、速度、Ramp、Shadow 与个人 Timing 的练习闭环。',
+    changes: [
       '建立 Practice Scope 与速度控制。',
-      '加入 Personal Timing Override 和调试管理。',
+      '加入 Ramp、Shadow 和 Personal Timing Override。',
     ],
+  },
+  {
+    version: '0.4.2',
+    date: '2026-08-21',
+    commit: 'a56d099',
+    level: 'patch',
+    title: '严格模式学唱修复',
+    summary: '修复严格模式下学唱会话无法继续播放的问题。',
+    changes: ['让练习会话在 React 严格模式下保持有效。'],
+  },
+  {
+    version: '0.4.1',
+    date: '2026-08-20',
+    commit: '4124273',
+    level: 'patch',
+    title: '学唱移动布局与暂停语义修复',
+    summary: '修正移动端学唱布局，以及暂停后继续播放的语义。',
+    changes: ['让移动端练习控件保持可达，并正确区分暂停和继续。'],
   },
   {
     version: '0.4.0',
     date: '2026-08-20',
-    title: 'Practice Unit 学唱架构',
-    summary: '建立 Practice contract、学习状态与移动端学唱工作台。',
-    items: [
+    commit: '57bb840',
+    level: 'minor',
+    title: 'Practice Unit 学唱工作台',
+    summary: '建立 Practice contract、学习状态与移动端学唱纵向切片。',
+    changes: [
       'Runtime 开始消费 Practice Unit。',
       '加入学习状态与移动端练习布局。',
     ],
   },
   {
+    version: '0.3.2',
+    date: '2026-08-19',
+    commit: '6a04fa7',
+    level: 'patch',
+    title: '结束播放与 Theme 身份修复',
+    summary: '收敛结束播放完成态，并修正视觉模式身份在边界状态下的表现。',
+    changes: ['修复 EOF completion 和 Theme identity 的边界。'],
+  },
+  {
+    version: '0.3.1',
+    date: '2026-08-19',
+    commit: 'eb405aa',
+    level: 'patch',
+    title: '视觉模式紧凑布局修复',
+    summary: '修正 Theme identity 与紧凑布局中的内容溢出。',
+    changes: ['收敛视觉模式身份和 compact overflow。'],
+  },
+  {
     version: '0.3.0',
     date: '2026-08-19',
-    title: 'PWA 与视觉模式扩展',
-    summary: '建立 PWA runtime caching，并试验 Focus、Immersive 与多视觉模式。',
-    items: ['加入离线 Runtime caching 与安装生命周期。'],
+    commit: 'cb638dd',
+    level: 'minor',
+    title: 'PWA 与视觉模式体验',
+    summary: '建立可离线 Runtime caching，并完成 Focus、Immersive 与多视觉模式的初代体验。',
+    changes: [
+      '加入离线 Runtime caching 与安装生命周期。',
+      '完成三种视觉模式的响应式与无障碍整合。',
+    ],
   },
   {
     version: '0.2.0',
     date: '2026-08-18',
-    title: 'Timeline 与内容工具链',
-    summary: '建立音频身份、Timeline Debugger 和内容生产规范。',
-    items: [
+    commit: '2e808d5',
+    level: 'minor',
+    title: 'Timeline Debugger 内容生产闭环',
+    summary: '建立音频身份、Timeline Debugger 和内容生产导出工作流。',
+    changes: [
       '支持 Occurrence / Section timing 校准。',
       '支持 Timeline 导出与内容质量检查。',
     ],
   },
   {
+    version: '0.1.1',
+    date: '2026-08-18',
+    commit: 'ed4573e',
+    level: 'patch',
+    title: 'Song Edition 播放边界修复',
+    summary: '收敛首个歌曲页面的 consumer 状态边界，避免播放状态在切换时漂移。',
+    changes: ['修复 Song Edition consumer 的状态边界。'],
+  },
+  {
     version: '0.1.0',
     date: '2026-08-18',
+    commit: 'fc4a9c2',
+    level: 'minor',
     title: 'Runtime 与 Song Edition 基础',
-    summary: '建立 Library compiler、Runtime model、Audio Engine 与基础歌词播放。',
-    items: [
+    summary: '建立 Library runtime、Audio Engine、基础歌词播放和首个 Song Edition 页面。',
+    changes: [
       '建立 Library source / compiler / runtime model。',
-      '建立 Audio Engine、Timeline resolver 与 Feature 内容渲染。',
+      '建立 Audio Engine、Timeline resolver 与基础歌词播放。',
     ],
   },
 ]

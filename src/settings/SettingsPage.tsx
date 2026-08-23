@@ -211,7 +211,7 @@ export function SettingsPage({
               </summary>
               <p>{release.summary}</p>
               <ul>
-                {release.items.map((item) => <li key={item}>{item}</li>)}
+                {release.changes.map((change) => <li key={change}>{change}</li>)}
               </ul>
             </details>
           ))}
