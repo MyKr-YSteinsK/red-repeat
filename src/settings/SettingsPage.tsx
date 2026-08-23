@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import {
   RUNTIME_CONTRACT_VERSION,
   type Catalog,
@@ -13,7 +13,11 @@ import { buildInfo } from '../release/build-info'
 import { RELEASES } from '../release/releases'
 import { groupReleaseLedger } from '../release/release-grouping'
 import type { RuntimeClient } from '../runtime/runtime-client'
-import type { UpdateManager } from '../pwa/update-manager'
+import {
+  describeUpdateStatus,
+  getUpdateManager,
+  type UpdateManager,
+} from '../pwa/update-manager'
 import { createTimingDebuggerHref } from '../navigation'
 import {
   createTimingExportFilename,
@@ -48,7 +52,15 @@ export function SettingsPage({
   runtimeClient,
   homeHref,
   onRetryCatalog,
+  updateManager: providedUpdateManager,
+  highlightVersion,
 }: SettingsPageProps) {
+  const currentUpdateManager = providedUpdateManager ?? getUpdateManager()
+  const updateSnapshot = useSyncExternalStore(
+    currentUpdateManager.subscribe,
+    currentUpdateManager.getSnapshot,
+    currentUpdateManager.getSnapshot,
+  )
   const offlineStatus = useOfflineStatus()
   const [selection, setSelection] = useState<ExportSelection>('all')
   const [exportState, setExportState] = useState<ExportState>({ status: 'idle' })
@@ -56,6 +68,11 @@ export function SettingsPage({
   const settingsLocation = window.location
   const timingDebuggerHref = createTimingDebuggerHref(undefined, settingsLocation)
   const releaseGrouping = groupReleaseLedger(RELEASES)
+  const highlightedMilestoneVersion = highlightVersion
+    ? releaseGrouping.milestoneGroups.find((group) =>
+      group.children.some((release) => release.version === highlightVersion),
+    )?.milestoneVersion ?? releaseGrouping.milestoneGroups[0]?.milestoneVersion
+    : undefined
 
   const selectedEdition = useMemo(
     () =>
@@ -135,6 +152,38 @@ export function SettingsPage({
             <div><dt>Catalog hash</dt><dd>{catalog?.contentHash.slice(0, 12) ?? '读取中…'}</dd></div>
             <div><dt>PWA / offline cache</dt><dd>{offlineStatusLabel(offlineStatus)}</dd></div>
           </dl>
+          <section className="settings-update-panel" aria-labelledby="app-update-title">
+            <p className="eyebrow">PWA / 更新</p>
+            <h3 id="app-update-title">应用更新</h3>
+            <p className="settings-update-version">
+              当前版本 <strong>{buildInfo.version}</strong>
+            </p>
+            <div className="settings-update-actions">
+              <button
+                type="button"
+                onClick={() => void currentUpdateManager.checkForUpdate({ manual: true })}
+                disabled={updateSnapshot.status === 'checking' || updateSnapshot.status === 'updating'}
+              >
+                {updateSnapshot.status === 'checking' ? '检查中…' : '检查更新'}
+              </button>
+              {updateSnapshot.status === 'update-available' || updateSnapshot.status === 'updating' ? (
+                <button
+                  type="button"
+                  className="settings-update-primary"
+                  onClick={() => void currentUpdateManager.applyUpdate()}
+                  disabled={updateSnapshot.status === 'updating'}
+                >
+                  {updateSnapshot.status === 'updating' ? '更新中…' : '立即更新'}
+                </button>
+              ) : null}
+            </div>
+            <p className="settings-update-status" role="status" aria-live="polite">
+              {describeUpdateStatus(updateSnapshot)}
+            </p>
+            {updateSnapshot.status === 'error' && updateSnapshot.error ? (
+              <p className="settings-update-error">{updateSnapshot.error}</p>
+            ) : null}
+          </section>
         </section>
 
         <section className="settings-card settings-card-action" aria-labelledby="timing-settings-title">
@@ -234,7 +283,13 @@ export function SettingsPage({
             }
 
             return (
-              <details key={group.milestoneVersion} data-release-milestone>
+              <details
+                key={group.milestoneVersion}
+                data-release-milestone
+                data-release-highlighted={group.milestoneVersion === highlightedMilestoneVersion ? 'true' : undefined}
+                className={group.milestoneVersion === highlightedMilestoneVersion ? 'settings-release-highlight' : undefined}
+                open={group.milestoneVersion === highlightedMilestoneVersion}
+              >
                 <summary>
                   <span>{group.label}</span>
                   <span>{milestone.date}</span>

@@ -456,6 +456,87 @@
   white-space: nowrap;
 }
 
+.settings-update-panel {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.settings-update-panel h3 {
+  margin: 0.65rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.settings-update-version {
+  margin: 0.75rem 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.settings-update-version strong {
+  margin-left: 0.35rem;
+  color: var(--color-ink);
+}
+
+.settings-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.settings-update-actions button {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.settings-update-actions button:hover,
+.settings-update-actions button:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.settings-update-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.settings-update-actions .settings-update-primary {
+  border-color: var(--color-red);
+  background: var(--color-red);
+  color: var(--color-paper);
+}
+
+.settings-update-actions .settings-update-primary:hover,
+.settings-update-actions .settings-update-primary:focus-visible {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.settings-update-status {
+  margin: 0.75rem 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.settings-update-error {
+  margin: 0.4rem 0 0;
+  color: var(--color-red);
+  font-size: 0.75rem;
+}
+
 .settings-primary-link {
   display: inline-flex;
   margin-top: 1.25rem;
@@ -668,6 +749,10 @@
 
 .settings-release-list details[open] summary {
   background: color-mix(in srgb, var(--color-line) 25%, transparent);
+}
+
+.settings-release-highlight summary {
+  box-shadow: inset 0 -2px 0 var(--color-red);
 }
 
 .settings-release-entry-list {

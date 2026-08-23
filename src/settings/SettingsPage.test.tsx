@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Catalog, CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { LyricsDocument, PracticeDocument, TimelineDocument } from '../library/schema'
+import { createUpdateManager } from '../pwa/update-manager'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { SettingsPage } from './SettingsPage'
 
@@ -90,8 +91,8 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.1.0').length).toBeGreaterThan(0)
-    expect(screen.getByText('当前版本')).toBeInTheDocument()
+    expect(screen.getAllByText('1.2.0').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('当前版本').length).toBeGreaterThan(0)
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '打开播放切口调试 →' })).toHaveAttribute(
@@ -134,5 +135,51 @@ describe('SettingsPage', () => {
     expect(
       await screen.findByText('当前没有待合入的播放切口微调。'),
     ).toBeInTheDocument()
+  })
+
+  it('manually checks for a newer build and exposes the immediate update action', async () => {
+    const updateManager = createUpdateManager({
+      fetchImpl: vi.fn(async () => new Response(JSON.stringify({
+        version: '1.3.0',
+        commit: 'abcdef123456',
+      }), { status: 200 })),
+      locationHref: () => 'https://example.test/red-repeat/#settings',
+    })
+    const applyUpdate = vi.spyOn(updateManager, 'applyUpdate')
+
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        updateManager={updateManager}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
+
+    expect(await screen.findByText('发现新版本 1.3.0')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
+    expect(applyUpdate).toHaveBeenCalledOnce()
+  })
+
+  it('opens the milestone containing the requested release from the global update entry', () => {
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        highlightVersion="1.2.0"
+      />,
+    )
+
+    const highlighted = document.querySelector<HTMLDetailsElement>(
+      '[data-release-milestone][data-release-highlighted="true"]',
+    )
+    expect(highlighted).toBeDefined()
+    expect(highlighted?.open).toBe(true)
+    expect(highlighted?.textContent).toContain('PWA 一键更新')
   })
 })
