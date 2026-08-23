@@ -13,6 +13,7 @@
     "library:compile": "tsx src/library/compile-cli.ts",
     "library:audio-hash": "tsx src/library/audio-hash-cli.ts",
     "repo:hygiene": "tsx scripts/verify-gitignore.ts",
+    "release:verify": "tsx scripts/verify-releases.ts",
     "pwa:inspect": "tsx scripts/verify-pwa-build.ts",
     "preview": "vite preview"
   },
