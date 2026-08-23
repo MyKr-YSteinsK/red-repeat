@@ -55,7 +55,17 @@ commit generated `public/library-runtime/` or `dist/` output.
 
 For deterministic CI installs, use `npm ci`.
 
-Production hosting is not configured yet.
+Production hosting uses GitHub Pages:
+
+https://mykr-ysteinsk.github.io/red-repeat/
+
+After the repository's Pages publishing source is set to `GitHub Actions`, a
+push to `main` runs `CI` first. A successful CI run triggers the separate Pages
+workflow, which validates and compiles `library/`, builds with the
+`/red-repeat/` base path, verifies the PWA artifact, and publishes `dist/`.
+
+The deploy workflow checks out the exact commit tested by CI, so the published
+site and the successful quality gate refer to the same source revision.
 
 Production builds are provider-agnostic and support both the site root and a
 static subpath:
