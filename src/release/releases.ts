@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.4',
+    date: '2026-08-24',
+    commit: '49e1fe3',
+    level: 'patch',
+    title: 'PWA 更新竞态与远端说明修复',
+    summary: 'PWA 会等待新版 Service Worker 真正可激活，并在更新前展示远端真实更新说明。',
+    changes: [
+      '修复 version probe 先于 waiting worker 到达时需要重复点击更新的问题。',
+      '更新前显示由唯一 release ledger 自动生成的远端版本说明。',
+      '“稍后”在当前 App 会话内保持静默，更高版本仍会重新提示。',
+    ],
+  },
+  {
     version: '1.2.3',
     date: '2026-08-24',
     commit: '8eaf6e6',
