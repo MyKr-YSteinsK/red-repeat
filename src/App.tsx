@@ -1,6 +1,7 @@
 import {
   lazy,
   Suspense,
+  useSyncExternalStore,
   useEffect,
   useState,
   type ReactNode,
@@ -28,6 +29,11 @@ import { SongEditionPage } from './edition/SongEditionPage'
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { SettingsPage } from './settings/SettingsPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
+import { UpdatePrompt } from './pwa/UpdatePrompt'
+import {
+  getUpdateManager,
+  type UpdateManager,
+} from './pwa/update-manager'
 import {
   downloadSongRuntime,
   readSongDownloadState,
@@ -50,6 +56,7 @@ const defaultRuntimeClient = createRuntimeClient()
 
 interface AppProps {
   runtimeClient?: RuntimeClient
+  updateManager?: UpdateManager
 }
 
 type CatalogState =
@@ -57,7 +64,16 @@ type CatalogState =
   | { status: 'ready'; catalog: Catalog }
   | { status: 'error'; error: unknown }
 
-function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
+function App({
+  runtimeClient = defaultRuntimeClient,
+  updateManager: providedUpdateManager,
+}: AppProps) {
+  const currentUpdateManager = providedUpdateManager ?? getUpdateManager()
+  const updateSnapshot = useSyncExternalStore(
+    currentUpdateManager.subscribe,
+    currentUpdateManager.getSnapshot,
+    currentUpdateManager.getSnapshot,
+  )
   const [route, setRoute] = useState<AppRoute>(() =>
     parseAppRoute(window.location),
   )
@@ -116,6 +132,10 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
 
   const homeHref = createLibraryHref(window.location)
   const settingsHref = createSettingsHref(window.location)
+  const updateSettingsHref = createSettingsHref(
+    window.location,
+    updateSnapshot.remote?.version,
+  )
   const retryCatalog = (): void => {
     setCatalogState({ status: 'loading' })
     setRetryKey((value) => value + 1)
@@ -124,6 +144,12 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
   return (
     <div className="app-shell">
       <SiteHeader homeHref={homeHref} settingsHref={settingsHref} />
+      <UpdatePrompt
+        snapshot={updateSnapshot}
+        settingsHref={updateSettingsHref}
+        onApplyUpdate={() => void currentUpdateManager.applyUpdate()}
+        onDismiss={currentUpdateManager.dismissUpdate}
+      />
       {route.kind === 'library' ? (
         <LibraryRoute
           state={catalogState}
@@ -136,6 +162,8 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
           runtimeClient={runtimeClient}
           homeHref={homeHref}
           onRetryCatalog={retryCatalog}
+          updateManager={currentUpdateManager}
+          highlightVersion={route.releaseVersion}
         />
       ) : route.kind === 'timing-debugger' ? (
         <TimingDebuggerPage

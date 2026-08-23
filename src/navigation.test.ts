@@ -67,5 +67,12 @@ describe('static-safe navigation', () => {
   it('exposes the Settings route under the current static-safe path', () => {
     expect(createSettingsHref(location)).toBe('/red-repeat/?view=archive#settings')
     expect(parseAppRoute({ hash: '#settings' })).toEqual({ kind: 'settings' })
+    expect(createSettingsHref(location, '1.2.0')).toBe(
+      '/red-repeat/?view=archive#settings&release=1.2.0',
+    )
+    expect(parseAppRoute({ hash: '#settings&release=1.2.0' })).toEqual({
+      kind: 'settings',
+      releaseVersion: '1.2.0',
+    })
   })
 })

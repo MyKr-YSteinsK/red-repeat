@@ -1,7 +1,7 @@
 export type AppRoute =
   | { kind: 'library' }
   | { kind: 'edition'; songId: string }
-  | { kind: 'settings' }
+  | { kind: 'settings'; releaseVersion?: string }
   | { kind: 'timing-debugger'; songId?: string }
   | { kind: 'timeline-debugger'; songId?: string }
 
@@ -18,11 +18,15 @@ export function parseAppRoute(
   const debugMode = params.get('debug')?.trim()
   const timingMode = params.get('timing')?.trim()
   const songId = params.get('edition')?.trim()
+  const releaseVersion = params.get('release')?.trim()
 
   const devMode = import.meta.env.DEV && (options.devMode ?? true)
 
   if (params.has('settings')) {
-    return { kind: 'settings' }
+    return {
+      kind: 'settings',
+      ...(releaseVersion ? { releaseVersion } : {}),
+    }
   }
 
   if (timingMode === 'debug') {
@@ -65,6 +69,12 @@ export function createTimingDebuggerHref(
   return `${createLibraryHref(location)}#timing=debug${query}`
 }
 
-export function createSettingsHref(location: NavigationLocation): string {
-  return `${createLibraryHref(location)}#settings`
+export function createSettingsHref(
+  location: NavigationLocation,
+  releaseVersion?: string,
+): string {
+  const suffix = releaseVersion
+    ? `&release=${encodeURIComponent(releaseVersion)}`
+    : ''
+  return `${createLibraryHref(location)}#settings${suffix}`
 }

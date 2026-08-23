@@ -13,6 +13,7 @@ import { buildInfo } from '../release/build-info'
 import { RELEASES } from '../release/releases'
 import { groupReleaseLedger } from '../release/release-grouping'
 import type { RuntimeClient } from '../runtime/runtime-client'
+import type { UpdateManager } from '../pwa/update-manager'
 import { createTimingDebuggerHref } from '../navigation'
 import {
   createTimingExportFilename,
@@ -30,6 +31,8 @@ export interface SettingsPageProps {
   runtimeClient: RuntimeClient
   homeHref: string
   onRetryCatalog: () => void
+  updateManager?: UpdateManager
+  highlightVersion?: string
 }
 
 type ExportSelection = 'all' | string
