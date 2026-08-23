@@ -420,7 +420,6 @@ function CatalogLibrary({
   return (
     <main className="library library-populated" aria-labelledby="library-title">
       <div className="library-heading">
-        <p className="eyebrow">曲库</p>
         <h1 id="library-title">曲库</h1>
         <p className="library-lede">选择一首歌，开始或继续学唱。</p>
         <label className="library-search">

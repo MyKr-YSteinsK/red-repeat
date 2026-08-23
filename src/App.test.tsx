@@ -291,6 +291,7 @@ describe('App Library consumer', () => {
       '/#settings',
     )
     expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: '曲库' })).toHaveLength(1)
     expect(screen.getByRole('heading', { name: '全部歌曲' })).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: '最近学习' }),
