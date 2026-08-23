@@ -48,6 +48,7 @@ export default defineConfig({
         enabled: false,
       },
       workbox: {
+        clientsClaim: true,
         globIgnores: ['library-runtime/**', 'version.json'],
         cleanupOutdatedCaches: true,
         runtimeCaching,

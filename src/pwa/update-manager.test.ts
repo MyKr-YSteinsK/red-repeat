@@ -167,14 +167,51 @@ describe('PWA update manager', () => {
     worker.dispatchEvent(new Event('statechange'))
     expect(updateServiceWorker).not.toHaveBeenCalled()
 
-    waitingWorker = serviceWorker
     callbacks?.onNeedRefresh?.()
     await Promise.resolve()
+    expect(updateServiceWorker).not.toHaveBeenCalled()
+    waitingWorker = serviceWorker
+    await new Promise((resolve) => setTimeout(resolve, 40))
     expect(manager.getSnapshot().status).toBe('updating')
     expect(updateServiceWorker).toHaveBeenCalledWith(false)
+    expect(worker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
 
     callbacks?.onNeedReload?.()
     callbacks?.onNeedReload?.()
+    await updatePromise
+    expect(reload).toHaveBeenCalledOnce()
+  })
+
+  it('reloads after the waiting worker activates even without a controlling callback', async () => {
+    const reload = vi.fn()
+    const worker = new FakeServiceWorker()
+    const serviceWorker = worker as unknown as ServiceWorker
+    const registration = createFakeRegistration(
+      () => undefined,
+      () => serviceWorker,
+      async () => undefined as unknown as ServiceWorkerRegistration,
+    )
+    let callbacks: Parameters<RegisterServiceWorker>[0] | undefined
+    const updateServiceWorker = vi.fn(async () => undefined)
+    const registerSW: RegisterServiceWorker = (options) => {
+      callbacks = options
+      options?.onRegisteredSW?.('/sw.js', registration)
+      return updateServiceWorker
+    }
+    const manager = createUpdateManager({
+      fetchImpl: probeFetch(buildInfo.version, buildInfo.commit),
+      reload,
+      locationHref: () => 'https://example.test/',
+    })
+
+    manager.register(registerSW)
+    callbacks?.onNeedRefresh?.()
+    const updatePromise = manager.applyUpdate()
+    await Promise.resolve()
+    expect(updateServiceWorker).toHaveBeenCalledWith(false)
+
+    worker.state = 'activated'
+    worker.dispatchEvent(new Event('statechange'))
     await updatePromise
     expect(reload).toHaveBeenCalledOnce()
   })
@@ -218,7 +255,7 @@ describe('PWA update manager', () => {
       updateAttempt = 0
 
       const firstUpdate = manager.applyUpdate()
-      await vi.advanceTimersByTimeAsync(5000)
+      await vi.advanceTimersByTimeAsync(15000)
       await firstUpdate
       expect(manager.getSnapshot().status).toBe('error')
 
@@ -280,6 +317,7 @@ describe('PWA update manager', () => {
 
 class FakeServiceWorker extends EventTarget {
   state: ServiceWorkerState = 'installing'
+  postMessage = vi.fn()
 }
 
 function createFakeRegistration(

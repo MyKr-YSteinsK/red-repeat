@@ -43,7 +43,7 @@ export interface UpdateManagerOptions {
 }
 
 const DEFAULT_CHECK_INTERVAL_MS = 5 * 60 * 1000
-const SERVICE_WORKER_UPDATE_TIMEOUT_MS = 5 * 1000
+const SERVICE_WORKER_UPDATE_TIMEOUT_MS = 15 * 1000
 
 export function createUpdateManager(
   options: UpdateManagerOptions = {},
@@ -99,6 +99,9 @@ class UpdateManagerImpl implements UpdateManager {
   private activationRequested = false
   private activationStarted = false
   private updateAttemptTimer: ReturnType<typeof setTimeout> | undefined
+  private waitingWorkerActivationTimer: ReturnType<typeof setTimeout> | undefined
+  private observedWaitingWorker: ServiceWorker | undefined
+  private waitingWorkerStateChange: (() => void) | undefined
   private dismissedRemoteIdentity: string | undefined
 
   constructor(options: UpdateManagerOptions) {
@@ -248,7 +251,7 @@ class UpdateManagerImpl implements UpdateManager {
 
     this.activationStarted = true
     if (this.waitingWorker) {
-      void this.activateWaitingWorker()
+      this.scheduleWaitingWorkerActivation()
       return
     }
 
@@ -265,7 +268,7 @@ class UpdateManagerImpl implements UpdateManager {
         () => {
           this.syncRegistrationState()
           if (this.waitingWorker) {
-            void this.activateWaitingWorker()
+            this.scheduleWaitingWorkerActivation()
           }
         },
         (error: unknown) => this.finishUpdateWithError(error),
@@ -279,7 +282,7 @@ class UpdateManagerImpl implements UpdateManager {
     this.waitingWorker = true
     if (this.updatePromise) {
       if (this.activationRequested) {
-        void this.activateWaitingWorker()
+        this.scheduleWaitingWorkerActivation()
       }
       return
     }
@@ -340,12 +343,70 @@ class UpdateManagerImpl implements UpdateManager {
       return
     }
 
+    const waitingWorker = this.registration?.waiting
+    if (this.registration && !waitingWorker) {
+      this.scheduleWaitingWorkerActivation()
+      return
+    }
+
     this.activationRequested = false
     try {
+      if (waitingWorker) {
+        this.observeWaitingWorkerActivation(waitingWorker)
+        this.sendSkipWaitingMessage(waitingWorker)
+      }
       await this.updateServiceWorker(false)
     } catch (error) {
       this.finishUpdateWithError(error)
     }
+  }
+
+  private scheduleWaitingWorkerActivation(): void {
+    if (!this.updatePromise || !this.activationRequested) {
+      return
+    }
+    if (this.registration && !this.registration.waiting) {
+      if (!this.waitingWorkerActivationTimer) {
+        this.waitingWorkerActivationTimer = setTimeout(() => {
+          this.waitingWorkerActivationTimer = undefined
+          this.scheduleWaitingWorkerActivation()
+        }, 25)
+      }
+      return
+    }
+    void this.activateWaitingWorker()
+  }
+
+  private sendSkipWaitingMessage(worker: ServiceWorker): void {
+    worker.postMessage({ type: 'SKIP_WAITING' })
+  }
+
+  private observeWaitingWorkerActivation(worker: ServiceWorker): void {
+    this.stopObservingWaitingWorker()
+    const onStateChange = (): void => {
+      if (worker.state === 'activated') {
+        this.stopObservingWaitingWorker()
+        this.handleControllerChange()
+      } else if (worker.state === 'redundant') {
+        this.stopObservingWaitingWorker()
+        this.finishUpdateWithError(new Error('Service Worker 激活失败'))
+      }
+    }
+    this.waitingWorkerStateChange = onStateChange
+    this.observedWaitingWorker = worker
+    worker.addEventListener('statechange', onStateChange)
+    onStateChange()
+  }
+
+  private stopObservingWaitingWorker(): void {
+    if (this.observedWaitingWorker && this.waitingWorkerStateChange) {
+      this.observedWaitingWorker.removeEventListener(
+        'statechange',
+        this.waitingWorkerStateChange,
+      )
+    }
+    this.observedWaitingWorker = undefined
+    this.waitingWorkerStateChange = undefined
   }
 
   private handleControllerChange(): void {
@@ -413,6 +474,11 @@ class UpdateManagerImpl implements UpdateManager {
       clearTimeout(this.updateAttemptTimer)
       this.updateAttemptTimer = undefined
     }
+    if (this.waitingWorkerActivationTimer) {
+      clearTimeout(this.waitingWorkerActivationTimer)
+      this.waitingWorkerActivationTimer = undefined
+    }
+    this.stopObservingWaitingWorker()
     this.stopObservingInstallingWorker()
     this.activationStarted = false
   }
