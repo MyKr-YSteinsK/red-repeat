@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.1',
+    date: '2026-08-23',
+    commit: 'e9e1ca9',
+    level: 'patch',
+    title: 'Settings 手动检查更新',
+    summary: 'Settings 现在可以手动检查生产构建，并从更新入口直接回到对应的更新日志里程碑。',
+    changes: [
+      '新增当前版本、手动检查更新和立即更新操作。',
+      '全局查看更新入口会突出并展开对应的更新日志里程碑。',
+      '保留非阻塞更新提示与 Service Worker 一键接管语义。',
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-08-23',
     commit: '4a8b5b6',

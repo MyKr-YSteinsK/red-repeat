@@ -91,7 +91,7 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.2.0').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.2.1').length).toBeGreaterThan(0)
     expect(screen.getAllByText('当前版本').length).toBeGreaterThan(0)
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
@@ -105,7 +105,7 @@ describe('SettingsPage', () => {
     const milestones = [...document.querySelectorAll<HTMLDetailsElement>('[data-release-milestone]')]
     expect(milestones.length).toBeGreaterThan(1)
     expect(milestones.every((milestone) => !milestone.open)).toBe(true)
-    expect(screen.queryByRole('heading', { name: '开发中的小版本' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '开发中的小版本' })).toBeInTheDocument()
 
     const onePointZero = milestones.find(
       (milestone) => milestone.querySelector('summary')?.textContent?.includes('1.0'),
@@ -171,7 +171,7 @@ describe('SettingsPage', () => {
         runtimeClient={runtimeClient()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
-        highlightVersion="1.2.0"
+        highlightVersion="1.2.1"
       />,
     )
 
