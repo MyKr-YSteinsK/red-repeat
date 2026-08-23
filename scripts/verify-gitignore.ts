@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 
 const ignoredPaths = [
-  '.private/library/senbonzakura/intake/lyrics-input.txt',
+  '.private/library/work-millennium-parade/audio/source.mp3',
   'public/library-runtime/catalog.json',
   'dist/index.html',
 ]

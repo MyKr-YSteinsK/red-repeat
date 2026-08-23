@@ -1,0 +1,892 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "変幻自在の命剥き出してやれ",
+      "translation": "把那变幻无定的生命彻底袒露出来。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hengen jizai no inochi mukidashite yare"
+        }
+      ]
+    },
+    {
+      "id": "s002",
+      "lyrics": "実態がない分まだ出来損ない",
+      "translation": "正因为尚无确切实体，才仍是未完成品。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "jittai ga nai bun mada dekisokonai"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "名詮自性です 噂ごと吸い取れ",
+      "translation": "名称正揭示本性；连同流言也一并吸收。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "みょうせんじしょう です　うわさごと すいとれ"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "myousen jishou desu uwasa goto suitore"
+        }
+      ],
+      "notes": [
+        {
+          "title": "名詮自性",
+          "body": "佛教与语言哲学语汇，指名称能够表明事物的自性。这里既谈“名与实”，也为后文报上名号、身份与存在感埋下轴线。"
+        }
+      ]
+    },
+    {
+      "id": "s004",
+      "lyrics": "本懐果たした その先が見たい",
+      "translation": "遂了本愿之后，我还想看看更前方。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "honkai hatashita sono saki ga mitai"
+        }
+      ]
+    },
+    {
+      "id": "s005",
+      "lyrics": "伽藍の空疎な五体 使い捨て いざ前祝い",
+      "translation": "空洞如伽蓝的这副身体，用过即弃；来，先行庆贺。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "がらん の くうそ な ごたい　つかいすて　いざ まえいわい"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "garan no kuuso na gotai tsukaisute iza mae-iwai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "伽藍／前祝い",
+          "body": "“伽藍”本指寺院建筑群，也可联想到空旷、空壳；“前祝い”是事情实现前先行庆贺。此行把身体写成可耗尽的容器。"
+        }
+      ]
+    },
+    {
+      "id": "s006",
+      "lyrics": "名前名乗ってやるよ 観念して頂戴？",
+      "translation": "就让我报上名号吧——请你认命、也请你看破。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "namae nanotte yaru yo kannen shite choudai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "観念",
+          "body": "既可指认命、死心，也保留佛教语境中的观照与念。译文故意同时保留“认命”与“看破”。"
+        }
+      ]
+    },
+    {
+      "id": "s007",
+      "lyrics": "勝ち筋なぞ欲していない 土台殆ど運次第",
+      "translation": "我不稀罕什么必胜路线；说到底大半取决于运气。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kachisuji nazo hosshite inai dodai hotondo un shidai"
+        }
+      ]
+    },
+    {
+      "id": "s008",
+      "lyrics": "答えも出してやるよ 刹那の銘采配？",
+      "translation": "答案也替你揭出来吧——这刹那间的“铭”采配？",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kotae mo dashite yaru yo setsuna no mei saihai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "銘采配",
+          "body": "“銘”可能借“名采配”的音构成文字游戏，同时呼应前文“名詮自性”。建议用正式歌词册再次核对字形。"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "此方 堂々巡りの最中",
+      "translation": "我们仍困在原地打转之中。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kochira doudou meguri no sanaka"
+        }
+      ]
+    },
+    {
+      "id": "s010",
+      "lyrics": "労働鼠の性だ",
+      "translation": "这就是劳作鼠辈的天性。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "roudou nezumi no saga da"
+        }
+      ],
+      "notes": [
+        {
+          "title": "労働鼠",
+          "body": "把劳动者压缩成不停转轮的鼠辈意象；与标题 W●RK、银行家、偿还等资本与劳动词汇形成一组。"
+        }
+      ]
+    },
+    {
+      "id": "s011",
+      "lyrics": "Wake Up Bankers",
+      "translation": "叫醒银行家们。"
+    },
+    {
+      "id": "s012",
+      "lyrics": "Pay Back!",
+      "translation": "把欠账还来！"
+    },
+    {
+      "id": "s013",
+      "lyrics": "今日も労働",
+      "translation": "今天照旧劳动。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kyou mo roudou"
+        }
+      ]
+    },
+    {
+      "id": "s014",
+      "lyrics": "One verse One Punchを",
+      "translation": "一段主歌，一记重拳。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "One verse One Punch wo"
+        }
+      ]
+    },
+    {
+      "id": "s015",
+      "lyrics": "AnswerにはFantasyを",
+      "translation": "答案里要有幻想。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "Answer ni wa Fantasy wo"
+        }
+      ]
+    },
+    {
+      "id": "s016",
+      "lyrics": "Stand up my fav people",
+      "translation": "站起来吧，我所珍爱的人们。"
+    },
+    {
+      "id": "s017",
+      "lyrics": "試してくれ 一層蓄えた技を",
+      "translation": "来试试我吧，试我愈发积蓄的本领。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tameshite kure issou takuwaeta waza wo"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s018",
+      "lyrics": "計ってくれ 真新しい腰挿しで",
+      "translation": "来衡量我吧，用那崭新的腰间佩刀。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hakatte kure maatarashii koshi-zashi de"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s019",
+      "lyrics": "弾いてくれ 此方人等尚四面楚歌",
+      "translation": "来弹开我吧；我们依旧四面楚歌。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hajiite kure kochitora nao shimen soka"
+        }
+      ],
+      "notes": [
+        {
+          "title": "四面楚歌",
+          "body": "汉语典故进入日语后的固定成语，表示四面受敌、孤立无援。"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s020",
+      "lyrics": "対する人を介して この身の欠点が思い知りたい",
+      "translation": "我想透过与对手交锋，认清这副身体的缺陷。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "taisuru hito wo kaishite kono mi no ketten ga omoishiritai"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s021",
+      "lyrics": "俗界は乱世 飽く迄潜って行け",
+      "translation": "俗世正逢乱世；尽管潜入其中前行。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "ぞっかい は らんせい　あくまで くぐって いけ"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "zokukai wa ransei akumade kugutte ike"
+        }
+      ],
+      "notes": [
+        {
+          "title": "潜って",
+          "body": "此处按歌词语境读作「くぐって」，不是常见的「もぐって」；有穿过、钻过乱世之意。"
+        }
+      ]
+    },
+    {
+      "id": "s022",
+      "lyrics": "毎回火線よ まだまだ死ねない",
+      "translation": "每回都在火线之上——我还不能死。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "maikai kasen yo mada mada shinenai"
+        }
+      ]
+    },
+    {
+      "id": "s023",
+      "lyrics": "煩悩菩提です 恥と欲抱き抱え",
+      "translation": "烦恼即菩提；把羞耻与欲望一并抱住。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "ぼんのうぼだい です　はじ と よく だきかかえ"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "bonnou bodai desu haji to yoku dakikakae"
+        }
+      ],
+      "notes": [
+        {
+          "title": "煩悩菩提",
+          "body": "来自“烦恼即菩提”的思想：烦恼与觉悟并非简单二分，人的欲望与苦恼也可能成为认识与转化的契机。"
+        }
+      ]
+    },
+    {
+      "id": "s024",
+      "lyrics": "乾杯し終えた その先が見たい",
+      "translation": "干完这一杯之后，我还想看看更前方。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kanpai shi oeta sono saki ga mitai"
+        }
+      ]
+    },
+    {
+      "id": "s025",
+      "lyrics": "気付いた時はもう遅い 淡い願い云えず了い",
+      "translation": "察觉时已太迟；微弱的愿望终究没能说出口。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "きづいた とき は もう おそい　あわい ねがい いえずじまい"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kizuita toki wa mou osoi awai negai iezu jimai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "云えず了い",
+          "body": "以旧字与非常规表记写现代语「言えずじまい」，意为最终没能说出口。"
+        }
+      ]
+    },
+    {
+      "id": "s026",
+      "lyrics": "洗い浚い明かして弁解したい後悔",
+      "translation": "想把一切摊开说明，为这份后悔辩解。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "arai zarai akashite benkai shitai koukai"
+        }
+      ]
+    },
+    {
+      "id": "s027",
+      "lyrics": "市井の静かな暮らし 普通の人心地を",
+      "translation": "市井中安静的生活、普通人那般的安稳感——",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shisei no shizuka na kurashi futsuu no hitogokochi wo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "市井／人心地",
+          "body": "“市井”是普通人的生活社会；“人心地”指恢复成普通人的安稳感、活过来的感觉。"
+        }
+      ]
+    },
+    {
+      "id": "s028",
+      "lyrics": "望んでいいのだろうか 永遠に至上の議題",
+      "translation": "我可以企求吗？这是永远至高无上的议题。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nozonde ii no darou ka towa ni shijou no gidai"
+        }
+      ]
+    },
+    {
+      "id": "s029",
+      "lyrics": "本格派の道楽家",
+      "translation": "正统派的享乐家。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "honkakuha no dourakuka"
+        }
+      ]
+    },
+    {
+      "id": "s030",
+      "lyrics": "Social的には凶悪犯？",
+      "translation": "放到社会规则里，却成了凶恶罪犯？",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "Social-teki ni wa kyouakuhan"
+        }
+      ]
+    },
+    {
+      "id": "s031",
+      "lyrics": "禁止事項已日々進歩",
+      "translation": "只有禁令事项日日进步。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "きんしじこう のみ ひび しんぽ"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kinshi jikou nomi hibi shinpo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "已（のみ）",
+          "body": "这里把「のみ」写作特殊字形“已”，是歌词的视觉性表记。阅读层按「のみ」处理，仍建议以正式歌词册复核。"
+        }
+      ]
+    },
+    {
+      "id": "s032",
+      "lyrics": "慇懃尾籠無礼行為",
+      "translation": "过分恭敬、粗鄙而失礼的行径。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "いんぎんびろうぶれいこうい"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ingin birou burei koui"
+        }
+      ],
+      "notes": [
+        {
+          "title": "慇懃尾籠無礼行為",
+          "body": "把“慇懃無礼”（表面恭敬、实则失礼）与“尾籠”（粗鄙、不洁）叠成夸张复合词，语气故意繁复而冒犯。"
+        }
+      ]
+    },
+    {
+      "id": "s033",
+      "lyrics": "Damn it!!!",
+      "translation": "可恶！"
+    },
+    {
+      "id": "s034",
+      "lyrics": "性行為の伝道師",
+      "translation": "性行为的传教士。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "seikoui no dendoushi"
+        }
+      ]
+    },
+    {
+      "id": "s035",
+      "lyrics": "Play boyなのに正常位許り",
+      "translation": "明明是花花公子，却只守着正常体位。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "プレイボーイ なのに せいじょうい ばかり"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "Play boy nano ni seijoui bakari"
+        }
+      ],
+      "notes": [
+        {
+          "title": "許り",
+          "body": "旧字表记，读作「ばかり」，意思是“净是、只会”。"
+        }
+      ]
+    },
+    {
+      "id": "s036",
+      "lyrics": "無鉄砲にStand up my fav people",
+      "translation": "莽撞地站起来吧，我所珍爱的人们。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "muteppou ni Stand up my fav people"
+        }
+      ]
+    },
+    {
+      "id": "s037",
+      "lyrics": "Right now!!",
+      "translation": "就现在！"
+    },
+    {
+      "id": "s038",
+      "lyrics": "許してくれ 嘗て犯した科を",
+      "translation": "原谅我吧，原谅我曾犯下的罪过。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "ゆるして くれ　かつて おかした とが を"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yurushite kure katsute okashita toga wo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "科",
+          "body": "此处读作「とが」，指罪过、过失，与后文“罪与罚”相连。"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s039",
+      "lyrics": "裁いてくれ 真新しい良し悪しで",
+      "translation": "审判我吧，用全新的善恶尺度。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sabaite kure maatarashii yoshiashi de"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s040",
+      "lyrics": "諭してくれ どうせ助かったのなら",
+      "translation": "劝诫我吧——既然终究得救了。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "satoshite kure douse tasukatta no nara"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s041",
+      "lyrics": "愛する人を介してこの世の絶景が拝みたい",
+      "translation": "我想透过所爱之人，朝拜这世间的绝景。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "aisuru hito wo kaishite kono yo no zekkei ga ogamitai"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s042",
+      "lyrics": "疎んでいた",
+      "translation": "连曾经厌弃的——",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "utondeita"
+        }
+      ]
+    },
+    {
+      "id": "s043",
+      "lyrics": "迷いさえも",
+      "translation": "那份迷惘也——",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mayoi sae mo"
+        }
+      ]
+    },
+    {
+      "id": "s044",
+      "lyrics": "大自然の",
+      "translation": "都是大自然中的——",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "daishizen no"
+        }
+      ]
+    },
+    {
+      "id": "s045",
+      "lyrics": "自分自身",
+      "translation": "自我本身。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "jibun jishin"
+        }
+      ]
+    },
+    {
+      "id": "s046",
+      "lyrics": "弱きを知って",
+      "translation": "认识自身的弱，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yowaki wo shitte"
+        }
+      ]
+    },
+    {
+      "id": "s047",
+      "lyrics": "強きを覚える",
+      "translation": "才学会自身的强。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tsuyoki wo oboeru"
+        }
+      ]
+    },
+    {
+      "id": "s048",
+      "lyrics": "闇散って",
+      "translation": "黑暗散去，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yami chitte"
+        }
+      ]
+    },
+    {
+      "id": "s049",
+      "lyrics": "光咲う",
+      "translation": "光芒绽笑。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "ひかり わらう"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hikari warau"
+        }
+      ],
+      "notes": [
+        {
+          "title": "咲う",
+          "body": "以“咲”写「わらう」，让“光发笑”同时带有花朵绽放的视觉。"
+        }
+      ]
+    },
+    {
+      "id": "s050",
+      "lyrics": "女と男",
+      "translation": "女人与男人，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "onna to otoko"
+        }
+      ]
+    },
+    {
+      "id": "s051",
+      "lyrics": "憎し愛し",
+      "translation": "憎恨与爱恋，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nikushi aishi"
+        }
+      ]
+    },
+    {
+      "id": "s052",
+      "lyrics": "正しさよ",
+      "translation": "正确啊，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tadashisa yo"
+        }
+      ]
+    },
+    {
+      "id": "s053",
+      "lyrics": "間違いよ",
+      "translation": "错误啊，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "machigai yo"
+        }
+      ]
+    },
+    {
+      "id": "s054",
+      "lyrics": "罪と罰そして",
+      "translation": "罪与罚，以及——",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tsumi to batsu soshite"
+        }
+      ]
+    },
+    {
+      "id": "s055",
+      "lyrics": "生き死に一切",
+      "translation": "生与死的一切，",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ikishini issai"
+        }
+      ]
+    },
+    {
+      "id": "s056",
+      "lyrics": "両極の間",
+      "translation": "在两极之间，",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "りょうきょく の あわい"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ryoukyoku no awai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "間",
+          "body": "这里按歌词标注读作「あわい」，不是普通的「あいだ」；指两者之间的间隙、边界与暧昧地带。"
+        }
+      ]
+    },
+    {
+      "id": "s057",
+      "lyrics": "結合して甘んぜよ",
+      "translation": "彼此结合，并甘然领受吧。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ketsugou shite aman zeyo"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s058",
+      "lyrics": "さあ今日は今日で明日は又明日",
+      "translation": "来吧，今天只是今天，明天又是明天。",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "saa kyou wa kyou de ashita wa mata ashita"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s059",
+      "lyrics": "煩って行こうぞ 生身の流離",
+      "translation": "就带着烦恼前行吧，肉身继续流离。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "わずらって いこうぞ　なまみ の さすらい"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "wazuratte ikou zo namami no sasurai"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s060",
+      "lyrics": "色即是空です 瞬く間に移ろう",
+      "translation": "色即是空；万物在转瞬间迁变。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "しきそくぜくう です　またたく ま に うつろう"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shikisoku zekuu desu matataku ma ni utsurou"
+        }
+      ],
+      "notes": [
+        {
+          "title": "色即是空",
+          "body": "《般若心经》的核心句之一：一切有形现象都没有恒常不变的自性。这里与“瞬间迁变”直接相扣。"
+        }
+      ],
+      "emphasis": "strong"
+    },
+    {
+      "id": "s061",
+      "lyrics": "万歳鼓動が ほら玉響果敢ない",
+      "translation": "万岁——心脏仍在跳动；你看，那一瞬何其短暂。",
+      "layers": [
+        {
+          "id": "kana",
+          "label": "Kana",
+          "text": "ばんざい こどう が　ほら たまゆら はかない"
+        },
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "banzai kodou ga hora tamayura hakanai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "玉響／果敢ない",
+          "body": "“玉響”表示极短暂的一瞬；“果敢ない”在此按「はかない」理解，是对“儚い”的视觉化表记。"
+        }
+      ],
+      "emphasis": "strong"
+    }
+  ]
+}

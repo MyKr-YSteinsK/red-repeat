@@ -1,0 +1,656 @@
+{
+  "audioSourceHash": "facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083",
+  "sections": [
+    {
+      "id": "opening-verse",
+      "label": "Opening Verse",
+      "startMs": 0,
+      "endMs": 18891
+    },
+    {
+      "id": "verse-1",
+      "label": "Verse 1",
+      "startMs": 18891,
+      "endMs": 36693
+    },
+    {
+      "id": "rap-1",
+      "label": "Rap 1",
+      "startMs": 36693,
+      "endMs": 50637
+    },
+    {
+      "id": "chorus-1",
+      "label": "Chorus 1",
+      "startMs": 50637,
+      "endMs": 70649
+    },
+    {
+      "id": "verse-2",
+      "label": "Verse 2",
+      "startMs": 70649,
+      "endMs": 88589
+    },
+    {
+      "id": "confession-verse",
+      "label": "Confession Verse",
+      "startMs": 88589,
+      "endMs": 106444
+    },
+    {
+      "id": "rap-2",
+      "label": "Rap 2",
+      "startMs": 106444,
+      "endMs": 123376
+    },
+    {
+      "id": "instrumental",
+      "label": "Instrumental Break",
+      "startMs": 123376,
+      "endMs": 142232
+    },
+    {
+      "id": "chorus-2",
+      "label": "Chorus 2",
+      "startMs": 142232,
+      "endMs": 160484
+    },
+    {
+      "id": "counterpoint",
+      "label": "Counterpoint",
+      "startMs": 160484,
+      "endMs": 180442
+    },
+    {
+      "id": "outro",
+      "label": "Outro",
+      "startMs": 180442,
+      "endMs": 201000
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "o001",
+      "segmentId": "s001",
+      "sectionId": "opening-verse",
+      "startMs": 1143,
+      "endMs": 5379,
+      "playStartMs": 863,
+      "playEndMs": 5799
+    },
+    {
+      "id": "o002",
+      "segmentId": "s002",
+      "sectionId": "opening-verse",
+      "startMs": 5499,
+      "endMs": 10012,
+      "playStartMs": 5219,
+      "playEndMs": 10432
+    },
+    {
+      "id": "o003",
+      "segmentId": "s003",
+      "sectionId": "opening-verse",
+      "startMs": 10132,
+      "endMs": 14493,
+      "playStartMs": 9852,
+      "playEndMs": 14913
+    },
+    {
+      "id": "o004",
+      "segmentId": "s004",
+      "sectionId": "opening-verse",
+      "startMs": 14613,
+      "endMs": 18771,
+      "playStartMs": 14333,
+      "playEndMs": 19191
+    },
+    {
+      "id": "o005",
+      "segmentId": "s005",
+      "sectionId": "verse-1",
+      "startMs": 18891,
+      "endMs": 23163,
+      "playStartMs": 18611,
+      "playEndMs": 23583
+    },
+    {
+      "id": "o006",
+      "segmentId": "s006",
+      "sectionId": "verse-1",
+      "startMs": 23283,
+      "endMs": 27743,
+      "playStartMs": 23003,
+      "playEndMs": 28163
+    },
+    {
+      "id": "o007",
+      "segmentId": "s007",
+      "sectionId": "verse-1",
+      "startMs": 27863,
+      "endMs": 32234,
+      "playStartMs": 27583,
+      "playEndMs": 32654
+    },
+    {
+      "id": "o008",
+      "segmentId": "s008",
+      "sectionId": "verse-1",
+      "startMs": 32354,
+      "endMs": 36573,
+      "playStartMs": 32074,
+      "playEndMs": 36993
+    },
+    {
+      "id": "o009",
+      "segmentId": "s009",
+      "sectionId": "rap-1",
+      "startMs": 36693,
+      "endMs": 39128,
+      "playStartMs": 36413,
+      "playEndMs": 39548,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o010",
+      "segmentId": "s010",
+      "sectionId": "rap-1",
+      "startMs": 39048,
+      "endMs": 41477,
+      "playStartMs": 38768,
+      "playEndMs": 41897,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o011",
+      "segmentId": "s011",
+      "sectionId": "rap-1",
+      "startMs": 41397,
+      "endMs": 42633,
+      "playStartMs": 41117,
+      "playEndMs": 43053,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o012",
+      "segmentId": "s012",
+      "sectionId": "rap-1",
+      "startMs": 42553,
+      "endMs": 43302,
+      "playStartMs": 42273,
+      "playEndMs": 43722,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o013",
+      "segmentId": "s013",
+      "sectionId": "rap-1",
+      "startMs": 43222,
+      "endMs": 44282,
+      "playStartMs": 42942,
+      "playEndMs": 44702,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o014",
+      "segmentId": "s014",
+      "sectionId": "rap-1",
+      "startMs": 44202,
+      "endMs": 46115,
+      "playStartMs": 43922,
+      "playEndMs": 46535,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o015",
+      "segmentId": "s015",
+      "sectionId": "rap-1",
+      "startMs": 46035,
+      "endMs": 48143,
+      "playStartMs": 45755,
+      "playEndMs": 48563,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o016",
+      "segmentId": "s016",
+      "sectionId": "rap-1",
+      "startMs": 48063,
+      "endMs": 50557,
+      "playStartMs": 47783,
+      "playEndMs": 50977,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o017",
+      "segmentId": "s017",
+      "sectionId": "chorus-1",
+      "startMs": 50637,
+      "endMs": 55366,
+      "playStartMs": 50357,
+      "playEndMs": 55786
+    },
+    {
+      "id": "o018",
+      "segmentId": "s018",
+      "sectionId": "chorus-1",
+      "startMs": 55486,
+      "endMs": 59801,
+      "playStartMs": 55206,
+      "playEndMs": 60221
+    },
+    {
+      "id": "o019",
+      "segmentId": "s019",
+      "sectionId": "chorus-1",
+      "startMs": 59921,
+      "endMs": 64230,
+      "playStartMs": 59641,
+      "playEndMs": 64650
+    },
+    {
+      "id": "o020",
+      "segmentId": "s020",
+      "sectionId": "chorus-1",
+      "startMs": 64350,
+      "endMs": 70529,
+      "playStartMs": 64070,
+      "playEndMs": 70949
+    },
+    {
+      "id": "o021",
+      "segmentId": "s021",
+      "sectionId": "verse-2",
+      "startMs": 70649,
+      "endMs": 75076,
+      "playStartMs": 70369,
+      "playEndMs": 75496
+    },
+    {
+      "id": "o022",
+      "segmentId": "s022",
+      "sectionId": "verse-2",
+      "startMs": 75196,
+      "endMs": 79711,
+      "playStartMs": 74916,
+      "playEndMs": 80131
+    },
+    {
+      "id": "o023",
+      "segmentId": "s023",
+      "sectionId": "verse-2",
+      "startMs": 79831,
+      "endMs": 84175,
+      "playStartMs": 79551,
+      "playEndMs": 84595
+    },
+    {
+      "id": "o024",
+      "segmentId": "s024",
+      "sectionId": "verse-2",
+      "startMs": 84295,
+      "endMs": 88469,
+      "playStartMs": 84015,
+      "playEndMs": 88889
+    },
+    {
+      "id": "o025",
+      "segmentId": "s025",
+      "sectionId": "confession-verse",
+      "startMs": 88589,
+      "endMs": 93001,
+      "playStartMs": 88309,
+      "playEndMs": 93421
+    },
+    {
+      "id": "o026",
+      "segmentId": "s026",
+      "sectionId": "confession-verse",
+      "startMs": 93121,
+      "endMs": 97604,
+      "playStartMs": 92841,
+      "playEndMs": 98024
+    },
+    {
+      "id": "o027",
+      "segmentId": "s027",
+      "sectionId": "confession-verse",
+      "startMs": 97724,
+      "endMs": 101988,
+      "playStartMs": 97444,
+      "playEndMs": 102408
+    },
+    {
+      "id": "o028",
+      "segmentId": "s028",
+      "sectionId": "confession-verse",
+      "startMs": 102108,
+      "endMs": 106324,
+      "playStartMs": 101828,
+      "playEndMs": 106744
+    },
+    {
+      "id": "o029",
+      "segmentId": "s029",
+      "sectionId": "rap-2",
+      "startMs": 106444,
+      "endMs": 108880,
+      "playStartMs": 106164,
+      "playEndMs": 109300,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o030",
+      "segmentId": "s030",
+      "sectionId": "rap-2",
+      "startMs": 108800,
+      "endMs": 110863,
+      "playStartMs": 108520,
+      "playEndMs": 111283,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o031",
+      "segmentId": "s031",
+      "sectionId": "rap-2",
+      "startMs": 110783,
+      "endMs": 112860,
+      "playStartMs": 110503,
+      "playEndMs": 113280,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o032",
+      "segmentId": "s032",
+      "sectionId": "rap-2",
+      "startMs": 112780,
+      "endMs": 115146,
+      "playStartMs": 112500,
+      "playEndMs": 115566,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o033",
+      "segmentId": "s033",
+      "sectionId": "rap-2",
+      "startMs": 115066,
+      "endMs": 115711,
+      "playStartMs": 114786,
+      "playEndMs": 116131,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o034",
+      "segmentId": "s034",
+      "sectionId": "rap-2",
+      "startMs": 115631,
+      "endMs": 117061,
+      "playStartMs": 115351,
+      "playEndMs": 117481,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o035",
+      "segmentId": "s035",
+      "sectionId": "rap-2",
+      "startMs": 116981,
+      "endMs": 119215,
+      "playStartMs": 116701,
+      "playEndMs": 119635,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o036",
+      "segmentId": "s036",
+      "sectionId": "rap-2",
+      "startMs": 119135,
+      "endMs": 122065,
+      "playStartMs": 118855,
+      "playEndMs": 122485,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o037",
+      "segmentId": "s037",
+      "sectionId": "rap-2",
+      "startMs": 121985,
+      "endMs": 123296,
+      "playStartMs": 121705,
+      "playEndMs": 123716,
+      "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
+    },
+    {
+      "id": "o038",
+      "segmentId": "s038",
+      "sectionId": "chorus-2",
+      "startMs": 142232,
+      "endMs": 146570,
+      "playStartMs": 141952,
+      "playEndMs": 146990
+    },
+    {
+      "id": "o039",
+      "segmentId": "s039",
+      "sectionId": "chorus-2",
+      "startMs": 146690,
+      "endMs": 151208,
+      "playStartMs": 146410,
+      "playEndMs": 151628
+    },
+    {
+      "id": "o040",
+      "segmentId": "s040",
+      "sectionId": "chorus-2",
+      "startMs": 151328,
+      "endMs": 155565,
+      "playStartMs": 151048,
+      "playEndMs": 155985
+    },
+    {
+      "id": "o041",
+      "segmentId": "s041",
+      "sectionId": "chorus-2",
+      "startMs": 155685,
+      "endMs": 160364,
+      "playStartMs": 155405,
+      "playEndMs": 160784
+    },
+    {
+      "id": "o042",
+      "segmentId": "s042",
+      "sectionId": "counterpoint",
+      "startMs": 160484,
+      "endMs": 162384,
+      "playStartMs": 160204,
+      "playEndMs": 162804,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o043",
+      "segmentId": "s043",
+      "sectionId": "counterpoint",
+      "startMs": 161768,
+      "endMs": 163668,
+      "playStartMs": 161488,
+      "playEndMs": 164088,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o044",
+      "segmentId": "s044",
+      "sectionId": "counterpoint",
+      "startMs": 162929,
+      "endMs": 164829,
+      "playStartMs": 162649,
+      "playEndMs": 165249,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o045",
+      "segmentId": "s045",
+      "sectionId": "counterpoint",
+      "startMs": 163991,
+      "endMs": 165891,
+      "playStartMs": 163711,
+      "playEndMs": 166311,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o046",
+      "segmentId": "s046",
+      "sectionId": "counterpoint",
+      "startMs": 164993,
+      "endMs": 166893,
+      "playStartMs": 164713,
+      "playEndMs": 167313,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o047",
+      "segmentId": "s047",
+      "sectionId": "counterpoint",
+      "startMs": 165904,
+      "endMs": 167804,
+      "playStartMs": 165624,
+      "playEndMs": 168224,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o048",
+      "segmentId": "s048",
+      "sectionId": "counterpoint",
+      "startMs": 167143,
+      "endMs": 169043,
+      "playStartMs": 166863,
+      "playEndMs": 169463,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o049",
+      "segmentId": "s049",
+      "sectionId": "counterpoint",
+      "startMs": 168350,
+      "endMs": 170250,
+      "playStartMs": 168070,
+      "playEndMs": 170670,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o050",
+      "segmentId": "s050",
+      "sectionId": "counterpoint",
+      "startMs": 169406,
+      "endMs": 171306,
+      "playStartMs": 169126,
+      "playEndMs": 171726,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o051",
+      "segmentId": "s051",
+      "sectionId": "counterpoint",
+      "startMs": 170811,
+      "endMs": 172711,
+      "playStartMs": 170531,
+      "playEndMs": 173131,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o052",
+      "segmentId": "s052",
+      "sectionId": "counterpoint",
+      "startMs": 171776,
+      "endMs": 173676,
+      "playStartMs": 171496,
+      "playEndMs": 174096,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o053",
+      "segmentId": "s053",
+      "sectionId": "counterpoint",
+      "startMs": 172889,
+      "endMs": 174789,
+      "playStartMs": 172609,
+      "playEndMs": 175209,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o054",
+      "segmentId": "s054",
+      "sectionId": "counterpoint",
+      "startMs": 173897,
+      "endMs": 175797,
+      "playStartMs": 173617,
+      "playEndMs": 176217,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o055",
+      "segmentId": "s055",
+      "sectionId": "counterpoint",
+      "startMs": 175040,
+      "endMs": 176940,
+      "playStartMs": 174760,
+      "playEndMs": 177360,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o056",
+      "segmentId": "s056",
+      "sectionId": "counterpoint",
+      "startMs": 176170,
+      "endMs": 178070,
+      "playStartMs": 175890,
+      "playEndMs": 178490,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o057",
+      "segmentId": "s057",
+      "sectionId": "counterpoint",
+      "startMs": 177413,
+      "endMs": 180300,
+      "playStartMs": 177133,
+      "playEndMs": 180720,
+      "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
+    },
+    {
+      "id": "o058",
+      "segmentId": "s058",
+      "sectionId": "outro",
+      "startMs": 180442,
+      "endMs": 184787,
+      "playStartMs": 180162,
+      "playEndMs": 185207
+    },
+    {
+      "id": "o059",
+      "segmentId": "s059",
+      "sectionId": "outro",
+      "startMs": 184907,
+      "endMs": 189363,
+      "playStartMs": 184627,
+      "playEndMs": 189783
+    },
+    {
+      "id": "o060",
+      "segmentId": "s060",
+      "sectionId": "outro",
+      "startMs": 189483,
+      "endMs": 193948,
+      "playStartMs": 189203,
+      "playEndMs": 194368
+    },
+    {
+      "id": "o061",
+      "segmentId": "s061",
+      "sectionId": "outro",
+      "startMs": 194068,
+      "endMs": 199800,
+      "playStartMs": 193788,
+      "playEndMs": 200220,
+      "performanceNote": "Final sustain/tail estimated from source duration; verify the release point."
+    }
+  ]
+}

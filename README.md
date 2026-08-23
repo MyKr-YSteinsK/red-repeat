@@ -23,33 +23,35 @@ npm run build
 npm run pwa:inspect
 ```
 
-`npm run library:validate` checks the optional production `library/` source packages;
-an absent or empty Library is valid at this stage. `npm run library:compile`
-generates the ignored `public/library-runtime/` deployable resources; production
-builds run it automatically.
+`library/` is the production Song Edition source root. Every public song package
+under this directory is validated and compiled into the ignored
+`public/library-runtime/` deployable resources; production builds run the
+compiler automatically.
 
-Real copyrighted Song Edition source belongs in `.private/library/` or another
-local path selected by `RED_REPEAT_LIBRARY_ROOT`. Do not commit real audio, full
-lyrics, or official artwork to this public repository. The CLI flag takes
-precedence over the environment variable, and both take precedence over the
-default public `library/` root:
+The CLI flag and `RED_REPEAT_LIBRARY_ROOT` environment variable remain available
+for local or advanced workflows. The CLI flag takes precedence over the
+environment variable, and both take precedence over the default `library/` root:
 
 ```bash
-npm run library:validate -- --source-root .private/library
-npm run library:compile -- --source-root .private/library
+npm run library:validate -- --source-root ./another-library
+npm run library:compile -- --source-root ./another-library
 
-RED_REPEAT_LIBRARY_ROOT=.private/library npm run library:validate
-RED_REPEAT_LIBRARY_ROOT=.private/library npm run library:compile
+RED_REPEAT_LIBRARY_ROOT=./another-library npm run library:validate
+RED_REPEAT_LIBRARY_ROOT=./another-library npm run library:compile
 ```
 
 PowerShell:
 
 ```powershell
-$env:RED_REPEAT_LIBRARY_ROOT = ".private/library"
+$env:RED_REPEAT_LIBRARY_ROOT = ".\another-library"
 npm run library:validate
 npm run library:compile
 Remove-Item Env:RED_REPEAT_LIBRARY_ROOT
 ```
+
+To add a song, place its validated source package under `library/<song-id>/`,
+run the verification commands above, then commit the source package. Do not
+commit generated `public/library-runtime/` or `dist/` output.
 
 For deterministic CI installs, use `npm ci`.
 
