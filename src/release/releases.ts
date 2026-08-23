@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.3',
+    date: '2026-08-24',
+    commit: '8eaf6e6',
+    level: 'patch',
+    title: '更新检查响应修复',
+    summary: 'Settings 的版本探针不再被异常卡住的 Service Worker 更新请求阻塞。',
+    changes: [
+      '版本探针与 Service Worker 更新检查解耦，手动检查可以及时返回状态。',
+      '一键更新对 Service Worker 更新请求增加有限等待，保留等待接管与单次刷新语义。',
+    ],
+  },
+  {
     version: '1.2.2',
     date: '2026-08-24',
     commit: 'cad4665',
