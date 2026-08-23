@@ -139,7 +139,7 @@ describe('Runtime Client', () => {
       .mockResolvedValueOnce(jsonResponse(lyrics))
       .mockResolvedValueOnce(jsonResponse(timeline))
       .mockResolvedValueOnce(jsonResponse(practice))
-      .mockResolvedValueOnce(new Response('# Liner note\n'))
+      .mockResolvedValueOnce(new Response('# Feature note\n'))
     const client = createRuntimeClient({
       appBaseUrl: '/red-repeat/',
       fetchImpl,
@@ -151,7 +151,7 @@ describe('Runtime Client', () => {
     await client.loadTimeline(edition.timelineUrl)
     await client.loadPractice(edition.practiceUrl)
     await expect(client.loadFeature(edition.features[0])).resolves.toBe(
-      '# Liner note\n',
+      '# Feature note\n',
     )
 
     expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([

@@ -8,6 +8,18 @@ export interface ReleaseNote {
 
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.0.0',
+    date: '2026-08-23',
+    title: 'RED:REPEAT 1.0',
+    summary: '收口为适合长期使用的固定产品模式，并建立从人工 timing 到 Codex source 修复的闭环。',
+    items: [
+      'Practice 简化为单句、连续、渐速和 0.60x / 0.80x / 1.00x。',
+      'Full Song 收口播放跟随、器乐段、回顶部和重置语义。',
+      '新增 Settings、系统信息、Changelog、播放切口调试和 Codex 微调导出。',
+      '统一 Practice、Full Song、Explain 的 Effective Timing，并在 Edition 更新后自动清理旧微调。',
+    ],
+  },
+  {
     version: '0.9.1',
     date: '2026-08-23',
     title: '播放器层级修复',
