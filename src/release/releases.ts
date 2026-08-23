@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.6',
+    date: '2026-08-24',
+    commit: 'a308045',
+    level: 'patch',
+    title: 'PWA 注册时序竞态收尾',
+    summary: '一键更新会等待 Service Worker registration 就绪，不再因注册回调晚到而丢失激活请求。',
+    changes: [
+      '修复版本探针和注册回调竞速时立即更新进入 updating 后无法继续的问题。',
+      'registration 就绪后自动继续既有的更新、等待、跳过等待和单次刷新流程。',
+      '新增延迟 onRegisteredSW 回调的精确顺序回归测试。',
+    ],
+  },
+  {
     version: '1.2.5',
     date: '2026-08-24',
     commit: '84a9a93',
