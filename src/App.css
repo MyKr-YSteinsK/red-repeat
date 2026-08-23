@@ -1208,6 +1208,10 @@
     padding-right: calc(18rem + clamp(2rem, 6vw, 5rem));
   }
 
+  .song-edition[data-mode='all'] .practice-page-header {
+    padding-right: min(calc(18rem + clamp(2rem, 6vw, 5rem)), 45vw);
+  }
+
   .full-song-player {
     position: fixed;
     top: clamp(5rem, 12vh, 7rem);
