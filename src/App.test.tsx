@@ -276,6 +276,7 @@ describe('App Library consumer', () => {
   it('renders the catalog as mobile-friendly song cards', async () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
+    expect(screen.getByText('Curated by MyKr')).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '全部歌曲' })).toBeInTheDocument()
     expect(

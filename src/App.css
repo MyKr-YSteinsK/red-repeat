@@ -60,7 +60,9 @@
 .imprint {
   margin: 0.25rem 0 0;
   color: var(--color-muted);
+  letter-spacing: 0.08em;
   text-align: right;
+  text-transform: none;
 }
 
 .library {

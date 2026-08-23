@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">RED:REPEAT signal mark</title>
+  <rect width="512" height="512" rx="112" fill="#171717"/>
+  <path d="M144 214c0-42 34-76 76-76h122" fill="none" stroke="#f4f1ea" stroke-width="20" stroke-linecap="square"/>
+  <path d="m342 104 48 34-48 34" fill="none" stroke="#c81d25" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M368 298c0 42-34 76-76 76H170" fill="none" stroke="#f4f1ea" stroke-width="20" stroke-linecap="square"/>
+  <path d="m170 408-48-34 48-34" fill="none" stroke="#c81d25" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M256 164v60l-30 32 30 32v60" fill="none" stroke="#c81d25" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

@@ -177,7 +177,7 @@ function SiteHeader({ homeHref }: { homeHref: string }) {
           <span>REPEAT</span>
         </span>
       </a>
-      <p className="imprint">MYKR 制作</p>
+      <p className="imprint">Curated by MyKr</p>
     </header>
   )
 }

@@ -9,7 +9,7 @@ const manifest = JSON.parse(readText('manifest.webmanifest')) as {
   display?: string
   start_url?: string
   scope?: string
-  icons?: Array<{ src?: string }>
+  icons?: Array<{ src?: string; purpose?: string; type?: string }>
 }
 const serviceWorker = readText('sw.js')
 const assetBundle = readdirSync(resolve(distRoot, 'assets'))
@@ -22,10 +22,25 @@ assert(manifest.display === 'standalone', 'manifest display must be standalone')
 assert(manifest.start_url === './', 'manifest start_url must remain relative')
 assert(manifest.scope === './', 'manifest scope must remain relative')
 assert(
-  manifest.icons?.length === 2 &&
-    manifest.icons.every((icon) => icon.src && !icon.src.startsWith('/')),
-  'manifest icons must be relative to the manifest URL',
+  manifest.icons?.length === 3 &&
+    manifest.icons.every(
+      (icon) =>
+        icon.src &&
+        !icon.src.startsWith('/') &&
+        icon.type === 'image/png',
+    ) &&
+    manifest.icons.some(
+      (icon) => icon.src === 'icon-192.png' && icon.purpose === 'any',
+    ) &&
+    manifest.icons.some(
+      (icon) => icon.src === 'icon-512.png' && icon.purpose === 'maskable',
+    ),
+  'manifest must contain relative PNG any and maskable icons',
 )
+
+assert(statSync(resolve(distRoot, 'favicon.svg')).isFile(), 'favicon must be present')
+assert(statSync(resolve(distRoot, 'icon-192.png')).isFile(), '192px icon must be present')
+assert(statSync(resolve(distRoot, 'icon-512.png')).isFile(), '512px icon must be present')
 
 const deployedAssetUrls = [...indexHtml.matchAll(/(?:src|href)="([^"]+)"/g)].map(
   ([, url]) => url,
