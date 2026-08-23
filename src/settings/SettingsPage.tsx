@@ -12,12 +12,14 @@ import {
 import { buildInfo } from '../release/build-info'
 import { RELEASES } from '../release/releases'
 import { groupReleaseLedger } from '../release/release-grouping'
+import { compareSemVer } from '../release/semver'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import {
   describeUpdateStatus,
   getUpdateManager,
   type UpdateManager,
 } from '../pwa/update-manager'
+import type { RemoteReleaseNote } from '../pwa/version-probe'
 import { createTimingDebuggerHref } from '../navigation'
 import {
   createTimingExportFilename,
@@ -72,6 +74,16 @@ export function SettingsPage({
     ? releaseGrouping.milestoneGroups.find((group) =>
       group.children.some((release) => release.version === highlightVersion),
     )?.milestoneVersion ?? releaseGrouping.milestoneGroups[0]?.milestoneVersion
+    : undefined
+  const remote = updateSnapshot.remote
+  const remoteVersion = remote?.version
+  const remoteHasNewerVersion = Boolean(
+    remoteVersion && compareSemVer(remoteVersion, buildInfo.version) > 0,
+  )
+  const candidateRemoteRelease = remote?.release
+  const remoteRelease = remoteHasNewerVersion &&
+    candidateRemoteRelease?.version === remoteVersion
+    ? candidateRemoteRelease
     : undefined
 
   const selectedEdition = useMemo(
@@ -182,6 +194,19 @@ export function SettingsPage({
             </p>
             {updateSnapshot.status === 'error' && updateSnapshot.error ? (
               <p className="settings-update-error">{updateSnapshot.error}</p>
+            ) : null}
+            {remoteHasNewerVersion ? (
+              remoteRelease ? (
+                <section className="settings-remote-release" data-remote-release aria-labelledby="remote-release-title">
+                  <p className="eyebrow">待更新版本 {remoteRelease.version}</p>
+                  <h4 id="remote-release-title">远端更新说明</h4>
+                  <ReleaseEntry release={remoteRelease} />
+                </section>
+              ) : (
+                <p className="settings-update-note" data-remote-release-unavailable>
+                  发现新版本，但暂时无法读取更新说明。
+                </p>
+              )
             ) : null}
           </section>
         </section>
@@ -309,7 +334,7 @@ export function SettingsPage({
   )
 }
 
-function ReleaseEntry({ release }: { release: (typeof RELEASES)[number] }) {
+function ReleaseEntry({ release }: { release: (typeof RELEASES)[number] | RemoteReleaseNote }) {
   return (
     <article className="settings-release-entry" data-release-entry>
       <header>

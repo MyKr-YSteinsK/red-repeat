@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { RELEASES } from './src/release/releases.ts'
 import { runtimeCaching } from './src/pwa/cache-routes.ts'
 
 const packageMetadata = JSON.parse(
@@ -17,12 +18,14 @@ function versionProbePlugin(): Plugin {
     name: 'red-repeat-version-probe',
     apply: 'build',
     generateBundle() {
+      const release = RELEASES.find((candidate) => candidate.version === packageMetadata.version)
       this.emitFile({
         type: 'asset',
         fileName: 'version.json',
         source: `${JSON.stringify({
           version: packageMetadata.version,
           commit: buildSha,
+          ...(release ? { release } : {}),
         })}\n`,
       })
     },

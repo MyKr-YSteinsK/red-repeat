@@ -160,8 +160,45 @@ describe('SettingsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
     expect(await screen.findByText('发现新版本 1.3.0')).toBeInTheDocument()
+    expect(screen.getByText('发现新版本，但暂时无法读取更新说明。')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
     expect(applyUpdate).toHaveBeenCalledOnce()
+  })
+
+  it('shows remote release notes without replacing the local changelog', async () => {
+    const updateManager = createUpdateManager({
+      fetchImpl: vi.fn(async () => new Response(JSON.stringify({
+        version: '1.3.0',
+        commit: 'abcdef123456',
+        release: {
+          version: '1.3.0',
+          date: '2026-08-24',
+          level: 'minor',
+          title: '远端学习更新',
+          summary: '远端真实更新说明。',
+          changes: ['旧 App 也能看到这条更新。'],
+        },
+      }), { status: 200 })),
+      locationHref: () => 'https://example.test/red-repeat/#settings',
+    })
+
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        updateManager={updateManager}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
+
+    expect(await screen.findByText('远端更新说明')).toBeInTheDocument()
+    expect(screen.getByText('远端学习更新')).toBeInTheDocument()
+    expect(screen.getByText('远端真实更新说明。')).toBeInTheDocument()
+    expect(screen.getByText('旧 App 也能看到这条更新。')).toBeInTheDocument()
+    expect(screen.getAllByText('1.2.3').length).toBeGreaterThan(0)
   })
 
   it('opens the milestone containing the requested release from the global update entry', () => {

@@ -3,6 +3,16 @@ import { parseSemVer } from '../release/semver'
 export interface RemoteBuildInfo {
   version: string
   commit: string
+  release?: RemoteReleaseNote
+}
+
+export interface RemoteReleaseNote {
+  version: string
+  date: string
+  level: 'patch' | 'minor' | 'major'
+  title: string
+  summary: string
+  changes: readonly string[]
 }
 
 export const VERSION_PROBE_PATH = 'version.json'
@@ -47,7 +57,15 @@ export async function fetchVersionProbe(
   if (!isRemoteBuildInfo(payload)) {
     throw new VersionProbeError('version probe returned an invalid build identity')
   }
-  return payload
+  const candidate = payload as unknown as Record<string, unknown>
+  const release = isRemoteReleaseNote(candidate.release)
+    ? candidate.release
+    : undefined
+  return {
+    version: candidate.version as string,
+    commit: candidate.commit as string,
+    ...(release ? { release } : {}),
+  }
 }
 
 export class VersionProbeError extends Error {
@@ -67,6 +85,24 @@ function isRemoteBuildInfo(value: unknown): value is RemoteBuildInfo {
     Boolean(parseSemVer(candidate.version)) &&
     typeof candidate.commit === 'string' &&
     candidate.commit.length > 0
+  )
+}
+
+function isRemoteReleaseNote(value: unknown): value is RemoteReleaseNote {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.version === 'string' &&
+    Boolean(parseSemVer(candidate.version)) &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(candidate.date)) &&
+    (candidate.level === 'patch' || candidate.level === 'minor' || candidate.level === 'major') &&
+    typeof candidate.title === 'string' &&
+    typeof candidate.summary === 'string' &&
+    Array.isArray(candidate.changes) &&
+    candidate.changes.length > 0 &&
+    candidate.changes.every((change) => typeof change === 'string')
   )
 }
 

@@ -1,4 +1,5 @@
 import type { UpdateSnapshot } from './update-manager'
+import { buildInfo } from '../release/build-info'
 
 export interface UpdatePromptProps {
   snapshot: UpdateSnapshot
@@ -34,7 +35,9 @@ export function UpdatePrompt({
           {isUpdating
             ? '正在更新…'
             : snapshot.remote?.version
-              ? `发现新版本 ${snapshot.remote.version}`
+              ? snapshot.remote.version === buildInfo.version
+                ? `发现新的构建 ${snapshot.remote.version}`
+                : `发现新版本 ${snapshot.remote.version}`
               : '发现新版本'}
         </h2>
         <p>

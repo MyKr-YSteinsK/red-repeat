@@ -7,6 +7,14 @@ const indexHtml = readText('index.html')
 const versionProbe = JSON.parse(readText('version.json')) as {
   version?: unknown
   commit?: unknown
+  release?: {
+    version?: unknown
+    date?: unknown
+    level?: unknown
+    title?: unknown
+    summary?: unknown
+    changes?: unknown
+  }
 }
 const manifest = JSON.parse(readText('manifest.webmanifest')) as {
   name?: string
@@ -54,6 +62,17 @@ assert(
   typeof versionProbe.commit === 'string' && versionProbe.commit.length > 0,
   'version probe must contain a build commit',
 )
+if (versionProbe.release !== undefined) {
+  assert(
+    versionProbe.release.version === versionProbe.version &&
+      typeof versionProbe.release.date === 'string' &&
+      typeof versionProbe.release.title === 'string' &&
+      typeof versionProbe.release.summary === 'string' &&
+      Array.isArray(versionProbe.release.changes) &&
+      versionProbe.release.changes.length > 0,
+    'version probe release metadata must describe the probed version',
+  )
+}
 
 const deployedAssetUrls = [...indexHtml.matchAll(/(?:src|href)="([^"]+)"/g)].map(
   ([, url]) => url,
