@@ -124,6 +124,118 @@ describe('PWA update manager', () => {
     expect(reload).toHaveBeenCalledOnce()
   })
 
+  it('waits for an installing worker after the remote probe before activating once', async () => {
+    const reload = vi.fn()
+    const worker = new FakeServiceWorker()
+    const serviceWorker = worker as unknown as ServiceWorker
+    let installingWorker: ServiceWorker | undefined
+    let waitingWorker: ServiceWorker | undefined
+    let registration: ServiceWorkerRegistration
+    const updateRegistration = vi.fn(async () => registration)
+    registration = createFakeRegistration(
+      () => installingWorker,
+      () => waitingWorker,
+      () => {
+        installingWorker = serviceWorker
+        return updateRegistration()
+      },
+    )
+    let callbacks: Parameters<RegisterServiceWorker>[0] | undefined
+    const updateServiceWorker = vi.fn(async () => undefined)
+    const registerSW: RegisterServiceWorker = (options) => {
+      callbacks = options
+      options?.onRegisteredSW?.('/sw.js', registration)
+      return updateServiceWorker
+    }
+    const manager = createUpdateManager({
+      fetchImpl: probeFetch('1.2.4', 'abcdef123456'),
+      reload,
+      locationHref: () => 'https://example.test/',
+    })
+
+    manager.register(registerSW)
+    await manager.checkForUpdate({ manual: true })
+    updateRegistration.mockClear()
+    expect(manager.getSnapshot().status).toBe('update-available')
+
+    const updatePromise = manager.applyUpdate()
+    await Promise.resolve()
+    expect(updateRegistration).toHaveBeenCalledOnce()
+    expect(updateServiceWorker).not.toHaveBeenCalled()
+    expect(manager.getSnapshot().status).toBe('updating')
+
+    worker.state = 'installed'
+    worker.dispatchEvent(new Event('statechange'))
+    expect(updateServiceWorker).not.toHaveBeenCalled()
+
+    waitingWorker = serviceWorker
+    callbacks?.onNeedRefresh?.()
+    await Promise.resolve()
+    expect(manager.getSnapshot().status).toBe('updating')
+    expect(updateServiceWorker).toHaveBeenCalledWith(false)
+
+    callbacks?.onNeedReload?.()
+    callbacks?.onNeedReload?.()
+    await updatePromise
+    expect(reload).toHaveBeenCalledOnce()
+  })
+
+  it('enters recoverable error after a timeout and retries a later worker update', async () => {
+    vi.useFakeTimers()
+    try {
+      const reload = vi.fn()
+      const worker = new FakeServiceWorker()
+      const serviceWorker = worker as unknown as ServiceWorker
+      let waitingWorker: ServiceWorker | undefined
+      let updateAttempt = 0
+      let callbacks: Parameters<RegisterServiceWorker>[0] | undefined
+      let registration: ServiceWorkerRegistration
+      const updateRegistration = vi.fn(async () => registration)
+      registration = createFakeRegistration(
+        () => undefined,
+        () => waitingWorker,
+        () => {
+          updateAttempt += 1
+          if (updateAttempt === 2) {
+            waitingWorker = serviceWorker
+            callbacks?.onNeedRefresh?.()
+          }
+          return updateRegistration()
+        },
+      )
+      const updateServiceWorker = vi.fn(async () => undefined)
+      const registerSW: RegisterServiceWorker = (options) => {
+        callbacks = options
+        options?.onRegisteredSW?.('/sw.js', registration)
+        return updateServiceWorker
+      }
+      const manager = createUpdateManager({
+        fetchImpl: probeFetch('1.2.4', 'abcdef123456'),
+        reload,
+        locationHref: () => 'https://example.test/',
+      })
+
+      manager.register(registerSW)
+      await manager.checkForUpdate({ manual: true })
+      updateAttempt = 0
+
+      const firstUpdate = manager.applyUpdate()
+      await vi.advanceTimersByTimeAsync(5000)
+      await firstUpdate
+      expect(manager.getSnapshot().status).toBe('error')
+
+      const retryUpdate = manager.applyUpdate()
+      await Promise.resolve()
+      expect(updateServiceWorker).toHaveBeenCalledWith(false)
+      callbacks?.onNeedReload?.()
+      await retryUpdate
+      expect(manager.getSnapshot().status).toBe('updating')
+      expect(reload).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('dismisses only the current-session prompt and resets dismissal on manual check', async () => {
     const manager = createUpdateManager({
       fetchImpl: probeFetch('1.3.0', 'abcdef123456'),
@@ -135,7 +247,28 @@ describe('PWA update manager', () => {
     await manager.checkForUpdate({ manual: true })
     expect(manager.getSnapshot().dismissed).toBe(false)
   })
+
 })
+
+class FakeServiceWorker extends EventTarget {
+  state: ServiceWorkerState = 'installing'
+}
+
+function createFakeRegistration(
+  getInstalling: () => ServiceWorker | undefined,
+  getWaiting: () => ServiceWorker | undefined,
+  update: () => Promise<ServiceWorkerRegistration>,
+): ServiceWorkerRegistration {
+  return {
+    get installing() {
+      return getInstalling() ?? null
+    },
+    get waiting() {
+      return getWaiting() ?? null
+    },
+    update,
+  } as unknown as ServiceWorkerRegistration
+}
 
 function probeFetch(version: string, commit: string) {
   return vi.fn(async () => new Response(JSON.stringify({ version, commit }), {

@@ -89,11 +89,16 @@ class UpdateManagerImpl implements UpdateManager {
   private updateServiceWorker: UpdateServiceWorker | undefined
   private registered = false
   private waitingWorker = false
+  private installingWorker: ServiceWorker | undefined
+  private installingWorkerStateChange: (() => void) | undefined
   private lastAutomaticCheckAt = Number.NEGATIVE_INFINITY
   private checkPromise: Promise<UpdateSnapshot> | undefined
   private updatePromise: Promise<void> | undefined
   private resolveUpdate: (() => void) | undefined
   private reloadTriggered = false
+  private activationRequested = false
+  private activationStarted = false
+  private updateAttemptTimer: ReturnType<typeof setTimeout> | undefined
 
   constructor(options: UpdateManagerOptions) {
     this.fetchImpl = options.fetchImpl ?? ((input, init) => globalThis.fetch(input, init))
@@ -128,6 +133,10 @@ class UpdateManagerImpl implements UpdateManager {
           onNeedReload: () => this.handleControllerChange(),
           onRegisteredSW: (_scriptUrl, registration) => {
             this.registration = registration
+            this.syncRegistrationState()
+            if (this.updatePromise && this.activationRequested) {
+              this.requestUpdateActivation()
+            }
             void this.checkForUpdate()
           },
           onRegisterError: (error) => this.handleError(error),
@@ -175,11 +184,14 @@ class UpdateManagerImpl implements UpdateManager {
     }
 
     this.reloadTriggered = false
+    this.activationRequested = true
+    this.activationStarted = false
     this.publish({ status: 'updating', dismissed: false, error: undefined })
     this.updatePromise = new Promise<void>((resolve) => {
       this.resolveUpdate = resolve
     })
-    void this.requestUpdateActivation()
+    this.startUpdateAttemptTimer()
+    this.requestUpdateActivation()
     return this.updatePromise
   }
 
@@ -224,10 +236,35 @@ class UpdateManagerImpl implements UpdateManager {
     return this.snapshot
   }
 
-  private async requestUpdateActivation(): Promise<void> {
+  private requestUpdateActivation(): void {
+    if (!this.updatePromise || !this.activationRequested || this.activationStarted) {
+      return
+    }
+
+    this.activationStarted = true
+    if (this.waitingWorker) {
+      void this.activateWaitingWorker()
+      return
+    }
+
+    const registration = this.registration
+    if (!registration) {
+      return
+    }
+
+    this.syncRegistrationState()
+
     try {
-      await waitForServiceWorkerUpdate(this.registration?.update?.())
-      await this.updateServiceWorker?.(false)
+      const updatePromise = registration.update()
+      void Promise.resolve(updatePromise).then(
+        () => {
+          this.syncRegistrationState()
+          if (this.waitingWorker) {
+            void this.activateWaitingWorker()
+          }
+        },
+        (error: unknown) => this.finishUpdateWithError(error),
+      )
     } catch (error) {
       this.finishUpdateWithError(error)
     }
@@ -235,7 +272,75 @@ class UpdateManagerImpl implements UpdateManager {
 
   private handleWaitingWorker(): void {
     this.waitingWorker = true
-    this.publish({ status: 'update-available', dismissed: false, error: undefined })
+    if (this.updatePromise) {
+      if (this.activationRequested) {
+        void this.activateWaitingWorker()
+      }
+      return
+    }
+
+    this.publish({
+      status: 'update-available',
+      dismissed: this.snapshot.dismissed,
+      error: undefined,
+    })
+  }
+
+  private syncRegistrationState(): void {
+    const registration = this.registration
+    if (!registration) {
+      return
+    }
+
+    if (registration.waiting) {
+      this.handleWaitingWorker()
+    }
+    if (registration.installing) {
+      this.observeInstallingWorker(registration.installing)
+    }
+  }
+
+  private observeInstallingWorker(worker: ServiceWorker): void {
+    if (worker === this.installingWorker) {
+      return
+    }
+
+    this.stopObservingInstallingWorker()
+    this.installingWorker = worker
+    const onStateChange = (): void => {
+      if (
+        worker.state === 'installed' && this.registration?.waiting === worker
+      ) {
+        this.handleWaitingWorker()
+      }
+    }
+    this.installingWorkerStateChange = onStateChange
+    worker.addEventListener('statechange', onStateChange)
+    onStateChange()
+  }
+
+  private stopObservingInstallingWorker(): void {
+    if (this.installingWorker && this.installingWorkerStateChange) {
+      this.installingWorker.removeEventListener(
+        'statechange',
+        this.installingWorkerStateChange,
+      )
+    }
+    this.installingWorker = undefined
+    this.installingWorkerStateChange = undefined
+  }
+
+  private async activateWaitingWorker(): Promise<void> {
+    if (!this.updatePromise || !this.activationRequested || !this.updateServiceWorker) {
+      return
+    }
+
+    this.activationRequested = false
+    try {
+      await this.updateServiceWorker(false)
+    } catch (error) {
+      this.finishUpdateWithError(error)
+    }
   }
 
   private handleControllerChange(): void {
@@ -247,9 +352,11 @@ class UpdateManagerImpl implements UpdateManager {
     }
 
     this.reloadTriggered = true
+    this.clearUpdateAttempt()
     try {
       this.reload()
     } finally {
+      this.activationRequested = false
       this.resolveUpdate?.()
       this.resolveUpdate = undefined
       this.updatePromise = undefined
@@ -265,12 +372,18 @@ class UpdateManagerImpl implements UpdateManager {
       error: describeError(error),
       checkedAt: this.now(),
     })
+    this.clearUpdateAttempt()
+    this.activationRequested = false
     this.resolveUpdate?.()
     this.resolveUpdate = undefined
     this.updatePromise = undefined
   }
 
   private handleError(error: unknown): void {
+    if (this.updatePromise) {
+      this.finishUpdateWithError(error)
+      return
+    }
     this.publish({
       status: 'error',
       error: describeError(error),
@@ -282,21 +395,23 @@ class UpdateManagerImpl implements UpdateManager {
     this.snapshot = Object.freeze({ ...this.snapshot, ...patch })
     this.listeners.forEach((listener) => listener())
   }
-}
 
-async function waitForServiceWorkerUpdate(
-  updatePromise: Promise<unknown> | undefined,
-): Promise<void> {
-  if (!updatePromise) {
-    return
+  private startUpdateAttemptTimer(): void {
+    this.clearUpdateAttempt()
+    this.updateAttemptTimer = setTimeout(() => {
+      this.finishUpdateWithError(new Error('等待 Service Worker 更新超时'))
+    }, SERVICE_WORKER_UPDATE_TIMEOUT_MS)
   }
 
-  await Promise.race([
-    updatePromise.then(() => undefined).catch(() => undefined),
-    new Promise<void>((resolve) => {
-      setTimeout(resolve, SERVICE_WORKER_UPDATE_TIMEOUT_MS)
-    }),
-  ])
+  private clearUpdateAttempt(): void {
+    if (this.updateAttemptTimer) {
+      clearTimeout(this.updateAttemptTimer)
+      this.updateAttemptTimer = undefined
+    }
+    this.stopObservingInstallingWorker()
+    this.activationStarted = false
+  }
+
 }
 
 function isRemoteUpdate(remote: RemoteBuildInfo): boolean {
