@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.2',
+    date: '2026-08-24',
+    commit: 'cad4665',
+    level: 'patch',
+    title: '下载状态持久化修复',
+    summary: '用户下载的歌曲 Runtime 资源现在会完整写入专用下载 cache，并在应用更新后继续可识别。',
+    changes: [
+      '修复 Service Worker 已缓存普通 Runtime 资源时下载 manifest 不完整的问题。',
+      '更新后保留已下载歌曲的可识别状态，不改变现有 Runtime cache contract。',
+    ],
+  },
+  {
     version: '1.2.1',
     date: '2026-08-23',
     commit: 'e9e1ca9',
