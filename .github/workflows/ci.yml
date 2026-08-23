@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify release ledger
+        run: npm run release:verify
+
       - name: Lint
         run: npm run lint
 
