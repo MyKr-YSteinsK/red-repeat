@@ -221,6 +221,18 @@ describe('App Library consumer', () => {
     expect(screen.queryByText('曲库')).not.toBeInTheDocument()
   })
 
+  it('opens the normal-product Timing Debugger route', async () => {
+    window.history.replaceState({}, '', '/#timing=debug')
+    render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+    expect(
+      await screen.findByRole('heading', { name: '选择一首歌' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /First Light/ }),
+    ).toHaveAttribute('href', '/#timing=debug&edition=first-light')
+  })
+
   it('shows an explicit debugger state for an unknown runtime edition', async () => {
     window.history.replaceState({}, '', '/#debug=timeline&edition=missing')
     render(<App runtimeClient={clientFor(populatedCatalog)} />)

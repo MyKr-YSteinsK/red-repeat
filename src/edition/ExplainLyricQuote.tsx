@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
-import {
-  createEffectivePracticeTimingProvider,
-  readTimingOverrides,
-  type TimingOverrideIdentity,
-} from '../practice/practice-timing-overrides'
 import { createPracticeIndex } from '../practice/practice-scope'
 
 export interface ExplainLyricQuoteProps {
@@ -39,29 +34,6 @@ export function ExplainLyricQuote({
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
-  )
-  const timingIdentity = useMemo<TimingOverrideIdentity>(
-    () => ({
-      songId: model.edition.song.songId,
-      audioSourceHash: model.edition.audio.sourceHash,
-      baseTimelineUrl: model.edition.timelineUrl,
-    }),
-    [
-      model.edition.audio.sourceHash,
-      model.edition.song.songId,
-      model.edition.timelineUrl,
-    ],
-  )
-  const timingOverrides = useMemo(() => {
-    const result = readTimingOverrides(timingIdentity, {
-      occurrences: model.timeline.occurrences,
-    })
-    return result.kind === 'compatible' ? result.document : undefined
-  }, [model.timeline.occurrences, timingIdentity])
-  const timingProvider = useMemo(
-    () =>
-      createEffectivePracticeTimingProvider(model.timeline, timingOverrides),
-    [model.timeline, timingOverrides],
   )
 
   useEffect(
@@ -106,7 +78,7 @@ export function ExplainLyricQuote({
       return
     }
 
-    const timing = timingProvider.getTiming(selectedOccurrence.occurrence)
+    const timing = model.timingProvider.getTiming(selectedOccurrence.occurrence)
     const operation = operationRef.current + 1
     operationRef.current = operation
     setMessage(undefined)

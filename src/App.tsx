@@ -24,6 +24,7 @@ import {
   RuntimeClientError,
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
+import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
 import {
   downloadSongRuntime,
@@ -125,6 +126,14 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
           state={catalogState}
           runtimeClient={runtimeClient}
           onRetry={retryCatalog}
+        />
+      ) : route.kind === 'timing-debugger' ? (
+        <TimingDebuggerPage
+          songId={route.songId}
+          catalogState={catalogState}
+          runtimeClient={runtimeClient}
+          homeHref={homeHref}
+          onRetryCatalog={retryCatalog}
         />
       ) : route.kind === 'timeline-debugger' &&
         import.meta.env.DEV &&

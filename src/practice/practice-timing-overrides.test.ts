@@ -20,6 +20,7 @@ import {
 
 const identity: TimingOverrideIdentity = {
   songId: 'work-millennium-parade',
+  editionContentHash: 'b'.repeat(64),
   audioSourceHash: 'a'.repeat(64),
   baseTimelineUrl: '/library-runtime/work-millennium-parade/timeline.a.json',
 }
@@ -46,8 +47,9 @@ describe('practice timing overrides', () => {
       o018: { playStartMs: 36_420, playEndMs: 39_860 },
     })
     expect(serializeTimingOverrides(withBoth)).toBe(`{
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "songId": "work-millennium-parade",
+  "editionContentHash": "${'b'.repeat(64)}",
   "audioSourceHash": "${'a'.repeat(64)}",
   "baseTimelineUrl": "/library-runtime/work-millennium-parade/timeline.a.json",
   "occurrences": {
@@ -125,6 +127,12 @@ describe('practice timing overrides', () => {
         { storage, occurrences: [occurrence] },
       ).kind,
     ).toBe('audio-stale')
+    expect(
+      readTimingOverrides(
+        { ...identity, editionContentHash: 'c'.repeat(64) },
+        { storage, occurrences: [occurrence] },
+      ).kind,
+    ).toBe('edition-stale')
   })
 
   it('acknowledges a stale Timeline explicitly without changing absolute values', () => {

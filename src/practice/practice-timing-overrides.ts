@@ -4,11 +4,13 @@ import type {
   PracticeTimingProvider,
 } from './practice-scope'
 
-export const TIMING_OVERRIDES_SCHEMA_VERSION = 1 as const
-export const TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v1:'
+export const TIMING_OVERRIDES_SCHEMA_VERSION = 2 as const
+export const TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v2:'
+const LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v1:'
 
 export interface TimingOverrideIdentity {
   songId: string
+  editionContentHash: string
   audioSourceHash: string
   baseTimelineUrl: string
 }
@@ -27,12 +29,14 @@ export type TimingOverridesInvalidReason =
   | 'malformed-json'
   | 'schema'
   | 'song-mismatch'
+  | 'edition-mismatch'
   | 'audio-mismatch'
   | 'invalid-occurrence'
 
 export type TimingOverridesReadResult =
   | { kind: 'none' }
   | { kind: 'compatible'; document: TimingOverridesDocument }
+  | { kind: 'edition-stale'; document: TimingOverridesDocument }
   | { kind: 'timeline-stale'; document: TimingOverridesDocument }
   | { kind: 'audio-stale'; document: TimingOverridesDocument }
   | { kind: 'invalid'; reason: TimingOverridesInvalidReason }
@@ -62,6 +66,7 @@ export function createTimingOverridesDocument(
   return {
     schemaVersion: TIMING_OVERRIDES_SCHEMA_VERSION,
     songId: identity.songId,
+    editionContentHash: identity.editionContentHash,
     audioSourceHash: identity.audioSourceHash,
     baseTimelineUrl: identity.baseTimelineUrl,
     occurrences: {},
@@ -86,6 +91,16 @@ export function readTimingOverrides(
     return { kind: 'none' }
   }
   if (raw === null) {
+    try {
+      const legacyRaw = storage.getItem(
+        `${LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX}${identity.songId}`,
+      )
+      if (legacyRaw !== null) {
+        return { kind: 'invalid', reason: 'schema' }
+      }
+    } catch {
+      return { kind: 'none' }
+    }
     return { kind: 'none' }
   }
 
@@ -113,6 +128,9 @@ export function classifyTimingOverridesDocument(
 ): Exclude<TimingOverridesReadResult, { kind: 'none' | 'invalid' }> {
   if (document.songId !== identity.songId) {
     throw new Error('个人微调与当前歌曲不匹配。')
+  }
+  if (document.editionContentHash !== identity.editionContentHash) {
+    return { kind: 'edition-stale', document }
   }
   if (document.audioSourceHash !== identity.audioSourceHash) {
     return { kind: 'audio-stale', document }
@@ -148,6 +166,7 @@ export function validateTimingOverridesDocument(
   if (!sameKeys(keys, [
     'schemaVersion',
     'songId',
+    'editionContentHash',
     'audioSourceHash',
     'baseTimelineUrl',
     'occurrences',
@@ -157,10 +176,17 @@ export function validateTimingOverridesDocument(
   if (value.schemaVersion !== TIMING_OVERRIDES_SCHEMA_VERSION) {
     throw new TimingOverridesParseError('schema')
   }
-  if (!isNonEmptyString(value.songId) || !isNonEmptyString(value.baseTimelineUrl)) {
+  if (
+    !isNonEmptyString(value.songId) ||
+    !isNonEmptyString(value.editionContentHash) ||
+    !isNonEmptyString(value.baseTimelineUrl)
+  ) {
     throw new TimingOverridesParseError('schema')
   }
-  if (!isContentHash(value.audioSourceHash)) {
+  if (
+    !isContentHash(value.editionContentHash) ||
+    !isContentHash(value.audioSourceHash)
+  ) {
     throw new TimingOverridesParseError('schema')
   }
   if (!isRecord(value.occurrences)) {
@@ -211,6 +237,7 @@ export function validateTimingOverridesDocument(
   return {
     schemaVersion: TIMING_OVERRIDES_SCHEMA_VERSION,
     songId: value.songId,
+    editionContentHash: value.editionContentHash,
     audioSourceHash: value.audioSourceHash,
     baseTimelineUrl: value.baseTimelineUrl,
     occurrences,
@@ -245,6 +272,7 @@ export function acknowledgeTimelineStale(
 ): TimingOverridesDocument {
   if (
     document.songId !== identity.songId ||
+    document.editionContentHash !== identity.editionContentHash ||
     document.audioSourceHash !== identity.audioSourceHash
   ) {
     throw new Error('只能确认同一首歌且同一音源的 Timeline 更新。')
@@ -308,6 +336,9 @@ export function clearTimingOverrides(
   }
   try {
     resolvedStorage.removeItem(getTimingOverridesStorageKey(identity.songId))
+    resolvedStorage.removeItem(
+      `${LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX}${identity.songId}`,
+    )
     return true
   } catch {
     return false
@@ -354,6 +385,7 @@ export function serializeTimingOverrides(
     {
       schemaVersion: TIMING_OVERRIDES_SCHEMA_VERSION,
       songId: document.songId,
+      editionContentHash: document.editionContentHash,
       audioSourceHash: document.audioSourceHash,
       baseTimelineUrl: document.baseTimelineUrl,
       occurrences,

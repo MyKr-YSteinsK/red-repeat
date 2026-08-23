@@ -1,5 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition } from '../library/runtime-schema'
+import {
+  createTimingOverridesDocument,
+  getTimingOverridesStorageKey,
+  saveTimingOverrides,
+} from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from './runtime-client'
 import { RuntimeClientError } from './runtime-client'
 import { loadRuntimeSongEditionCore } from './song-edition-loader'
@@ -42,6 +47,8 @@ const edition = {
     coverLargeUrl: '/library-runtime/songs/first-light/cover-large.a.webp',
   },
 }
+
+afterEach(() => window.localStorage.clear())
 
 describe('runtime Song Edition loader', () => {
   it('loads edition metadata and core reading resources', async () => {
@@ -108,5 +115,48 @@ describe('runtime Song Edition loader', () => {
       featureEdition.features[0],
       {},
     )
+  })
+
+  it('retains same-edition timing overrides and clears only the changed edition', async () => {
+    let currentEdition = edition
+    const client = {
+      loadEdition: vi.fn(async () => currentEdition),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async () => ({
+        audioSourceHash: 'a'.repeat(64),
+        sections: [],
+        occurrences: [],
+      })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+    } as unknown as RuntimeClient
+    const firstDocument = createTimingOverridesDocument({
+      songId: edition.song.songId,
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: edition.timelineUrl,
+    })
+    firstDocument.occurrences = { o001: { playStartMs: 20 } }
+    expect(saveTimingOverrides(firstDocument)).toBe(true)
+
+    const otherDocument = createTimingOverridesDocument({
+      songId: 'second-signal',
+      editionContentHash: 'e'.repeat(64),
+      audioSourceHash: 'f'.repeat(64),
+      baseTimelineUrl: '/library-runtime/songs/second-signal/timeline.json',
+    })
+    otherDocument.occurrences = { o002: { playStartMs: 30 } }
+    expect(saveTimingOverrides(otherDocument)).toBe(true)
+
+    await loadRuntimeSongEditionCore(client, catalogEdition)
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).not.toBeNull()
+
+    currentEdition = {
+      ...edition,
+      contentHash: 'd'.repeat(64),
+    }
+    await loadRuntimeSongEditionCore(client, catalogEdition)
+
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('second-signal'))).not.toBeNull()
   })
 })

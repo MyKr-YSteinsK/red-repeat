@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createEditionHref,
   createLibraryHref,
+  createTimingDebuggerHref,
   parseAppRoute,
 } from './navigation'
 
@@ -47,5 +48,18 @@ describe('static-safe navigation', () => {
         { devMode: false },
       ),
     ).toEqual({ kind: 'library' })
+  })
+
+  it('exposes the normal-product Timing Debugger route', () => {
+    expect(createTimingDebuggerHref('first-light', location)).toBe(
+      '/red-repeat/?view=archive#timing=debug&edition=first-light',
+    )
+    expect(parseAppRoute({ hash: '#timing=debug&edition=first-light' })).toEqual({
+      kind: 'timing-debugger',
+      songId: 'first-light',
+    })
+    expect(parseAppRoute({ hash: '#timing=debug' })).toEqual({
+      kind: 'timing-debugger',
+    })
   })
 })

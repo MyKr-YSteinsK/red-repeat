@@ -11,6 +11,7 @@ import type {
   PracticeDocument,
   TimelineDocument,
 } from '../library/schema'
+import { createEffectivePracticeTimingProvider } from '../practice/practice-timing-overrides'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 
@@ -58,20 +59,9 @@ describe('ExplainLyricQuote', () => {
     const engine = createAudioEngine(media)
     activeEngine = engine
     engine.loadSource('/audio.m4a')
-    window.localStorage.setItem(
-      'red-repeat:timing-overrides:v1:first-light',
-      JSON.stringify({
-        schemaVersion: 1,
-        songId: 'first-light',
-        audioSourceHash: 'b'.repeat(64),
-        baseTimelineUrl: '/library-runtime/timeline.json',
-        occurrences: { o001: { playStartMs: 75, playEndMs: 325 } },
-      }),
-    )
-
     render(
       <ExplainLyricQuote
-        model={model}
+        model={modelWithTimingOverride}
         segmentId="s021"
         audioEngine={engine}
       />,
@@ -88,22 +78,11 @@ describe('ExplainLyricQuote', () => {
     expect(media.play).toHaveBeenCalledOnce()
   })
 
-  it('ignores a stale Timing Override and uses the canonical range', async () => {
+  it('uses the canonical range when the assembled model has no override', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
     engine.loadSource('/audio.m4a')
-    window.localStorage.setItem(
-      'red-repeat:timing-overrides:v1:first-light',
-      JSON.stringify({
-        schemaVersion: 1,
-        songId: 'first-light',
-        audioSourceHash: 'b'.repeat(64),
-        baseTimelineUrl: '/old-timeline.json',
-        occurrences: { o001: { playStartMs: 75, playEndMs: 325 } },
-      }),
-    )
-
     render(
       <ExplainLyricQuote
         model={model}
@@ -272,6 +251,18 @@ const model = assembleRuntimeSongEdition({
   } satisfies PracticeDocument,
   features: [],
 })
+
+const modelWithTimingOverride = {
+  ...model,
+  timingProvider: createEffectivePracticeTimingProvider(model.timeline, {
+    schemaVersion: 2,
+    songId: 'first-light',
+    editionContentHash: 'a'.repeat(64),
+    audioSourceHash: 'b'.repeat(64),
+    baseTimelineUrl: '/library-runtime/timeline.json',
+    occurrences: { o001: { playStartMs: 75, playEndMs: 325 } },
+  }),
+}
 
 class FakeMedia implements AudioMediaAdapter {
   src = ''

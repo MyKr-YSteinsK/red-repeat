@@ -1,6 +1,7 @@
 export type AppRoute =
   | { kind: 'library' }
   | { kind: 'edition'; songId: string }
+  | { kind: 'timing-debugger'; songId?: string }
   | { kind: 'timeline-debugger'; songId?: string }
 
 type NavigationLocation = Pick<Location, 'hash' | 'pathname' | 'search'>
@@ -14,9 +15,17 @@ export function parseAppRoute(
     : location.hash
   const params = new URLSearchParams(hash)
   const debugMode = params.get('debug')?.trim()
+  const timingMode = params.get('timing')?.trim()
   const songId = params.get('edition')?.trim()
 
   const devMode = import.meta.env.DEV && (options.devMode ?? true)
+
+  if (timingMode === 'debug') {
+    return {
+      kind: 'timing-debugger',
+      ...(songId ? { songId } : {}),
+    }
+  }
 
   if (debugMode === 'timeline' && !devMode) {
     return { kind: 'library' }
@@ -41,4 +50,12 @@ export function createEditionHref(
   location: NavigationLocation,
 ): string {
   return `${createLibraryHref(location)}#edition=${encodeURIComponent(songId)}`
+}
+
+export function createTimingDebuggerHref(
+  songId: string | undefined,
+  location: NavigationLocation,
+): string {
+  const query = songId ? `&edition=${encodeURIComponent(songId)}` : ''
+  return `${createLibraryHref(location)}#timing=debug${query}`
 }

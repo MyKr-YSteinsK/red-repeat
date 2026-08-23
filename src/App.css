@@ -2528,3 +2528,260 @@
     display: initial;
   }
 }
+
+/* Normal-product playback cut debugger. */
+.timing-debugger {
+  width: min(74rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 6rem) 0 5rem;
+}
+
+.timing-debugger-header,
+.timing-debugger-song-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.timing-debugger-header h1 {
+  max-width: 12ch;
+  margin: 0.5rem 0 0;
+  font-size: clamp(2.8rem, 8vw, 6.5rem);
+  letter-spacing: -0.08em;
+  line-height: 0.92;
+}
+
+.timing-debugger-lede {
+  max-width: 40rem;
+  margin: 1rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.timing-debugger-panel,
+.timing-debugger-console,
+.timing-debugger-section,
+.timing-debugger-song-list {
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-red));
+}
+
+.timing-debugger-panel {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.timing-debugger-song-heading h2,
+.timing-debugger-console h2 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  letter-spacing: -0.06em;
+}
+
+.timing-debugger-identity {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.timing-debugger-transport,
+.timing-debugger-console-actions,
+.timing-debugger-adjustment-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.timing-debugger-transport {
+  margin-top: 1rem;
+}
+
+.timing-debugger button,
+.timing-debugger-song-list a {
+  min-height: 2.35rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.timing-debugger button:hover,
+.timing-debugger button:focus-visible,
+.timing-debugger button[aria-pressed='true'],
+.timing-debugger-song-list a:hover,
+.timing-debugger-song-list a:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.timing-debugger-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(19rem, 0.8fr);
+  align-items: start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.timing-debugger-lyrics {
+  display: grid;
+  gap: 1rem;
+}
+
+.timing-debugger-section {
+  padding: 1rem;
+}
+
+.timing-debugger-section h3 {
+  margin: 0 0 0.75rem;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timing-debugger-section ol,
+.timing-debugger-song-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timing-debugger-section li button {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+}
+
+.timing-debugger-section li.is-playing button {
+  border-left: 0.35rem solid var(--color-red);
+}
+
+.timing-debugger-section li button small,
+.timing-debugger-gap,
+.timing-debugger-song-list small {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+.timing-debugger-console {
+  position: sticky;
+  top: 1rem;
+  padding: 1rem;
+}
+
+.timing-debugger-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.timing-debugger-values div {
+  padding: 0.65rem;
+  border: 1px solid var(--color-line);
+}
+
+.timing-debugger-values dt,
+.timing-debugger-values dd {
+  margin: 0;
+}
+
+.timing-debugger-values dt,
+.timing-debugger-adjustment-group > span {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+.timing-debugger-values dd {
+  margin-top: 0.3rem;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.timing-debugger-adjustment-group {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.timing-debugger-adjustment-group button,
+.timing-debugger-console-actions button {
+  min-height: 2rem;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.68rem;
+}
+
+.timing-debugger-message {
+  margin: 1rem 0 0;
+  color: var(--color-red);
+  font-size: 0.8rem;
+}
+
+.timing-debugger-selector .timing-debugger-song-list {
+  max-width: 42rem;
+  margin-top: 2rem;
+  padding: 0.75rem;
+}
+
+.timing-debugger-song-list a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.timing-debugger-status {
+  min-height: 50vh;
+}
+
+@media (max-width: 760px) {
+  .timing-debugger {
+    width: min(100% - 1.5rem, 42rem);
+    padding-top: 2rem;
+  }
+
+  .timing-debugger-header,
+  .timing-debugger-song-heading {
+    display: block;
+  }
+
+  .timing-debugger-header .text-link {
+    display: inline-block;
+    margin-top: 1rem;
+  }
+
+  .timing-debugger-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .timing-debugger-console {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+    max-height: min(54svh, 30rem);
+    overflow-y: auto;
+    padding: 0.75rem 0.9rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-inline: 0;
+    box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .timing-debugger {
+    padding-bottom: calc(min(54svh, 30rem) + 1.5rem + env(safe-area-inset-bottom));
+  }
+}

@@ -72,6 +72,7 @@ describe('Practice Scope', () => {
     const originalLast = timeline.occurrences[1]
     const overrides = createTimingOverridesDocument({
       songId: 'song',
+      editionContentHash: 'a'.repeat(64),
       audioSourceHash: timeline.audioSourceHash,
       baseTimelineUrl: '/library-runtime/song/timeline.json',
     })

@@ -152,8 +152,9 @@ const model = assembleRuntimeSongEdition({
 const modelWithTimingOverride = {
   ...model,
   timingProvider: createEffectivePracticeTimingProvider(model.timeline, {
-    schemaVersion: 1,
+    schemaVersion: 2,
     songId: 'first-light',
+    editionContentHash: edition.contentHash,
     audioSourceHash: edition.audio.sourceHash,
     baseTimelineUrl: edition.timelineUrl,
     occurrences: { o002: { playStartMs: 420, playEndMs: 880 } },

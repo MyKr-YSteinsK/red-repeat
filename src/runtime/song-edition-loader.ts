@@ -15,6 +15,7 @@ import {
   type RuntimeFeatureContent,
 } from './song-edition'
 import {
+  clearTimingOverrides,
   createEffectivePracticeTimingProvider,
   readTimingOverrides,
   type TimingOverrideIdentity,
@@ -66,12 +67,16 @@ export async function loadRuntimeSongEditionCore(
 
   const timingIdentity: TimingOverrideIdentity = {
     songId: edition.song.songId,
+    editionContentHash: edition.contentHash,
     audioSourceHash: edition.audio.sourceHash,
     baseTimelineUrl: edition.timelineUrl,
   }
   const storedTiming = readTimingOverrides(timingIdentity, {
     occurrences: timeline.occurrences,
   })
+  if (storedTiming.kind !== 'none' && storedTiming.kind !== 'compatible') {
+    clearTimingOverrides(timingIdentity)
+  }
   const timingProvider = createEffectivePracticeTimingProvider(
     timeline,
     storedTiming.kind === 'compatible' ? storedTiming.document : undefined,
