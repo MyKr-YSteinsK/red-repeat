@@ -43,6 +43,7 @@ export interface UpdateManagerOptions {
 }
 
 const DEFAULT_CHECK_INTERVAL_MS = 5 * 60 * 1000
+const SERVICE_WORKER_UPDATE_TIMEOUT_MS = 5 * 1000
 
 export function createUpdateManager(
   options: UpdateManagerOptions = {},
@@ -194,11 +195,8 @@ class UpdateManagerImpl implements UpdateManager {
       locationHref: this.locationHref(),
       cacheBust: this.now(),
     })
-    const registrationUpdatePromise = this.registration?.update?.()
-    const [probeResult] = await Promise.allSettled([
-      probePromise,
-      registrationUpdatePromise ?? Promise.resolve(),
-    ])
+    void this.registration?.update?.().catch(() => undefined)
+    const [probeResult] = await Promise.allSettled([probePromise])
 
     if (probeResult.status === 'rejected') {
       if (this.waitingWorker) {
@@ -228,7 +226,7 @@ class UpdateManagerImpl implements UpdateManager {
 
   private async requestUpdateActivation(): Promise<void> {
     try {
-      await this.registration?.update?.()
+      await waitForServiceWorkerUpdate(this.registration?.update?.())
       await this.updateServiceWorker?.(false)
     } catch (error) {
       this.finishUpdateWithError(error)
@@ -284,6 +282,21 @@ class UpdateManagerImpl implements UpdateManager {
     this.snapshot = Object.freeze({ ...this.snapshot, ...patch })
     this.listeners.forEach((listener) => listener())
   }
+}
+
+async function waitForServiceWorkerUpdate(
+  updatePromise: Promise<unknown> | undefined,
+): Promise<void> {
+  if (!updatePromise) {
+    return
+  }
+
+  await Promise.race([
+    updatePromise.then(() => undefined).catch(() => undefined),
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, SERVICE_WORKER_UPDATE_TIMEOUT_MS)
+    }),
+  ])
 }
 
 function isRemoteUpdate(remote: RemoteBuildInfo): boolean {

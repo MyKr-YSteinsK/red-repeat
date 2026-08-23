@@ -20,6 +20,27 @@ describe('PWA update manager', () => {
     })
   })
 
+  it('does not block the version probe on a stalled Service Worker update', async () => {
+    const stalledRegistration = {
+      update: () => new Promise<ServiceWorkerRegistration>(() => undefined),
+    } as ServiceWorkerRegistration
+    const registerSW: RegisterServiceWorker = (options) => {
+      options?.onRegisteredSW?.('/sw.js', stalledRegistration)
+      return vi.fn(async () => undefined)
+    }
+    const manager = createUpdateManager({
+      fetchImpl: probeFetch(buildInfo.version, buildInfo.commit),
+      locationHref: () => 'https://example.test/red-repeat/#settings',
+    })
+
+    manager.register(registerSW)
+
+    await expect(manager.checkForUpdate({ manual: true })).resolves.toMatchObject({
+      status: 'up-to-date',
+      remote: { version: buildInfo.version, commit: buildInfo.commit },
+    })
+  })
+
   it('reports a newer SemVer and a same-version new build', async () => {
     const newer = createUpdateManager({
       fetchImpl: probeFetch('1.3.0', 'abcdef123456'),
