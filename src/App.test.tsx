@@ -221,7 +221,7 @@ describe('App Library consumer', () => {
     expect(screen.getByText('First Light')).toBeInTheDocument()
     expect(screen.getByText('a'.repeat(64))).toBeInTheDocument()
     expect(screen.getByText('d'.repeat(64))).toBeInTheDocument()
-    expect(screen.queryByText('我的歌曲')).not.toBeInTheDocument()
+    expect(screen.queryByText('曲库')).not.toBeInTheDocument()
   })
 
   it('shows an explicit debugger state for an unknown runtime edition', async () => {
@@ -273,9 +273,15 @@ describe('App Library consumer', () => {
     )
   })
 
-  it('renders one or more catalog editions as archive entries', async () => {
+  it('renders the catalog as mobile-friendly song cards', async () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
+    expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '全部歌曲' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: '最近学习' }),
+    ).not.toBeInTheDocument()
+    expect(document.querySelectorAll('[data-song-id]')).toHaveLength(2)
     expect(
       await screen.findByRole('link', { name: '开始学唱 First Light' }),
     ).toHaveAttribute('href', '/#edition=first-light')
@@ -302,7 +308,7 @@ describe('App Library consumer', () => {
       within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }),
     )
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: '我的歌曲' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: '曲库' })).toBeInTheDocument()
     })
   })
 
@@ -334,7 +340,7 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
 
     expect(
-      await screen.findByRole('heading', { name: '我的歌曲' }),
+      await screen.findByRole('heading', { name: '曲库' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '开始学唱 First Light' }),
@@ -345,14 +351,14 @@ describe('App Library consumer', () => {
 
     expect(
       (await screen.findAllByRole('link', { name: '继续学唱 First Light' })).length,
-    ).toBe(2)
-    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(2)
+    ).toBe(1)
+    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(1)
     expect(
       fetchImpl.mock.calls.some(([input]) => String(input).endsWith('/lyrics.a.json')),
     ).toBe(false)
   })
 
-  it('shows a legacy resume summary without classifying it as recent or writing a timestamp', async () => {
+  it('shows a legacy resume summary without writing a timestamp', async () => {
     const legacyState = JSON.stringify({
       schemaVersion: 1,
       practiceUnitId: 'p001',
@@ -454,14 +460,14 @@ describe('App Library consumer', () => {
 
     expect(
       (await screen.findAllByRole('link', { name: '继续学唱 First Light' })).length,
-    ).toBe(2)
+    ).toBe(1)
     expect(
       screen.getByRole('link', { name: '开始学唱 Second Signal' }),
     ).toBeInTheDocument()
-    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(2)
+    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(1)
   })
 
-  it('sorts recent learning by updatedAt and filters title or artist in Unicode text', async () => {
+  it('keeps catalog order and filters title or artist in Unicode text', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
       JSON.stringify({
@@ -484,10 +490,11 @@ describe('App Library consumer', () => {
     )
     render(<App runtimeClient={createRuntimeClient({ fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)) })} />)
 
-    await screen.findAllByRole('link', { name: '继续学唱 Second Signal' })
-    const links = screen.getAllByRole('link')
-    expect(links[1]).toHaveAccessibleName('继续学唱 Second Signal')
-    expect(links[2]).toHaveAccessibleName('继续学唱 First Light')
+    await screen.findByRole('link', { name: '继续学唱 Second Signal' })
+    expect(screen.getByRole('link', { name: '继续学唱 First Light' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: '最近学习' }),
+    ).not.toBeInTheDocument()
 
     const search = screen.getByRole('searchbox', { name: '搜索歌曲或歌手' })
     fireEvent.change(search, { target: { value: 'another' } })

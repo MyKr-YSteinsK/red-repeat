@@ -2,7 +2,6 @@ import {
   lazy,
   Suspense,
   useEffect,
-  useMemo,
   useState,
   type ReactNode,
 } from 'react'
@@ -303,24 +302,12 @@ function CatalogLibrary({
   const filteredEditions = catalog.editions.filter((edition) =>
     matchesCatalogSearch(edition, normalizedQuery),
   )
-  const recentEditions = useMemo(
-    () =>
-      catalog.editions
-        .filter((edition) => resumeBySongId[edition.songId]?.updatedAt !== undefined)
-        .sort(
-          (left, right) =>
-            (resumeBySongId[right.songId]?.updatedAt ?? 0) -
-            (resumeBySongId[left.songId]?.updatedAt ?? 0),
-        )
-        .slice(0, 5),
-    [catalog.editions, resumeBySongId],
-  )
 
   return (
     <main className="library library-populated" aria-labelledby="library-title">
       <div className="library-heading">
         <p className="eyebrow">曲库</p>
-        <h1 id="library-title">我的歌曲</h1>
+        <h1 id="library-title">曲库</h1>
         <p className="library-lede">选择一首歌，开始或继续学唱。</p>
         <label className="library-search">
           <span>搜索歌曲或歌手</span>
@@ -333,24 +320,10 @@ function CatalogLibrary({
         </label>
       </div>
 
-      {normalizedQuery === '' && recentEditions.length > 0 ? (
-        <CatalogSection title="最近学习" className="recent-learning">
-          {recentEditions.map((edition) => (
-            <CatalogEditionLink
-              key={edition.songId}
-              edition={edition}
-              index={catalog.editions.indexOf(edition)}
-              runtimeClient={runtimeClient}
-              resume={resumeBySongId[edition.songId]}
-            />
-          ))}
-        </CatalogSection>
-      ) : null}
-
       <CatalogSection title="全部歌曲">
         {filteredEditions.length > 0 ? (
           filteredEditions.map((edition) => (
-            <CatalogEditionLink
+            <CatalogEditionCard
               key={edition.songId}
               edition={edition}
               index={catalog.editions.indexOf(edition)}
@@ -371,15 +344,13 @@ function CatalogLibrary({
 
 function CatalogSection({
   title,
-  className,
   children,
 }: {
   title: string
-  className?: string
   children: ReactNode
 }) {
   return (
-    <section className={`catalog-section${className ? ` ${className}` : ''}`}>
+    <section className="catalog-section">
       <h2>{title}</h2>
       <div className="catalog-list" aria-label={title}>
         {children}
@@ -388,7 +359,7 @@ function CatalogSection({
   )
 }
 
-function CatalogEditionLink({
+function CatalogEditionCard({
   edition,
   index,
   runtimeClient,
@@ -401,41 +372,43 @@ function CatalogEditionLink({
 }) {
   const action = resume ? '继续学唱' : '开始学唱'
   return (
-    <a
-      className="catalog-entry"
-      href={createEditionHref(edition.songId, window.location)}
-      aria-label={`${action} ${edition.title}`}
-    >
-      <span className="catalog-index" aria-hidden="true">
-        {String(index + 1).padStart(2, '0')}
-      </span>
-      <img
-        className="catalog-cover"
-        src={runtimeClient.resolveAsset(edition.coverUrl)}
-        alt=""
-        loading="lazy"
-      />
-      <span className="catalog-copy">
-        <span className="catalog-title">{edition.title}</span>
-        <span className="catalog-artist">{edition.artist}</span>
-        {edition.album || edition.year !== undefined ? (
-          <span className="catalog-meta">
-            {edition.album ?? ''}
-            {edition.album && edition.year !== undefined ? ' / ' : ''}
-            {edition.year ?? ''}
-          </span>
-        ) : null}
-        {resume ? (
-          <span className="catalog-resume">
-            上次：{resume.unitLabel} · 第{resume.lineIndex}句
-          </span>
-        ) : null}
-        <span className="catalog-action">{action}</span>
-      </span>
-      <span className="catalog-arrow" aria-hidden="true">
-        ↗
-      </span>
-    </a>
+    <article className="catalog-entry" data-song-id={edition.songId}>
+      <a
+        className="catalog-entry-link"
+        href={createEditionHref(edition.songId, window.location)}
+        aria-label={`${action} ${edition.title}`}
+      >
+        <span className="catalog-index" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <img
+          className="catalog-cover"
+          src={runtimeClient.resolveAsset(edition.coverUrl)}
+          alt=""
+          loading="lazy"
+        />
+        <span className="catalog-copy">
+          <span className="catalog-title">{edition.title}</span>
+          <span className="catalog-artist">{edition.artist}</span>
+          {edition.album || edition.year !== undefined ? (
+            <span className="catalog-meta">
+              {edition.album ?? ''}
+              {edition.album && edition.year !== undefined ? ' / ' : ''}
+              {edition.year ?? ''}
+            </span>
+          ) : null}
+          {resume ? (
+            <span className="catalog-resume">
+              上次：{resume.unitLabel} · 第{resume.lineIndex}句
+            </span>
+          ) : null}
+          <span className="catalog-action">{action}</span>
+        </span>
+        <span className="catalog-arrow" aria-hidden="true">
+          ↗
+        </span>
+      </a>
+    </article>
   )
 }
 

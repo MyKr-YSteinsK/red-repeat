@@ -85,18 +85,25 @@
 
 .catalog-entry {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.catalog-entry-link {
+  display: grid;
   grid-template-columns: 2.5rem 5rem minmax(0, 1fr) auto;
   align-items: center;
   gap: clamp(0.8rem, 2.5vw, 2rem);
+  min-width: 0;
   min-height: 7rem;
   padding: 0.9rem 0;
-  border-bottom: 1px solid var(--color-line);
   color: inherit;
   text-decoration: none;
 }
 
-.catalog-entry:hover .catalog-title,
-.catalog-entry:focus-visible .catalog-title {
+.catalog-entry-link:hover .catalog-title,
+.catalog-entry-link:focus-visible .catalog-title {
   color: var(--color-red);
 }
 
@@ -881,6 +888,10 @@
   }
 
   .catalog-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-entry-link {
     grid-template-columns: 1.75rem 4.25rem minmax(0, 1fr) auto;
     gap: 0.75rem;
     min-height: 6rem;
