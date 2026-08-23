@@ -99,6 +99,7 @@ class UpdateManagerImpl implements UpdateManager {
   private activationRequested = false
   private activationStarted = false
   private updateAttemptTimer: ReturnType<typeof setTimeout> | undefined
+  private dismissedRemoteIdentity: string | undefined
 
   constructor(options: UpdateManagerOptions) {
     this.fetchImpl = options.fetchImpl ?? ((input, init) => globalThis.fetch(input, init))
@@ -161,6 +162,7 @@ class UpdateManagerImpl implements UpdateManager {
     }
 
     if (manual) {
+      this.dismissedRemoteIdentity = undefined
       this.publish({ dismissed: false, error: undefined })
     } else {
       this.lastAutomaticCheckAt = currentTime
@@ -197,6 +199,10 @@ class UpdateManagerImpl implements UpdateManager {
 
   dismissUpdate(): void {
     if (this.snapshot.status === 'update-available') {
+      const remoteIdentity = getRemoteIdentity(this.snapshot.remote)
+      if (remoteIdentity) {
+        this.dismissedRemoteIdentity = remoteIdentity
+      }
       this.publish({ dismissed: true })
     }
   }
@@ -224,13 +230,12 @@ class UpdateManagerImpl implements UpdateManager {
     }
 
     const remote = probeResult.value
+    const hasUpdate = this.waitingWorker || isRemoteUpdate(remote)
     this.publish({
-      status: this.waitingWorker || isRemoteUpdate(remote)
-        ? 'update-available'
-        : 'up-to-date',
+      status: hasUpdate ? 'update-available' : 'up-to-date',
       remote,
       checkedAt: this.now(),
-      dismissed: this.waitingWorker ? this.snapshot.dismissed : false,
+      dismissed: hasUpdate && this.isRemoteDismissed(remote),
       error: undefined,
     })
     return this.snapshot
@@ -412,6 +417,10 @@ class UpdateManagerImpl implements UpdateManager {
     this.activationStarted = false
   }
 
+  private isRemoteDismissed(remote: RemoteBuildInfo): boolean {
+    return this.dismissedRemoteIdentity === getRemoteIdentity(remote)
+  }
+
 }
 
 function isRemoteUpdate(remote: RemoteBuildInfo): boolean {
@@ -419,6 +428,10 @@ function isRemoteUpdate(remote: RemoteBuildInfo): boolean {
   return versionComparison > 0 || (
     versionComparison === 0 && remote.commit !== buildInfo.commit
   )
+}
+
+function getRemoteIdentity(remote: RemoteBuildInfo | undefined): string | undefined {
+  return remote ? `${remote.version}:${remote.commit}` : undefined
 }
 
 function describeError(error: unknown): string {

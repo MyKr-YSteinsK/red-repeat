@@ -246,6 +246,36 @@ describe('PWA update manager', () => {
     expect(manager.getSnapshot().dismissed).toBe(false)
   })
 
+  it('keeps an automatic check quiet after dismissing one remote identity', async () => {
+    let now = 0
+    const fetchImpl = probeFetch('1.2.4', 'abcdef123456')
+    const manager = createUpdateManager({
+      fetchImpl,
+      now: () => now,
+      checkIntervalMs: 300000,
+      locationHref: () => 'https://example.test/',
+    })
+
+    await manager.checkForUpdate({ manual: true })
+    manager.dismissUpdate()
+    now = 300001
+    await manager.checkForUpdate()
+    expect(manager.getSnapshot().dismissed).toBe(true)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+
+    now = 600002
+    fetchImpl.mockImplementationOnce(async () => new Response(JSON.stringify({
+      version: '1.2.5',
+      commit: 'fedcba654321',
+    }), { status: 200 }))
+    await manager.checkForUpdate()
+    expect(manager.getSnapshot()).toMatchObject({
+      status: 'update-available',
+      remote: { version: '1.2.5' },
+      dismissed: false,
+    })
+  })
+
 })
 
 class FakeServiceWorker extends EventTarget {
