@@ -514,8 +514,48 @@
   margin-top: 3rem;
 }
 
-.settings-release-list {
+.settings-changelog-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.settings-current-version {
+  margin: 0;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.settings-current-version strong {
+  margin-left: 0.4rem;
+  color: var(--color-ink);
+  font-size: 1rem;
+}
+
+.settings-pending-releases {
   margin-top: 1.5rem;
+  border: 1px solid var(--color-red);
+}
+
+.settings-release-section-heading {
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.settings-release-section-heading h3 {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.settings-release-list {
+  margin-top: 2rem;
   border-top: 1px solid var(--color-line);
 }
 
@@ -528,6 +568,7 @@
   grid-template-columns: 5rem 7rem minmax(0, 1fr);
   gap: 1rem;
   align-items: baseline;
+  min-height: 4.5rem;
   padding: 1rem 0;
   color: var(--color-ink);
   cursor: pointer;
@@ -546,15 +587,70 @@
   font-weight: 600;
 }
 
-.settings-release-list details > p,
-.settings-release-list details > ul {
+.settings-release-list details[open] summary {
+  background: color-mix(in srgb, var(--color-line) 25%, transparent);
+}
+
+.settings-release-entry-list {
+  border-top: 1px solid var(--color-line);
+}
+
+.settings-release-entry {
   max-width: 46rem;
-  margin: 0 0 1rem 1rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.settings-release-entry:last-child {
+  border-bottom: 0;
+}
+
+.settings-release-entry header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-release-entry header > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.settings-release-entry h3,
+.settings-release-entry header p {
+  margin: 0;
+}
+
+.settings-release-entry h3 {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.settings-release-entry header p {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.settings-release-entry header strong {
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.settings-release-entry > p,
+.settings-release-entry > ul {
+  margin: 0.85rem 0 0;
   color: var(--color-muted);
   line-height: 1.6;
 }
 
-.settings-release-list details > ul {
+.settings-release-entry > ul {
   padding-left: 1.25rem;
 }
 
@@ -3137,6 +3233,12 @@
     margin-top: 0;
   }
 
+  .settings-changelog-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
   .settings-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3164,6 +3266,21 @@
 
   .settings-release-list summary strong {
     grid-column: 2;
+  }
+
+  .settings-release-entry header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .settings-release-entry header > div {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .settings-release-entry header strong {
+    text-align: left;
   }
 }
 

@@ -11,6 +11,7 @@ import {
 } from '../practice/practice-timing-overrides'
 import { buildInfo } from '../release/build-info'
 import { RELEASES } from '../release/releases'
+import { groupReleaseLedger } from '../release/release-grouping'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { createTimingDebuggerHref } from '../navigation'
 import {
@@ -51,6 +52,7 @@ export function SettingsPage({
   const catalog = catalogState.status === 'ready' ? catalogState.catalog : undefined
   const settingsLocation = window.location
   const timingDebuggerHref = createTimingDebuggerHref(undefined, settingsLocation)
+  const releaseGrouping = groupReleaseLedger(RELEASES)
 
   const selectedEdition = useMemo(
     () =>
@@ -197,27 +199,73 @@ export function SettingsPage({
       </div>
 
       <section className="settings-changelog" aria-labelledby="changelog-title">
-        <div className="settings-card-heading">
-          <p className="eyebrow">历史</p>
-          <h2 id="changelog-title">更新日志</h2>
+        <div className="settings-changelog-heading">
+          <div className="settings-card-heading">
+            <p className="eyebrow">历史</p>
+            <h2 id="changelog-title">更新日志</h2>
+          </div>
+          <p className="settings-current-version">
+            当前版本 <strong>{buildInfo.version}</strong>
+          </p>
         </div>
+        {releaseGrouping.pendingVersions.length > 0 ? (
+          <section className="settings-pending-releases" aria-labelledby="pending-releases-title">
+            <div className="settings-release-section-heading">
+              <p className="eyebrow">尚未进入下一个里程碑</p>
+              <h3 id="pending-releases-title">开发中的小版本</h3>
+            </div>
+            <div className="settings-release-entry-list">
+              {releaseGrouping.pendingVersions.map((release) => (
+                <ReleaseEntry key={release.version} release={release} />
+              ))}
+            </div>
+          </section>
+        ) : null}
         <div className="settings-release-list">
-          {RELEASES.map((release, index) => (
-            <details key={release.version} open={index === 0}>
-              <summary>
-                <span>{release.version}</span>
-                <span>{release.date}</span>
-                <strong>{release.title}</strong>
-              </summary>
-              <p>{release.summary}</p>
-              <ul>
-                {release.changes.map((change) => <li key={change}>{change}</li>)}
-              </ul>
-            </details>
-          ))}
+          {releaseGrouping.milestoneGroups.map((group) => {
+            const milestone = group.children.find(
+              (release) => release.version === group.milestoneVersion,
+            )
+            if (!milestone) {
+              return null
+            }
+
+            return (
+              <details key={group.milestoneVersion} data-release-milestone>
+                <summary>
+                  <span>{group.label}</span>
+                  <span>{milestone.date}</span>
+                  <strong>{milestone.title}</strong>
+                </summary>
+                <div className="settings-release-entry-list">
+                  {group.children.map((release) => (
+                    <ReleaseEntry key={release.version} release={release} />
+                  ))}
+                </div>
+              </details>
+            )
+          })}
         </div>
       </section>
     </main>
+  )
+}
+
+function ReleaseEntry({ release }: { release: (typeof RELEASES)[number] }) {
+  return (
+    <article className="settings-release-entry" data-release-entry>
+      <header>
+        <div>
+          <h3>{release.version}</h3>
+          <p>{release.date}</p>
+        </div>
+        <strong>{release.title}</strong>
+      </header>
+      <p>{release.summary}</p>
+      <ul>
+        {release.changes.map((change) => <li key={change}>{change}</li>)}
+      </ul>
+    </article>
   )
 }
 

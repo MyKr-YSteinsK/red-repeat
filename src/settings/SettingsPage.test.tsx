@@ -91,6 +91,7 @@ describe('SettingsPage', () => {
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
     expect(screen.getAllByText('1.0.0').length).toBeGreaterThan(0)
+    expect(screen.getByText('当前版本')).toBeInTheDocument()
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '打开播放切口调试 →' })).toHaveAttribute(
@@ -99,6 +100,16 @@ describe('SettingsPage', () => {
     )
     expect(screen.getByText('更新日志')).toBeInTheDocument()
     expect(screen.getByText('0.1.0')).toBeInTheDocument()
+
+    const milestones = [...document.querySelectorAll<HTMLDetailsElement>('[data-release-milestone]')]
+    expect(milestones.length).toBeGreaterThan(1)
+    expect(milestones.every((milestone) => !milestone.open)).toBe(true)
+    expect(screen.queryByRole('heading', { name: '开发中的小版本' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('1.0', { exact: true }))
+    expect(milestones[0].open).toBe(true)
+    expect(milestones[0].querySelectorAll('[data-release-milestone]').length).toBe(0)
+    expect(milestones[0].querySelectorAll('[data-release-entry]').length).toBe(2)
   })
 
   it('reports that there is nothing to export when no local override exists', async () => {
