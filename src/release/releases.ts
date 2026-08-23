@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.0',
+    date: '2026-08-23',
+    commit: '4a8b5b6',
+    level: 'minor',
+    title: 'PWA 一键更新',
+    summary: '安装后的 RED:REPEAT 会主动发现生产新构建，并把更新决定交给用户。',
+    changes: [
+      '新增全局新版提示、稍后隐藏和查看更新入口。',
+      '支持通过 waiting Service Worker 一键激活并刷新到新构建。',
+      '新增不会进入 App Shell precache 的生产 version.json 探针。',
+    ],
+  },
+  {
     version: '1.1.0',
     date: '2026-08-23',
     commit: '386fdbe',
