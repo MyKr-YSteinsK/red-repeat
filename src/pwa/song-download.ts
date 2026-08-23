@@ -102,7 +102,7 @@ export async function downloadSongRuntime(
       if (!response.ok) {
         throw new Error(`Song resource returned HTTP ${response.status}.`)
       }
-      if (!(await matchDownloadedAsset(url))) {
+      if (!(await cache.match(url))) {
         await cache.put(url, response.clone())
         cachedUrls.push(url)
       }

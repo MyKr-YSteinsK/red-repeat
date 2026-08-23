@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
+import { RUNTIME_CACHE_NAMES } from './cache-routes'
 import {
   downloadSongRuntime,
   fetchWithSongDownloadFallback,
@@ -116,6 +117,31 @@ describe('song download cache', () => {
     }
   })
 
+  it('copies resources into the download cache when the Service Worker already cached them', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    const editionUrl = 'https://example.test/red-repeat/library-runtime/songs/first-light/edition.a.json'
+    await storage.cacheFor(RUNTIME_CACHE_NAMES.runtime).put(
+      editionUrl,
+      new Response('runtime cache', { status: 200 }),
+    )
+
+    await expect(
+      downloadSongRuntime(catalogEdition, runtimeClientFor(), {
+        fetchImpl: vi.fn(async (url: RequestInfo | URL) =>
+          new Response(String(url), { status: 200 })),
+        now: () => 456,
+      }),
+    ).resolves.toMatchObject({ status: 'installed' })
+
+    expect(storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME).entries.size).toBe(9)
+    await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
+      songId: 'first-light',
+      status: 'installed',
+      lastUpdatedAt: 456,
+    })
+  })
+
   it('cleans partial resources and leaves the catalog usable after a failed download', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
@@ -154,6 +180,16 @@ class MemoryCacheStorage {
 
   async open(name: string): Promise<Cache> {
     return this.cacheFor(name) as unknown as Cache
+  }
+
+  async match(request: RequestInfo | URL): Promise<Response | undefined> {
+    for (const cache of this.caches.values()) {
+      const response = await cache.match(request)
+      if (response) {
+        return response
+      }
+    }
+    return undefined
   }
 
   cacheFor(name: string): MemoryCache {
