@@ -25,6 +25,12 @@ import {
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
+import {
+  downloadSongRuntime,
+  readSongDownloadState,
+  removeSongRuntime,
+  type SongDownloadState,
+} from './pwa/song-download'
 
 const DevTimelineDebuggerPage = import.meta.env.DEV
   ? lazy(async () => {
@@ -270,6 +276,12 @@ function CatalogLibrary({
   const [resumeBySongId, setResumeBySongId] = useState<
     Readonly<Record<string, PracticeResumeSummary>>
   >({})
+  const [downloadBySongId, setDownloadBySongId] = useState<
+    Readonly<Record<string, SongDownloadState>>
+  >({})
+  const [removingSongIds, setRemovingSongIds] = useState<ReadonlySet<string>>(
+    new Set(),
+  )
 
   useEffect(() => {
     let active = true
@@ -297,6 +309,86 @@ function CatalogLibrary({
       controller.abort()
     }
   }, [catalog, runtimeClient])
+
+  useEffect(() => {
+    let active = true
+    void Promise.all(
+      catalog.editions.map(async (edition) => [
+        edition.songId,
+        await readSongDownloadState(edition.songId),
+      ] as const),
+    ).then((entries) => {
+      if (!active) {
+        return
+      }
+      setDownloadBySongId((current) => {
+        const next = { ...current }
+        entries.forEach(([songId, state]) => {
+          if (!next[songId]) {
+            next[songId] = state
+          }
+        })
+        return next
+      })
+    })
+
+    return () => {
+      active = false
+    }
+  }, [catalog])
+
+  const handleDownload = async (edition: CatalogEdition): Promise<void> => {
+    setDownloadBySongId((current) => ({
+      ...current,
+      [edition.songId]: { songId: edition.songId, status: 'installing' },
+    }))
+
+    try {
+      const state = await downloadSongRuntime(edition, runtimeClient)
+      setDownloadBySongId((current) => ({
+        ...current,
+        [edition.songId]: state,
+      }))
+    } catch {
+      setDownloadBySongId((current) => ({
+        ...current,
+        [edition.songId]: {
+          songId: edition.songId,
+          status: 'failed',
+          errorMessage: '下载失败，请检查网络后重试。',
+        },
+      }))
+    }
+  }
+
+  const handleRemove = async (edition: CatalogEdition): Promise<void> => {
+    setRemovingSongIds((current) => new Set(current).add(edition.songId))
+    try {
+      await removeSongRuntime(edition.songId)
+      setDownloadBySongId((current) => ({
+        ...current,
+        [edition.songId]: {
+          songId: edition.songId,
+          status: 'not-installed',
+        },
+      }))
+    } catch {
+      setDownloadBySongId((current) => ({
+        ...current,
+        [edition.songId]: {
+          songId: edition.songId,
+          status: 'failed',
+          errorMessage: '移除失败，请稍后重试。',
+        },
+      }))
+    } finally {
+      setRemovingSongIds((current) => {
+        const next = new Set(current)
+        next.delete(edition.songId)
+        return next
+      })
+    }
+  }
 
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const filteredEditions = catalog.editions.filter((edition) =>
@@ -329,6 +421,15 @@ function CatalogLibrary({
               index={catalog.editions.indexOf(edition)}
               runtimeClient={runtimeClient}
               resume={resumeBySongId[edition.songId]}
+              download={
+                downloadBySongId[edition.songId] ?? {
+                  songId: edition.songId,
+                  status: 'not-installed',
+                }
+              }
+              isRemoving={removingSongIds.has(edition.songId)}
+              onDownload={handleDownload}
+              onRemove={handleRemove}
             />
           ))
         ) : (
@@ -364,13 +465,39 @@ function CatalogEditionCard({
   index,
   runtimeClient,
   resume,
+  download,
+  isRemoving,
+  onDownload,
+  onRemove,
 }: {
   edition: CatalogEdition
   index: number
   runtimeClient: RuntimeClient
   resume?: PracticeResumeSummary
+  download: SongDownloadState
+  isRemoving: boolean
+  onDownload: (edition: CatalogEdition) => void
+  onRemove: (edition: CatalogEdition) => void
 }) {
   const action = resume ? '继续学唱' : '开始学唱'
+  const isInstalling = download.status === 'installing'
+  const isInstalled = download.status === 'installed'
+  const downloadLabel = isInstalled
+    ? isRemoving
+      ? '移除中…'
+      : '移除本机'
+    : isInstalling
+      ? '下载中…'
+      : download.status === 'failed'
+        ? '重试下载'
+        : '下载到本机'
+  const downloadStatusLabel = isInstalled
+    ? '已下载'
+    : isInstalling
+      ? '下载中…'
+      : download.status === 'failed'
+        ? '下载失败'
+        : '未下载'
   return (
     <article className="catalog-entry" data-song-id={edition.songId}>
       <a
@@ -408,6 +535,29 @@ function CatalogEditionCard({
           ↗
         </span>
       </a>
+      <div className="catalog-entry-actions">
+        <span className="catalog-download-status" aria-live="polite">
+          {downloadStatusLabel}
+        </span>
+        <button
+          className="catalog-download-button"
+          type="button"
+          disabled={isInstalling || isRemoving}
+          aria-label={`${downloadLabel} ${edition.title}`}
+          onClick={() => {
+            if (isInstalled) {
+              onRemove(edition)
+            } else {
+              onDownload(edition)
+            }
+          }}
+        >
+          {downloadLabel}
+        </button>
+        {download.errorMessage ? (
+          <span className="catalog-download-error">{download.errorMessage}</span>
+        ) : null}
+      </div>
     </article>
   )
 }

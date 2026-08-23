@@ -15,6 +15,7 @@ import {
   type TimelineDocument,
   type VisualDocument,
 } from '../library/schema'
+import { fetchWithSongDownloadFallback } from '../pwa/song-download'
 import { resolveRuntimeAsset } from './runtime-url'
 
 export const RUNTIME_CATALOG_PATH = '/library-runtime/catalog.json'
@@ -72,9 +73,7 @@ export class RuntimeClient {
 
   constructor(options: RuntimeClientOptions = {}) {
     this.appBaseUrl = options.appBaseUrl ?? import.meta.env.BASE_URL
-    this.fetchImpl =
-      options.fetchImpl ??
-      ((input, init) => globalThis.fetch(input, init))
+    this.fetchImpl = options.fetchImpl ?? fetchWithSongDownloadFallback
   }
 
   loadCatalog(options: RuntimeLoadOptions = {}): Promise<Catalog> {

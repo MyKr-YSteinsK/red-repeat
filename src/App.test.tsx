@@ -285,6 +285,13 @@ describe('App Library consumer', () => {
     expect(
       await screen.findByRole('link', { name: '开始学唱 First Light' }),
     ).toHaveAttribute('href', '/#edition=first-light')
+    expect(screen.getAllByText('未下载')).toHaveLength(2)
+    expect(
+      screen.getByRole('button', { name: '下载到本机 First Light' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '下载到本机 Second Signal' }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '开始学唱 Second Signal' }),
     ).toBeInTheDocument()

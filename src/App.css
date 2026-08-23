@@ -85,7 +85,9 @@
 
 .catalog-entry {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
   min-width: 0;
   border-bottom: 1px solid var(--color-line);
 }
@@ -165,6 +167,57 @@
   color: var(--color-red);
   font-size: 1.35rem;
   line-height: 1;
+}
+
+.catalog-entry-actions {
+  display: flex;
+  min-width: 8rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  padding: 0.9rem 0;
+}
+
+.catalog-download-status,
+.catalog-download-button,
+.catalog-download-error {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.catalog-download-status {
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.catalog-download-button {
+  min-height: 2.35rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.catalog-download-button:hover,
+.catalog-download-button:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.catalog-download-button:disabled {
+  color: var(--color-muted);
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.catalog-download-error {
+  max-width: 12rem;
+  color: var(--color-red);
+  text-align: right;
 }
 
 .status-line,
@@ -889,6 +942,7 @@
 
   .catalog-entry {
     grid-template-columns: minmax(0, 1fr);
+    gap: 0;
   }
 
   .catalog-entry-link {
@@ -908,6 +962,20 @@
 
   .catalog-title {
     font-size: 1.35rem;
+  }
+
+  .catalog-entry-actions {
+    min-width: 0;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 0 1rem;
+  }
+
+  .catalog-download-error {
+    flex-basis: 100%;
+    max-width: none;
+    text-align: left;
   }
 }
 
