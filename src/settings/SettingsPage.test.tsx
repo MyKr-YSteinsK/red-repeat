@@ -91,7 +91,7 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.2.4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.2.5').length).toBeGreaterThan(0)
     expect(screen.getAllByText('当前版本').length).toBeGreaterThan(0)
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
@@ -198,7 +198,7 @@ describe('SettingsPage', () => {
     expect(screen.getByText('远端学习更新')).toBeInTheDocument()
     expect(screen.getByText('远端真实更新说明。')).toBeInTheDocument()
     expect(screen.getByText('旧 App 也能看到这条更新。')).toBeInTheDocument()
-    expect(screen.getAllByText('1.2.4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.2.5').length).toBeGreaterThan(0)
   })
 
   it('opens the milestone containing the requested release from the global update entry', () => {

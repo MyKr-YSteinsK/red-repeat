@@ -147,7 +147,7 @@ describe('PWA update manager', () => {
       return updateServiceWorker
     }
     const manager = createUpdateManager({
-      fetchImpl: probeFetch('1.2.4', 'abcdef123456'),
+      fetchImpl: probeFetch('1.2.6', 'abcdef123456'),
       reload,
       locationHref: () => 'https://example.test/',
     })
@@ -245,7 +245,7 @@ describe('PWA update manager', () => {
         return updateServiceWorker
       }
       const manager = createUpdateManager({
-        fetchImpl: probeFetch('1.2.4', 'abcdef123456'),
+        fetchImpl: probeFetch('1.2.6', 'abcdef123456'),
         reload,
         locationHref: () => 'https://example.test/',
       })
@@ -285,7 +285,7 @@ describe('PWA update manager', () => {
 
   it('keeps an automatic check quiet after dismissing one remote identity', async () => {
     let now = 0
-    const fetchImpl = probeFetch('1.2.4', 'abcdef123456')
+    const fetchImpl = probeFetch('1.2.6', 'abcdef123456')
     const manager = createUpdateManager({
       fetchImpl,
       now: () => now,
@@ -302,13 +302,13 @@ describe('PWA update manager', () => {
 
     now = 600002
     fetchImpl.mockImplementationOnce(async () => new Response(JSON.stringify({
-      version: '1.2.5',
+      version: '1.2.7',
       commit: 'fedcba654321',
     }), { status: 200 }))
     await manager.checkForUpdate()
     expect(manager.getSnapshot()).toMatchObject({
       status: 'update-available',
-      remote: { version: '1.2.5' },
+      remote: { version: '1.2.7' },
       dismissed: false,
     })
   })

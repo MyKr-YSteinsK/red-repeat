@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.2.5',
+    date: '2026-08-24',
+    commit: '84a9a93',
+    level: 'patch',
+    title: 'PWA Worker 接管收口',
+    summary: '更新会等待新版 Worker 真正就绪，并在激活完成后可靠接管页面。',
+    changes: [
+      '修复远端版本探针先到时需要再次点击立即更新的问题。',
+      '新版 Worker 激活后即使缺少 controllerchange 回调也能完成单次刷新。',
+      '保留可恢复超时，并让更新后的页面继续使用当前 PWA 缓存。',
+    ],
+  },
+  {
     version: '1.2.4',
     date: '2026-08-24',
     commit: '49e1fe3',
