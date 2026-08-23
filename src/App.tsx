@@ -15,6 +15,7 @@ import {
 import {
   createEditionHref,
   createLibraryHref,
+  createSettingsHref,
   parseAppRoute,
   type AppRoute,
 } from './navigation'
@@ -25,6 +26,7 @@ import {
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
+import { SettingsPage } from './settings/SettingsPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
 import {
   downloadSongRuntime,
@@ -113,6 +115,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
   }, [catalogState, runtimeClient])
 
   const homeHref = createLibraryHref(window.location)
+  const settingsHref = createSettingsHref(window.location)
   const retryCatalog = (): void => {
     setCatalogState({ status: 'loading' })
     setRetryKey((value) => value + 1)
@@ -120,12 +123,19 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
 
   return (
     <div className="app-shell">
-      <SiteHeader homeHref={homeHref} />
+      <SiteHeader homeHref={homeHref} settingsHref={settingsHref} />
       {route.kind === 'library' ? (
         <LibraryRoute
           state={catalogState}
           runtimeClient={runtimeClient}
           onRetry={retryCatalog}
+        />
+      ) : route.kind === 'settings' ? (
+        <SettingsPage
+          catalogState={catalogState}
+          runtimeClient={runtimeClient}
+          homeHref={homeHref}
+          onRetryCatalog={retryCatalog}
         />
       ) : route.kind === 'timing-debugger' ? (
         <TimingDebuggerPage
@@ -173,7 +183,7 @@ function App({ runtimeClient = defaultRuntimeClient }: AppProps) {
   )
 }
 
-function SiteHeader({ homeHref }: { homeHref: string }) {
+function SiteHeader({ homeHref, settingsHref }: { homeHref: string; settingsHref: string }) {
   return (
     <header className="site-header">
       <a className="brand-lockup" href={homeHref} aria-label="返回曲库">
@@ -186,7 +196,10 @@ function SiteHeader({ homeHref }: { homeHref: string }) {
           <span>REPEAT</span>
         </span>
       </a>
-      <p className="imprint">Curated by MyKr</p>
+      <div className="site-header-actions">
+        <p className="imprint">Curated by MyKr</p>
+        <a className="site-settings-link" href={settingsHref}>设置</a>
+      </div>
     </header>
   )
 }

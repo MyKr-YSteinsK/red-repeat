@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createEditionHref,
   createLibraryHref,
+  createSettingsHref,
   createTimingDebuggerHref,
   parseAppRoute,
 } from './navigation'
@@ -61,5 +62,10 @@ describe('static-safe navigation', () => {
     expect(parseAppRoute({ hash: '#timing=debug' })).toEqual({
       kind: 'timing-debugger',
     })
+  })
+
+  it('exposes the Settings route under the current static-safe path', () => {
+    expect(createSettingsHref(location)).toBe('/red-repeat/?view=archive#settings')
+    expect(parseAppRoute({ hash: '#settings' })).toEqual({ kind: 'settings' })
   })
 })

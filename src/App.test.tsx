@@ -286,6 +286,10 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
     expect(screen.getByText('Curated by MyKr')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '设置' })).toHaveAttribute(
+      'href',
+      '/#settings',
+    )
     expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '全部歌曲' })).toBeInTheDocument()
     expect(

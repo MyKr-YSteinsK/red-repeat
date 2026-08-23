@@ -1,9 +1,23 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { runtimeCaching } from './src/pwa/cache-routes.ts'
 
+const packageMetadata = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string }
+const buildSha = process.env.GITHUB_SHA?.trim().slice(0, 12) || 'local'
+const buildEnvironment = process.env.GITHUB_ACTIONS === 'true'
+  ? 'GitHub Pages'
+  : 'local'
+
 export default defineConfig({
+  define: {
+    __RED_REPEAT_VERSION__: JSON.stringify(packageMetadata.version),
+    __RED_REPEAT_BUILD_SHA__: JSON.stringify(buildSha),
+    __RED_REPEAT_BUILD_ENVIRONMENT__: JSON.stringify(buildEnvironment),
+  },
   plugins: [
     react(),
     VitePWA({
