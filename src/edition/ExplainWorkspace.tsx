@@ -151,26 +151,41 @@ export function ExplainWorkspace({
             </div>
           )}
 
-          <nav className="explain-topic-pager" aria-label="讲解主题翻页">
-            <button
-              type="button"
-              disabled={!previousTopic}
-              onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
-            >
-              ← 上一篇
+          <div className="explain-workspace-footer">
+            <nav className="explain-topic-pager" aria-label="讲解主题翻页">
+              <button
+                type="button"
+                disabled={!previousTopic}
+                onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
+              >
+                ← 上一篇
+              </button>
+              <button
+                type="button"
+                disabled={!nextTopic}
+                onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}
+              >
+                下一篇 →
+              </button>
+            </nav>
+            <button className="explain-scroll-top" type="button" onClick={scrollExplainToTop}>
+              回到顶部
             </button>
-            <button
-              type="button"
-              disabled={!nextTopic}
-              onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}
-            >
-              下一篇 →
-            </button>
-          </nav>
+          </div>
         </div>
       </div>
     </section>
   )
+}
+
+function scrollExplainToTop(): void {
+  const prefersReducedMotion = window.matchMedia?.(
+    '(prefers-reduced-motion: reduce)',
+  ).matches
+  window.scrollTo({
+    top: 0,
+    behavior: prefersReducedMotion ? 'auto' : 'smooth',
+  })
 }
 
 function TopicDirectoryItem({

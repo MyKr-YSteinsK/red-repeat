@@ -142,6 +142,28 @@ describe('ExplainWorkspace', () => {
     expect(media.currentTime).toBe(0.62)
     expect(media.play).not.toHaveBeenCalled()
   })
+
+  it('returns to the top without changing the selected topic', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+
+    try {
+      render(
+        <ExplainWorkspace
+          model={model}
+          runtimeClient={runtimeClientFor()}
+          features={features}
+          featureErrors={[]}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: '回到顶部' }))
+
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+      expect(screen.getByRole('heading', { name: 'Context' })).toBeInTheDocument()
+    } finally {
+      scrollTo.mockRestore()
+    }
+  })
 })
 
 const firstDescriptor = {

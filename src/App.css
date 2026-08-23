@@ -938,6 +938,32 @@
   cursor: default;
 }
 
+.explain-workspace-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.explain-scroll-top {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+  color: var(--color-muted);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.explain-scroll-top:hover,
+.explain-scroll-top:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
 .explain-topic-pager button:not(:disabled):hover,
 .explain-topic-pager button:not(:disabled):focus-visible {
   border-color: var(--color-red);
