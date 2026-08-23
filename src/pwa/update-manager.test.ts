@@ -22,13 +22,13 @@ describe('PWA update manager', () => {
 
   it('reports a newer SemVer and a same-version new build', async () => {
     const newer = createUpdateManager({
-      fetchImpl: probeFetch('1.2.0', 'abcdef123456'),
+      fetchImpl: probeFetch('1.3.0', 'abcdef123456'),
       locationHref: () => 'https://example.test/',
     })
     await newer.checkForUpdate({ manual: true })
     expect(newer.getSnapshot()).toMatchObject({
       status: 'update-available',
-      remote: { version: '1.2.0' },
+      remote: { version: '1.3.0' },
     })
 
     const rebuilt = createUpdateManager({
@@ -105,7 +105,7 @@ describe('PWA update manager', () => {
 
   it('dismisses only the current-session prompt and resets dismissal on manual check', async () => {
     const manager = createUpdateManager({
-      fetchImpl: probeFetch('1.2.0', 'abcdef123456'),
+      fetchImpl: probeFetch('1.3.0', 'abcdef123456'),
       locationHref: () => 'https://example.test/',
     })
     await manager.checkForUpdate({ manual: true })
