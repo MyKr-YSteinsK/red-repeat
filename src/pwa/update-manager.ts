@@ -249,13 +249,17 @@ class UpdateManagerImpl implements UpdateManager {
       return
     }
 
+    const registration = this.registration
+    if (!registration && !this.waitingWorker) {
+      return
+    }
+
     this.activationStarted = true
     if (this.waitingWorker) {
       this.scheduleWaitingWorkerActivation()
       return
     }
 
-    const registration = this.registration
     if (!registration) {
       return
     }

@@ -124,6 +124,63 @@ describe('PWA update manager', () => {
     expect(reload).toHaveBeenCalledOnce()
   })
 
+  it('waits for registration before starting the one-click activation flow', async () => {
+    const reload = vi.fn()
+    const worker = new FakeServiceWorker()
+    const serviceWorker = worker as unknown as ServiceWorker
+    let installingWorker: ServiceWorker | undefined
+    let waitingWorker: ServiceWorker | undefined = undefined
+    const updateRegistration = vi.fn(async () => undefined as unknown as ServiceWorkerRegistration)
+    const registration = createFakeRegistration(
+      () => installingWorker,
+      () => waitingWorker,
+      () => {
+        installingWorker = serviceWorker
+        return updateRegistration()
+      },
+    )
+    let callbacks: Parameters<RegisterServiceWorker>[0] | undefined
+    const updateServiceWorker = vi.fn(async () => undefined)
+    const registerSW: RegisterServiceWorker = (options) => {
+      callbacks = options
+      return updateServiceWorker
+    }
+    const manager = createUpdateManager({
+      fetchImpl: probeFetch('1.2.6', 'abcdef123456'),
+      reload,
+      locationHref: () => 'https://example.test/',
+    })
+
+    manager.register(registerSW)
+    await manager.checkForUpdate({ manual: true })
+    const updatePromise = manager.applyUpdate()
+    await Promise.resolve()
+    expect(manager.getSnapshot()).toMatchObject({
+      status: 'updating',
+      error: undefined,
+    })
+    expect(updateServiceWorker).not.toHaveBeenCalled()
+
+    callbacks?.onRegisteredSW?.('/sw.js', registration)
+    await Promise.resolve()
+    expect(updateRegistration).toHaveBeenCalledOnce()
+
+    worker.state = 'installed'
+    worker.dispatchEvent(new Event('statechange'))
+    waitingWorker = serviceWorker
+    callbacks?.onNeedRefresh?.()
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    expect(updateServiceWorker).toHaveBeenCalledTimes(1)
+    expect(updateServiceWorker).toHaveBeenCalledWith(false)
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+    expect(worker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+
+    worker.state = 'activated'
+    worker.dispatchEvent(new Event('statechange'))
+    await updatePromise
+    expect(reload).toHaveBeenCalledOnce()
+  })
+
   it('waits for an installing worker after the remote probe before activating once', async () => {
     const reload = vi.fn()
     const worker = new FakeServiceWorker()
