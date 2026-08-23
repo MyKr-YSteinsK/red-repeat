@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.1.0',
+    date: '2026-08-23',
+    commit: '386fdbe',
+    level: 'minor',
+    title: '语义版本与里程碑更新日志',
+    summary: '版本开始按真实 commit 语义记录，更新日志按里程碑归档并支持待归档 patch 独立浏览。',
+    changes: [
+      '建立唯一 release ledger、SemVer 规则和可验证的 Git tag 工作流。',
+      '更新日志以 1.1、1.0 等里程碑分组，展开后直接展示阶段内所有版本。',
+      '下一个里程碑产生前的 patch 会独立显示，并在新 milestone 出现后自动归档。',
+    ],
+  },
+  {
     version: '1.0.0',
     date: '2026-08-23',
     commit: '4f9ebd1',

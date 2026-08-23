@@ -90,7 +90,7 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.0.0').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.1.0').length).toBeGreaterThan(0)
     expect(screen.getByText('当前版本')).toBeInTheDocument()
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
@@ -106,10 +106,17 @@ describe('SettingsPage', () => {
     expect(milestones.every((milestone) => !milestone.open)).toBe(true)
     expect(screen.queryByRole('heading', { name: '开发中的小版本' })).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('1.0', { exact: true }))
-    expect(milestones[0].open).toBe(true)
-    expect(milestones[0].querySelectorAll('[data-release-milestone]').length).toBe(0)
-    expect(milestones[0].querySelectorAll('[data-release-entry]').length).toBe(2)
+    const onePointZero = milestones.find(
+      (milestone) => milestone.querySelector('summary')?.textContent?.includes('1.0'),
+    )
+    expect(onePointZero).toBeDefined()
+    if (!onePointZero) {
+      return
+    }
+    fireEvent.click(onePointZero.querySelector('summary') as HTMLElement)
+    expect(onePointZero.open).toBe(true)
+    expect(onePointZero.querySelectorAll('[data-release-milestone]').length).toBe(0)
+    expect(onePointZero.querySelectorAll('[data-release-entry]').length).toBe(2)
   })
 
   it('reports that there is nothing to export when no local override exists', async () => {
