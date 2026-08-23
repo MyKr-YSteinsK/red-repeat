@@ -154,6 +154,34 @@ export function resolvePracticeRange(
   }
 }
 
+export function resolvePracticeUnitRangeFromOccurrence(
+  practiceUnitId: string,
+  startOccurrenceId: string,
+  practice: PracticeDocument,
+  timeline: TimelineDocument,
+  timingProvider: PracticeTimingProvider = canonicalPracticeTiming,
+): ResolvedPracticeRange {
+  const index = createPracticeIndex(practice, timeline)
+  const occurrenceIds = getUnitOccurrenceIds(index, practiceUnitId)
+  const startIndex = occurrenceIds.indexOf(startOccurrenceId)
+  if (startIndex < 0) {
+    throw new Error(
+      `Occurrence ${startOccurrenceId} does not belong to Practice Unit ${practiceUnitId}`,
+    )
+  }
+
+  return resolvePracticeRange(
+    {
+      kind: 'customRange',
+      startOccurrenceId: occurrenceIds[startIndex],
+      endOccurrenceId: occurrenceIds[occurrenceIds.length - 1],
+    },
+    practice,
+    timeline,
+    timingProvider,
+  )
+}
+
 export function getPracticeUnit(
   index: PracticeIndex,
   practiceUnitId: string,

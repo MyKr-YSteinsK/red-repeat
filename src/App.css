@@ -901,6 +901,172 @@
   }
 }
 
+/* Practice 1.0 keeps the high-frequency controls in one compact dock. */
+.practice-layout {
+  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.75fr);
+  grid-template-areas: "map lyrics";
+}
+
+.practice-dock {
+  grid-area: auto;
+  position: static;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border: 1px solid var(--color-ink);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-red));
+}
+
+.practice-dock-context,
+.practice-dock-primary,
+.practice-dock-toggles,
+.practice-dock-navigation {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.practice-dock-context {
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.practice-dock-primary {
+  flex-wrap: wrap;
+}
+
+.practice-dock-toggles {
+  flex-wrap: wrap;
+}
+
+.practice-dock-navigation {
+  justify-content: flex-end;
+}
+
+.practice-dock .practice-rate-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0;
+}
+
+.practice-dock .practice-action {
+  min-height: 2.45rem;
+}
+
+.practice-dock .practice-play-button {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.practice-dock .practice-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.practice-map nav {
+  max-height: min(52svh, 34rem);
+}
+
+@media (max-width: 900px) {
+  .practice-layout {
+    grid-template-columns: minmax(11rem, 0.72fr) minmax(0, 1.28fr);
+    grid-template-areas: "map lyrics";
+  }
+
+  .practice-dock {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  }
+
+  .practice-dock-navigation {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .practice-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "lyrics" "map";
+  }
+
+  .practice-workspace {
+    --practice-dock-height: 10.5rem;
+    padding-bottom: calc(var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem);
+  }
+
+  .practice-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+    border-inline: 0;
+    box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .practice-dock-context,
+  .practice-dock-primary,
+  .practice-dock-toggles,
+  .practice-dock-navigation {
+    width: 100%;
+  }
+
+  .practice-dock-context {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .practice-dock-primary,
+  .practice-dock-toggles,
+  .practice-dock-navigation {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .practice-dock-primary .practice-play-button {
+    grid-column: span 1;
+  }
+
+  .practice-dock .practice-rate-actions {
+    display: contents;
+  }
+
+  .practice-dock-toggles,
+  .practice-dock-navigation {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-dock-navigation {
+    grid-column: auto;
+  }
+
+  .practice-dock .practice-action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .practice-map nav {
+    max-height: min(52svh, 34rem);
+  }
+
+  .practice-controls:not([data-mobile-expanded='true']) > :not(.practice-mobile-controls-toggle) {
+    display: initial;
+  }
+}
+
 /* Full Song: a quiet, continuous lyric stream. */
 .full-song-workspace {
   margin-top: clamp(2.5rem, 6vw, 5rem);
@@ -2234,5 +2400,86 @@
 
   .practice-pager {
     margin-bottom: 0.5rem;
+  }
+}
+
+/* Final Practice 1.0 mobile overrides: the compact dock has no collapsed state. */
+@media (max-width: 640px) {
+  .practice-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "lyrics" "map";
+  }
+
+  .practice-workspace {
+    --practice-dock-height: 11.25rem;
+    padding-bottom: calc(
+      var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem
+    );
+  }
+
+  .practice-dock {
+    display: grid;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    grid-template-columns: minmax(0, 1fr);
+    max-height: none;
+    overflow: visible;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+    border-inline: 0;
+  }
+
+  .practice-dock-context,
+  .practice-dock-primary,
+  .practice-dock-toggles,
+  .practice-dock-navigation {
+    width: 100%;
+  }
+
+  .practice-dock-context {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .practice-dock-primary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .practice-dock .practice-rate-actions {
+    display: contents;
+  }
+
+  .practice-dock-toggles,
+  .practice-dock-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .practice-dock-navigation {
+    grid-column: auto;
+  }
+
+  .practice-dock .practice-action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .practice-map nav {
+    max-height: min(52svh, 34rem);
+  }
+
+  .practice-controls:not([data-mobile-expanded='true']) {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .practice-controls:not([data-mobile-expanded='true']) > :not(.practice-mobile-controls-toggle) {
+    display: initial;
   }
 }

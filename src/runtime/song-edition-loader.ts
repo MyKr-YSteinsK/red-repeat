@@ -14,6 +14,12 @@ import {
   type AssembledSongEdition,
   type RuntimeFeatureContent,
 } from './song-edition'
+import {
+  createEffectivePracticeTimingProvider,
+  readTimingOverrides,
+  type TimingOverrideIdentity,
+} from '../practice/practice-timing-overrides'
+import type { PracticeTimingProvider } from '../practice/practice-scope'
 
 export interface RuntimeSongEditionCore {
   catalogEdition: CatalogEdition
@@ -21,6 +27,7 @@ export interface RuntimeSongEditionCore {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
+  timingProvider: PracticeTimingProvider
   features: readonly RuntimeFeatureContent[]
   featureErrors: readonly RuntimeFeatureLoadError[]
   assembled: AssembledSongEdition
@@ -57,12 +64,26 @@ export async function loadRuntimeSongEditionCore(
       : [],
   )
 
+  const timingIdentity: TimingOverrideIdentity = {
+    songId: edition.song.songId,
+    audioSourceHash: edition.audio.sourceHash,
+    baseTimelineUrl: edition.timelineUrl,
+  }
+  const storedTiming = readTimingOverrides(timingIdentity, {
+    occurrences: timeline.occurrences,
+  })
+  const timingProvider = createEffectivePracticeTimingProvider(
+    timeline,
+    storedTiming.kind === 'compatible' ? storedTiming.document : undefined,
+  )
+
   const core = {
     catalogEdition,
     edition,
     lyrics,
     timeline,
     practice,
+    timingProvider,
     features,
     featureErrors,
   }
@@ -70,6 +91,7 @@ export async function loadRuntimeSongEditionCore(
     ...core,
     assembled: assembleRuntimeSongEdition({
       ...core,
+      timingProvider,
       allowMissingFeatureContent: true,
     }),
   }

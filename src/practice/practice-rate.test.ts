@@ -8,13 +8,13 @@ import {
 } from './practice-rate'
 
 describe('practice playback rate persistence', () => {
-  it('stores and restores only AudioEngine-normalized rates', () => {
+  it('stores and restores only the supported practice rates', () => {
     const storage = new MemoryStorage()
     const songId = 'first-light'
 
-    savePracticePlaybackRate(songId, 0.75, storage)
-    expect(storage.getItem(getPracticeRateStorageKey(songId))).toBe('0.75')
-    expect(readPracticePlaybackRate(songId, storage)).toBe(0.75)
+    savePracticePlaybackRate(songId, 0.8, storage)
+    expect(storage.getItem(getPracticeRateStorageKey(songId))).toBe('0.8')
+    expect(readPracticePlaybackRate(songId, storage)).toBe(0.8)
 
     storage.setItem(getPracticeRateStorageKey(songId), '0.751')
     expect(readPracticePlaybackRate(songId, storage)).toBe(1)
@@ -22,11 +22,11 @@ describe('practice playback rate persistence', () => {
     expect(readPracticePlaybackRate(songId, storage)).toBe(1)
   })
 
-  it('steps without exceeding the AudioEngine rate boundaries', () => {
-    expect(getNextPracticePlaybackRate(0.5, -1)).toBe(0.5)
-    expect(getNextPracticePlaybackRate(1.25, 1)).toBe(1.25)
-    expect(getNextPracticePlaybackRate(0.75, 1)).toBe(0.8)
-    expect(getNextPracticePlaybackRate(0.8, -1)).toBe(0.75)
+  it('steps through the three supported practice rates', () => {
+    expect(getNextPracticePlaybackRate(0.6, -1)).toBe(0.6)
+    expect(getNextPracticePlaybackRate(1.25, 1)).toBe(1)
+    expect(getNextPracticePlaybackRate(0.6, 1)).toBe(0.8)
+    expect(getNextPracticePlaybackRate(0.8, -1)).toBe(0.6)
   })
 })
 

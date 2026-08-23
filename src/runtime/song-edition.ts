@@ -11,6 +11,10 @@ import type {
   Segment,
   TimelineDocument,
 } from '../library/schema'
+import {
+  canonicalPracticeTiming,
+  type PracticeTimingProvider,
+} from '../practice/practice-scope'
 
 export interface RuntimeFeatureContent {
   descriptor: RuntimeFeatureDescriptor
@@ -35,6 +39,7 @@ export interface AssembledSongEdition {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
+  timingProvider: PracticeTimingProvider
   features: readonly RuntimeFeatureContent[]
   segmentsById: Readonly<Record<string, Segment>>
   occurrencesById: Readonly<Record<string, AssembledOccurrence>>
@@ -54,6 +59,7 @@ export interface AssembleSongEditionInput {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
+  timingProvider?: PracticeTimingProvider
   features: readonly RuntimeFeatureContent[]
   allowMissingFeatureContent?: boolean
 }
@@ -108,6 +114,7 @@ export function assembleRuntimeSongEdition(
     lyrics: input.lyrics,
     timeline: input.timeline,
     practice: input.practice,
+    timingProvider: input.timingProvider ?? canonicalPracticeTiming,
     features: assembleFeatures(
       input.edition.features,
       input.features,

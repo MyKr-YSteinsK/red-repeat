@@ -1,12 +1,7 @@
-import {
-  DEFAULT_PLAYBACK_RATE,
-  MAX_PLAYBACK_RATE,
-  MIN_PLAYBACK_RATE,
-  normalizePlaybackRate,
-  PLAYBACK_RATE_STEP,
-} from '../audio/audio-engine'
+import { DEFAULT_PLAYBACK_RATE } from '../audio/audio-engine'
 
 export const PRACTICE_RATE_STORAGE_PREFIX = 'red-repeat:practice-rate:v1:'
+export const PRACTICE_PLAYBACK_RATES = [0.6, 0.8, 1] as const
 
 export interface PracticeRateStorage {
   getItem(key: string): string | null
@@ -31,7 +26,7 @@ export function readPracticePlaybackRate(
     if (raw === null) {
       return DEFAULT_PLAYBACK_RATE
     }
-    return normalizePlaybackRate(Number(raw))
+    return normalizePracticeRate(Number(raw))
   } catch {
     return DEFAULT_PLAYBACK_RATE
   }
@@ -50,7 +45,7 @@ export function savePracticePlaybackRate(
   try {
     persistence.setItem(
       getPracticeRateStorageKey(songId),
-      String(normalizePlaybackRate(playbackRate)),
+      String(normalizePracticeRate(playbackRate)),
     )
   } catch {
     // Local persistence is an enhancement; playback remains usable.
@@ -61,13 +56,23 @@ export function getNextPracticePlaybackRate(
   currentRate: number,
   direction: -1 | 1,
 ): number {
-  const safeCurrentRate = Number.isFinite(currentRate)
-    ? currentRate
-    : DEFAULT_PLAYBACK_RATE
-  const nextRate = Number(
-    (safeCurrentRate + direction * PLAYBACK_RATE_STEP).toFixed(2),
+  const safeCurrentRate = normalizePracticeRate(currentRate)
+  const currentIndex = PRACTICE_PLAYBACK_RATES.indexOf(
+    safeCurrentRate as (typeof PRACTICE_PLAYBACK_RATES)[number],
   )
-  return Math.min(MAX_PLAYBACK_RATE, Math.max(MIN_PLAYBACK_RATE, nextRate))
+  const nextIndex = Math.min(
+    PRACTICE_PLAYBACK_RATES.length - 1,
+    Math.max(0, currentIndex + direction),
+  )
+  return PRACTICE_PLAYBACK_RATES[nextIndex]
+}
+
+function normalizePracticeRate(value: number): number {
+  return PRACTICE_PLAYBACK_RATES.includes(
+    value as (typeof PRACTICE_PLAYBACK_RATES)[number],
+  )
+    ? value
+    : DEFAULT_PLAYBACK_RATE
 }
 
 function getBrowserStorage(): PracticeRateStorage | undefined {

@@ -101,7 +101,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(screen.getByRole('button', { name: '学唱' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '主歌 A' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '再听这句' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '播放第 01 句' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Focus' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
   })
