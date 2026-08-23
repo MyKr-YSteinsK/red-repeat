@@ -129,10 +129,9 @@ describe('PWA update manager', () => {
     const worker = new FakeServiceWorker()
     const serviceWorker = worker as unknown as ServiceWorker
     let installingWorker: ServiceWorker | undefined
-    let waitingWorker: ServiceWorker | undefined
-    let registration: ServiceWorkerRegistration
-    const updateRegistration = vi.fn(async () => registration)
-    registration = createFakeRegistration(
+    let waitingWorker: ServiceWorker | undefined = undefined
+    const updateRegistration = vi.fn(async () => undefined as unknown as ServiceWorkerRegistration)
+    const registration = createFakeRegistration(
       () => installingWorker,
       () => waitingWorker,
       () => {
@@ -186,12 +185,11 @@ describe('PWA update manager', () => {
       const reload = vi.fn()
       const worker = new FakeServiceWorker()
       const serviceWorker = worker as unknown as ServiceWorker
-      let waitingWorker: ServiceWorker | undefined
+      let waitingWorker: ServiceWorker | undefined = undefined
       let updateAttempt = 0
       let callbacks: Parameters<RegisterServiceWorker>[0] | undefined
-      let registration: ServiceWorkerRegistration
-      const updateRegistration = vi.fn(async () => registration)
-      registration = createFakeRegistration(
+      const updateRegistration = vi.fn(async () => undefined as unknown as ServiceWorkerRegistration)
+      const registration = createFakeRegistration(
         () => undefined,
         () => waitingWorker,
         () => {
