@@ -4,7 +4,6 @@ import type { Catalog, CatalogEdition } from '../library/runtime-schema'
 import type {
   LyricsDocument,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 import {
   RuntimeClient,
@@ -48,7 +47,6 @@ export interface TimelineDebuggerResources {
   edition: Awaited<ReturnType<RuntimeClient['loadEdition']>>
   lyrics: LyricsDocument
   timeline: TimelineDocument
-  visual: VisualDocument
 }
 
 export function TimelineDebuggerPage({
@@ -536,10 +534,6 @@ function TimelineDebuggerReady({
           <div>
             <dt>Compiled audio hash</dt>
             <dd>{resources.edition.audio.sourceHash}</dd>
-          </div>
-          <div>
-            <dt>Theme</dt>
-            <dd>{resources.visual.recommendedTheme}</dd>
           </div>
         </dl>
         <div className="timeline-debugger-working-copy" aria-label="Working copy export">
@@ -1099,12 +1093,11 @@ async function loadDebuggerResources(
   const edition = await runtimeClient.loadEdition(catalogEdition.editionUrl, {
     signal,
   })
-  const [lyrics, timeline, visual] = await Promise.all([
+  const [lyrics, timeline] = await Promise.all([
     runtimeClient.loadLyrics(edition.lyricsUrl, { signal }),
     runtimeClient.loadTimeline(edition.timelineUrl, { signal }),
-    runtimeClient.loadVisual(edition.visualUrl, { signal }),
   ])
-  return { catalogEdition, edition, lyrics, timeline, visual }
+  return { catalogEdition, edition, lyrics, timeline }
 }
 
 function describeDebuggerError(error: unknown): string {

@@ -20,11 +20,9 @@ import {
   ManifestSchema,
   PracticeSchema,
   TimelineSchema,
-  VisualSchema,
   type LyricsDocument,
   type PracticeDocument,
   type TimelineDocument,
-  type VisualDocument,
 } from './schema'
 import { resolveLibrarySourceRoot } from './source-root'
 
@@ -76,13 +74,6 @@ function validateSongPackage(
     sourceRoot,
     diagnostics,
   )
-  const visual = validateSourceFile(
-    loadedFiles.visual,
-    VisualSchema,
-    songPackage,
-    sourceRoot,
-    diagnostics,
-  )
   const contextSongId = manifest?.songId ?? songPackage.directoryName
 
   if (manifest && manifest.songId !== songPackage.directoryName) {
@@ -128,17 +119,6 @@ function validateSongPackage(
   if (timeline) {
     validateTimelineStructure(
       timeline,
-      songPackage,
-      sourceRoot,
-      contextSongId,
-      diagnostics,
-    )
-  }
-
-  if (timeline && visual) {
-    validateVisualReferences(
-      timeline,
-      visual,
       songPackage,
       sourceRoot,
       contextSongId,
@@ -619,34 +599,6 @@ function compareOccurrenceOrder(
   right: { occurrence: TimelineDocument['occurrences'][number]; index: number },
 ): number {
   return left.occurrence.startMs - right.occurrence.startMs || left.index - right.index
-}
-
-function validateVisualReferences(
-  timeline: TimelineDocument,
-  visual: VisualDocument,
-  songPackage: DiscoveredSongPackage,
-  sourceRoot: string,
-  songId: string,
-  diagnostics: Diagnostic[],
-): void {
-  const sectionIds = new Set(timeline.sections.map((section) => section.id))
-  const visualPath = toSourcePath(
-    sourceRoot,
-    path.join(songPackage.directoryPath, 'visual.json'),
-  )
-
-  visual.sectionCues?.forEach((cue, index) => {
-    if (!sectionIds.has(cue.sectionId)) {
-      diagnostics.push({
-        severity: 'error',
-        code: 'UNKNOWN_SECTION_REFERENCE',
-        songId,
-        sourcePath: visualPath,
-        fieldPath: `sectionCues[${index}].sectionId`,
-        message: `section cue references unknown Section "${cue.sectionId}"`,
-      })
-    }
-  })
 }
 
 function validateFeatureReferences(

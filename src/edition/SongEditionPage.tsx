@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -8,13 +8,6 @@ import {
 import { FullSongWorkspace } from './FullSongWorkspace'
 import { PracticeWorkspace } from './PracticeWorkspace'
 import { ExplainWorkspace } from './ExplainWorkspace'
-import { ThemeSwitcher } from '../theme/ThemeSwitcher'
-import { resolveArtDirection } from '../theme/art-direction'
-import {
-  resolveThemePreference,
-  writeThemePreference,
-  type EditionTheme,
-} from '../theme/theme-preference'
 import { useSongEditionCore } from './use-song-edition-core'
 
 type SongEditionTab = 'practice' | 'all' | 'explain'
@@ -37,24 +30,7 @@ export function SongEditionPage({
   const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
     string | undefined
   >()
-  const [themeSelection, setThemeSelection] = useState<
-    { songId: string; theme: EditionTheme } | undefined
-  >()
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
-  const currentSongId =
-    state.status === 'ready' ? state.core.edition.song.songId : undefined
-
-  const selectTheme = useCallback(
-    (nextTheme: EditionTheme): void => {
-      if (!currentSongId) {
-        return
-      }
-
-      setThemeSelection({ songId: currentSongId, theme: nextTheme })
-      writeThemePreference(currentSongId, nextTheme)
-    },
-    [currentSongId],
-  )
 
   if (state.status === 'loading') {
     return <SongEditionStatus homeHref={homeHref} />
@@ -89,21 +65,10 @@ export function SongEditionPage({
 
   const { core } = state
   const song = core.edition.song
-  const theme =
-    themeSelection?.songId === song.songId
-      ? themeSelection.theme
-      : resolveThemePreference(song.songId, core.visual.recommendedTheme)
-  const artDirection = resolveArtDirection(song.songId, core.visual, theme)
   return (
     <main
       className="song-edition is-practice-page"
       aria-labelledby="song-title"
-      data-theme={theme}
-      data-density={artDirection.density}
-      data-energy={artDirection.energy}
-      data-motion={artDirection.motion}
-      data-cover-treatment={artDirection.coverTreatment}
-      data-composition-variant={artDirection.compositionVariant}
       data-mode={tab}
     >
       <header className="practice-page-header">
@@ -159,7 +124,6 @@ export function SongEditionPage({
               讲解
             </button>
           </nav>
-          <ThemeSwitcher theme={theme} onChange={selectTheme} />
         </div>
       </header>
 
@@ -169,7 +133,6 @@ export function SongEditionPage({
           model={core.assembled}
           runtimeClient={runtimeClient}
           audioEngine={audioEngine}
-          theme={theme}
           requestedPracticeUnitId={practiceNavigationRequest}
           onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
         />
@@ -178,7 +141,6 @@ export function SongEditionPage({
           model={core.assembled}
           runtimeClient={runtimeClient}
           audioEngine={audioEngine}
-          theme={theme}
           onStartPracticeUnit={(practiceUnitId) => {
             setPracticeNavigationRequest(practiceUnitId)
             setTab('practice')
@@ -191,7 +153,6 @@ export function SongEditionPage({
           features={core.features}
           featureErrors={core.featureErrors}
           audioEngine={audioEngine}
-          theme={theme}
           onStartPracticeUnit={(practiceUnitId) => {
             setPracticeNavigationRequest(practiceUnitId)
             setTab('practice')

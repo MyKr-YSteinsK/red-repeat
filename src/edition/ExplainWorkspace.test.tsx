@@ -10,7 +10,6 @@ import type {
   LyricsDocument,
   PracticeDocument,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
@@ -112,7 +111,7 @@ describe('ExplainWorkspace', () => {
     expect(engine.getState().activeOccurrenceId).toBeUndefined()
   })
 
-  it('reuses the current audio session when explain opens and the theme changes', () => {
+  it('reuses the current audio session when explain rerenders', () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
@@ -126,7 +125,6 @@ describe('ExplainWorkspace', () => {
         features={features}
         featureErrors={[]}
         audioEngine={engine}
-        theme="liner"
       />,
     )
 
@@ -137,7 +135,6 @@ describe('ExplainWorkspace', () => {
         features={features}
         featureErrors={[]}
         audioEngine={engine}
-        theme="nocturne"
       />,
     )
 
@@ -167,18 +164,16 @@ const modelInput = {
     songId: 'first-light',
     title: 'First Light',
     artist: 'A Composer',
-    recommendedTheme: 'liner',
     coverUrl: '/library-runtime/cover.webp',
     editionUrl: '/library-runtime/edition.json',
   } satisfies CatalogEdition,
   edition: {
-    contractVersion: 2,
+    contractVersion: 3,
     contentHash: 'a'.repeat(64),
     song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
     lyricsUrl: '/library-runtime/lyrics.json',
     timelineUrl: '/library-runtime/timeline.json',
     practiceUrl: '/library-runtime/practice.json',
-    visualUrl: '/library-runtime/visual.json',
     features: [firstDescriptor, secondDescriptor],
     audio: {
       url: '/library-runtime/audio.m4a',
@@ -219,7 +214,6 @@ const modelInput = {
   practice: {
     units: [{ id: 'p001', sectionId: 'verse', label: '主歌 A', occurrenceIds: ['o001'] }],
   } satisfies PracticeDocument,
-  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features,
 }
 

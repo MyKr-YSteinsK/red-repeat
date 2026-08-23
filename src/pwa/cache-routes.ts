@@ -14,7 +14,7 @@ const catalogPattern = /\/library-runtime\/catalog\.json(?:\?.*)?$/
 const hash = '[a-f0-9]{64}'
 const immutableRuntimePattern = new RegExp(
   `\\/library-runtime\\/songs\\/[^/]+\\/(?:` +
-    `(?:edition|lyrics|timeline|visual)\\.${hash}\\.json` +
+    `(?:edition|lyrics|timeline)\\.${hash}\\.json` +
     `|features\\/[^/]+\\.${hash}\\.md` +
     `|(?:cover-small|cover-large|hero-large)\\.${hash}\\.webp` +
     `)(?:\\?.*)?$`,

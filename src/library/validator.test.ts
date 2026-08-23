@@ -39,11 +39,6 @@ const timeline = {
   ],
 }
 
-const visual = {
-  recommendedTheme: 'liner',
-  sectionCues: [{ sectionId: 'verse-1', cue: 'isolate' }],
-}
-
 const practice = {
   units: [
     {
@@ -441,19 +436,6 @@ describe('Library Validator', () => {
     expect(result.errors).toBe(0)
   })
 
-  it('reports Visual cues that reference unknown Sections', () => {
-    const root = createTemporaryRoot()
-    const packageDirectory = createValidPackage(root)
-    writeJson(path.join(packageDirectory, 'visual.json'), {
-      ...visual,
-      sectionCues: [{ sectionId: 'missing-section', cue: 'darken' }],
-    })
-
-    const result = validateLibrary(root)
-
-    expectCode(result, 'UNKNOWN_SECTION_REFERENCE')
-  })
-
   it('reports invalid Feature Segment references', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
@@ -510,7 +492,6 @@ function createValidPackage(root: string): string {
   writeJson(path.join(packageDirectory, 'lyrics.json'), lyrics)
   writeJson(path.join(packageDirectory, 'timeline.json'), timeline)
   writeJson(path.join(packageDirectory, 'practice.json'), practice)
-  writeJson(path.join(packageDirectory, 'visual.json'), visual)
   fs.writeFileSync(
     path.join(packageDirectory, 'audio', 'source.mp3'),
     'synthetic audio placeholder',

@@ -48,9 +48,6 @@ export function loadSourcePackage(
     practice: readJsonSourceFile(
       path.join(songPackage.directoryPath, SOURCE_FILE_NAMES.practice),
     ),
-    visual: readJsonSourceFile(
-      path.join(songPackage.directoryPath, SOURCE_FILE_NAMES.visual),
-    ),
   }
 }
 

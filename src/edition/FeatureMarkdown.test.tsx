@@ -4,7 +4,6 @@ import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
   LyricsDocument,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import {
@@ -26,18 +25,16 @@ const model = assembleRuntimeSongEdition({
     songId: 'first-light',
     title: 'First Light',
     artist: 'A Composer',
-    recommendedTheme: 'liner',
     coverUrl: '/library-runtime/cover.webp',
     editionUrl: '/library-runtime/edition.json',
   } satisfies CatalogEdition,
   edition: {
-    contractVersion: 2,
+    contractVersion: 3,
     contentHash: 'a'.repeat(64),
     song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
     lyricsUrl: '/library-runtime/lyrics.json',
     timelineUrl: '/library-runtime/timeline.json',
     practiceUrl: '/library-runtime/practice.json',
-    visualUrl: '/library-runtime/visual.json',
     features: [],
     audio: {
       url: '/library-runtime/audio.m4a',
@@ -97,7 +94,6 @@ const model = assembleRuntimeSongEdition({
     ],
   } satisfies TimelineDocument,
   practice: { units: [] },
-  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features: [],
 })
 

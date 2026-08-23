@@ -9,11 +9,9 @@ import {
   LyricsSchema,
   PracticeSchema,
   TimelineSchema,
-  VisualSchema,
   type LyricsDocument,
   type PracticeDocument,
   type TimelineDocument,
-  type VisualDocument,
 } from '../library/schema'
 import { fetchWithSongDownloadFallback } from '../pwa/song-download'
 import { resolveRuntimeAsset } from './runtime-url'
@@ -114,13 +112,6 @@ export class RuntimeClient {
     options: RuntimeLoadOptions = {},
   ): Promise<PracticeDocument> {
     return this.loadJson(logicalRuntimePath, PracticeSchema.parse, options)
-  }
-
-  loadVisual(
-    logicalRuntimePath: string,
-    options: RuntimeLoadOptions = {},
-  ): Promise<VisualDocument> {
-    return this.loadJson(logicalRuntimePath, VisualSchema.parse, options)
   }
 
   loadFeature(

@@ -10,7 +10,6 @@ import type {
   LyricsDocument,
   PracticeDocument,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
@@ -197,18 +196,16 @@ const model = assembleRuntimeSongEdition({
     songId: 'first-light',
     title: 'First Light',
     artist: 'A Composer',
-    recommendedTheme: 'liner',
     coverUrl: '/library-runtime/cover.webp',
     editionUrl: '/library-runtime/edition.json',
   } satisfies CatalogEdition,
   edition: {
-    contractVersion: 2,
+    contractVersion: 3,
     contentHash: 'a'.repeat(64),
     song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
     lyricsUrl: '/library-runtime/lyrics.json',
     timelineUrl: '/library-runtime/timeline.json',
     practiceUrl: '/library-runtime/practice.json',
-    visualUrl: '/library-runtime/visual.json',
     features: [],
     audio: {
       url: '/library-runtime/audio.m4a',
@@ -273,7 +270,6 @@ const model = assembleRuntimeSongEdition({
       },
     ],
   } satisfies PracticeDocument,
-  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features: [],
 })
 

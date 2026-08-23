@@ -13,13 +13,12 @@ const catalogEdition: CatalogEdition = {
   songId: 'first-light',
   title: 'First Light',
   artist: 'A Composer',
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
   editionUrl: '/library-runtime/songs/first-light/edition.a.json',
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -29,7 +28,6 @@ const edition: RuntimeEdition = {
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.b.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.b.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.b.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.b.json',
   features: [
     { id: 'note', url: '/library-runtime/songs/first-light/features/note.c.md' },
   ],
@@ -83,8 +81,8 @@ describe('song download cache', () => {
     })
 
     const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
-    expect(fetchImpl).toHaveBeenCalledTimes(9)
-    expect(cache.entries.size).toBe(10)
+    expect(fetchImpl).toHaveBeenCalledTimes(8)
+    expect(cache.entries.size).toBe(9)
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
       songId: 'first-light',
       status: 'installed',

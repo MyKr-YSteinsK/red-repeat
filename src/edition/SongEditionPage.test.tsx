@@ -29,13 +29,12 @@ const catalogEdition: CatalogEdition = {
   artist: 'A Composer',
   album: 'Returning',
   year: 2026,
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/cover.webp',
   editionUrl: '/library-runtime/edition.json',
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -47,7 +46,6 @@ const edition: RuntimeEdition = {
   lyricsUrl: '/library-runtime/lyrics.json',
   timelineUrl: '/library-runtime/timeline.json',
   practiceUrl: '/library-runtime/practice.json',
-  visualUrl: '/library-runtime/visual.json',
   features: [
     {
       id: 'note',
@@ -172,7 +170,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(media.play).toHaveBeenCalledTimes(playCount)
   })
 
-  it('keeps Full Song structure stable when Theme skin changes', async () => {
+  it('keeps Full Song structure stable while switching tabs', async () => {
     render(<SongEditionPage {...propsFor()} />)
     await screen.findByRole('heading', { name: 'First Light' })
     fireEvent.click(screen.getByRole('button', { name: '全曲' }))
@@ -180,9 +178,6 @@ describe('SongEditionPage 学唱入口', () => {
     const before = screen
       .getByRole('region', { name: '全曲歌词' })
       .querySelectorAll('[data-occurrence-id]').length
-    fireEvent.click(screen.getByRole('button', { name: '使用夜间显示风格' }))
-
-    expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
     expect(
       screen
         .getByRole('region', { name: '全曲歌词' })
@@ -191,7 +186,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(screen.getByRole('complementary', { name: '全曲播放器' })).toBeInTheDocument()
   })
 
-  it('plays the clicked real occurrence and preserves the engine across Theme changes', async () => {
+  it('plays the clicked real occurrence and preserves the engine across tabs', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
@@ -203,8 +198,6 @@ describe('SongEditionPage 学唱入口', () => {
     await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
     expect(media.currentTime).toBe(0.05)
 
-    fireEvent.click(screen.getByRole('button', { name: '使用夜间显示风格' }))
-    expect(screen.getByRole('main')).toHaveAttribute('data-theme', 'nocturne')
     expect(media.load).toHaveBeenCalledTimes(loadCountBeforeRender + 1)
     expect(screen.getByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
   })
@@ -237,7 +230,6 @@ function propsFor(error?: Error, audioEngine?: AudioEngine): SongEditionPageProp
     loadLyrics: vi.fn(async () => lyrics),
     loadTimeline: vi.fn(async () => timeline),
     loadPractice: vi.fn(async () => practice),
-    loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
     loadFeature: vi.fn(async () => '# Notes\n\nA small note.'),
     resolveAsset: vi.fn((logicalPath: string) => `/app${logicalPath}`),
   } as unknown as RuntimeClient

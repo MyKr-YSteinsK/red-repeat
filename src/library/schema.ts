@@ -182,38 +182,6 @@ export const PracticeSchema = z
   })
   .strict()
 
-export const ThemeSchema = z.enum(['liner', 'cinema', 'nocturne'])
-export const SectionCueSchema = z
-  .object({
-    sectionId: SectionIdSchema,
-    cue: z.enum([
-      'isolate',
-      'expand',
-      'compress',
-      'brighten',
-      'darken',
-      'suspend',
-      'dissolve',
-      'echo',
-    ]),
-  })
-  .strict()
-
-export const VisualSchema = z
-  .object({
-    recommendedTheme: ThemeSchema,
-    mood: z.array(nonEmptyText).optional(),
-    motifs: z.array(nonEmptyText).optional(),
-    energy: z.enum(['quiet', 'restrained', 'balanced', 'intense']).optional(),
-    density: z.enum(['sparse', 'balanced', 'dense']).optional(),
-    motion: z.enum(['still', 'slow', 'moderate']).optional(),
-    coverTreatment: z
-      .enum(['clean', 'editorial', 'atmospheric', 'abstracted'])
-      .optional(),
-    sectionCues: z.array(SectionCueSchema).optional(),
-  })
-  .strict()
-
 export type SongManifest = z.infer<typeof ManifestSchema>
 export type Layer = z.infer<typeof LayerSchema>
 export type Note = z.infer<typeof NoteSchema>
@@ -224,13 +192,10 @@ export type Occurrence = z.infer<typeof OccurrenceSchema>
 export type TimelineDocument = z.infer<typeof TimelineSchema>
 export type PracticeUnit = z.infer<typeof PracticeUnitSchema>
 export type PracticeDocument = z.infer<typeof PracticeSchema>
-export type SectionCue = z.infer<typeof SectionCueSchema>
-export type VisualDocument = z.infer<typeof VisualSchema>
 
 export const SOURCE_FILE_NAMES = {
   manifest: 'manifest.json',
   lyrics: 'lyrics.json',
   timeline: 'timeline.json',
   practice: 'practice.json',
-  visual: 'visual.json',
 } as const

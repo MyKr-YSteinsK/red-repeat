@@ -10,7 +10,6 @@ import type {
   Section,
   Segment,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 
 export interface RuntimeFeatureContent {
@@ -36,7 +35,6 @@ export interface AssembledSongEdition {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
-  visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
   segmentsById: Readonly<Record<string, Segment>>
   occurrencesById: Readonly<Record<string, AssembledOccurrence>>
@@ -56,7 +54,6 @@ export interface AssembleSongEditionInput {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
-  visual: VisualDocument
   features: readonly RuntimeFeatureContent[]
   allowMissingFeatureContent?: boolean
 }
@@ -64,7 +61,7 @@ export interface AssembleSongEditionInput {
 export function assembleRuntimeSongEdition(
   input: AssembleSongEditionInput,
 ): AssembledSongEdition {
-  assertCatalogConsistency(input.catalogEdition, input.edition, input.visual)
+  assertCatalogConsistency(input.catalogEdition, input.edition)
 
   const segmentsById = indexById(input.lyrics.segments, 'Segment')
   const sectionsById = indexById(input.timeline.sections, 'Section')
@@ -111,7 +108,6 @@ export function assembleRuntimeSongEdition(
     lyrics: input.lyrics,
     timeline: input.timeline,
     practice: input.practice,
-    visual: input.visual,
     features: assembleFeatures(
       input.edition.features,
       input.features,
@@ -134,7 +130,6 @@ export function assembleRuntimeSongEdition(
 function assertCatalogConsistency(
   catalogEdition: CatalogEdition,
   edition: RuntimeEdition,
-  visual: VisualDocument,
 ): void {
   const metadataFields: Array<
     'songId' | 'title' | 'artist' | 'album' | 'year'
@@ -154,9 +149,6 @@ function assertCatalogConsistency(
     }
   })
 
-  if (catalogEdition.recommendedTheme !== visual.recommendedTheme) {
-    throw new Error('catalog and visual recommendedTheme do not match')
-  }
 }
 
 function assembleFeatures(

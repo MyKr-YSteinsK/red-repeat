@@ -14,13 +14,13 @@ import {
 } from './runtime/runtime-client'
 
 const emptyCatalog = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   editions: [],
 }
 
 const populatedCatalog = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'b'.repeat(64),
   editions: [
     {
@@ -29,7 +29,6 @@ const populatedCatalog = {
       artist: 'A Composer',
       album: 'Returning',
       year: 2026,
-      recommendedTheme: 'liner',
       coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
       editionUrl: '/library-runtime/songs/first-light/edition.a.json',
     },
@@ -37,7 +36,6 @@ const populatedCatalog = {
       songId: 'second-signal',
       title: 'Second Signal',
       artist: 'Another Composer',
-      recommendedTheme: 'liner',
       coverUrl: '/library-runtime/songs/second-signal/cover-small.b.webp',
       editionUrl: '/library-runtime/songs/second-signal/edition.b.json',
     },
@@ -45,7 +43,7 @@ const populatedCatalog = {
 }
 
 const runtimeEditionForApp = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'c'.repeat(64),
   song: {
     songId: 'first-light',
@@ -57,7 +55,6 @@ const runtimeEditionForApp = {
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [],
   audio: {
     url: '/library-runtime/songs/first-light/audio.a.m4a',
@@ -542,7 +539,7 @@ function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populate
   if (url.endsWith('/practice.a.json')) {
     return jsonResponse({ units: [] })
   }
-  return jsonResponse({ recommendedTheme: 'liner' })
+  throw new Error(`unexpected App runtime URL: ${url}`)
 }
 
 function responseForResumeUrl(input: RequestInfo | URL): Response {

@@ -6,7 +6,6 @@ import type {
   AssembledSongEdition,
   RuntimeFeatureContent,
 } from '../runtime/song-edition'
-import type { EditionTheme } from '../theme/theme-preference'
 import {
   ExplainArticleBody,
   parseFeatureArticle,
@@ -22,7 +21,6 @@ export interface ExplainWorkspaceProps {
   features: readonly RuntimeFeatureContent[]
   featureErrors: readonly RuntimeFeatureLoadError[]
   audioEngine?: AudioEngine
-  theme?: EditionTheme
   onStartPracticeUnit?: (practiceUnitId: string) => void
 }
 
@@ -39,7 +37,6 @@ export function ExplainWorkspace({
   features,
   featureErrors,
   audioEngine,
-  theme = 'liner',
   onStartPracticeUnit,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
@@ -57,7 +54,7 @@ export function ExplainWorkspace({
 
   if (topics.length === 0) {
     return (
-      <section className="explain-workspace" aria-label="讲解工作台" data-theme={theme}>
+      <section className="explain-workspace" aria-label="讲解工作台">
         <div className="explain-empty">
           <p className="eyebrow">讲解</p>
           <h2>这首歌暂时没有讲解内容。</h2>
@@ -81,7 +78,6 @@ export function ExplainWorkspace({
     <section
       className="explain-workspace"
       aria-label="讲解工作台"
-      data-theme={theme}
       data-current-topic-id={selectedTopic?.id}
     >
       <header className="explain-workspace-heading">

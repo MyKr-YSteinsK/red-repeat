@@ -22,8 +22,6 @@ import {
   readPracticePlaybackRate,
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
-import type { EditionTheme } from '../theme/theme-preference'
-import { getSectionCue, resolveArtDirection } from '../theme/art-direction'
 import { useAudioProgress } from './use-audio-progress'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
@@ -31,7 +29,6 @@ export interface FullSongWorkspaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
-  theme?: EditionTheme
   onStartPracticeUnit?: (practiceUnitId: string) => void
 }
 
@@ -39,7 +36,6 @@ export function FullSongWorkspace({
   model,
   runtimeClient,
   audioEngine,
-  theme = 'liner',
   onStartPracticeUnit,
 }: FullSongWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
@@ -74,11 +70,6 @@ export function FullSongWorkspace({
       createEffectivePracticeTimingProvider(model.timeline, timingOverrides),
     [model.timeline, timingOverrides],
   )
-  const artDirection = useMemo(
-    () => resolveArtDirection(model.edition.song.songId, model.visual, theme),
-    [model.edition.song.songId, model.visual, theme],
-  )
-
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
@@ -155,7 +146,6 @@ export function FullSongWorkspace({
     <section
       className="full-song-workspace"
       aria-label="全曲歌词"
-      data-theme={theme}
       data-current-section-id={playback.resolution.currentSection?.id}
       data-selected-occurrence-id={selectedOccurrenceId}
       data-follow-lyrics={followLyrics}
@@ -179,7 +169,6 @@ export function FullSongWorkspace({
       <div className="full-song-layout">
         <FullSongLyrics
           model={model}
-          artDirection={artDirection}
           activeOccurrenceIds={activeOccurrenceIds}
           primaryOccurrenceId={primaryOccurrenceId}
           selectedOccurrenceId={selectedOccurrenceId}
@@ -215,7 +204,6 @@ export function FullSongWorkspace({
 
 interface FullSongLyricsProps {
   model: AssembledSongEdition
-  artDirection: ReturnType<typeof resolveArtDirection>
   activeOccurrenceIds: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
@@ -229,7 +217,6 @@ interface FullSongLyricsProps {
 
 function FullSongLyrics({
   model,
-  artDirection,
   activeOccurrenceIds,
   primaryOccurrenceId,
   selectedOccurrenceId,
@@ -270,7 +257,6 @@ function FullSongLyrics({
           key={section.id}
           aria-labelledby={`full-song-section-${section.id}`}
           data-section-id={section.id}
-          data-section-cue={getSectionCue(artDirection, section.id)}
         >
           <div className="full-song-section-heading">
             <span className="full-song-section-index" aria-hidden="true">

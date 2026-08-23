@@ -8,13 +8,12 @@ const catalogEdition: CatalogEdition = {
   songId: 'first-light',
   title: 'First Light',
   artist: 'A Composer',
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
   editionUrl: '/library-runtime/songs/first-light/edition.a.json',
 }
 
 const edition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -24,7 +23,6 @@ const edition = {
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [],
   audio: {
     url: '/library-runtime/songs/first-light/audio.a.m4a',
@@ -56,7 +54,6 @@ describe('runtime Song Edition loader', () => {
         occurrences: [],
       })),
       loadPractice: vi.fn(async () => ({ units: [] })),
-      loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
     } as unknown as RuntimeClient
 
     const result = await loadRuntimeSongEditionCore(client, catalogEdition)
@@ -70,7 +67,6 @@ describe('runtime Song Edition loader', () => {
     expect(client.loadLyrics).toHaveBeenCalledWith(edition.lyricsUrl, {})
     expect(client.loadTimeline).toHaveBeenCalledWith(edition.timelineUrl, {})
     expect(client.loadPractice).toHaveBeenCalledWith(edition.practiceUrl, {})
-    expect(client.loadVisual).toHaveBeenCalledWith(edition.visualUrl, {})
   })
 
   it('keeps an individual Feature failure local to the assembled core', async () => {
@@ -92,7 +88,6 @@ describe('runtime Song Edition loader', () => {
         occurrences: [],
       })),
       loadPractice: vi.fn(async () => ({ units: [] })),
-      loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
       loadFeature: vi.fn(async () => {
         throw new RuntimeClientError({
           kind: 'network',

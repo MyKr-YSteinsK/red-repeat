@@ -7,7 +7,6 @@ import type {
   LyricsDocument,
   TimelineDocument,
   PracticeDocument,
-  VisualDocument,
 } from '../library/schema'
 import {
   assembleRuntimeSongEdition,
@@ -20,13 +19,12 @@ const catalogEdition: CatalogEdition = {
   artist: 'A Composer',
   album: 'Returning',
   year: 2026,
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
   editionUrl: '/library-runtime/songs/first-light/edition.a.json',
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -38,7 +36,6 @@ const edition: RuntimeEdition = {
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.a.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.a.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.a.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.a.json',
   features: [
     {
       id: 'essay-z',
@@ -90,7 +87,6 @@ const timeline: TimelineDocument = {
   ],
 }
 
-const visual: VisualDocument = { recommendedTheme: 'liner' }
 const practice: PracticeDocument = { units: [] }
 
 const featureContents = [
@@ -171,7 +167,7 @@ describe('assembled runtime Song Edition', () => {
     ).toThrow('missing Segment s999')
   })
 
-  it('rejects inconsistent catalog, edition, and visual identity', () => {
+  it('rejects inconsistent catalog and edition identity', () => {
     expect(() =>
       assembleRuntimeSongEdition(
         createInput({
@@ -180,11 +176,6 @@ describe('assembled runtime Song Edition', () => {
       ),
     ).toThrow('metadata mismatch')
 
-    expect(() =>
-      assembleRuntimeSongEdition(
-        createInput({ visual: { recommendedTheme: 'cinema' } }),
-      ),
-    ).toThrow('recommendedTheme')
   })
 })
 
@@ -197,7 +188,6 @@ function createInput(
     lyrics,
     timeline,
     practice,
-    visual,
     features: featureContents,
     ...overrides,
   }

@@ -112,7 +112,6 @@
 }
 
 .catalog-index,
-.catalog-theme,
 .catalog-meta {
   color: var(--color-muted);
   font-family: var(--font-mono);
@@ -159,10 +158,6 @@
 
 .catalog-meta {
   margin-top: 0.3rem;
-}
-
-.catalog-theme {
-  white-space: nowrap;
 }
 
 .catalog-arrow {
@@ -262,50 +257,6 @@
   color: var(--color-red);
 }
 
-.theme-switcher {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-}
-
-.theme-switcher-label {
-  color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-}
-
-.theme-switcher-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.theme-switcher-option {
-  min-height: 2.5rem;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--color-line);
-  color: var(--color-muted);
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
-}
-
-.theme-switcher-option[aria-pressed='true'] {
-  border-color: var(--color-red);
-  color: var(--color-red);
-}
-
-.theme-switcher-option:hover,
-.theme-switcher-option:focus-visible {
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-}
-
 .song-edition {
   flex: 1;
   --edition-bg: #f4f1ea;
@@ -332,33 +283,6 @@
   background: var(--edition-bg);
   color: var(--edition-ink);
   padding: clamp(2.5rem, 7vh, 6rem) 0 clamp(4rem, 10vh, 8rem);
-}
-
-.song-edition[data-theme='liner'] {
-  --edition-bg: #f4f1ea;
-  --edition-surface: #fbfaf6;
-  --edition-ink: #171717;
-  --edition-muted: #716f6a;
-  --edition-line: #d8d2c8;
-  --edition-signal: #c81d25;
-}
-
-.song-edition[data-theme='cinema'] {
-  --edition-bg: #e8e4dc;
-  --edition-surface: #f7f4ed;
-  --edition-ink: #17191c;
-  --edition-muted: #676a6b;
-  --edition-line: #c6c1b7;
-  --edition-signal: #a52b2d;
-}
-
-.song-edition[data-theme='nocturne'] {
-  --edition-bg: #121214;
-  --edition-surface: #1b1b1f;
-  --edition-ink: #f2eee7;
-  --edition-muted: #aaa6a1;
-  --edition-line: #3d3b3e;
-  --edition-signal: #dc6570;
 }
 
 .song-edition-status {
@@ -958,10 +882,6 @@
     height: 4.25rem;
   }
 
-  .catalog-theme {
-    display: none;
-  }
-
   .catalog-title {
     font-size: 1.35rem;
   }
@@ -1455,10 +1375,6 @@
 .edition-task-nav button.is-active {
   border-color: var(--color-red);
   color: var(--color-red);
-}
-
-.practice-page-tools .theme-switcher {
-  margin: 0;
 }
 
 .practice-workspace {
@@ -2161,15 +2077,6 @@
   .edition-task-nav button {
     flex: 1;
     padding-inline: 0.35rem;
-  }
-
-  .practice-page-tools .theme-switcher {
-    flex: 0 0 auto;
-    width: auto;
-  }
-
-  .practice-page-tools .theme-switcher-label {
-    display: none;
   }
 
   .explain-workspace-heading {

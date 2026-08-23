@@ -10,7 +10,6 @@ import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type {
   LyricsDocument,
   TimelineDocument,
-  VisualDocument,
 } from '../library/schema'
 import { getTimingOverridesStorageKey } from '../practice/practice-timing-overrides'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
@@ -31,13 +30,12 @@ const catalogEdition: CatalogEdition = {
   songId: 'first-light',
   title: 'First Light',
   artist: 'A Composer',
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/songs/first-light/cover-small.webp',
   editionUrl: '/library-runtime/songs/first-light/edition.json',
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: {
     songId: 'first-light',
@@ -47,7 +45,6 @@ const edition: RuntimeEdition = {
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.json',
   features: [],
   audio: {
     url: '/library-runtime/songs/first-light/audio.m4a',
@@ -149,7 +146,6 @@ const model = assembleRuntimeSongEdition({
       { id: 'p002', sectionId: 'chorus', label: 'Chorus', occurrenceIds: ['o004'] },
     ],
   },
-  visual: { recommendedTheme: 'liner' } satisfies VisualDocument,
   features: [],
 })
 

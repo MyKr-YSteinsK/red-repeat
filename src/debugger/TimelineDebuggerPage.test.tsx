@@ -22,19 +22,17 @@ const catalogEdition: CatalogEdition = {
   songId: 'first-light',
   title: 'First Light',
   artist: 'A Composer',
-  recommendedTheme: 'liner',
   coverUrl: '/library-runtime/songs/first-light/cover.webp',
   editionUrl: '/library-runtime/songs/first-light/edition.json',
 }
 
 const edition: RuntimeEdition = {
-  contractVersion: 2,
+  contractVersion: 3,
   contentHash: 'a'.repeat(64),
   song: { songId: 'first-light', title: 'First Light', artist: 'A Composer' },
   lyricsUrl: '/library-runtime/songs/first-light/lyrics.json',
   timelineUrl: '/library-runtime/songs/first-light/timeline.json',
   practiceUrl: '/library-runtime/songs/first-light/practice.json',
-  visualUrl: '/library-runtime/songs/first-light/visual.json',
   features: [],
   audio: {
     url: '/library-runtime/songs/first-light/audio.m4a',
@@ -99,7 +97,7 @@ describe('Timeline Debugger live context', () => {
     render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 3, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
@@ -290,7 +288,7 @@ describe('Timeline Debugger live context', () => {
     const view = render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 3, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
@@ -316,7 +314,7 @@ describe('Timeline Debugger live context', () => {
     const view = render(
       <TimelineDebuggerPage
         songId="first-light"
-        catalogState={{ status: 'ready', catalog: { contractVersion: 2, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
+        catalogState={{ status: 'ready', catalog: { contractVersion: 3, contentHash: 'e'.repeat(64), editions: [catalogEdition] } }}
         runtimeClient={runtimeClientFor()}
         homeHref="/red-repeat/"
         onRetryCatalog={vi.fn()}
@@ -342,7 +340,6 @@ function runtimeClientFor(): RuntimeClient {
     loadEdition: vi.fn(async () => edition),
     loadLyrics: vi.fn(async () => lyrics),
     loadTimeline: vi.fn(async () => timeline),
-    loadVisual: vi.fn(async () => ({ recommendedTheme: 'liner' as const })),
     resolveAsset: (logicalPath: string) => `/app${logicalPath}`,
   } as unknown as RuntimeClient
 }

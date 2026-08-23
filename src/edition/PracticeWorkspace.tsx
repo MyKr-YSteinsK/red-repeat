@@ -57,13 +57,11 @@ import {
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
 import { useSongEditionPlayback } from './use-song-edition-playback'
-import type { EditionTheme } from '../theme/theme-preference'
 
 export interface PracticeWorkspaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
-  theme: EditionTheme
   requestedPracticeUnitId?: string
   onRequestedPracticeUnitConsumed?: () => void
 }
@@ -72,7 +70,6 @@ export function PracticeWorkspace({
   model,
   runtimeClient,
   audioEngine,
-  theme,
   requestedPracticeUnitId,
   onRequestedPracticeUnitConsumed,
 }: PracticeWorkspaceProps) {
@@ -1008,7 +1005,6 @@ export function PracticeWorkspace({
     <section
       className="practice-workspace"
       aria-label="学唱工作台"
-      data-theme={theme}
       data-current-unit-id={currentUnit.id}
       data-current-occurrence-id={currentOccurrence.occurrence.id}
     >

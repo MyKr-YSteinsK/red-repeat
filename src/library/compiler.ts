@@ -26,7 +26,6 @@ import {
   ManifestSchema,
   PracticeSchema,
   TimelineSchema,
-  VisualSchema,
   type SongManifest,
 } from './schema'
 import {
@@ -120,7 +119,7 @@ export async function compileLibrary(
   }
 
   const catalogPayload = {
-    contractVersion: 2 as const,
+    contractVersion: 3 as const,
     editions: compiledSongs
       .map(({ catalogEdition }) => catalogEdition)
       .sort((left, right) => left.songId.localeCompare(right.songId)),
@@ -175,7 +174,6 @@ async function compileSongPackage(options: {
   const lyrics = parseSourceFile(loaded.lyrics, LyricsSchema)
   const timeline = parseSourceFile(loaded.timeline, TimelineSchema)
   const practice = parseSourceFile(loaded.practice, PracticeSchema)
-  const visual = parseSourceFile(loaded.visual, VisualSchema)
   const audioSource = findCanonicalAudioSources(options.songPackage)[0]
   const coverSource = findPackageFiles(
     path.join(options.songPackage.directoryPath, 'artwork'),
@@ -245,23 +243,17 @@ async function compileSongPackage(options: {
     'practice',
     practice,
   )
-  const visualFilename = writeStructuredResource(
-    songOutputRoot,
-    'visual',
-    visual,
-  )
   const features = compileFeatures(
     options.songPackage,
     songOutputRoot,
     manifest.songId,
   )
   const editionPayload = {
-    contractVersion: 2 as const,
+    contractVersion: 3 as const,
     song: toRuntimeSongMetadata(manifest),
     lyricsUrl: runtimeUrl(manifest.songId, lyricsFilename),
     timelineUrl: runtimeUrl(manifest.songId, timelineFilename),
     practiceUrl: runtimeUrl(manifest.songId, practiceFilename),
-    visualUrl: runtimeUrl(manifest.songId, visualFilename),
     features,
     audio: {
       url: runtimeUrl(manifest.songId, audio.filename),
@@ -306,7 +298,6 @@ async function compileSongPackage(options: {
       artist: manifest.artist,
       ...(manifest.album ? { album: manifest.album } : {}),
       ...(manifest.year !== undefined ? { year: manifest.year } : {}),
-      recommendedTheme: visual.recommendedTheme,
       coverUrl: runtimeUrl(manifest.songId, coverSmall.filename),
       editionUrl: runtimeUrl(manifest.songId, editionFilename),
     },

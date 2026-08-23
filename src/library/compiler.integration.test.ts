@@ -62,7 +62,6 @@ describe('Library Compiler media pipeline', () => {
         lyricsUrl: firstEdition.edition.lyricsUrl,
         timelineUrl: firstEdition.edition.timelineUrl,
         practiceUrl: firstEdition.edition.practiceUrl,
-        visualUrl: firstEdition.edition.visualUrl,
         features: firstEdition.edition.features,
         audio: firstEdition.edition.audio,
         artwork: firstEdition.edition.artwork,
@@ -419,11 +418,6 @@ async function createFixture(
       },
     ],
   })
-  writeJson(path.join(songRoot, 'visual.json'), {
-    recommendedTheme: 'cinema',
-    mood: ['restrained'],
-    sectionCues: [{ sectionId: 'verse-1', cue: 'expand' }],
-  })
   fs.writeFileSync(
     path.join(songRoot, 'features', 'reading.md'),
     'Read this line [[segment:s001]].\n',
@@ -527,7 +521,6 @@ function readCompiledEdition(outputRoot: string): {
     edition.lyricsUrl,
     edition.timelineUrl,
     edition.practiceUrl,
-    edition.visualUrl,
     edition.audio.url,
     edition.artwork.coverSmallUrl,
     edition.artwork.coverLargeUrl,

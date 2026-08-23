@@ -4,7 +4,6 @@ import {
   ManifestSchema,
   PracticeSchema,
   TimelineSchema,
-  VisualSchema,
 } from './schema'
 
 const validManifest = {
@@ -42,17 +41,6 @@ const validTimeline = {
   ],
 }
 
-const validVisual = {
-  recommendedTheme: 'liner',
-  mood: ['quiet', 'open'],
-  motifs: ['paper', 'distance'],
-  energy: 'restrained',
-  density: 'sparse',
-  motion: 'slow',
-  coverTreatment: 'editorial',
-  sectionCues: [{ sectionId: 'verse-1', cue: 'isolate' }],
-}
-
 const validPractice = {
   units: [
     {
@@ -70,7 +58,6 @@ describe('Song Edition source schemas', () => {
     expect(LyricsSchema.safeParse(validLyrics).success).toBe(true)
     expect(TimelineSchema.safeParse(validTimeline).success).toBe(true)
     expect(PracticeSchema.safeParse(validPractice).success).toBe(true)
-    expect(VisualSchema.safeParse(validVisual).success).toBe(true)
   })
 
   it('requires stable Practice Unit fields', () => {
@@ -100,18 +87,6 @@ describe('Song Edition source schemas', () => {
     })
 
     expect(result.success).toBe(false)
-  })
-
-  it('rejects unknown themes and section cues', () => {
-    expect(
-      VisualSchema.safeParse({ ...validVisual, recommendedTheme: 'paper' }).success,
-    ).toBe(false)
-    expect(
-      VisualSchema.safeParse({
-        ...validVisual,
-        sectionCues: [{ sectionId: 'verse-1', cue: 'flash' }],
-      }).success,
-    ).toBe(false)
   })
 
   it('rejects invalid timing order', () => {
