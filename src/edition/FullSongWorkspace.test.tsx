@@ -11,7 +11,7 @@ import type {
   LyricsDocument,
   TimelineDocument,
 } from '../library/schema'
-import { getTimingOverridesStorageKey } from '../practice/practice-timing-overrides'
+import { createEffectivePracticeTimingProvider } from '../practice/practice-timing-overrides'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { FullSongWorkspace } from './FullSongWorkspace'
@@ -149,6 +149,17 @@ const model = assembleRuntimeSongEdition({
   features: [],
 })
 
+const modelWithTimingOverride = {
+  ...model,
+  timingProvider: createEffectivePracticeTimingProvider(model.timeline, {
+    schemaVersion: 1,
+    songId: 'first-light',
+    audioSourceHash: edition.audio.sourceHash,
+    baseTimelineUrl: edition.timelineUrl,
+    occurrences: { o002: { playStartMs: 420, playEndMs: 880 } },
+  }),
+}
+
 describe('FullSongWorkspace', () => {
   it('renders the complete lyric stream with readable translation and reading layers', async () => {
     const { engine } = renderWorkspace()
@@ -277,18 +288,8 @@ describe('FullSongWorkspace', () => {
     expect(media.play).toHaveBeenCalledOnce()
   })
 
-  it('uses a compatible Timing Override for continuous click and bounded replay', async () => {
-    window.localStorage.setItem(
-      getTimingOverridesStorageKey('first-light'),
-      JSON.stringify({
-        schemaVersion: 1,
-        songId: 'first-light',
-        audioSourceHash: 'b'.repeat(64),
-        baseTimelineUrl: edition.timelineUrl,
-        occurrences: { o002: { playStartMs: 420, playEndMs: 880 } },
-      }),
-    )
-    const { engine } = renderWorkspace()
+  it('uses the assembled Effective Timing for continuous click and bounded replay', async () => {
+    const { engine } = renderWorkspace({ model: modelWithTimingOverride })
     await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
 
     fireEvent.click(
@@ -308,17 +309,7 @@ describe('FullSongWorkspace', () => {
     })
   })
 
-  it('ignores stale Timing Overrides and keeps canonical one-shot bounds', async () => {
-    window.localStorage.setItem(
-      getTimingOverridesStorageKey('first-light'),
-      JSON.stringify({
-        schemaVersion: 1,
-        songId: 'first-light',
-        audioSourceHash: 'b'.repeat(64),
-        baseTimelineUrl: '/library-runtime/songs/first-light/old-timeline.json',
-        occurrences: { o002: { playStartMs: 777, playEndMs: 888 } },
-      }),
-    )
+  it('uses canonical one-shot bounds when no Effective Timing override exists', async () => {
     const { engine } = renderWorkspace()
     await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
 
@@ -373,13 +364,110 @@ describe('FullSongWorkspace', () => {
       })
     })
 
-    fireEvent.click(screen.getByRole('button', { name: '加速' }))
-    expect(engine.getState().playbackRate).toBe(1.05)
-    fireEvent.click(screen.getByRole('button', { name: '设置速度 0.65x' }))
-    expect(engine.getState().playbackRate).toBe(0.65)
+    expect(screen.queryByRole('button', { name: '加速' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '设置速度 0.65x' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '设置速度 0.80x' }))
+    expect(engine.getState().playbackRate).toBe(0.8)
     expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe(
-      '0.65',
+      '0.8',
     )
+  })
+
+  it('does not scroll for the first primary after a lyric click, then follows later playback', async () => {
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    })
+
+    try {
+      const { engine, frames } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+      fireEvent.click(
+        screen.getByRole('button', { name: '从这里连续播放：Stay near' }),
+      )
+      await waitFor(() => expect(engine.getState().status).toBe('playing'))
+      expect(scrollIntoView).not.toHaveBeenCalled()
+
+      await act(async () => {
+        mediaFor(engine).currentTime = 1
+        frames.flush()
+      })
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled())
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: originalScrollIntoView,
+        })
+      } else {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
+      }
+    }
+  })
+
+  it('plays an instrumental section without inventing a lyric occurrence', async () => {
+    const { engine } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(
+      screen.getByRole('button', { name: '播放器乐段：Instrumental' }),
+    )
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        intent: 'range',
+        activeRange: { startMs: 1200, endMs: 1500 },
+        currentTimeMs: 1200,
+      })
+    })
+    expect(screen.getByRole('button', { name: '播放器乐段：Instrumental' })).toHaveClass(
+      'is-playing',
+    )
+    expect(screen.getByRole('button', { name: '从这里连续播放：Stay near' })).not.toHaveClass(
+      'is-selected',
+    )
+  })
+
+  it('returns to the top without changing playback and resets to zero', async () => {
+    const originalScrollTo = window.scrollTo
+    const scrollTo = vi.fn()
+    Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      value: scrollTo,
+    })
+
+    try {
+      const { engine } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      fireEvent.click(screen.getByRole('button', { name: '播放' }))
+      await waitFor(() => expect(engine.getState().status).toBe('playing'))
+      fireEvent.change(screen.getByRole('slider', { name: '播放进度' }), {
+        target: { value: '900' },
+      })
+      await waitFor(() => expect(engine.getState().currentTimeMs).toBe(900))
+
+      fireEvent.click(screen.getByRole('button', { name: '回到顶部' }))
+      expect(scrollTo).toHaveBeenCalled()
+      expect(engine.getState().currentTimeMs).toBe(900)
+
+      fireEvent.click(screen.getByRole('button', { name: '重置' }))
+      await waitFor(() => {
+        expect(engine.getState()).toMatchObject({
+          status: 'paused',
+          currentTimeMs: 0,
+        })
+      })
+      expect(screen.getByRole('button', { name: '回到顶部' })).toBeInTheDocument()
+      expect(scrollTo.mock.calls.length).toBeGreaterThanOrEqual(2)
+    } finally {
+      Object.defineProperty(window, 'scrollTo', {
+        configurable: true,
+        value: originalScrollTo,
+      })
+    }
   })
 
   it('follows semantic primary changes, then stops stealing the viewport after manual browse', async () => {
@@ -457,7 +545,7 @@ describe('FullSongWorkspace', () => {
       expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
 
       await act(async () => {
-        mediaFor(engine).currentTime = 0.75
+        mediaFor(engine).currentTime = 1
         frames.flush()
       })
       await waitFor(() =>
@@ -533,6 +621,7 @@ describe('FullSongWorkspace', () => {
 
 function renderWorkspace(options: {
   onStartPracticeUnit?: (practiceUnitId: string) => void
+  model?: typeof model
 } = {}): {
   engine: AudioEngine
   frames: FakeFrameScheduler
@@ -543,7 +632,7 @@ function renderWorkspace(options: {
   engines.push(engine)
   render(
     <FullSongWorkspace
-      model={model}
+      model={options.model ?? model}
       runtimeClient={runtimeClientFor()}
       audioEngine={engine}
       onStartPracticeUnit={options.onStartPracticeUnit}

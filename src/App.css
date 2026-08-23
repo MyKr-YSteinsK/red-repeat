@@ -901,6 +901,51 @@
   }
 }
 
+/* Full Song 1.0 section actions and fixed-player utilities. */
+.full-song-instrumental-marker {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.full-song-instrumental-marker:hover,
+.full-song-instrumental-marker:focus-visible,
+.full-song-instrumental-marker.is-selected,
+.full-song-instrumental-marker.is-playing {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.full-song-section.is-section-playing .full-song-section-heading {
+  color: var(--color-red);
+}
+
+.full-song-player-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.full-song-player-actions button {
+  min-height: 2rem;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+}
+
+.full-song-player-actions button:hover,
+.full-song-player-actions button:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
 /* Practice 1.0 keeps the high-frequency controls in one compact dock. */
 .practice-layout {
   grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.75fr);

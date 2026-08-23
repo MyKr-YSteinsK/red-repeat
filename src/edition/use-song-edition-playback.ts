@@ -5,7 +5,6 @@ import type {
 } from '../audio/audio-engine'
 import { getAudioEngine } from '../audio/audio-engine'
 import { resolveTimeline, type TimelineResolution } from '../timeline/resolver'
-import { toOccurrencePlaybackRange } from '../timeline/playback-ranges'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
 
@@ -118,17 +117,23 @@ export function useSongEditionPlayback(
         return
       }
 
-      const range = toOccurrencePlaybackRange(assembledOccurrence.occurrence)
-      void engine.playRange(range, assembledOccurrence.occurrence.id).catch(() => {
-        // The Engine publishes a recoverable error state for the UI.
-      })
+      const timing = model.timingProvider.getTiming(assembledOccurrence.occurrence)
+      void engine
+        .playRange(
+          { startMs: timing.playStartMs, endMs: timing.playEndMs },
+          assembledOccurrence.occurrence.id,
+        )
+        .catch(() => {
+          // The Engine publishes a recoverable error state for the UI.
+        })
     },
-    [engine],
+    [engine, model.timingProvider],
   )
   const playOccurrenceContinuously = useCallback(
     (
       assembledOccurrence: AssembledOccurrence,
-      startMs = assembledOccurrence.occurrence.playStartMs,
+      startMs = model.timingProvider.getTiming(assembledOccurrence.occurrence)
+        .playStartMs,
     ): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
       if (!engine) {
@@ -139,7 +144,7 @@ export function useSongEditionPlayback(
         // The Engine publishes a recoverable error state for the UI.
       })
     },
-    [engine],
+    [engine, model.timingProvider],
   )
 
   return {

@@ -8,17 +8,13 @@ import type {
   AssembledOccurrence,
   AssembledSongEdition,
 } from '../runtime/song-edition'
+import type { Section } from '../library/schema'
 import {
   createPracticeIndex,
   type PracticeIndex,
 } from '../practice/practice-scope'
 import {
-  createEffectivePracticeTimingProvider,
-  readTimingOverrides,
-  type TimingOverrideIdentity,
-} from '../practice/practice-timing-overrides'
-import {
-  getNextPracticePlaybackRate,
+  PRACTICE_PLAYBACK_RATES,
   readPracticePlaybackRate,
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
@@ -40,46 +36,27 @@ export function FullSongWorkspace({
 }: FullSongWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<string>()
+  const [selectedSectionId, setSelectedSectionId] = useState<string>()
   const [followLyrics, setFollowLyrics] = useState(true)
   const [message, setMessage] = useState<string>()
+  const [skipAutoFollowOccurrenceId, setSkipAutoFollowOccurrenceId] =
+    useState<string>()
   const pendingFollowOccurrenceId = useRef<string | undefined>(undefined)
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
   )
-  const timingIdentity = useMemo<TimingOverrideIdentity>(
-    () => ({
-      songId: model.edition.song.songId,
-      audioSourceHash: model.edition.audio.sourceHash,
-      baseTimelineUrl: model.edition.timelineUrl,
-    }),
-    [
-      model.edition.audio.sourceHash,
-      model.edition.song.songId,
-      model.edition.timelineUrl,
-    ],
-  )
-  const timingOverrides = useMemo(() => {
-    const result = readTimingOverrides(timingIdentity, {
-      occurrences: model.timeline.occurrences,
-    })
-    return result.kind === 'compatible' ? result.document : undefined
-  }, [model.timeline.occurrences, timingIdentity])
-  const timingProvider = useMemo(
-    () =>
-      createEffectivePracticeTimingProvider(model.timeline, timingOverrides),
-    [model.timeline, timingOverrides],
-  )
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      setSelectedSectionId(undefined)
+      setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
       pendingFollowOccurrenceId.current = assembledOccurrence.occurrence.id
       setFollowLyrics(true)
       setMessage(undefined)
-      const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
-      playback.playOccurrenceContinuously?.(assembledOccurrence, timing.playStartMs)
+      playback.playOccurrenceContinuously?.(assembledOccurrence)
     },
-    [playback, timingProvider],
+    [playback],
   )
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
@@ -90,24 +67,49 @@ export function FullSongWorkspace({
 
     const pendingOccurrenceId = pendingFollowOccurrenceId.current
     if (pendingOccurrenceId) {
-      if (pendingOccurrenceId !== primaryOccurrenceId) {
-        return
-      }
       pendingFollowOccurrenceId.current = undefined
+      return
     }
+
     setSelectedOccurrenceId(primaryOccurrenceId)
   }, [followLyrics, primaryOccurrenceId])
+
+  const handleSelectSection = useCallback(
+    (section: Section): void => {
+      setSelectedSectionId(section.id)
+      setSelectedOccurrenceId(undefined)
+      setSkipAutoFollowOccurrenceId(undefined)
+      pendingFollowOccurrenceId.current = undefined
+      setFollowLyrics(true)
+      setMessage(undefined)
+      if (!playback.engine) {
+        setMessage('当前环境无法播放音频。')
+        return
+      }
+
+      void playback.engine
+        .playRange({ startMs: section.startMs, endMs: section.endMs })
+        .catch((error: unknown) => {
+          setMessage(error instanceof Error ? error.message : '器乐段播放失败。')
+        })
+    },
+    [playback.engine],
+  )
 
   const handleReplayOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
-      const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
+      setSelectedSectionId(undefined)
+      setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
+      pendingFollowOccurrenceId.current = assembledOccurrence.occurrence.id
+      setFollowLyrics(true)
       if (!playback.engine) {
         setMessage('当前环境无法播放音频。')
         return
       }
 
       setMessage(undefined)
+      const timing = model.timingProvider.getTiming(assembledOccurrence.occurrence)
       void playback.engine
         .playRangeUntilComplete(
           {
@@ -122,7 +124,7 @@ export function FullSongWorkspace({
           }
         })
     },
-    [playback.engine, timingProvider],
+    [model.timingProvider, playback.engine],
   )
 
   const handleStartPractice = useCallback(
@@ -142,12 +144,50 @@ export function FullSongWorkspace({
     [playback.resolution.activeOccurrences],
   )
 
+  const isPlaying = playback.audioState.status === 'playing'
+  const isWaitingForClickedPrimary =
+    isPlaying &&
+    Boolean(primaryOccurrenceId) &&
+    Boolean(skipAutoFollowOccurrenceId) &&
+    selectedOccurrenceId === skipAutoFollowOccurrenceId &&
+    primaryOccurrenceId !== skipAutoFollowOccurrenceId
+  const visibleSelectedOccurrenceId =
+    isPlaying && primaryOccurrenceId && !isWaitingForClickedPrimary
+      ? primaryOccurrenceId
+      : selectedOccurrenceId
+  const visibleSelectedSectionId =
+    isPlaying && !primaryOccurrenceId
+      ? playback.resolution.currentSection?.id
+      : selectedSectionId
+  const scrollToTop = useCallback((): void => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      })
+    }
+  }, [])
+  const resetPlayback = useCallback((): void => {
+    setSelectedOccurrenceId(undefined)
+    setSelectedSectionId(undefined)
+    setSkipAutoFollowOccurrenceId(undefined)
+    pendingFollowOccurrenceId.current = undefined
+    setFollowLyrics(true)
+    setMessage(undefined)
+    if (playback.engine) {
+      playback.engine.pause()
+      void playback.engine.seek(0).catch(() => undefined)
+    }
+    scrollToTop()
+  }, [playback.engine, scrollToTop])
+
   return (
     <section
       className="full-song-workspace"
       aria-label="全曲歌词"
       data-current-section-id={playback.resolution.currentSection?.id}
-      data-selected-occurrence-id={selectedOccurrenceId}
+      data-selected-occurrence-id={visibleSelectedOccurrenceId}
+      data-selected-section-id={visibleSelectedSectionId}
       data-follow-lyrics={followLyrics}
     >
       <div className="full-song-heading">
@@ -159,7 +199,11 @@ export function FullSongWorkspace({
           <button
             className="full-song-return-current"
             type="button"
-            onClick={() => setFollowLyrics(true)}
+            onClick={() => {
+              pendingFollowOccurrenceId.current = undefined
+              setSkipAutoFollowOccurrenceId(undefined)
+              setFollowLyrics(true)
+            }}
           >
             回到当前句
           </button>
@@ -171,12 +215,24 @@ export function FullSongWorkspace({
           model={model}
           activeOccurrenceIds={activeOccurrenceIds}
           primaryOccurrenceId={primaryOccurrenceId}
-          selectedOccurrenceId={selectedOccurrenceId}
+          selectedOccurrenceId={visibleSelectedOccurrenceId}
+          selectedSectionId={visibleSelectedSectionId}
+          playingSectionId={
+            isPlaying && !primaryOccurrenceId
+              ? playback.resolution.currentSection?.id
+              : undefined
+          }
           followLyrics={followLyrics}
-          onManualBrowse={() => setFollowLyrics(false)}
+          onManualBrowse={() => {
+            pendingFollowOccurrenceId.current = undefined
+            setSkipAutoFollowOccurrenceId(undefined)
+            setFollowLyrics(false)
+          }}
+          suppressAutoFollowOccurrenceId={skipAutoFollowOccurrenceId}
           practiceIndex={practiceIndex}
           onSelectOccurrence={handleSelectOccurrence}
           onReplayOccurrence={handleReplayOccurrence}
+          onSelectSection={handleSelectSection}
           onStartPracticeUnit={
             onStartPracticeUnit ? handleStartPractice : undefined
           }
@@ -191,6 +247,8 @@ export function FullSongWorkspace({
                 '无歌词'
               : '无歌词'
           }
+          onScrollToTop={scrollToTop}
+          onReset={resetPlayback}
         />
       </div>
       {message ? (
@@ -207,11 +265,15 @@ interface FullSongLyricsProps {
   activeOccurrenceIds: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
+  selectedSectionId?: string
+  playingSectionId?: string
   followLyrics: boolean
   onManualBrowse: () => void
+  suppressAutoFollowOccurrenceId?: string
   practiceIndex: PracticeIndex
   onSelectOccurrence: (occurrence: AssembledOccurrence) => void
   onReplayOccurrence: (occurrence: AssembledOccurrence) => void
+  onSelectSection: (section: Section) => void
   onStartPracticeUnit?: (occurrence: AssembledOccurrence) => void
 }
 
@@ -220,17 +282,38 @@ function FullSongLyrics({
   activeOccurrenceIds,
   primaryOccurrenceId,
   selectedOccurrenceId,
+  selectedSectionId,
+  playingSectionId,
   followLyrics,
   onManualBrowse,
+  suppressAutoFollowOccurrenceId,
   practiceIndex,
   onSelectOccurrence,
   onReplayOccurrence,
+  onSelectSection,
   onStartPracticeUnit,
 }: FullSongLyricsProps) {
   const occurrenceElements = useRef(new Map<string, HTMLElement>())
+  const pendingScrollSuppressionRef = useRef<string | undefined>(undefined)
+  const lastScrollSuppressionRequestRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
+    if (!suppressAutoFollowOccurrenceId) {
+      lastScrollSuppressionRequestRef.current = undefined
+      pendingScrollSuppressionRef.current = undefined
+    } else if (
+      lastScrollSuppressionRequestRef.current !== suppressAutoFollowOccurrenceId
+    ) {
+      lastScrollSuppressionRequestRef.current = suppressAutoFollowOccurrenceId
+      pendingScrollSuppressionRef.current = suppressAutoFollowOccurrenceId
+    }
+
     if (!followLyrics || !primaryOccurrenceId) {
+      return
+    }
+
+    if (pendingScrollSuppressionRef.current) {
+      pendingScrollSuppressionRef.current = undefined
       return
     }
 
@@ -243,7 +326,7 @@ function FullSongLyrics({
       block: 'center',
       behavior: prefersReducedMotion() ? 'auto' : 'smooth',
     })
-  }, [followLyrics, primaryOccurrenceId])
+  }, [followLyrics, primaryOccurrenceId, suppressAutoFollowOccurrenceId])
 
   return (
     <div
@@ -253,7 +336,7 @@ function FullSongLyrics({
     >
       {model.sections.map(({ section, occurrences }, sectionIndex) => (
         <section
-          className="full-song-section"
+          className={`full-song-section${selectedSectionId === section.id ? ' is-section-selected' : ''}${playingSectionId === section.id ? ' is-section-playing' : ''}`}
           key={section.id}
           aria-labelledby={`full-song-section-${section.id}`}
           data-section-id={section.id}
@@ -266,10 +349,18 @@ function FullSongLyrics({
           </div>
 
           {occurrences.length === 0 ? (
-            <p className="full-song-instrumental-marker">
+            <button
+              className={`full-song-instrumental-marker${selectedSectionId === section.id ? ' is-selected' : ''}${playingSectionId === section.id ? ' is-playing' : ''}`}
+              type="button"
+              aria-pressed={selectedSectionId === section.id}
+              aria-label={`播放器乐段：${section.label}`}
+              onClick={() => onSelectSection(section)}
+            >
               <span aria-hidden="true" />
-              器乐段
-            </p>
+              <span>器乐段</span>
+              <span aria-hidden="true"> / </span>
+              <span>{section.label}</span>
+            </button>
           ) : (
             <div className="full-song-occurrence-list">
               {occurrences.map((assembledOccurrence) => (
@@ -393,11 +484,15 @@ function FullSongPlayer({
   engine,
   sectionLabel,
   lineLabel,
+  onScrollToTop,
+  onReset,
 }: {
   model: AssembledSongEdition
   engine: AudioEngine | null
   sectionLabel: string
   lineLabel: string
+  onScrollToTop: () => void
+  onReset: () => void
 }) {
   const progress = useAudioProgress(engine)
   const durationMs = progress.durationMs ?? model.edition.audio.durationMs
@@ -441,16 +536,7 @@ function FullSongPlayer({
     void engine.seek(Math.min(Math.max(0, timeMs), durationMs)).catch(() => undefined)
   }
 
-  const changeRate = (direction: -1 | 1): void => {
-    if (!engine) {
-      return
-    }
-    const nextRate = getNextPracticePlaybackRate(progress.playbackRate, direction)
-    engine.setPlaybackRate(nextRate)
-    savePracticePlaybackRate(model.edition.song.songId, nextRate)
-  }
-
-  const setRate = (rate: number): void => {
+  const setRate = (rate: (typeof PRACTICE_PLAYBACK_RATES)[number]): void => {
     if (!engine) {
       return
     }
@@ -490,24 +576,8 @@ function FullSongPlayer({
         <span>当前句：{lineLabel}</span>
       </div>
       <div className="full-song-player-speed" aria-label="播放速度">
-        <button
-          type="button"
-          aria-label="减速"
-          onClick={() => changeRate(-1)}
-          disabled={!engine}
-        >
-          −
-        </button>
         <span>{progress.playbackRate.toFixed(2)}x</span>
-        <button
-          type="button"
-          aria-label="加速"
-          onClick={() => changeRate(1)}
-          disabled={!engine}
-        >
-          +
-        </button>
-        {[0.65, 0.75, 0.85, 1].map((rate) => (
+        {PRACTICE_PLAYBACK_RATES.map((rate) => (
           <button
             key={rate}
             type="button"
@@ -519,6 +589,14 @@ function FullSongPlayer({
             {rate.toFixed(2)}x
           </button>
         ))}
+      </div>
+      <div className="full-song-player-actions">
+        <button type="button" onClick={onScrollToTop}>
+          回到顶部
+        </button>
+        <button type="button" onClick={onReset}>
+          重置
+        </button>
       </div>
     </aside>
   )
