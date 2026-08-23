@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { runtimeCaching } from './src/pwa/cache-routes.ts'
@@ -12,6 +12,23 @@ const buildEnvironment = process.env.GITHUB_ACTIONS === 'true'
   ? 'GitHub Pages'
   : 'local'
 
+function versionProbePlugin(): Plugin {
+  return {
+    name: 'red-repeat-version-probe',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: `${JSON.stringify({
+          version: packageMetadata.version,
+          commit: buildSha,
+        })}\n`,
+      })
+    },
+  }
+}
+
 export default defineConfig({
   define: {
     __RED_REPEAT_VERSION__: JSON.stringify(packageMetadata.version),
@@ -20,6 +37,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    versionProbePlugin(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
@@ -27,7 +45,7 @@ export default defineConfig({
         enabled: false,
       },
       workbox: {
-        globIgnores: ['library-runtime/**'],
+        globIgnores: ['library-runtime/**', 'version.json'],
         cleanupOutdatedCaches: true,
         runtimeCaching,
       },

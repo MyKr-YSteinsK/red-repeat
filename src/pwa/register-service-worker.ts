@@ -1,7 +1,7 @@
 /// <reference types="vite-plugin-pwa/client" />
 
 import { registerSW } from 'virtual:pwa-register'
-import { createServiceWorkerRegistrationOptions } from './register-service-worker-options'
+import { getUpdateManager } from './update-manager'
 
 export function registerServiceWorker(): void {
   if (
@@ -13,7 +13,7 @@ export function registerServiceWorker(): void {
   }
 
   try {
-    registerSW(createServiceWorkerRegistrationOptions())
+    getUpdateManager().register(registerSW)
   } catch {
     // Registration is best-effort; the app remains usable without a SW.
   }

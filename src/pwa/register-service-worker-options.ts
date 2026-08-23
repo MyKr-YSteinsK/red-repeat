@@ -1,11 +1,22 @@
 import type { RegisterSWOptions } from 'vite-plugin-pwa/types'
 
-export function createServiceWorkerRegistrationOptions(): RegisterSWOptions {
+export interface ServiceWorkerRegistrationCallbacks {
+  onNeedRefresh?: RegisterSWOptions['onNeedRefresh']
+  onNeedReload?: RegisterSWOptions['onNeedReload']
+  onOfflineReady?: RegisterSWOptions['onOfflineReady']
+  onRegisteredSW?: RegisterSWOptions['onRegisteredSW']
+  onRegisterError?: RegisterSWOptions['onRegisterError']
+}
+
+export function createServiceWorkerRegistrationOptions(
+  callbacks: ServiceWorkerRegistrationCallbacks = {},
+): RegisterSWOptions {
   return {
     immediate: true,
-    onNeedRefresh: () => undefined,
-    onNeedReload: () => undefined,
-    onOfflineReady: () => undefined,
-    onRegisterError: () => undefined,
+    onNeedRefresh: callbacks.onNeedRefresh ?? (() => undefined),
+    onNeedReload: callbacks.onNeedReload ?? (() => undefined),
+    onOfflineReady: callbacks.onOfflineReady ?? (() => undefined),
+    onRegisteredSW: callbacks.onRegisteredSW,
+    onRegisterError: callbacks.onRegisterError ?? (() => undefined),
   }
 }

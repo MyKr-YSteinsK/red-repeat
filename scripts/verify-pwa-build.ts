@@ -4,6 +4,10 @@ import { resolve } from 'node:path'
 const base = normalizeBase(process.argv[2] ?? '/')
 const distRoot = resolve(process.cwd(), 'dist')
 const indexHtml = readText('index.html')
+const versionProbe = JSON.parse(readText('version.json')) as {
+  version?: unknown
+  commit?: unknown
+}
 const manifest = JSON.parse(readText('manifest.webmanifest')) as {
   name?: string
   display?: string
@@ -41,6 +45,15 @@ assert(
 assert(statSync(resolve(distRoot, 'favicon.svg')).isFile(), 'favicon must be present')
 assert(statSync(resolve(distRoot, 'icon-192.png')).isFile(), '192px icon must be present')
 assert(statSync(resolve(distRoot, 'icon-512.png')).isFile(), '512px icon must be present')
+assert(
+  typeof versionProbe.version === 'string' &&
+    /^\d+\.\d+\.\d+$/.test(versionProbe.version),
+  'version probe must contain a SemVer version',
+)
+assert(
+  typeof versionProbe.commit === 'string' && versionProbe.commit.length > 0,
+  'version probe must contain a build commit',
+)
 
 const deployedAssetUrls = [...indexHtml.matchAll(/(?:src|href)="([^"]+)"/g)].map(
   ([, url]) => url,
@@ -73,6 +86,10 @@ const precacheSection = serviceWorker.slice(
 assert(
   !precacheSection.includes('library-runtime'),
   'Runtime resources must not enter the App Shell precache',
+)
+assert(
+  !precacheSection.includes('version.json'),
+  'version probe must stay on the network and out of the App Shell precache',
 )
 assert(
   statSync(resolve(distRoot, 'library-runtime/catalog.json')).isFile(),
