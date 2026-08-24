@@ -1692,14 +1692,14 @@
   width: min(100%, 46rem);
   margin: 1.25rem auto 0;
   padding: 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  border: 1px solid var(--player-glass-border);
   border-radius: 1.25rem;
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  background: var(--player-glass-bg);
   box-shadow:
     0 1rem 2.75rem color-mix(in srgb, var(--color-ink) 12%, transparent),
     0 0.25rem 0.75rem color-mix(in srgb, var(--color-ink) 6%, transparent);
-  backdrop-filter: blur(18px) saturate(115%);
-  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: var(--player-glass-blur);
+  -webkit-backdrop-filter: var(--player-glass-blur);
 }
 
 .practice-dock-topline,
@@ -2055,10 +2055,12 @@
   display: grid;
   gap: 0.65rem;
   padding: 1rem;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--player-glass-border);
   border-radius: var(--radius-control-lg);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  background: var(--player-glass-bg);
   box-shadow: 0 0.6rem 1.6rem color-mix(in srgb, var(--color-ink) 9%, transparent);
+  backdrop-filter: var(--player-glass-blur);
+  -webkit-backdrop-filter: var(--player-glass-blur);
 }
 
 @media (min-width: 641px) {
