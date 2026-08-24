@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.4.0',
+    date: '2026-08-24',
+    commit: '5e37fae',
+    level: 'minor',
+    title: '学唱控制器与曲库滑动操作',
+    summary: '收紧学唱高频控制，并让已下载歌曲通过轻量左滑完成删除。',
+    changes: [
+      '学唱控制器收口为上下文、播放速度和模式三行，移动端不再需要展开半屏控制器。',
+      '连续播放与渐速练习使用清晰的红底选中态，速度选择在渐速开启时保留语义并降低视觉干扰。',
+      '曲库下载状态移入标题行 micro-slot，已下载歌曲通过左滑删除，纵向滚动和歌曲导航保持独立。',
+    ],
+  },
+  {
     version: '1.3.1',
     date: '2026-08-24',
     commit: '6197de9',
