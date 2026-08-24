@@ -164,6 +164,29 @@ describe('ExplainWorkspace', () => {
       scrollTo.mockRestore()
     }
   })
+
+  it('keeps previous, top, and next actions in a symmetric footer order', () => {
+    render(
+      <ExplainWorkspace
+        model={model}
+        runtimeClient={runtimeClientFor()}
+        features={features}
+        featureErrors={[]}
+      />,
+    )
+
+    const pager = screen.getByRole('navigation', { name: '讲解主题翻页' })
+    expect([...pager.querySelectorAll('button')].map((button) => button.textContent?.trim())).toEqual([
+      '← 上一篇',
+      '回到顶部',
+      '下一篇 →',
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: '下一篇 →' }))
+    expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '← 上一篇' }))
+    expect(screen.getByRole('heading', { name: 'Context' })).toBeInTheDocument()
+  })
 })
 
 const firstDescriptor = {

@@ -151,27 +151,27 @@ export function ExplainWorkspace({
             </div>
           )}
 
-          <div className="explain-workspace-footer">
-            <nav className="explain-topic-pager" aria-label="讲解主题翻页">
-              <button
-                type="button"
-                disabled={!previousTopic}
-                onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
-              >
-                ← 上一篇
-              </button>
-              <button
-                type="button"
-                disabled={!nextTopic}
-                onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}
-              >
-                下一篇 →
-              </button>
-            </nav>
+          <nav className="explain-topic-pager" aria-label="讲解主题翻页">
+            <button
+              className="explain-topic-pager-previous"
+              type="button"
+              disabled={!previousTopic}
+              onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
+            >
+              ← 上一篇
+            </button>
             <button className="explain-scroll-top" type="button" onClick={scrollExplainToTop}>
               回到顶部
             </button>
-          </div>
+            <button
+              className="explain-topic-pager-next"
+              type="button"
+              disabled={!nextTopic}
+              onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}
+            >
+              下一篇 →
+            </button>
+          </nav>
         </div>
       </div>
     </section>
