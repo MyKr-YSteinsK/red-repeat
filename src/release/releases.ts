@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.3.1',
+    date: '2026-08-24',
+    commit: '6197de9',
+    level: 'patch',
+    title: '发布链与版本探针可靠性',
+    summary: '让 Pages 发布、构建身份和应用内更新检查围绕同一个可验证的生产构建闭环运行。',
+    changes: [
+      'CI 质量检查与 Pages 部署合并为同一条链，并在部署后等待线上 version.json 与本次 commit 收敛。',
+      'version.json 现在记录 builtAt，探针固定使用 origin 与部署 BASE_URL，避免路由和旧缓存误判。',
+      '设置页展示线上版本、Build SHA、构建时间和最近检查结果；失败时不再残留“最新版本”状态。',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-08-24',
     commit: '7b03b19',
