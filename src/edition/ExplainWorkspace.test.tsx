@@ -176,11 +176,15 @@ describe('ExplainWorkspace', () => {
     )
 
     const pager = screen.getByRole('navigation', { name: '讲解主题翻页' })
-    expect([...pager.querySelectorAll('button')].map((button) => button.textContent?.trim())).toEqual([
+    const buttons = [...pager.querySelectorAll('button')]
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
       '← 上一篇',
       '回到顶部',
       '下一篇 →',
     ])
+    expect(buttons[0]).toHaveClass('explain-topic-pager-previous')
+    expect(buttons[1]).toHaveClass('explain-scroll-top')
+    expect(buttons[2]).toHaveClass('explain-topic-pager-next')
 
     fireEvent.click(screen.getByRole('button', { name: '下一篇 →' }))
     expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
