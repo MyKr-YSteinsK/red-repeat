@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.5.0',
+    date: '2026-08-25',
+    commit: '598b384',
+    level: 'minor',
+    title: '统一圆角控件与整宽学唱控制层',
+    summary: '建立一致的正式控件语言，并让移动学唱与全曲播放器共享整宽、通透的底部控制层。',
+    changes: [
+      '新增圆角、尺寸、间距和状态 token，只为正式操作控件接入 control-button，保留歌词、列表和微操作的无框语义。',
+      '学唱控制器改为贴合屏幕三边的整宽半透明底部层，安全区内收且顶部圆角、模糊和阴影统一。',
+      '全曲播放器、讲解翻页与歌词引用、设置和更新入口统一控件状态，并补充非控件边界回归测试。',
+    ],
+  },
+  {
     version: '1.4.2',
     date: '2026-08-24',
     commit: '58385d3',
