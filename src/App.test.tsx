@@ -325,14 +325,16 @@ describe('App Library consumer', () => {
     ).toHaveAttribute('href', '/#edition=first-light')
     expect(document.querySelectorAll('.catalog-arrow')).toHaveLength(0)
     expect(document.querySelectorAll('.catalog-entry-main')).toHaveLength(2)
-    expect(screen.getAllByText('未下载')).toHaveLength(2)
+    expect(
+      screen.getAllByRole('button', { name: /下载 (First Light|Second Signal)/ }),
+    ).toHaveLength(2)
     const firstDownloadButton = screen.getByRole('button', {
-      name: '下载到本机 First Light',
+      name: '下载 First Light',
     })
     expect(firstDownloadButton).toBeInTheDocument()
     expect(firstDownloadButton.closest('a')).toBeNull()
     expect(
-      screen.getByRole('button', { name: '下载到本机 Second Signal' }),
+      screen.getByRole('button', { name: '下载 Second Signal' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '开始学唱 Second Signal' }),
@@ -357,11 +359,9 @@ describe('App Library consumer', () => {
     expect(longCard).not.toBeNull()
     expect(artist).toHaveClass('catalog-artist')
     expect(screen.getByText('2025')).toHaveClass('catalog-meta')
-    expect(
-      document.querySelectorAll('.catalog-entry-actions'),
-    ).toHaveLength(2)
-    expect(longCard?.querySelector('.catalog-entry-actions')?.parentElement).toBe(
-      longCard,
+    expect(document.querySelectorAll('.catalog-download-slot')).toHaveLength(2)
+    expect(longCard?.querySelector('.catalog-download-slot')?.parentElement).toHaveClass(
+      'catalog-entry-main',
     )
     expect(screen.queryByText('↗')).not.toBeInTheDocument()
     expect(
@@ -369,7 +369,7 @@ describe('App Library consumer', () => {
     ).toBeInTheDocument()
   })
 
-  it('keeps installed, removing, installing, and failed download states in the action column', async () => {
+  it('keeps installed, removing, installing, and failed download states in the compact slot', async () => {
     const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
     const originalFetch = globalThis.fetch
     const cacheEntries = new Map<string, Response>()
@@ -430,18 +430,65 @@ describe('App Library consumer', () => {
     try {
       render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
-      expect(
-        await screen.findByRole('button', { name: '移除本机 First Light' }),
-      ).toBeInTheDocument()
+      expect(await screen.findByText('已下载')).toBeInTheDocument()
       expect(screen.getByText('已下载')).toBeInTheDocument()
 
-      fireEvent.click(screen.getByRole('button', { name: '移除本机 First Light' }))
+      const firstCard = document.querySelector<HTMLElement>(
+        '[data-song-id="first-light"]',
+      )
+      const firstSurface = firstCard?.querySelector<HTMLElement>(
+        '.catalog-entry-surface',
+      )
+      expect(firstSurface).not.toBeNull()
       expect(
-        await screen.findByRole('button', { name: '下载到本机 First Light' }),
+        screen.queryByRole('button', { name: '删除 Second Signal' }),
+      ).not.toBeInTheDocument()
+
+      fireEvent.pointerDown(firstSurface!, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: 220,
+        clientY: 24,
+      })
+      fireEvent.pointerMove(firstSurface!, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: 160,
+        clientY: 25,
+      })
+      fireEvent.pointerUp(firstSurface!, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: 160,
+        clientY: 25,
+      })
+
+      expect(firstCard).toHaveAttribute('data-swipe-open', 'true')
+      expect(firstSurface).toHaveStyle({
+        transform: 'translate3d(-68px, 0, 0)',
+      })
+
+      // The synthetic click emitted after the swipe is suppressed; the next tap closes the tray.
+      fireEvent.click(firstSurface!)
+      expect(firstCard).toHaveAttribute('data-swipe-open', 'true')
+      expect(window.location.hash).toBe('')
+      fireEvent.click(firstSurface!)
+      expect(firstCard).not.toHaveAttribute('data-swipe-open')
+      expect(window.location.hash).toBe('')
+
+      const deleteButton = screen.getByRole('button', {
+        name: '删除 First Light',
+      })
+      fireEvent.focus(deleteButton)
+      expect(firstCard).toHaveAttribute('data-swipe-open', 'true')
+
+      fireEvent.click(deleteButton)
+      expect(
+        await screen.findByRole('button', { name: '下载 First Light' }),
       ).toBeInTheDocument()
 
       fireEvent.click(
-        screen.getByRole('button', { name: '下载到本机 Second Signal' }),
+        screen.getByRole('button', { name: '下载 Second Signal' }),
       )
       const installingButton = await screen.findByRole('button', {
         name: '下载中… Second Signal',
@@ -450,7 +497,7 @@ describe('App Library consumer', () => {
 
       rejectDownload?.(new Error('offline'))
       expect(
-        await screen.findByRole('button', { name: '重试下载 Second Signal' }),
+        await screen.findByRole('button', { name: '重试 Second Signal' }),
       ).toBeInTheDocument()
       expect(screen.getByText('下载失败，请检查网络后重试。')).toBeInTheDocument()
     } finally {

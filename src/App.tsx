@@ -4,6 +4,7 @@ import {
   useSyncExternalStore,
   useEffect,
   useState,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
 import './App.css'
@@ -27,6 +28,7 @@ import {
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
+import { useSwipeReveal } from './library/use-swipe-reveal'
 import { SettingsPage } from './settings/SettingsPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
 import { UpdatePrompt } from './pwa/UpdatePrompt'
@@ -332,6 +334,7 @@ function CatalogLibrary({
   const [removingSongIds, setRemovingSongIds] = useState<ReadonlySet<string>>(
     new Set(),
   )
+  const [openSongId, setOpenSongId] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -432,6 +435,7 @@ function CatalogLibrary({
         },
       }))
     } finally {
+      setOpenSongId(null)
       setRemovingSongIds((current) => {
         const next = new Set(current)
         next.delete(edition.songId)
@@ -461,7 +465,19 @@ function CatalogLibrary({
         </label>
       </div>
 
-      <CatalogSection title="全部歌曲">
+      <CatalogSection
+        title="全部歌曲"
+        onClick={(event) => {
+          const target = event.target
+          if (
+            target instanceof Element &&
+            target.closest('[data-swipe-open="true"] .catalog-entry-surface')
+          ) {
+            return
+          }
+          setOpenSongId(null)
+        }}
+      >
         {filteredEditions.length > 0 ? (
           filteredEditions.map((edition) => (
             <CatalogEditionCard
@@ -479,6 +495,9 @@ function CatalogLibrary({
               isRemoving={removingSongIds.has(edition.songId)}
               onDownload={handleDownload}
               onRemove={handleRemove}
+              isSwipeOpen={openSongId === edition.songId}
+              onSwipeOpen={() => setOpenSongId(edition.songId)}
+              onSwipeClose={() => setOpenSongId(null)}
             />
           ))
         ) : (
@@ -495,14 +514,16 @@ function CatalogLibrary({
 function CatalogSection({
   title,
   children,
+  onClick,
 }: {
   title: string
   children: ReactNode
+  onClick?: (event: ReactMouseEvent<HTMLDivElement>) => void
 }) {
   return (
     <section className="catalog-section">
       <h2>{title}</h2>
-      <div className="catalog-list" aria-label={title}>
+      <div className="catalog-list" aria-label={title} onClick={onClick}>
         {children}
       </div>
     </section>
@@ -518,6 +539,9 @@ function CatalogEditionCard({
   isRemoving,
   onDownload,
   onRemove,
+  isSwipeOpen,
+  onSwipeOpen,
+  onSwipeClose,
 }: {
   edition: CatalogEdition
   index: number
@@ -527,84 +551,138 @@ function CatalogEditionCard({
   isRemoving: boolean
   onDownload: (edition: CatalogEdition) => void
   onRemove: (edition: CatalogEdition) => void
+  isSwipeOpen: boolean
+  onSwipeOpen: () => void
+  onSwipeClose: () => void
 }) {
   const action = resume ? '继续学唱' : '开始学唱'
+  const isInstalled = download.status === 'installed'
+  const swipe = useSwipeReveal({
+    enabled: isInstalled,
+    open: isSwipeOpen,
+    onOpen: onSwipeOpen,
+    onClose: onSwipeClose,
+  })
+
+  return (
+    <article
+      className="catalog-entry"
+      data-song-id={edition.songId}
+      data-swipe-open={isSwipeOpen ? 'true' : undefined}
+    >
+      <div className="catalog-entry-swipe">
+        <div className="catalog-delete-tray">
+          {isInstalled ? (
+            <button
+              className="catalog-delete-button"
+              type="button"
+              disabled={isRemoving}
+              aria-label={`${isRemoving ? '移除中…' : '删除'} ${edition.title}`}
+              onFocus={onSwipeOpen}
+              onClick={() => onRemove(edition)}
+            >
+              {isRemoving ? '移除中…' : '删除'}
+            </button>
+          ) : null}
+        </div>
+        <div
+          className="catalog-entry-surface"
+          {...swipe}
+        >
+          <span className="catalog-index" aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <div className="catalog-entry-main">
+            <a
+              className="catalog-entry-link"
+              href={createEditionHref(edition.songId, window.location)}
+              aria-label={`${action} ${edition.title}`}
+            >
+              <img
+                className="catalog-cover"
+                src={runtimeClient.resolveAsset(edition.coverUrl)}
+                alt=""
+                loading="lazy"
+              />
+              <span className="catalog-copy">
+                <span className="catalog-title">{edition.title}</span>
+                <span className="catalog-artist">{edition.artist}</span>
+                {edition.album || edition.year !== undefined ? (
+                  <span className="catalog-meta">
+                    {edition.album ?? ''}
+                    {edition.album && edition.year !== undefined ? ' / ' : ''}
+                    {edition.year ?? ''}
+                  </span>
+                ) : null}
+                {resume ? (
+                  <span className="catalog-resume">
+                    上次：{resume.unitLabel} · 第{resume.lineIndex}句
+                  </span>
+                ) : null}
+                <span className="catalog-action">{action}</span>
+              </span>
+            </a>
+            <CatalogDownloadSlot
+              edition={edition}
+              download={download}
+              isRemoving={isRemoving}
+              onDownload={onDownload}
+            />
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function CatalogDownloadSlot({
+  edition,
+  download,
+  isRemoving,
+  onDownload,
+}: {
+  edition: CatalogEdition
+  download: SongDownloadState
+  isRemoving: boolean
+  onDownload: (edition: CatalogEdition) => void
+}) {
   const isInstalling = download.status === 'installing'
   const isInstalled = download.status === 'installed'
-  const downloadLabel = isInstalled
-    ? isRemoving
-      ? '移除中…'
-      : '移除本机'
+  const label = isRemoving
+    ? '移除中…'
     : isInstalling
       ? '下载中…'
       : download.status === 'failed'
-        ? '重试下载'
-        : '下载到本机'
-  const downloadStatusLabel = isInstalled
-    ? '已下载'
-    : isInstalling
-      ? '下载中…'
-      : download.status === 'failed'
-        ? '下载失败'
-        : '未下载'
+        ? '重试'
+        : '下载'
+
   return (
-    <article className="catalog-entry" data-song-id={edition.songId}>
-      <span className="catalog-index" aria-hidden="true">
-        {String(index + 1).padStart(2, '0')}
-      </span>
-      <a
-        className="catalog-entry-main"
-        href={createEditionHref(edition.songId, window.location)}
-        aria-label={`${action} ${edition.title}`}
-      >
-        <img
-          className="catalog-cover"
-          src={runtimeClient.resolveAsset(edition.coverUrl)}
-          alt=""
-          loading="lazy"
-        />
-        <span className="catalog-copy">
-          <span className="catalog-title">{edition.title}</span>
-          <span className="catalog-artist">{edition.artist}</span>
-          {edition.album || edition.year !== undefined ? (
-            <span className="catalog-meta">
-              {edition.album ?? ''}
-              {edition.album && edition.year !== undefined ? ' / ' : ''}
-              {edition.year ?? ''}
-            </span>
-          ) : null}
-          {resume ? (
-            <span className="catalog-resume">
-              上次：{resume.unitLabel} · 第{resume.lineIndex}句
-            </span>
-          ) : null}
-          <span className="catalog-action">{action}</span>
+    <div className="catalog-download-slot" aria-live="polite">
+      {isInstalled && !isRemoving ? (
+        <span
+          className="catalog-download-button catalog-download-state"
+          aria-label={`已下载 ${edition.title}`}
+        >
+          已下载
         </span>
-      </a>
-      <div className="catalog-entry-actions">
-        <span className="catalog-download-status" aria-live="polite">
-          {downloadStatusLabel}
-        </span>
+      ) : (
         <button
           className="catalog-download-button"
           type="button"
           disabled={isInstalling || isRemoving}
-          aria-label={`${downloadLabel} ${edition.title}`}
-          onClick={() => {
-            if (isInstalled) {
-              onRemove(edition)
-            } else {
-              onDownload(edition)
-            }
+          aria-label={`${label} ${edition.title}`}
+          onClick={(event) => {
+            event.stopPropagation()
+            onDownload(edition)
           }}
         >
-          {downloadLabel}
+          {label}
         </button>
-        {download.errorMessage ? (
-          <span className="catalog-download-error">{download.errorMessage}</span>
-        ) : null}
-      </div>
-    </article>
+      )}
+      {download.errorMessage ? (
+        <span className="catalog-download-error">{download.errorMessage}</span>
+      ) : null}
+    </div>
   )
 }
 
