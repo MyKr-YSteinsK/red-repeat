@@ -188,15 +188,74 @@
 }
 
 .catalog-entry {
-  display: grid;
-  grid-template-columns: 1.8rem minmax(0, 1fr) minmax(7rem, auto);
-  align-items: stretch;
-  gap: clamp(0.75rem, 2.2vw, 1.5rem);
+  position: relative;
   min-width: 0;
   border-bottom: 1px solid var(--color-line);
 }
 
+.catalog-entry-swipe {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--color-red);
+}
+
+.catalog-entry-surface {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.8rem minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(0.7rem, 2vw, 1.25rem);
+  min-width: 0;
+  background: var(--color-surface);
+  touch-action: pan-y;
+  transition: transform 180ms ease;
+  will-change: transform;
+}
+
+.catalog-entry-surface[data-swipe-dragging='true'] {
+  transition: none;
+}
+
+.catalog-delete-tray {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  width: 4.25rem;
+  background: var(--color-red);
+}
+
+.catalog-delete-button {
+  width: 100%;
+  min-height: 100%;
+  padding: 0.5rem;
+  border: 0;
+  color: var(--color-surface);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+
+.catalog-delete-button:hover,
+.catalog-delete-button:focus-visible {
+  background: color-mix(in srgb, var(--color-ink) 16%, var(--color-red));
+}
+
+.catalog-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .catalog-entry-main {
+  position: relative;
+  min-width: 0;
+  min-height: 5.75rem;
+}
+
+.catalog-entry-link {
   display: grid;
   grid-template-columns: 4.5rem minmax(0, 1fr);
   align-items: stretch;
@@ -208,8 +267,8 @@
   text-decoration: none;
 }
 
-.catalog-entry-main:hover .catalog-title,
-.catalog-entry-main:focus-visible .catalog-title {
+.catalog-entry-link:hover .catalog-title,
+.catalog-entry-link:focus-visible .catalog-title {
   color: var(--color-red);
 }
 
@@ -247,6 +306,7 @@
 .catalog-title {
   overflow: hidden;
   min-width: 0;
+  padding-right: 3.8rem;
   color: var(--color-ink);
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.4vw, 2rem);
@@ -272,16 +332,17 @@
   white-space: nowrap;
 }
 
-.catalog-entry-actions {
+.catalog-download-slot {
+  position: absolute;
+  top: 0.65rem;
+  right: 0;
+  z-index: 2;
   display: grid;
-  min-width: 7rem;
-  align-content: center;
   justify-items: end;
   gap: 0.3rem;
-  padding: 0.65rem 0;
+  max-width: 9rem;
 }
 
-.catalog-download-status,
 .catalog-download-button,
 .catalog-download-error {
   font-family: var(--font-mono);
@@ -290,21 +351,22 @@
   line-height: 1.4;
 }
 
-.catalog-download-status {
-  color: var(--color-muted);
-  text-transform: uppercase;
-}
-
 .catalog-download-button {
-  min-height: 2.35rem;
-  max-width: 100%;
-  padding: 0.45rem 0.65rem;
+  min-height: 1.9rem;
+  max-width: 7rem;
+  padding: 0.25rem 0.4rem;
   border: 1px solid var(--color-line);
   border-radius: 0;
   color: var(--color-ink);
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.catalog-download-state {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-muted);
 }
 
 .catalog-download-button:hover,
@@ -1502,11 +1564,14 @@
   }
 
   .catalog-entry {
-    grid-template-columns: 1.5rem minmax(0, 1fr) 5.75rem;
-    gap: 0.65rem;
+    min-width: 0;
   }
 
   .catalog-entry-main {
+    min-height: 5.25rem;
+  }
+
+  .catalog-entry-link {
     grid-template-columns: 4rem minmax(0, 1fr);
     gap: 0.65rem;
     min-height: 5.25rem;
@@ -1522,9 +1587,14 @@
     font-size: 1.35rem;
   }
 
-  .catalog-entry-actions {
-    min-width: 0;
-    padding: 0.5rem 0;
+  .catalog-download-slot {
+    top: 0.5rem;
+    max-width: 5.5rem;
+  }
+
+  .catalog-download-button {
+    min-height: 1.8rem;
+    padding-inline: 0.3rem;
   }
 }
 
