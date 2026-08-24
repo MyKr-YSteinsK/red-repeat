@@ -14,6 +14,7 @@
     "library:audio-hash": "tsx src/library/audio-hash-cli.ts",
     "repo:hygiene": "tsx scripts/verify-gitignore.ts",
     "release:verify": "tsx scripts/verify-releases.ts",
+    "release:smoke": "tsx scripts/verify-deployed-version.ts",
     "pwa:inspect": "tsx scripts/verify-pwa-build.ts",
     "preview": "vite preview"
   },
