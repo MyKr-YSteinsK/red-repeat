@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
-  runStableContextTransition,
   restoreScrollPolicy,
   type ScrollAnchor,
 } from './stable-context-transition'
@@ -46,70 +45,5 @@ describe('stable context transitions', () => {
     restoreScrollPolicy('preserve-anchor', { scrollY: 0, top: 96 }, target)
 
     expect(scrollTo).not.toHaveBeenCalled()
-  })
-
-  it('falls back to the synchronous update when View Transition is unavailable', () => {
-    const originalStartViewTransition = (
-      document as unknown as { startViewTransition?: unknown }
-    ).startViewTransition
-    Object.defineProperty(document, 'startViewTransition', {
-      configurable: true,
-      value: undefined,
-    })
-    const update = vi.fn()
-
-    try {
-      runStableContextTransition(update)
-      expect(update).toHaveBeenCalledOnce()
-    } finally {
-      if (originalStartViewTransition) {
-        Object.defineProperty(document, 'startViewTransition', {
-          configurable: true,
-          value: originalStartViewTransition,
-        })
-      } else {
-        delete (document as { startViewTransition?: unknown }).startViewTransition
-      }
-    }
-  })
-
-  it('uses the reduced-motion fallback without starting a View Transition', () => {
-    const originalMatchMedia = window.matchMedia
-    const originalStartViewTransition = (
-      document as unknown as { startViewTransition?: unknown }
-    ).startViewTransition
-    const startViewTransition = vi.fn()
-    Object.defineProperty(window, 'matchMedia', {
-      configurable: true,
-      value: vi.fn(() => ({ matches: true })),
-    })
-    Object.defineProperty(document, 'startViewTransition', {
-      configurable: true,
-      value: startViewTransition,
-    })
-    const update = vi.fn()
-
-    try {
-      runStableContextTransition(update)
-      expect(update).toHaveBeenCalledOnce()
-      expect(startViewTransition).not.toHaveBeenCalled()
-    } finally {
-      if (originalMatchMedia) {
-        Object.defineProperty(window, 'matchMedia', {
-          configurable: true,
-          value: originalMatchMedia,
-        })
-      } else {
-        delete (window as { matchMedia?: typeof window.matchMedia }).matchMedia
-      }
-      if (originalStartViewTransition) {
-        Object.defineProperty(document, 'startViewTransition', {
-          configurable: true,
-          value: originalStartViewTransition,
-        })
-      } else {
-        delete (document as { startViewTransition?: unknown }).startViewTransition
-      }
-    }
   })
 })

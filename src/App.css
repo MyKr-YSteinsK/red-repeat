@@ -1246,7 +1246,6 @@
 .explain-current-topic {
   min-width: 0;
   padding-top: clamp(2rem, 5vw, 4.5rem);
-  view-transition-name: explain-topic;
 }
 
 .explain-article {
@@ -1353,20 +1352,6 @@
   border-color: var(--color-red);
   color: var(--color-red);
   background: color-mix(in srgb, var(--color-surface) 88%, var(--color-red));
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .practice-lyrics {
-    view-transition-name: practice-lyrics;
-  }
-
-  ::view-transition-old(explain-topic),
-  ::view-transition-new(explain-topic),
-  ::view-transition-old(practice-lyrics),
-  ::view-transition-new(practice-lyrics) {
-    animation-duration: 160ms;
-    animation-timing-function: ease-out;
-  }
 }
 
 .library-heading {

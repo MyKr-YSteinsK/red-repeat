@@ -8,10 +8,6 @@ export interface ScrollAnchor {
   top: number
 }
 
-interface ViewTransitionDocument {
-  startViewTransition?: (update: () => void) => { finished: Promise<void> }
-}
-
 export function captureScrollAnchor(element: Element | null): ScrollAnchor | undefined {
   if (!element || typeof window === 'undefined') {
     return undefined
@@ -50,18 +46,6 @@ export function restoreScrollPolicy(
       window.scrollTo({ top: nextScrollY, behavior: 'auto' })
     }
   }
-}
-
-export function runStableContextTransition(update: () => void): void {
-  const documentWithTransition = document as unknown as ViewTransitionDocument
-  if (
-    !prefersReducedMotion() &&
-    typeof documentWithTransition.startViewTransition === 'function'
-  ) {
-    void documentWithTransition.startViewTransition(update).finished.catch(() => undefined)
-    return
-  }
-  update()
 }
 
 export function prefersReducedMotion(): boolean {

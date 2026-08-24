@@ -18,7 +18,6 @@ import {
   captureScrollAnchor,
   prefersReducedMotion,
   restoreScrollPolicy,
-  runStableContextTransition,
   type TransitionPolicy,
 } from '../navigation/stable-context-transition'
 
@@ -80,7 +79,7 @@ export function ExplainWorkspace({
           ? 'reveal-content-start'
           : 'preserve-anchor',
     }
-    runStableContextTransition(() => setSelectedTopicId(nextTopicId))
+    setSelectedTopicId(nextTopicId)
   }
 
   useLayoutEffect(() => {

@@ -34,7 +34,6 @@ import {
 import {
   captureScrollAnchor,
   restoreScrollPolicy,
-  runStableContextTransition,
   type TransitionPolicy,
 } from '../navigation/stable-context-transition'
 import { PracticeSegmentPicker } from './PracticeSegmentPicker'
@@ -132,11 +131,9 @@ export function PracticeWorkspace({
         practiceIndex,
         practiceUnitId,
       )
-      runStableContextTransition(() => {
-        persistLearningState(nextState)
-        setPickerOpen(false)
-        setMessage(undefined)
-      })
+      persistLearningState(nextState)
+      setPickerOpen(false)
+      setMessage(undefined)
     },
     [cancelPlayback, learningState, persistLearningState, practiceIndex],
   )
