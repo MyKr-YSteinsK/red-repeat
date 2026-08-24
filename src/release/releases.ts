@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.4.2',
+    date: '2026-08-24',
+    commit: '58385d3',
+    level: 'patch',
+    title: '学唱与讲解控制器视觉纠偏',
+    summary: '统一高频控制区的浮层、圆角、留白和状态层级，让移动练习与讲解翻页更像完整产品。',
+    changes: [
+      '学唱控制器改为高可读的半透明圆角浮层，补足屏幕边距、卡片内边距与柔和阴影。',
+      '重新平衡上下段、当前段、播放、速度与练习模式三行栅格，主操作和红色选中态更清晰。',
+      '讲解底部翻页收拢为对称的圆角操作组，移动端与桌面端都保持饱满且稳定的点击区域。',
+    ],
+  },
+  {
     version: '1.4.1',
     date: '2026-08-24',
     commit: '61fdcb5',
