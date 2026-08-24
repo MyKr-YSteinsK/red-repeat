@@ -2,9 +2,12 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Catalog, CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { LyricsDocument, PracticeDocument, TimelineDocument } from '../library/schema'
+import { buildInfo } from '../release/build-info'
 import { createUpdateManager } from '../pwa/update-manager'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { SettingsPage } from './SettingsPage'
+
+const newerVersion = nextPatchVersion(buildInfo.version)
 
 afterEach(() => {
   cleanup()
@@ -91,7 +94,7 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.3.0').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(buildInfo.version).length).toBeGreaterThan(0)
     expect(screen.getAllByText('当前版本').length).toBeGreaterThan(0)
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
@@ -138,7 +141,7 @@ describe('SettingsPage', () => {
   it('manually checks for a newer build and exposes the immediate update action', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.2',
+        version: newerVersion,
         commit: 'abcdef123456',
         builtAt: '2026-08-24T00:00:00.000Z',
       }), { status: 200 })),
@@ -158,7 +161,7 @@ describe('SettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
-    expect(await screen.findByText('发现新版本 1.3.2')).toBeInTheDocument()
+    expect(await screen.findByText(`发现新版本 ${newerVersion}`)).toBeInTheDocument()
     expect(screen.getByText('线上版本')).toBeInTheDocument()
     expect(screen.getByText('线上 Build SHA')).toBeInTheDocument()
     expect(screen.getByText('abcdef123456')).toBeInTheDocument()
@@ -172,11 +175,11 @@ describe('SettingsPage', () => {
   it('shows remote release notes without replacing the local changelog', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.2',
+        version: newerVersion,
         commit: 'abcdef123456',
         builtAt: '2026-08-24T00:00:00.000Z',
         release: {
-          version: '1.3.2',
+          version: newerVersion,
           date: '2026-08-24',
           level: 'minor',
           title: '远端学习更新',
@@ -248,3 +251,8 @@ describe('SettingsPage', () => {
     expect(highlighted?.textContent).toContain('移动曲库卡片紧凑重排')
   })
 })
+
+function nextPatchVersion(version: string): string {
+  const [major, minor, patch] = version.split('.').map(Number)
+  return `${major}.${minor}.${patch + 1}`
+}
