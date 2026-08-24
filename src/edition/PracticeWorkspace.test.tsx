@@ -93,6 +93,33 @@ describe('PracticeWorkspace 1.0', () => {
     expect(screen.queryByText('展开练习控制')).not.toBeInTheDocument()
   })
 
+  it('keeps the dock to context, primary, and mode rows with accessible ramp guidance', () => {
+    const { container } = renderWorkspace()
+    const dock = container.querySelector('.practice-dock')
+
+    expect(dock).not.toBeNull()
+    expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
+    expect(dock?.querySelectorAll(':scope > div')).toHaveLength(3)
+    expect(screen.getByRole('button', { name: '上一段' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '下一段' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '1.00x' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: '0.60x' })).toHaveAttribute(
+      'data-ramp-active',
+      'true',
+    )
+    expect(screen.getByText(/开启渐速练习时/)).toBeInTheDocument()
+  })
+
   it('plays one occurrence at the selected speed when both toggles are off', async () => {
     const engine = createFakeEngine()
     renderWorkspace(engine)

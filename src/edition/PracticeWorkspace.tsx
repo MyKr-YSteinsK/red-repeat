@@ -354,8 +354,28 @@ export function PracticeWorkspace({
 
       <aside className="practice-controls practice-dock" aria-label="练习控制">
         <div className="practice-dock-context">
-          <span>{currentUnit.label}</span>
-          <span>{currentOccurrenceIndex + 1} / {currentUnitOccurrences.length}</span>
+          <button
+            className="practice-action practice-context-navigation"
+            type="button"
+            aria-label="上一段"
+            onClick={() => changeUnit('previous')}
+            disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'previous')}
+          >
+            ← 上一段
+          </button>
+          <span className="practice-dock-context-current">
+            <span>{currentUnit.label}</span>
+            <span>{currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句</span>
+          </span>
+          <button
+            className="practice-action practice-context-navigation"
+            type="button"
+            aria-label="下一段"
+            onClick={() => changeUnit('next')}
+            disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'next')}
+          >
+            下一段 →
+          </button>
         </div>
         <div className="practice-dock-primary">
           <button
@@ -373,6 +393,8 @@ export function PracticeWorkspace({
                 className="practice-action"
                 type="button"
                 aria-pressed={playbackRate === speed}
+                aria-describedby="practice-ramp-explanation"
+                data-ramp-active={rampPractice ? 'true' : 'false'}
                 onClick={() => setSpeed(speed)}
               >
                 {speed.toFixed(2)}x
@@ -393,29 +415,15 @@ export function PracticeWorkspace({
             className="practice-action"
             type="button"
             aria-pressed={rampPractice}
+            aria-describedby="practice-ramp-explanation"
             onClick={() => setRampPractice((value) => !value)}
           >
             渐速练习
           </button>
         </div>
-        <div className="practice-dock-navigation">
-          <button
-            className="practice-action"
-            type="button"
-            onClick={() => changeUnit('previous')}
-            disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'previous')}
-          >
-            ← 上一段
-          </button>
-          <button
-            className="practice-action"
-            type="button"
-            onClick={() => changeUnit('next')}
-            disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'next')}
-          >
-            下一段 →
-          </button>
-        </div>
+        <p id="practice-ramp-explanation" className="practice-sr-only">
+          开启渐速练习时，播放会按 0.60x、0.80x、1.00x 依次进行；速度按钮仍可设置关闭渐速后的播放速度。
+        </p>
         {message ? <p className="practice-message" role="status">{message}</p> : null}
       </aside>
     </section>
