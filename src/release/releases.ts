@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.6.0',
+    date: '2026-08-25',
+    commit: '7039a15',
+    level: 'minor',
+    title: '播放器复原与稳定切换',
+    summary: '恢复播放器专属体验，收口学唱段落选择，并让 Practice 与 Explain 的内容切换稳定可预测。',
+    changes: [
+      '恢复 Full Song 独立播放器 surface，播放按钮并入速度行，移动端高度与安全区留白重新收紧。',
+      '删除正文歌曲地图，学唱改为上一段、当前段、下一段与固定上拉 Segment Picker。',
+      '统一 Practice 与 Explain 的锚点保持、内容起点 reveal、reduced-motion 和 View Transition fallback。',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-08-25',
     commit: '598b384',
