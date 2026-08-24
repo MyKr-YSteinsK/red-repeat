@@ -99,6 +99,8 @@ describe('PracticeWorkspace 1.0', () => {
 
     expect(dock).not.toBeNull()
     expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
+    expect(dock?.querySelector('.practice-dock-topline')).toBeInTheDocument()
+    expect(dock?.querySelector('.practice-dock-modes')).toBeInTheDocument()
     expect(dock?.querySelectorAll(':scope > div')).toHaveLength(3)
     expect(screen.getByRole('button', { name: '上一段' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '下一段' })).toBeEnabled()

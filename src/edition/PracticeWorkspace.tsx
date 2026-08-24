@@ -353,7 +353,7 @@ export function PracticeWorkspace({
       </div>
 
       <aside className="practice-controls practice-dock" aria-label="练习控制">
-        <div className="practice-dock-context">
+        <div className="practice-dock-topline">
           <button
             className="practice-action practice-context-navigation"
             type="button"
@@ -363,7 +363,7 @@ export function PracticeWorkspace({
           >
             ← 上一段
           </button>
-          <span className="practice-dock-context-current">
+          <span className="practice-dock-context">
             <span>{currentUnit.label}</span>
             <span>{currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句</span>
           </span>
@@ -402,7 +402,7 @@ export function PracticeWorkspace({
             ))}
           </div>
         </div>
-        <div className="practice-dock-toggles">
+        <div className="practice-dock-modes">
           <button
             className="practice-action"
             type="button"

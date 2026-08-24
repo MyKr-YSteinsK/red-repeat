@@ -1662,38 +1662,38 @@
   background: color-mix(in srgb, var(--color-surface) 92%, var(--color-red));
 }
 
-.practice-dock-context,
+.practice-dock-topline,
 .practice-dock-primary,
-.practice-dock-toggles {
+.practice-dock-modes {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   min-width: 0;
 }
 
-.practice-dock-context {
+.practice-dock-topline {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   justify-content: stretch;
-  color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
 }
 
-.practice-dock-context-current {
+.practice-dock-context {
   display: grid;
   min-width: 0;
   justify-items: center;
   gap: 0.1rem;
   overflow: hidden;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.practice-dock-context-current > span:first-child {
+.practice-dock-context > span:first-child {
   overflow: hidden;
   max-width: 100%;
   color: var(--color-ink);
@@ -1712,7 +1712,7 @@
   flex-wrap: wrap;
 }
 
-.practice-dock-toggles {
+.practice-dock-modes {
   flex-wrap: wrap;
 }
 
@@ -3090,13 +3090,13 @@
     border-inline: 0;
   }
 
-  .practice-dock-context,
+  .practice-dock-topline,
   .practice-dock-primary,
-  .practice-dock-toggles {
+  .practice-dock-modes {
     width: 100%;
   }
 
-  .practice-dock-context {
+  .practice-dock-topline {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.25rem;
@@ -3111,7 +3111,7 @@
     display: contents;
   }
 
-  .practice-dock-toggles {
+  .practice-dock-modes {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3124,7 +3124,7 @@
     font-size: 0.6rem;
   }
 
-  .practice-dock-context-current {
+  .practice-dock-context {
     font-size: 0.6rem;
   }
 
