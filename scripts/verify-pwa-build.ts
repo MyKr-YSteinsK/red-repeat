@@ -3,10 +3,18 @@ import { resolve } from 'node:path'
 
 const base = normalizeBase(process.argv[2] ?? '/')
 const distRoot = resolve(process.cwd(), 'dist')
+const packageMetadata = JSON.parse(
+  readFileSync(resolve(process.cwd(), 'package.json'), 'utf8'),
+) as { version?: unknown }
+const requireProductionIdentity =
+  process.argv.includes('--require-production') ||
+  process.env.CI === 'true' ||
+  Boolean(process.env.RED_REPEAT_BUILD_SHA?.trim())
 const indexHtml = readText('index.html')
 const versionProbe = JSON.parse(readText('version.json')) as {
   version?: unknown
   commit?: unknown
+  builtAt?: unknown
   release?: {
     version?: unknown
     date?: unknown
@@ -59,9 +67,36 @@ assert(
   'version probe must contain a SemVer version',
 )
 assert(
+  versionProbe.version === packageMetadata.version,
+  `version probe ${String(versionProbe.version)} must match package ${String(packageMetadata.version)}`,
+)
+assert(
   typeof versionProbe.commit === 'string' && versionProbe.commit.length > 0,
   'version probe must contain a build commit',
 )
+assert(
+  typeof versionProbe.builtAt === 'string' &&
+    !Number.isNaN(Date.parse(versionProbe.builtAt)),
+  'version probe must contain a valid builtAt timestamp',
+)
+assert(
+  assetBundle.includes(versionProbe.version),
+  'bundled build-info must contain the version probe version',
+)
+assert(
+  assetBundle.includes(versionProbe.commit),
+  'bundled build-info must contain the version probe commit',
+)
+if (requireProductionIdentity) {
+  assert(versionProbe.commit !== 'local', 'production build identity must not be local')
+  const expectedCommit = resolveExpectedCommit()
+  if (expectedCommit) {
+    assert(
+      versionProbe.commit === expectedCommit,
+      `version probe commit ${versionProbe.commit} must match build ${expectedCommit}`,
+    )
+  }
+}
 if (versionProbe.release !== undefined) {
   assert(
     versionProbe.release.version === versionProbe.version &&
@@ -129,6 +164,13 @@ function normalizeBase(value: string): string {
   return withLeadingSlash.endsWith('/')
     ? withLeadingSlash
     : `${withLeadingSlash}/`
+}
+
+function resolveExpectedCommit(): string | undefined {
+  const configuredSha = process.env.RED_REPEAT_BUILD_SHA?.trim()
+  const githubSha = process.env.GITHUB_SHA?.trim()
+  const value = configuredSha || githubSha
+  return value ? value.slice(0, 12) : undefined
 }
 
 function assert(condition: unknown, message: string): asserts condition {

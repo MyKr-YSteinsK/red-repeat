@@ -8,7 +8,8 @@ import { runtimeCaching } from './src/pwa/cache-routes.ts'
 const packageMetadata = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
 ) as { version: string }
-const buildSha = process.env.GITHUB_SHA?.trim().slice(0, 12) || 'local'
+const buildSha = resolveBuildSha()
+const builtAt = new Date().toISOString()
 const buildEnvironment = process.env.GITHUB_ACTIONS === 'true'
   ? 'GitHub Pages'
   : 'local'
@@ -25,6 +26,7 @@ function versionProbePlugin(): Plugin {
         source: `${JSON.stringify({
           version: packageMetadata.version,
           commit: buildSha,
+          builtAt,
           ...(release ? { release } : {}),
         })}\n`,
       })
@@ -86,3 +88,9 @@ export default defineConfig({
     }),
   ],
 })
+
+function resolveBuildSha(): string {
+  const configuredSha = process.env.RED_REPEAT_BUILD_SHA?.trim()
+  const githubSha = process.env.GITHUB_SHA?.trim()
+  return (configuredSha || githubSha)?.slice(0, 12) || 'local'
+}

@@ -12,7 +12,11 @@ describe('UpdatePrompt', () => {
       <UpdatePrompt
         snapshot={{
           status: 'update-available',
-          remote: { version: '1.2.0', commit: 'abcdef123456' },
+          remote: {
+            version: '1.2.0',
+            commit: 'abcdef123456',
+            builtAt: '2026-08-24T00:00:00.000Z',
+          },
           dismissed: false,
         }}
         settingsHref="/#settings&release=1.2.0"

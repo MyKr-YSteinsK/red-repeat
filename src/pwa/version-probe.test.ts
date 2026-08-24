@@ -7,19 +7,32 @@ describe('production version probe', () => {
       void input
       void init
       return new Response(
-        JSON.stringify({ version: '1.2.0', commit: 'abcdef123456' }),
+        JSON.stringify({
+          version: '1.2.0',
+          commit: 'abcdef123456',
+          builtAt: '2026-08-24T00:00:00.000Z',
+        }),
         { status: 200 },
       )
     })
 
     await expect(fetchVersionProbe({
       fetchImpl,
-      locationHref: 'https://example.test/red-repeat/#settings',
+      locationHref: 'https://example.test/red-repeat/practice?unit=1#settings',
+      baseUrl: '/red-repeat/',
       cacheBust: 42,
-    })).resolves.toEqual({ version: '1.2.0', commit: 'abcdef123456' })
+    })).resolves.toEqual({
+      version: '1.2.0',
+      commit: 'abcdef123456',
+      builtAt: '2026-08-24T00:00:00.000Z',
+    })
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      createVersionProbeUrl('https://example.test/red-repeat/#settings', 42),
+      createVersionProbeUrl(
+        'https://example.test/red-repeat/practice?unit=1#settings',
+        42,
+        '/red-repeat/',
+      ),
       expect.objectContaining({
         cache: 'no-store',
         credentials: 'same-origin',
@@ -29,6 +42,15 @@ describe('production version probe', () => {
     expect(new URL(String(fetchImpl.mock.calls[0][0])).pathname).toBe(
       '/red-repeat/version.json',
     )
+  })
+
+  it('anchors the probe at the origin plus BASE_URL instead of the current route', () => {
+    expect(new URL(
+      createVersionProbeUrl('https://example.test/red-repeat/practice#settings', 7, '/'),
+    ).pathname).toBe('/version.json')
+    expect(new URL(
+      createVersionProbeUrl('https://example.test/library/song#practice', 8, '/red-repeat/'),
+    ).pathname).toBe('/red-repeat/version.json')
   })
 
   it('rejects an invalid or failed probe without accepting an arbitrary payload', async () => {
@@ -52,13 +74,18 @@ describe('production version probe', () => {
     const fetchImpl = vi.fn(async () => new Response(JSON.stringify({
       version: '1.3.0',
       commit: 'abcdef123456',
+      builtAt: '2026-08-24T00:00:00.000Z',
       release: { version: '1.3.0', changes: [] },
     }), { status: 200 }))
 
     await expect(fetchVersionProbe({
       fetchImpl,
       locationHref: 'https://example.test/',
-    })).resolves.toEqual({ version: '1.3.0', commit: 'abcdef123456' })
+    })).resolves.toEqual({
+      version: '1.3.0',
+      commit: 'abcdef123456',
+      builtAt: '2026-08-24T00:00:00.000Z',
+    })
   })
 
   it('returns release metadata generated beside the remote build identity', async () => {
@@ -73,6 +100,7 @@ describe('production version probe', () => {
     const fetchImpl = vi.fn(async () => new Response(JSON.stringify({
       version: '1.3.0',
       commit: 'abcdef123456',
+      builtAt: '2026-08-24T00:00:00.000Z',
       release,
     }), { status: 200 }))
 
@@ -82,6 +110,7 @@ describe('production version probe', () => {
     })).resolves.toEqual({
       version: '1.3.0',
       commit: 'abcdef123456',
+      builtAt: '2026-08-24T00:00:00.000Z',
       release,
     })
   })

@@ -3,6 +3,7 @@ import { parseSemVer } from '../release/semver'
 export interface RemoteBuildInfo {
   version: string
   commit: string
+  builtAt: string
   release?: RemoteReleaseNote
 }
 
@@ -20,15 +21,21 @@ export const VERSION_PROBE_PATH = 'version.json'
 export interface VersionProbeOptions {
   fetchImpl?: typeof fetch
   locationHref?: string
-  cacheBust?: number
+  baseUrl?: string
+  cacheBust?: number | string
   signal?: AbortSignal
 }
 
 export function createVersionProbeUrl(
   locationHref: string,
-  cacheBust: number,
+  cacheBust: number | string,
+  baseUrl = import.meta.env.BASE_URL,
 ): string {
-  const url = new URL(VERSION_PROBE_PATH, locationHref)
+  const origin = new URL(locationHref).origin
+  const url = new URL(
+    `${normalizeBaseUrl(baseUrl)}${VERSION_PROBE_PATH}`,
+    origin,
+  )
   url.searchParams.set('check', String(cacheBust))
   return url.toString()
 }
@@ -41,6 +48,7 @@ export async function fetchVersionProbe(
   const url = createVersionProbeUrl(
     locationHref,
     options.cacheBust ?? Date.now(),
+    options.baseUrl,
   )
   const response = await fetchImpl(url, {
     cache: 'no-store',
@@ -64,6 +72,7 @@ export async function fetchVersionProbe(
   return {
     version: candidate.version as string,
     commit: candidate.commit as string,
+    builtAt: candidate.builtAt as string,
     ...(release ? { release } : {}),
   }
 }
@@ -84,7 +93,9 @@ function isRemoteBuildInfo(value: unknown): value is RemoteBuildInfo {
     typeof candidate.version === 'string' &&
     Boolean(parseSemVer(candidate.version)) &&
     typeof candidate.commit === 'string' &&
-    candidate.commit.length > 0
+    candidate.commit.length > 0 &&
+    typeof candidate.builtAt === 'string' &&
+    !Number.isNaN(Date.parse(candidate.builtAt))
   )
 }
 
@@ -111,4 +122,11 @@ function getDefaultLocationHref(): string {
     return window.location.href
   }
   return 'http://localhost/'
+}
+
+function normalizeBaseUrl(value: string): string {
+  const withLeadingSlash = value.startsWith('/') ? value : `/${value}`
+  return withLeadingSlash.endsWith('/')
+    ? withLeadingSlash
+    : `${withLeadingSlash}/`
 }
