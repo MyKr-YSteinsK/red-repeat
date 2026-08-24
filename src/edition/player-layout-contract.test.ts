@@ -44,4 +44,19 @@ describe('mobile player layout contracts', () => {
       'background: color-mix(in srgb, var(--color-surface) 92%, transparent);',
     )
   })
+
+  it('keeps the Full Song play control on the speed row and raises centered actions', () => {
+    expect(appCss).toContain(
+      'grid-template-columns: repeat(2, minmax(6rem, 8.5rem));',
+    )
+    expect(appCss).toContain(
+      'grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(5.4rem, 5.4rem);',
+    )
+    expect(appCss).toMatch(
+      /\.full-song-player-toggle\s*\{[^}]*min-width: 5\.4rem;[^}]*min-height: 2\.5rem;/s,
+    )
+    expect(appCss).toContain(
+      'calc(0.95rem + env(safe-area-inset-bottom))',
+    )
+  })
 })
