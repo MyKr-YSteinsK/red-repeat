@@ -32,16 +32,13 @@ import {
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
 import {
-  captureScrollAnchor,
   restoreScrollPolicy,
-  type TransitionPolicy,
 } from '../navigation/stable-context-transition'
 import { PracticeSegmentPicker } from './PracticeSegmentPicker'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
 const PRACTICE_SPEEDS = [0.6, 0.8, 1] as const
 type PracticeSpeed = (typeof PRACTICE_SPEEDS)[number]
-type PracticeNavigationSource = 'previous' | 'next' | 'picker' | 'external'
 
 export interface PracticeWorkspaceProps {
   model: AssembledSongEdition
@@ -77,10 +74,7 @@ export function PracticeWorkspace({
   const workspaceRef = useRef<HTMLElement | null>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
-  const pendingNavigationRef = useRef<{
-    anchor: ReturnType<typeof captureScrollAnchor>
-    policy: TransitionPolicy
-  } | undefined>(undefined)
+  const pendingNavigationRef = useRef(false)
 
   const currentUnit =
     practiceIndex.unitsById.get(learningState.practiceUnitId) ??
@@ -116,16 +110,13 @@ export function PracticeWorkspace({
   )
 
   const navigatePracticeUnit = useCallback(
-    (practiceUnitId: string, source: PracticeNavigationSource): void => {
+    (practiceUnitId: string): void => {
       if (practiceUnitId === learningState.practiceUnitId) {
         setPickerOpen(false)
         return
       }
       cancelPlayback()
-      pendingNavigationRef.current = {
-        anchor: captureScrollAnchor(lyricsAnchorRef.current),
-        policy: source === 'external' ? 'reveal-content-start' : 'preserve-anchor',
-      }
+      pendingNavigationRef.current = true
       const nextState = focusPracticeUnitStart(
         learningState,
         practiceIndex,
@@ -147,7 +138,7 @@ export function PracticeWorkspace({
     }
     if (practiceIndex.unitsById.has(requestedPracticeUnitId)) {
       const timeoutId = globalThis.setTimeout(() => {
-        navigatePracticeUnit(requestedPracticeUnitId, 'external')
+        navigatePracticeUnit(requestedPracticeUnitId)
         onRequestedPracticeUnitConsumed?.()
       }, 0)
       return () => globalThis.clearTimeout(timeoutId)
@@ -162,14 +153,13 @@ export function PracticeWorkspace({
   ])
 
   useLayoutEffect(() => {
-    const pendingNavigation = pendingNavigationRef.current
-    if (!pendingNavigation) {
+    if (!pendingNavigationRef.current) {
       return
     }
-    pendingNavigationRef.current = undefined
+    pendingNavigationRef.current = false
     restoreScrollPolicy(
-      pendingNavigation.policy,
-      pendingNavigation.anchor,
+      'reveal-content-start',
+      undefined,
       lyricsAnchorRef.current,
       96,
     )
@@ -310,7 +300,7 @@ export function PracticeWorkspace({
     }
     const nextUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, direction)
     if (nextUnit) {
-      navigatePracticeUnit(nextUnit.id, direction)
+      navigatePracticeUnit(nextUnit.id)
     }
   }
 
@@ -459,7 +449,7 @@ export function PracticeWorkspace({
         units={practiceIndex.units}
         currentUnitId={currentUnit.id}
         open={pickerOpen}
-        onSelect={(practiceUnitId) => navigatePracticeUnit(practiceUnitId, 'picker')}
+        onSelect={navigatePracticeUnit}
         onClose={() => setPickerOpen(false)}
       />
     </section>

@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ComponentProps } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AudioEngine, AudioEngineState } from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
@@ -274,6 +275,95 @@ describe('PracticeWorkspace 1.0', () => {
     expect(next).toBeDisabled()
   })
 
+  it('reveals the new heading for previous, next, and picker navigation without native transitions', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const startViewTransition = vi.fn()
+    const originalStartViewTransition = (
+      document as unknown as { startViewTransition?: unknown }
+    ).startViewTransition
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      value: startViewTransition,
+    })
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return this.classList.contains('practice-unit-heading')
+          ? ({ top: 420 } as DOMRect)
+          : ({ top: 0, bottom: 0, height: 0 } as DOMRect)
+      },
+    )
+
+    try {
+      renderWorkspace()
+
+      fireEvent.click(screen.getByRole('button', { name: '下一段' }))
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 324, behavior: 'auto' })
+
+      fireEvent.click(screen.getByRole('button', { name: '上一段' }))
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 324, behavior: 'auto' })
+
+      fireEvent.click(screen.getByRole('button', { name: '选择学习段：Verse' }))
+      fireEvent.click(screen.getByRole('option', { name: /Chorus/ }))
+      expect(scrollTo).toHaveBeenLastCalledWith({ top: 324, behavior: 'auto' })
+      expect(scrollTo).toHaveBeenCalledTimes(3)
+      expect(startViewTransition).not.toHaveBeenCalled()
+    } finally {
+      if (originalStartViewTransition) {
+        Object.defineProperty(document, 'startViewTransition', {
+          configurable: true,
+          value: originalStartViewTransition,
+        })
+      } else {
+        delete (document as unknown as { startViewTransition?: unknown })
+          .startViewTransition
+      }
+    }
+  })
+
+  it('reveals externally requested units without native transitions', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const startViewTransition = vi.fn()
+    const consumed = vi.fn()
+    const originalStartViewTransition = (
+      document as unknown as { startViewTransition?: unknown }
+    ).startViewTransition
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      value: startViewTransition,
+    })
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return this.classList.contains('practice-unit-heading')
+          ? ({ top: 420 } as DOMRect)
+          : ({ top: 0, bottom: 0, height: 0 } as DOMRect)
+      },
+    )
+
+    try {
+      renderWorkspace(createFakeEngine(), {
+        requestedPracticeUnitId: 'p002',
+        onRequestedPracticeUnitConsumed: consumed,
+      })
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Chorus' })).toBeInTheDocument()
+      })
+      expect(scrollTo).toHaveBeenCalledWith({ top: 324, behavior: 'auto' })
+      expect(consumed).toHaveBeenCalledOnce()
+      expect(startViewTransition).not.toHaveBeenCalled()
+    } finally {
+      if (originalStartViewTransition) {
+        Object.defineProperty(document, 'startViewTransition', {
+          configurable: true,
+          value: originalStartViewTransition,
+        })
+      } else {
+        delete (document as unknown as { startViewTransition?: unknown })
+          .startViewTransition
+      }
+    }
+  })
+
   it('closes the segment picker with Escape or an outside click', () => {
     const { container } = renderWorkspace()
     const contextButton = screen.getByRole('button', { name: '选择学习段：Verse' })
@@ -293,7 +383,13 @@ describe('PracticeWorkspace 1.0', () => {
   })
 })
 
-function renderWorkspace(engine = createFakeEngine()) {
+function renderWorkspace(
+  engine = createFakeEngine(),
+  props: Pick<
+    ComponentProps<typeof PracticeWorkspace>,
+    'requestedPracticeUnitId' | 'onRequestedPracticeUnitConsumed'
+  > = {},
+) {
   const runtimeClient = {
     resolveAsset: (path: string) => `/app${path}`,
   } as unknown as RuntimeClient
@@ -302,6 +398,7 @@ function renderWorkspace(engine = createFakeEngine()) {
       model={model}
       runtimeClient={runtimeClient}
       audioEngine={engine}
+      {...props}
     />,
   )
 }
