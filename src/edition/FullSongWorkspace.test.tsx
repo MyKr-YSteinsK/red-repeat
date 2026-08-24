@@ -351,7 +351,9 @@ describe('FullSongWorkspace', () => {
 
     const player = screen.getByRole('complementary', { name: '全曲播放器' })
     const progress = screen.getByRole('slider', { name: '播放进度' })
-    expect(player).toBeInTheDocument()
+    expect(player).toHaveClass('control-sheet')
+    expect(player.querySelectorAll('.control-button')).toHaveLength(6)
+    expect(screen.getByRole('button', { name: '从这里连续播放：Repeat me' })).not.toHaveClass('control-button')
     expect(progress).toHaveAttribute('max', '2600')
     expect(screen.getByText('00:00 / 00:02')).toBeInTheDocument()
 
@@ -369,6 +371,7 @@ describe('FullSongWorkspace', () => {
     expect(screen.queryByRole('button', { name: '设置速度 0.65x' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '设置速度 0.80x' }))
     expect(engine.getState().playbackRate).toBe(0.8)
+    expect(screen.getByRole('button', { name: '设置速度 0.80x' })).toHaveAttribute('aria-pressed', 'true')
     expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe(
       '0.8',
     )

@@ -357,10 +357,10 @@ export function PracticeWorkspace({
         </details>
       </div>
 
-      <aside className="practice-controls practice-dock" aria-label="练习控制">
+      <aside className="control-sheet practice-controls practice-dock" aria-label="练习控制">
         <div className="practice-dock-topline">
           <button
-            className="practice-action practice-context-navigation"
+            className="control-button control-button--quiet practice-action practice-context-navigation"
             type="button"
             aria-label="上一段"
             onClick={() => changeUnit('previous')}
@@ -373,7 +373,7 @@ export function PracticeWorkspace({
             <span>{currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句</span>
           </span>
           <button
-            className="practice-action practice-context-navigation"
+            className="control-button control-button--quiet practice-action practice-context-navigation"
             type="button"
             aria-label="下一段"
             onClick={() => changeUnit('next')}
@@ -384,7 +384,7 @@ export function PracticeWorkspace({
         </div>
         <div className="practice-dock-primary">
           <button
-            className="practice-action practice-play-button"
+            className="control-button control-button--primary control-button--lg practice-action practice-play-button"
             type="button"
             onClick={togglePlayback}
             disabled={!playback.engine}
@@ -395,7 +395,7 @@ export function PracticeWorkspace({
             {PRACTICE_SPEEDS.map((speed) => (
               <button
                 key={speed}
-                className="practice-action"
+                className="control-button control-button--sm control-button--toggle practice-action"
                 type="button"
                 aria-pressed={playbackRate === speed}
                 aria-describedby="practice-ramp-explanation"
@@ -409,7 +409,7 @@ export function PracticeWorkspace({
         </div>
         <div className="practice-dock-modes">
           <button
-            className="practice-action"
+            className="control-button control-button--toggle practice-action"
             type="button"
             aria-pressed={continuousPlayback}
             onClick={() => setContinuousPlayback((value) => !value)}
@@ -417,7 +417,7 @@ export function PracticeWorkspace({
             连续播放
           </button>
           <button
-            className="practice-action"
+            className="control-button control-button--toggle practice-action"
             type="button"
             aria-pressed={rampPractice}
             aria-describedby="practice-ramp-explanation"

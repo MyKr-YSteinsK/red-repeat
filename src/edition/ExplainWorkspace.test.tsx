@@ -185,6 +185,8 @@ describe('ExplainWorkspace', () => {
     expect(buttons[0]).toHaveClass('explain-topic-pager-previous')
     expect(buttons[1]).toHaveClass('explain-scroll-top')
     expect(buttons[2]).toHaveClass('explain-topic-pager-next')
+    buttons.forEach((button) => expect(button).toHaveClass('control-button'))
+    expect(screen.getByRole('button', { name: 'Context' })).not.toHaveClass('control-button')
 
     fireEvent.click(screen.getByRole('button', { name: '下一篇 →' }))
     expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()

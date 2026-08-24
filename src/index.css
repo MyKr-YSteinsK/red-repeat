@@ -9,6 +9,23 @@
     "Segoe UI", sans-serif;
   --font-display: Iowan Old Style, "Palatino Linotype", Palatino, Georgia, serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --radius-control-sm: 0.7rem;
+  --radius-control-md: 0.86rem;
+  --radius-control-lg: 1rem;
+  --radius-sheet: 1.25rem;
+  --control-height-sm: 2.2rem;
+  --control-height-md: 2.55rem;
+  --control-height-lg: 2.8rem;
+  --control-padding-inline-sm: 0.6rem;
+  --control-padding-inline-md: 0.8rem;
+  --control-padding-inline-lg: 1rem;
+  --control-group-gap: 0.5rem;
+  --control-sheet-padding-inline: 0.9rem;
+  --control-sheet-padding-block: 0.8rem;
+  --control-sheet-bg: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  --control-sheet-border: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  --control-sheet-shadow: 0 -0.7rem 2.2rem color-mix(in srgb, var(--color-ink) 13%, transparent);
+  --control-sheet-blur: blur(22px) saturate(118%);
 
   font-family: var(--font-sans);
   color: var(--color-ink);

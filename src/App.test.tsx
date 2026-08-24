@@ -434,6 +434,7 @@ describe('App Library consumer', () => {
       const installedState = screen.getByText('已下载')
       expect(installedState).toHaveClass('catalog-download-state')
       expect(installedState).not.toHaveClass('catalog-download-button')
+      expect(installedState).not.toHaveClass('control-button')
       expect(installedState.tagName).toBe('SPAN')
 
       const firstCard = document.querySelector<HTMLElement>(
@@ -516,6 +517,7 @@ describe('App Library consumer', () => {
       expect(
         await screen.findByRole('button', { name: '下载 First Light' }),
       ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '下载 First Light' })).not.toHaveClass('control-button')
 
       fireEvent.click(
         screen.getByRole('button', { name: '下载 Second Signal' }),

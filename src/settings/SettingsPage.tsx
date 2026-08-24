@@ -172,6 +172,7 @@ export function SettingsPage({
             </p>
             <div className="settings-update-actions">
               <button
+                className="control-button control-button--quiet"
                 type="button"
                 onClick={() => void currentUpdateManager.checkForUpdate({ manual: true })}
                 disabled={updateSnapshot.status === 'checking' || updateSnapshot.status === 'updating'}
@@ -181,7 +182,7 @@ export function SettingsPage({
               {updateSnapshot.status === 'update-available' || updateSnapshot.status === 'updating' ? (
                 <button
                   type="button"
-                  className="settings-update-primary"
+                  className="control-button control-button--primary settings-update-primary"
                   onClick={() => void currentUpdateManager.applyUpdate()}
                   disabled={updateSnapshot.status === 'updating'}
                 >
@@ -263,7 +264,7 @@ export function SettingsPage({
                   ))}
                 </select>
               </label>
-              <button type="button" onClick={() => void handleExport()} disabled={exportState.status === 'loading'}>
+              <button className="control-button control-button--primary" type="button" onClick={() => void handleExport()} disabled={exportState.status === 'loading'}>
                 {exportState.status === 'loading' ? '生成中…' : '生成并下载修复包'}
               </button>
             </div>

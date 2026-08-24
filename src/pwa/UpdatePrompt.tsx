@@ -47,10 +47,10 @@ export function UpdatePrompt({
         </p>
       </div>
       <div className="update-prompt-actions">
-        <a className="update-prompt-link" href={settingsHref}>查看更新</a>
+        <a className="control-button control-button--quiet update-prompt-link" href={settingsHref}>查看更新</a>
         <button
           type="button"
-          className="update-prompt-primary"
+          className="control-button control-button--primary update-prompt-primary"
           onClick={onApplyUpdate}
           disabled={isUpdating}
         >
@@ -58,7 +58,7 @@ export function UpdatePrompt({
         </button>
         <button
           type="button"
-          className="update-prompt-dismiss"
+          className="control-button control-button--quiet update-prompt-dismiss"
           onClick={onDismiss}
           disabled={isUpdating}
         >

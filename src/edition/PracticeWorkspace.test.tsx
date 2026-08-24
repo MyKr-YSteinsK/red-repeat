@@ -98,6 +98,10 @@ describe('PracticeWorkspace 1.0', () => {
     const dock = container.querySelector('.practice-dock')
 
     expect(dock).not.toBeNull()
+    expect(dock).toHaveClass('control-sheet')
+    expect(dock?.querySelectorAll('.control-button')).toHaveLength(8)
+    expect(container.querySelector('.practice-unit-link')).not.toHaveClass('control-button')
+    expect(screen.getByRole('button', { name: '播放第 01 句' })).not.toHaveClass('control-button')
     expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
     expect(dock?.querySelector('.practice-dock-topline')).toBeInTheDocument()
     expect(dock?.querySelector('.practice-dock-primary .practice-play-button')).toBeInTheDocument()

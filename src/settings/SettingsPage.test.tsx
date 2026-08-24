@@ -131,7 +131,9 @@ describe('SettingsPage', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '生成并下载修复包' }))
+    const exportButton = screen.getByRole('button', { name: '生成并下载修复包' })
+    expect(exportButton).toHaveClass('control-button', 'control-button--primary')
+    fireEvent.click(exportButton)
 
     expect(
       await screen.findByText('当前没有待合入的播放切口微调。'),
@@ -159,7 +161,9 @@ describe('SettingsPage', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
+    const checkButton = screen.getByRole('button', { name: '检查更新' })
+    expect(checkButton).toHaveClass('control-button', 'control-button--quiet')
+    fireEvent.click(checkButton)
 
     expect(await screen.findByText(`发现新版本 ${newerVersion}`)).toBeInTheDocument()
     expect(screen.getByText('线上版本')).toBeInTheDocument()
@@ -168,7 +172,9 @@ describe('SettingsPage', () => {
     expect(screen.getByText('2026-08-24T00:00:00.000Z')).toBeInTheDocument()
     expect(screen.getByText('最近检查')).toBeInTheDocument()
     expect(screen.getByText('发现新版本，但暂时无法读取更新说明。')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
+    const updateButton = screen.getByRole('button', { name: '立即更新' })
+    expect(updateButton).toHaveClass('control-button', 'control-button--primary')
+    fireEvent.click(updateButton)
     expect(applyUpdate).toHaveBeenCalledOnce()
   })
 

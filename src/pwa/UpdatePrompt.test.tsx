@@ -26,12 +26,17 @@ describe('UpdatePrompt', () => {
     )
 
     expect(screen.getByText('发现新版本 1.2.0')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '查看更新' })).toHaveClass('control-button')
     expect(screen.getByRole('link', { name: '查看更新' })).toHaveAttribute(
       'href',
       '/#settings&release=1.2.0',
     )
-    fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
-    fireEvent.click(screen.getByRole('button', { name: '稍后' }))
+    const updateButton = screen.getByRole('button', { name: '立即更新' })
+    const dismissButton = screen.getByRole('button', { name: '稍后' })
+    expect(updateButton).toHaveClass('control-button', 'control-button--primary')
+    expect(dismissButton).toHaveClass('control-button', 'control-button--quiet')
+    fireEvent.click(updateButton)
+    fireEvent.click(dismissButton)
     expect(onApplyUpdate).toHaveBeenCalledOnce()
     expect(onDismiss).toHaveBeenCalledOnce()
   })

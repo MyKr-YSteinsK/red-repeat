@@ -691,7 +691,7 @@
   min-height: 2.5rem;
   padding: 0.5rem 0.65rem;
   border: 1px solid var(--color-line);
-  border-radius: 0;
+  border-radius: var(--radius-control-md);
   color: var(--color-ink);
   background: var(--color-paper);
   font: inherit;
@@ -1110,6 +1110,10 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
+}
+
+.explain-lyric-quote-controls select {
+  border-radius: var(--radius-control-md);
 }
 
 .explain-lyric-quote-controls button:hover,
@@ -2133,7 +2137,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding-bottom: calc(15rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(18rem + env(safe-area-inset-bottom));
   }
 
   .full-song-section {
@@ -2157,8 +2161,13 @@
     z-index: 4;
     width: 100%;
     margin: 0;
-    padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
+    padding:
+      var(--control-sheet-padding-block)
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-right))
+      calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-left));
     border-inline: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
   }
 
@@ -3135,25 +3144,29 @@
 @media (max-width: 640px) {
   .practice-workspace {
     --practice-dock-reserve: 11rem;
-    padding-bottom: calc(var(--practice-dock-reserve) + env(safe-area-inset-bottom) + 0.75rem);
+    padding-bottom: calc(var(--practice-dock-reserve) + env(safe-area-inset-bottom));
   }
 
   .practice-controls.practice-dock {
     display: grid;
     position: fixed;
-    left: calc(0.75rem + env(safe-area-inset-left));
-    right: calc(0.75rem + env(safe-area-inset-right));
-    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    bottom: 0;
     top: auto;
     z-index: 4;
     grid-template-columns: minmax(0, 1fr);
-    width: auto;
+    width: 100%;
     max-height: none;
     overflow: visible;
-    gap: 0.55rem;
+    gap: var(--control-group-gap);
     margin: 0;
-    padding: 0.75rem;
-    border-radius: 1.25rem;
+    padding:
+      var(--control-sheet-padding-block)
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-right))
+      calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-left));
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   }
 
   .practice-dock-topline,
@@ -3586,4 +3599,82 @@
     font-size: clamp(3rem, 16vw, 4.6rem);
   }
 
+}
+
+/* Apply .control-button only to visible action chrome. Lyric, text, list-row, swipe, and micro actions intentionally remain unboxed. */
+.control-button.control-button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: var(--control-height-md);
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem var(--control-padding-inline-md);
+  border: 1px solid color-mix(in srgb, var(--color-line) 82%, transparent);
+  border-radius: var(--radius-control-md);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-surface) 58%, transparent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.control-button.control-button--sm {
+  min-height: var(--control-height-sm);
+  padding-inline: var(--control-padding-inline-sm);
+  border-radius: var(--radius-control-sm);
+}
+
+.control-button.control-button--lg {
+  min-height: var(--control-height-lg);
+  padding-inline: var(--control-padding-inline-lg);
+  border-radius: var(--radius-control-lg);
+}
+
+.control-button.control-button--quiet {
+  background: color-mix(in srgb, var(--color-surface) 38%, transparent);
+}
+
+.control-button.control-button--primary,
+.control-button.control-button--toggle[aria-pressed='true'] {
+  border-color: var(--color-red);
+  color: var(--color-surface);
+  background: var(--color-red);
+}
+
+.control-button.control-button:not(:disabled):hover,
+.control-button.control-button:not(:disabled):focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+  background: color-mix(in srgb, var(--color-surface) 82%, var(--color-red));
+}
+
+.control-button.control-button--primary:not(:disabled):hover,
+.control-button.control-button--primary:not(:disabled):focus-visible,
+.control-button.control-button--toggle[aria-pressed='true']:not(:disabled):hover,
+.control-button.control-button--toggle[aria-pressed='true']:not(:disabled):focus-visible {
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+  background: var(--color-ink);
+}
+
+.control-button.control-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.control-sheet.control-sheet {
+  border: 1px solid var(--control-sheet-border);
+  border-radius: var(--radius-sheet);
+  background: var(--control-sheet-bg);
+  box-shadow: var(--control-sheet-shadow);
+  backdrop-filter: var(--control-sheet-blur);
+  -webkit-backdrop-filter: var(--control-sheet-blur);
+}
+
+@media (max-width: 640px) {
+  .control-sheet.control-sheet {
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  }
 }

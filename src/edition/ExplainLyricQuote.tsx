@@ -152,13 +152,14 @@ export function ExplainLyricQuote({
               </select>
             </label>
           ) : null}
-          <button type="button" onClick={playSelectedOccurrence}>
+          <button className="control-button control-button--quiet control-button--sm" type="button" onClick={playSelectedOccurrence}>
             {playingOccurrenceId === selectedOccurrence?.occurrence.id
               ? '播放中…'
               : '试听这句'}
           </button>
           {practiceUnitId && onStartPracticeUnit ? (
             <button
+              className="control-button control-button--primary control-button--sm"
               type="button"
               onClick={() => onStartPracticeUnit(practiceUnitId)}
             >

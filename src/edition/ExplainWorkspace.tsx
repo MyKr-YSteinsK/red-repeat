@@ -153,18 +153,18 @@ export function ExplainWorkspace({
 
           <nav className="explain-topic-pager" aria-label="讲解主题翻页">
             <button
-              className="explain-topic-pager-previous"
+              className="control-button explain-topic-pager-previous"
               type="button"
               disabled={!previousTopic}
               onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
             >
               ← 上一篇
             </button>
-            <button className="explain-scroll-top" type="button" onClick={scrollExplainToTop}>
+            <button className="control-button control-button--quiet explain-scroll-top" type="button" onClick={scrollExplainToTop}>
               回到顶部
             </button>
             <button
-              className="explain-topic-pager-next"
+              className="control-button explain-topic-pager-next"
               type="button"
               disabled={!nextTopic}
               onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}

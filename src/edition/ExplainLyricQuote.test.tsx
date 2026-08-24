@@ -157,6 +157,8 @@ describe('ExplainLyricQuote', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '学习这一段 →' }))
 
+    expect(screen.getByRole('button', { name: '试听这句' })).toHaveClass('control-button')
+    expect(screen.getByRole('button', { name: '学习这一段 →' })).toHaveClass('control-button')
     expect(onStartPracticeUnit).toHaveBeenCalledWith('p001')
     expect(media.play).not.toHaveBeenCalled()
   })

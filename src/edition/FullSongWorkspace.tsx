@@ -197,7 +197,7 @@ export function FullSongWorkspace({
         </div>
         {!followLyrics ? (
           <button
-            className="full-song-return-current"
+            className="control-button control-button--quiet full-song-return-current"
             type="button"
             onClick={() => {
               pendingFollowOccurrenceId.current = undefined
@@ -350,7 +350,7 @@ function FullSongLyrics({
 
           {occurrences.length === 0 ? (
             <button
-              className={`full-song-instrumental-marker${selectedSectionId === section.id ? ' is-selected' : ''}${playingSectionId === section.id ? ' is-playing' : ''}`}
+              className={`control-button control-button--quiet full-song-instrumental-marker${selectedSectionId === section.id ? ' is-selected' : ''}${playingSectionId === section.id ? ' is-playing' : ''}`}
               type="button"
               aria-pressed={selectedSectionId === section.id}
               aria-label={`播放器乐段：${section.label}`}
@@ -462,11 +462,12 @@ function FullSongOccurrence({
       ) : null}
       {isSelected ? (
         <div className="full-song-quick-actions" aria-label="当前句操作">
-          <button type="button" onClick={() => onReplay(assembledOccurrence)}>
+          <button className="control-button control-button--sm" type="button" onClick={() => onReplay(assembledOccurrence)}>
             再听这句
           </button>
           {hasPracticeUnit && onStartPractice ? (
             <button
+              className="control-button control-button--primary control-button--sm"
               type="button"
               onClick={() => onStartPractice(assembledOccurrence)}
             >
@@ -545,7 +546,7 @@ function FullSongPlayer({
   }
 
   return (
-    <aside className="full-song-player" aria-label="全曲播放器">
+    <aside className="control-sheet full-song-player" aria-label="全曲播放器">
       <div className="full-song-player-topline">
         <span>全曲播放</span>
         <span>
@@ -553,7 +554,7 @@ function FullSongPlayer({
         </span>
       </div>
       <button
-        className="full-song-player-toggle"
+        className="control-button control-button--primary control-button--lg full-song-player-toggle"
         type="button"
         onClick={togglePlayback}
         disabled={!engine}
@@ -580,6 +581,7 @@ function FullSongPlayer({
         {PRACTICE_PLAYBACK_RATES.map((rate) => (
           <button
             key={rate}
+            className="control-button control-button--sm control-button--toggle"
             type="button"
             aria-label={`设置速度 ${rate.toFixed(2)}x`}
             aria-pressed={progress.playbackRate === rate}
@@ -591,10 +593,10 @@ function FullSongPlayer({
         ))}
       </div>
       <div className="full-song-player-actions">
-        <button type="button" onClick={onScrollToTop}>
+        <button className="control-button control-button--quiet control-button--sm" type="button" onClick={onScrollToTop}>
           回到顶部
         </button>
-        <button type="button" onClick={onReset}>
+        <button className="control-button control-button--quiet control-button--sm" type="button" onClick={onReset}>
           重置
         </button>
       </div>
