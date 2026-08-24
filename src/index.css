@@ -26,6 +26,9 @@
   --control-sheet-border: color-mix(in srgb, var(--color-ink) 14%, transparent);
   --control-sheet-shadow: 0 -0.7rem 2.2rem color-mix(in srgb, var(--color-ink) 13%, transparent);
   --control-sheet-blur: blur(22px) saturate(118%);
+  --z-player: 20;
+  --z-selector: 30;
+  --z-modal: 40;
 
   font-family: var(--font-sans);
   color: var(--color-ink);

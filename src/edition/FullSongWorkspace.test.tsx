@@ -351,8 +351,13 @@ describe('FullSongWorkspace', () => {
 
     const player = screen.getByRole('complementary', { name: '全曲播放器' })
     const progress = screen.getByRole('slider', { name: '播放进度' })
-    expect(player).toHaveClass('control-sheet')
-    expect(player.querySelectorAll('.control-button')).toHaveLength(6)
+    expect(player).toHaveClass('full-song-player')
+    expect(player).not.toHaveClass('control-sheet')
+    expect(player.querySelectorAll('.control-button')).toHaveLength(0)
+    expect(player.querySelectorAll('.full-song-player-speed-button')).toHaveLength(3)
+    expect(player.querySelector('.full-song-player-speed > span')).toBeNull()
+    expect(screen.getByRole('button', { name: '播放' })).toHaveClass('full-song-player-toggle')
+    expect(screen.getByRole('button', { name: '播放' })).not.toHaveClass('control-button--primary')
     expect(screen.getByRole('button', { name: '从这里连续播放：Repeat me' })).not.toHaveClass('control-button')
     expect(progress).toHaveAttribute('max', '2600')
     expect(screen.getByText('00:00 / 00:02')).toBeInTheDocument()
@@ -372,6 +377,7 @@ describe('FullSongWorkspace', () => {
     fireEvent.click(screen.getByRole('button', { name: '设置速度 0.80x' }))
     expect(engine.getState().playbackRate).toBe(0.8)
     expect(screen.getByRole('button', { name: '设置速度 0.80x' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '设置速度 0.80x' })).toHaveClass('full-song-player-speed-button')
     expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe(
       '0.8',
     )
