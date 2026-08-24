@@ -431,7 +431,10 @@ describe('App Library consumer', () => {
       render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
       expect(await screen.findByText('已下载')).toBeInTheDocument()
-      expect(screen.getByText('已下载')).toBeInTheDocument()
+      const installedState = screen.getByText('已下载')
+      expect(installedState).toHaveClass('catalog-download-state')
+      expect(installedState).not.toHaveClass('catalog-download-button')
+      expect(installedState.tagName).toBe('SPAN')
 
       const firstCard = document.querySelector<HTMLElement>(
         '[data-song-id="first-light"]',

@@ -660,7 +660,7 @@ function CatalogDownloadSlot({
     <div className="catalog-download-slot" aria-live="polite">
       {isInstalled && !isRemoving ? (
         <span
-          className="catalog-download-button catalog-download-state"
+          className="catalog-download-state"
           aria-label={`已下载 ${edition.title}`}
         >
           已下载
