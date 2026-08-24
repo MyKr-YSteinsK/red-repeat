@@ -69,7 +69,7 @@ export function describeUpdateStatus(snapshot: UpdateSnapshot): string {
       ? `发现新版本 ${snapshot.remote.version}`
       : '发现新版本'
   }
-  return snapshot.checkedAt ? '已是最新版本' : '尚未检查'
+  return snapshot.checkedAt !== undefined ? '已是最新版本' : '尚未检查'
 }
 
 class UpdateManagerImpl implements UpdateManager {
@@ -93,6 +93,7 @@ class UpdateManagerImpl implements UpdateManager {
   private installingWorkerStateChange: (() => void) | undefined
   private lastAutomaticCheckAt = Number.NEGATIVE_INFINITY
   private checkPromise: Promise<UpdateSnapshot> | undefined
+  private probeSequence = 0
   private updatePromise: Promise<void> | undefined
   private resolveUpdate: (() => void) | undefined
   private reloadTriggered = false
@@ -214,18 +215,23 @@ class UpdateManagerImpl implements UpdateManager {
     const probePromise = fetchVersionProbe({
       fetchImpl: this.fetchImpl,
       locationHref: this.locationHref(),
-      cacheBust: this.now(),
+      cacheBust: `${this.now()}-${++this.probeSequence}`,
     })
     void this.registration?.update?.().catch(() => undefined)
     const [probeResult] = await Promise.allSettled([probePromise])
 
     if (probeResult.status === 'rejected') {
       if (this.waitingWorker) {
-        this.publish({ status: 'update-available', checkedAt: this.now() })
+        this.publish({
+          status: 'update-available',
+          remote: undefined,
+          checkedAt: this.now(),
+        })
       } else {
         this.publish({
           status: 'error',
           error: describeError(probeResult.reason),
+          remote: undefined,
           checkedAt: this.now(),
         })
       }
@@ -440,6 +446,7 @@ class UpdateManagerImpl implements UpdateManager {
     this.publish({
       status: 'error',
       error: describeError(error),
+      remote: undefined,
       checkedAt: this.now(),
     })
     this.clearUpdateAttempt()

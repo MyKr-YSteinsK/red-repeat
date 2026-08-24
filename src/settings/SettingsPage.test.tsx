@@ -140,6 +140,7 @@ describe('SettingsPage', () => {
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
         version: '1.3.1',
         commit: 'abcdef123456',
+        builtAt: '2026-08-24T00:00:00.000Z',
       }), { status: 200 })),
       locationHref: () => 'https://example.test/red-repeat/#settings',
     })
@@ -158,6 +159,11 @@ describe('SettingsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
     expect(await screen.findByText('发现新版本 1.3.1')).toBeInTheDocument()
+    expect(screen.getByText('线上版本')).toBeInTheDocument()
+    expect(screen.getByText('线上 Build SHA')).toBeInTheDocument()
+    expect(screen.getByText('abcdef123456')).toBeInTheDocument()
+    expect(screen.getByText('2026-08-24T00:00:00.000Z')).toBeInTheDocument()
+    expect(screen.getByText('最近检查')).toBeInTheDocument()
     expect(screen.getByText('发现新版本，但暂时无法读取更新说明。')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
     expect(applyUpdate).toHaveBeenCalledOnce()
@@ -168,6 +174,7 @@ describe('SettingsPage', () => {
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
         version: '1.3.1',
         commit: 'abcdef123456',
+        builtAt: '2026-08-24T00:00:00.000Z',
         release: {
           version: '1.3.1',
           date: '2026-08-24',
@@ -197,6 +204,29 @@ describe('SettingsPage', () => {
     expect(screen.getByText('远端真实更新说明。')).toBeInTheDocument()
     expect(screen.getByText('旧 App 也能看到这条更新。')).toBeInTheDocument()
     expect(screen.getAllByText('1.3.0').length).toBeGreaterThan(0)
+  })
+
+  it('does not report the current build as latest after a failed manual check', async () => {
+    const updateManager = createUpdateManager({
+      fetchImpl: vi.fn(async () => new Response('offline', { status: 503 })),
+      locationHref: () => 'https://example.test/red-repeat/#settings',
+    })
+
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        updateManager={updateManager}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
+
+    expect(await screen.findByText('检查失败，请稍后重试')).toBeInTheDocument()
+    expect(screen.queryByText('已是最新版本')).not.toBeInTheDocument()
+    expect(screen.queryByText('线上版本')).not.toBeInTheDocument()
   })
 
   it('opens the milestone containing the requested release from the global update entry', () => {

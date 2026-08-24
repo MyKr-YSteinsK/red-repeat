@@ -94,6 +94,10 @@ describe('PWA update manager', () => {
     now = 300002
     await manager.checkForUpdate({ manual: true })
     expect(fetchImpl).toHaveBeenCalledTimes(3)
+    const probeChecks = fetchImpl.mock.calls.map(([input]) =>
+      new URL(String(input)).searchParams.get('check'),
+    )
+    expect(new Set(probeChecks).size).toBe(3)
   })
 
   it('exposes a waiting worker and reloads only once after activation', async () => {
@@ -361,6 +365,7 @@ describe('PWA update manager', () => {
     fetchImpl.mockImplementationOnce(async () => new Response(JSON.stringify({
       version: '1.3.2',
       commit: 'fedcba654321',
+      builtAt: '2026-08-24T00:00:00.000Z',
     }), { status: 200 }))
     await manager.checkForUpdate()
     expect(manager.getSnapshot()).toMatchObject({
@@ -394,8 +399,16 @@ function createFakeRegistration(
 }
 
 function probeFetch(version: string, commit: string) {
-  return vi.fn(async () => new Response(JSON.stringify({ version, commit }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  }))
+  return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    void input
+    void init
+    return new Response(JSON.stringify({
+      version,
+      commit,
+      builtAt: '2026-08-24T00:00:00.000Z',
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  })
 }

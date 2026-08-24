@@ -195,6 +195,18 @@ export function SettingsPage({
             {updateSnapshot.status === 'error' && updateSnapshot.error ? (
               <p className="settings-update-error">{updateSnapshot.error}</p>
             ) : null}
+            {updateSnapshot.checkedAt !== undefined ? (
+              <dl className="settings-remote-build" data-update-build>
+                {remote ? (
+                  <>
+                    <div><dt>线上版本</dt><dd>{remote.version}</dd></div>
+                    <div><dt>线上 Build SHA</dt><dd>{remote.commit}</dd></div>
+                    <div><dt>线上构建时间</dt><dd>{remote.builtAt}</dd></div>
+                  </>
+                ) : null}
+                <div><dt>最近检查</dt><dd>{formatTimestamp(updateSnapshot.checkedAt)}</dd></div>
+              </dl>
+            ) : null}
             {remoteHasNewerVersion ? (
               remoteRelease ? (
                 <section className="settings-remote-release" data-remote-release aria-labelledby="remote-release-title">
@@ -385,6 +397,10 @@ function offlineStatusLabel(status: OfflineStatus): string {
     return '可用，等待接管'
   }
   return '开发环境不可用'
+}
+
+function formatTimestamp(timestamp: number): string {
+  return new Date(timestamp).toISOString()
 }
 
 async function loadTimingExportSong(

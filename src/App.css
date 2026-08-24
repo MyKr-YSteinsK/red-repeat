@@ -429,13 +429,15 @@
   line-height: 1.6;
 }
 
-.settings-facts {
+.settings-facts,
+.settings-remote-build {
   display: grid;
   gap: 0;
   margin: 1.75rem 0 0;
 }
 
-.settings-facts div {
+.settings-facts div,
+.settings-remote-build div {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -444,11 +446,14 @@
 }
 
 .settings-facts dt,
-.settings-facts dd {
+.settings-facts dd,
+.settings-remote-build dt,
+.settings-remote-build dd {
   margin: 0;
 }
 
-.settings-facts dt {
+.settings-facts dt,
+.settings-remote-build dt {
   color: var(--color-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -456,7 +461,8 @@
   text-transform: uppercase;
 }
 
-.settings-facts dd {
+.settings-facts dd,
+.settings-remote-build dd {
   overflow: hidden;
   color: var(--color-ink);
   font-family: var(--font-mono);
