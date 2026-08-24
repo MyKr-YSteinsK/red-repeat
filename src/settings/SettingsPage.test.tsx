@@ -138,7 +138,7 @@ describe('SettingsPage', () => {
   it('manually checks for a newer build and exposes the immediate update action', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.1',
+        version: '1.3.2',
         commit: 'abcdef123456',
         builtAt: '2026-08-24T00:00:00.000Z',
       }), { status: 200 })),
@@ -158,7 +158,7 @@ describe('SettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
-    expect(await screen.findByText('发现新版本 1.3.1')).toBeInTheDocument()
+    expect(await screen.findByText('发现新版本 1.3.2')).toBeInTheDocument()
     expect(screen.getByText('线上版本')).toBeInTheDocument()
     expect(screen.getByText('线上 Build SHA')).toBeInTheDocument()
     expect(screen.getByText('abcdef123456')).toBeInTheDocument()
@@ -172,11 +172,11 @@ describe('SettingsPage', () => {
   it('shows remote release notes without replacing the local changelog', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.1',
+        version: '1.3.2',
         commit: 'abcdef123456',
         builtAt: '2026-08-24T00:00:00.000Z',
         release: {
-          version: '1.3.1',
+          version: '1.3.2',
           date: '2026-08-24',
           level: 'minor',
           title: '远端学习更新',
