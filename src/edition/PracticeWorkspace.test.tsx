@@ -5,7 +5,10 @@ import type { AudioEngine, AudioEngineState } from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { PracticeDocument } from '../library/schema'
-import { assembleRuntimeSongEdition } from '../runtime/song-edition'
+import {
+  assembleRuntimeSongEdition,
+  type AssembledSongEdition,
+} from '../runtime/song-edition'
 import { PracticeWorkspace } from './PracticeWorkspace'
 
 const catalogEdition: CatalogEdition = {
@@ -75,6 +78,44 @@ const model = assembleRuntimeSongEdition({
   },
   timeline,
   practice,
+  features: [],
+})
+
+const variableLengthModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics: {
+    segments: Array.from({ length: 7 }, (_, index) => ({
+      id: `v${index + 1}`,
+      lyrics: `Line ${index + 1}`,
+      translation: `第 ${index + 1} 句`,
+    })),
+  },
+  timeline: {
+    audioSourceHash: 'b'.repeat(64),
+    sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 3000 }],
+    occurrences: Array.from({ length: 7 }, (_, index) => ({
+      id: `vo${index + 1}`,
+      segmentId: `v${index + 1}`,
+      sectionId: 'verse',
+      startMs: 100 + index * 350,
+      endMs: 350 + index * 350,
+      playStartMs: 50 + index * 350,
+      playEndMs: 400 + index * 350,
+    })),
+  },
+  practice: {
+    units: [
+      { id: 'one', sectionId: 'verse', label: 'One', occurrenceIds: ['vo1'] },
+      { id: 'two', sectionId: 'verse', label: 'Two', occurrenceIds: ['vo2', 'vo3'] },
+      {
+        id: 'four',
+        sectionId: 'verse',
+        label: 'Four',
+        occurrenceIds: ['vo4', 'vo5', 'vo6', 'vo7'],
+      },
+    ],
+  },
   features: [],
 })
 
@@ -184,7 +225,7 @@ describe('PracticeWorkspace 1.0', () => {
       bottom: 820,
       height: 170,
     } as DOMRect)
-    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 852 })
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(852)
     notifyResize?.([], {} as ResizeObserver)
 
     expect(observe).toHaveBeenCalledWith(dock)
@@ -211,6 +252,42 @@ describe('PracticeWorkspace 1.0', () => {
     expect(engine.playRangeUntilComplete).toHaveBeenCalledWith(
       { startMs: 50, endMs: 450, occurrenceIds: ['o001'] },
       'o001',
+    )
+  })
+
+  it('keeps one, two, and four-line units on the same measured dock reserve', () => {
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(852)
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        return this.classList.contains('practice-dock')
+          ? ({ top: 650, bottom: 820, height: 170 } as DOMRect)
+          : ({ top: 96, bottom: 96, height: 0 } as DOMRect)
+      },
+    )
+    const { container } = renderWorkspace(createFakeEngine(), {
+      model: variableLengthModel,
+    })
+    const workspace = container.querySelector<HTMLElement>('.practice-workspace')
+    const lyricRows = (): number =>
+      container.querySelectorAll('.practice-lyric-row').length
+
+    expect(lyricRows()).toBe(1)
+    expect(workspace?.style.getPropertyValue('--practice-dock-occlusion')).toBe(
+      '202px',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '选择学习段：One' }))
+    fireEvent.click(screen.getByRole('option', { name: /Two/ }))
+    expect(lyricRows()).toBe(2)
+    expect(workspace?.style.getPropertyValue('--practice-dock-occlusion')).toBe(
+      '202px',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '选择学习段：Two' }))
+    fireEvent.click(screen.getByRole('option', { name: /Four/ }))
+    expect(lyricRows()).toBe(4)
+    expect(workspace?.style.getPropertyValue('--practice-dock-occlusion')).toBe(
+      '202px',
     )
   })
 
@@ -388,17 +465,18 @@ function renderWorkspace(
   props: Pick<
     ComponentProps<typeof PracticeWorkspace>,
     'requestedPracticeUnitId' | 'onRequestedPracticeUnitConsumed'
-  > = {},
+  > & { model?: AssembledSongEdition } = {},
 ) {
   const runtimeClient = {
     resolveAsset: (path: string) => `/app${path}`,
   } as unknown as RuntimeClient
+  const { model: workspaceModel = model, ...workspaceProps } = props
   return render(
     <PracticeWorkspace
-      model={model}
+      model={workspaceModel}
       runtimeClient={runtimeClient}
       audioEngine={engine}
-      {...props}
+      {...workspaceProps}
     />,
   )
 }
