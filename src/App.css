@@ -1658,8 +1658,11 @@
   gap: 0.75rem 1rem;
   margin-top: 1rem;
   padding: 0.8rem;
-  border: 1px solid var(--color-ink);
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-red));
+  border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--color-ink) 9%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .practice-dock-topline,
@@ -1738,6 +1741,9 @@
 
 .practice-map nav {
   max-height: min(52svh, 34rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 /* Full Song: a quiet, continuous lyric stream. */
@@ -2218,6 +2224,7 @@
 
 .practice-workspace {
   margin-top: clamp(1.25rem, 3vw, 2.5rem);
+  overflow-anchor: none;
 }
 
 .practice-layout {
@@ -2489,8 +2496,6 @@
 
 .practice-controls {
   padding: 1rem;
-  border: 1px solid var(--color-ink);
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-red));
 }
 
 .practice-mobile-controls-toggle {
@@ -2898,6 +2903,7 @@
 @media (max-width: 640px) {
   .song-edition.is-practice-page {
     padding-top: 1rem;
+    padding-bottom: 0;
   }
 
   .practice-page-header {
@@ -2988,10 +2994,9 @@
   }
 
   .practice-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "lyrics" "controls" "map";
-    gap: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .practice-lyrics-column,
@@ -3012,7 +3017,7 @@
   }
 
   .practice-map nav {
-    max-height: 14rem;
+    max-height: min(48svh, 26rem);
   }
 
   .practice-unit-heading {
@@ -3070,24 +3075,24 @@
 /* Practice 1.0 mobile dock: three compact rows plus safe-area reservation. */
 @media (max-width: 640px) {
   .practice-workspace {
-    --practice-dock-height: 7.4rem;
-    padding-bottom: calc(var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem);
+    --practice-dock-reserve: 9.25rem;
+    padding-bottom: calc(var(--practice-dock-reserve) + env(safe-area-inset-bottom) + 0.75rem);
   }
 
   .practice-dock {
     display: grid;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: calc(0.65rem + env(safe-area-inset-left));
+    right: calc(0.65rem + env(safe-area-inset-right));
+    bottom: calc(0.65rem + env(safe-area-inset-bottom));
     z-index: 4;
     grid-template-columns: minmax(0, 1fr);
-    max-height: calc(8rem + env(safe-area-inset-bottom));
+    max-height: none;
     overflow: visible;
-    gap: 0.25rem;
+    gap: 0.4rem;
     margin: 0;
-    padding: 0.4rem 1rem calc(0.4rem + env(safe-area-inset-bottom));
-    border-inline: 0;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.2rem;
   }
 
   .practice-dock-topline,
@@ -3119,7 +3124,7 @@
   .practice-dock .practice-action {
     width: 100%;
     min-width: 0;
-    min-height: 2rem;
+    min-height: 2.15rem;
     padding: 0.35rem 0.4rem;
     font-size: 0.6rem;
   }

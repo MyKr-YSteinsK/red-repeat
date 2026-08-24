@@ -60,6 +60,7 @@ export function PracticeWorkspace({
   const [mapOpen, setMapOpen] = useState(false)
   const [message, setMessage] = useState<string>()
   const operationRef = useRef(0)
+  const mapNavRef = useRef<HTMLElement | null>(null)
   const mapItemRefs = useRef(new Map<string, HTMLLIElement>())
 
   const currentUnit =
@@ -135,10 +136,14 @@ export function PracticeWorkspace({
     if (!mapOpen || !currentUnit) {
       return
     }
-    const item = mapItemRefs.current.get(currentUnit.id)
-    if (item && typeof item.scrollIntoView === 'function') {
-      item.scrollIntoView({ block: 'nearest' })
-    }
+    const timeoutId = globalThis.setTimeout(() => {
+      const nav = mapNavRef.current
+      const item = mapItemRefs.current.get(currentUnit.id)
+      if (nav && item) {
+        revealPracticeMapItem(nav, item)
+      }
+    }, 0)
+    return () => globalThis.clearTimeout(timeoutId)
   }, [currentUnit, mapOpen])
 
   useEffect(() => {
@@ -316,7 +321,7 @@ export function PracticeWorkspace({
             </span>
             <span className="practice-map-toggle">{mapOpen ? '收起' : '展开'}</span>
           </summary>
-          <nav aria-label="学习段">
+          <nav ref={mapNavRef} aria-label="学习段" data-practice-map-scroll="true">
             <ol>
               {practiceIndex.units.map((unit, index) => {
                 const isCurrent = unit.id === currentUnit.id
@@ -509,4 +514,52 @@ function normalizePracticeSpeed(value: number): PracticeSpeed {
   return PRACTICE_SPEEDS.includes(value as PracticeSpeed)
     ? (value as PracticeSpeed)
     : 1
+}
+
+function revealPracticeMapItem(container: HTMLElement, item: HTMLElement): void {
+  if (container.clientHeight <= 0) {
+    return
+  }
+
+  const containerRect = container.getBoundingClientRect()
+  const itemRect = item.getBoundingClientRect()
+  const inset = Math.min(18, Math.max(10, container.clientHeight * 0.12))
+  const visibleTop = containerRect.top + inset
+  const visibleBottom = getPracticeMapVisibleBottom(containerRect, inset)
+
+  if (visibleBottom <= visibleTop) {
+    return
+  }
+
+  if (itemRect.top < visibleTop) {
+    container.scrollTop = Math.max(
+      0,
+      container.scrollTop + itemRect.top - visibleTop,
+    )
+    return
+  }
+
+  if (itemRect.bottom > visibleBottom) {
+    container.scrollTop = Math.max(
+      0,
+      container.scrollTop + itemRect.bottom - visibleBottom,
+    )
+  }
+}
+
+function getPracticeMapVisibleBottom(
+  containerRect: DOMRect,
+  inset: number,
+): number {
+  const defaultBottom = containerRect.bottom - inset
+  const dock = document.querySelector<HTMLElement>('.practice-dock')
+  if (!dock || window.getComputedStyle(dock).position !== 'fixed') {
+    return defaultBottom
+  }
+
+  const dockRect = dock.getBoundingClientRect()
+  if (dockRect.top <= containerRect.top || dockRect.top >= defaultBottom) {
+    return defaultBottom
+  }
+  return dockRect.top - inset
 }

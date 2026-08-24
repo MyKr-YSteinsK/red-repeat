@@ -181,6 +181,42 @@ describe('PracticeWorkspace 1.0', () => {
     expect(screen.queryByText('已访问')).not.toBeInTheDocument()
     expect(screen.queryByText('未访问')).not.toBeInTheDocument()
   })
+
+  it('reveals a selected map item inside the map without scrolling the page', async () => {
+    const { container } = renderWorkspace()
+    const mapNav = container.querySelector<HTMLElement>('[data-practice-map-scroll="true"]')
+    const mapItems = container.querySelectorAll<HTMLElement>('.practice-map li')
+
+    expect(mapNav).not.toBeNull()
+    expect(mapItems).toHaveLength(2)
+    if (!mapNav || !mapItems[1]) {
+      return
+    }
+
+    Object.defineProperty(mapNav, 'clientHeight', {
+      configurable: true,
+      value: 120,
+    })
+    Object.defineProperty(mapNav, 'scrollTop', {
+      configurable: true,
+      value: 0,
+      writable: true,
+    })
+    vi.spyOn(mapNav, 'getBoundingClientRect').mockReturnValue({
+      top: 100,
+      bottom: 220,
+    } as DOMRect)
+    vi.spyOn(mapItems[1], 'getBoundingClientRect').mockReturnValue({
+      top: 260,
+      bottom: 300,
+    } as DOMRect)
+
+    fireEvent.click(screen.getByText('歌曲地图'))
+    fireEvent.click(screen.getByRole('button', { name: /Chorus/ }))
+
+    await waitFor(() => expect(mapNav.scrollTop).toBeCloseTo(94.4))
+    expect(mapNav).toHaveAttribute('data-practice-map-scroll', 'true')
+  })
 })
 
 function renderWorkspace(engine = createFakeEngine()) {
