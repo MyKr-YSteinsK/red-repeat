@@ -51,6 +51,7 @@ describe('PracticeSegmentPicker', () => {
 
       await waitFor(() => expect(list.scrollTop).toBe(72))
       expect(scrollIntoView).not.toHaveBeenCalled()
+      expect(document.activeElement).toBe(selectedOption)
       expect(screen.getByRole('option', { name: /Chorus/ })).toHaveAttribute(
         'aria-selected',
         'true',

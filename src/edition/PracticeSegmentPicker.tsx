@@ -29,6 +29,9 @@ export function PracticeSegmentPicker({
       const item = itemRefs.current.get(currentUnitId)
       if (list && item) {
         revealPickerItem(list, item)
+        item.focus({ preventScroll: true })
+      } else {
+        list?.focus({ preventScroll: true })
       }
     }, 0)
 
