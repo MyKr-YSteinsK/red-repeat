@@ -42,6 +42,29 @@ const populatedCatalog = {
   ],
 }
 
+const boundaryCatalog = {
+  contractVersion: 3,
+  contentHash: 'f'.repeat(64),
+  editions: [
+    {
+      songId: 'long-card',
+      title: 'A Very Long Song Title That Must Stay On One Line',
+      artist: 'Very Long Primary Artist Name × Another Collaborating Artist × Guest Artist',
+      year: 2025,
+      coverUrl: '/library-runtime/songs/long-card/cover-small.a.webp',
+      editionUrl: '/library-runtime/songs/long-card/edition.a.json',
+    },
+    {
+      songId: 'year-only',
+      title: 'Year Only',
+      artist: 'A Short Artist',
+      year: 2024,
+      coverUrl: '/library-runtime/songs/year-only/cover-small.b.webp',
+      editionUrl: '/library-runtime/songs/year-only/edition.b.json',
+    },
+  ],
+}
+
 const runtimeEditionForApp = {
   contractVersion: 3,
   contentHash: 'c'.repeat(64),
@@ -300,10 +323,14 @@ describe('App Library consumer', () => {
     expect(
       await screen.findByRole('link', { name: '开始学唱 First Light' }),
     ).toHaveAttribute('href', '/#edition=first-light')
+    expect(document.querySelectorAll('.catalog-arrow')).toHaveLength(0)
+    expect(document.querySelectorAll('.catalog-entry-main')).toHaveLength(2)
     expect(screen.getAllByText('未下载')).toHaveLength(2)
-    expect(
-      screen.getByRole('button', { name: '下载到本机 First Light' }),
-    ).toBeInTheDocument()
+    const firstDownloadButton = screen.getByRole('button', {
+      name: '下载到本机 First Light',
+    })
+    expect(firstDownloadButton).toBeInTheDocument()
+    expect(firstDownloadButton.closest('a')).toBeNull()
     expect(
       screen.getByRole('button', { name: '下载到本机 Second Signal' }),
     ).toBeInTheDocument()
@@ -313,6 +340,127 @@ describe('App Library consumer', () => {
     expect(screen.getByText('Returning / 2026')).toBeInTheDocument()
     expect(screen.getByText('Another Composer')).toBeInTheDocument()
     expect(screen.queryByText(/liner edition/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps long catalog metadata inside one compact card row', async () => {
+    render(<App runtimeClient={clientFor(boundaryCatalog)} />)
+
+    const longTitle = 'A Very Long Song Title That Must Stay On One Line'
+    const longArtist =
+      'Very Long Primary Artist Name × Another Collaborating Artist × Guest Artist'
+    const longLink = await screen.findByRole('link', {
+      name: `开始学唱 ${longTitle}`,
+    })
+    const longCard = longLink.closest('.catalog-entry')
+    const artist = screen.getByText(longArtist)
+
+    expect(longCard).not.toBeNull()
+    expect(artist).toHaveClass('catalog-artist')
+    expect(screen.getByText('2025')).toHaveClass('catalog-meta')
+    expect(
+      document.querySelectorAll('.catalog-entry-actions'),
+    ).toHaveLength(2)
+    expect(longCard?.querySelector('.catalog-entry-actions')?.parentElement).toBe(
+      longCard,
+    )
+    expect(screen.queryByText('↗')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: '开始学唱 Year Only' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps installed, removing, installing, and failed download states in the action column', async () => {
+    const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+    const originalFetch = globalThis.fetch
+    const cacheEntries = new Map<string, Response>()
+    const requestKey = (request: RequestInfo | URL): string => {
+      if (typeof request === 'string') {
+        return new URL(request, window.location.origin).toString()
+      }
+      return request instanceof URL ? request.toString() : request.url
+    }
+    const cache = {
+      match: vi.fn(async (request: RequestInfo | URL) =>
+        cacheEntries.get(requestKey(request))?.clone(),
+      ),
+      put: vi.fn(async (request: RequestInfo | URL, response: Response) => {
+        cacheEntries.set(requestKey(request), response.clone())
+      }),
+      delete: vi.fn(async (request: RequestInfo | URL) =>
+        cacheEntries.delete(requestKey(request)),
+      ),
+      keys: vi.fn(async () =>
+        [...cacheEntries.keys()].map((url) => new Request(url)),
+      ),
+    } as unknown as Cache
+    const storage = {
+      open: vi.fn(async () => cache),
+    } as unknown as CacheStorage
+    const manifestUrl = new URL(
+      '/.red-repeat/song-downloads/first-light.json',
+      window.location.origin,
+    ).toString()
+    const resourceUrl = new URL(
+      '/library-runtime/songs/first-light/edition.a.json',
+      window.location.origin,
+    ).toString()
+    cacheEntries.set(
+      manifestUrl,
+      new Response(JSON.stringify({
+        schemaVersion: 1,
+        songId: 'first-light',
+        contentHash: 'c'.repeat(64),
+        urls: [resourceUrl],
+        installedAt: 100,
+      })),
+    )
+    cacheEntries.set(resourceUrl, new Response('installed resource'))
+
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: storage,
+    })
+    let rejectDownload: ((reason?: unknown) => void) | undefined
+    globalThis.fetch = vi.fn(
+      () => new Promise<Response>((_resolve, reject) => {
+        rejectDownload = reject
+      }),
+    ) as unknown as typeof fetch
+
+    try {
+      render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+      expect(
+        await screen.findByRole('button', { name: '移除本机 First Light' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('已下载')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: '移除本机 First Light' }))
+      expect(
+        await screen.findByRole('button', { name: '下载到本机 First Light' }),
+      ).toBeInTheDocument()
+
+      fireEvent.click(
+        screen.getByRole('button', { name: '下载到本机 Second Signal' }),
+      )
+      const installingButton = await screen.findByRole('button', {
+        name: '下载中… Second Signal',
+      })
+      expect(installingButton).toBeDisabled()
+
+      rejectDownload?.(new Error('offline'))
+      expect(
+        await screen.findByRole('button', { name: '重试下载 Second Signal' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('下载失败，请检查网络后重试。')).toBeInTheDocument()
+    } finally {
+      globalThis.fetch = originalFetch
+      if (originalCaches) {
+        Object.defineProperty(globalThis, 'caches', originalCaches)
+      } else {
+        delete (globalThis as { caches?: CacheStorage }).caches
+      }
+    }
   })
 
   it('enters an edition without autoplay and returns through browser history', async () => {

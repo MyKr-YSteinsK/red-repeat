@@ -549,14 +549,14 @@ function CatalogEditionCard({
         : '未下载'
   return (
     <article className="catalog-entry" data-song-id={edition.songId}>
+      <span className="catalog-index" aria-hidden="true">
+        {String(index + 1).padStart(2, '0')}
+      </span>
       <a
-        className="catalog-entry-link"
+        className="catalog-entry-main"
         href={createEditionHref(edition.songId, window.location)}
         aria-label={`${action} ${edition.title}`}
       >
-        <span className="catalog-index" aria-hidden="true">
-          {String(index + 1).padStart(2, '0')}
-        </span>
         <img
           className="catalog-cover"
           src={runtimeClient.resolveAsset(edition.coverUrl)}
@@ -579,9 +579,6 @@ function CatalogEditionCard({
             </span>
           ) : null}
           <span className="catalog-action">{action}</span>
-        </span>
-        <span className="catalog-arrow" aria-hidden="true">
-          ↗
         </span>
       </a>
       <div className="catalog-entry-actions">

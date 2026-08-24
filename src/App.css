@@ -189,27 +189,27 @@
 
 .catalog-entry {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2.5rem);
+  grid-template-columns: 1.8rem minmax(0, 1fr) minmax(7rem, auto);
+  align-items: stretch;
+  gap: clamp(0.75rem, 2.2vw, 1.5rem);
   min-width: 0;
   border-bottom: 1px solid var(--color-line);
 }
 
-.catalog-entry-link {
+.catalog-entry-main {
   display: grid;
-  grid-template-columns: 2.5rem 5rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: clamp(0.8rem, 2.5vw, 2rem);
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(0.7rem, 2vw, 1.25rem);
   min-width: 0;
-  min-height: 7rem;
-  padding: 0.9rem 0;
+  min-height: 5.75rem;
+  padding: 0.65rem 0;
   color: inherit;
   text-decoration: none;
 }
 
-.catalog-entry-link:hover .catalog-title,
-.catalog-entry-link:focus-visible .catalog-title {
+.catalog-entry-main:hover .catalog-title,
+.catalog-entry-main:focus-visible .catalog-title {
   color: var(--color-red);
 }
 
@@ -225,12 +225,12 @@
 
 .catalog-index {
   align-self: start;
-  padding-top: 0.35rem;
+  padding-top: 0.3rem;
 }
 
 .catalog-cover {
-  width: 5rem;
-  height: 5rem;
+  width: 4.5rem;
+  height: 4.5rem;
   object-fit: contain;
   background: var(--color-line);
 }
@@ -238,12 +238,15 @@
 .catalog-copy {
   display: flex;
   min-width: 0;
+  min-height: 4.5rem;
   flex-direction: column;
-  gap: 0.18rem;
+  justify-content: space-between;
+  gap: 0.12rem;
 }
 
 .catalog-title {
   overflow: hidden;
+  min-width: 0;
   color: var(--color-ink);
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.4vw, 2rem);
@@ -254,27 +257,28 @@
 }
 
 .catalog-artist {
+  overflow: hidden;
+  min-width: 0;
   color: var(--color-ink);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .catalog-meta {
-  margin-top: 0.3rem;
-}
-
-.catalog-arrow {
-  color: var(--color-red);
-  font-size: 1.35rem;
-  line-height: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .catalog-entry-actions {
-  display: flex;
-  min-width: 8rem;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.45rem;
-  padding: 0.9rem 0;
+  display: grid;
+  min-width: 7rem;
+  align-content: center;
+  justify-items: end;
+  gap: 0.3rem;
+  padding: 0.65rem 0;
 }
 
 .catalog-download-status,
@@ -293,12 +297,14 @@
 
 .catalog-download-button {
   min-height: 2.35rem;
+  max-width: 100%;
   padding: 0.45rem 0.65rem;
   border: 1px solid var(--color-line);
   border-radius: 0;
   color: var(--color-ink);
   background: transparent;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .catalog-download-button:hover,
@@ -314,9 +320,13 @@
 }
 
 .catalog-download-error {
+  min-width: 0;
   max-width: 12rem;
+  overflow: hidden;
   color: var(--color-red);
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .status-line,
@@ -1337,19 +1347,21 @@
 
 .catalog-resume,
 .catalog-action {
+  min-width: 0;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 0.68rem;
   letter-spacing: 0.04em;
   line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .catalog-resume {
-  margin-top: 0.35rem;
   color: var(--color-muted);
 }
 
 .catalog-action {
-  margin-top: 0.55rem;
   color: var(--color-red);
 }
 
@@ -1484,19 +1496,20 @@
   }
 
   .catalog-entry {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    grid-template-columns: 1.5rem minmax(0, 1fr) 5.75rem;
+    gap: 0.65rem;
   }
 
-  .catalog-entry-link {
-    grid-template-columns: 1.75rem 4.25rem minmax(0, 1fr) auto;
-    gap: 0.75rem;
-    min-height: 6rem;
+  .catalog-entry-main {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 0.65rem;
+    min-height: 5.25rem;
+    padding: 0.5rem 0;
   }
 
   .catalog-cover {
-    width: 4.25rem;
-    height: 4.25rem;
+    width: 4rem;
+    height: 4rem;
   }
 
   .catalog-title {
@@ -1505,16 +1518,7 @@
 
   .catalog-entry-actions {
     min-width: 0;
-    align-items: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 0 0 1rem;
-  }
-
-  .catalog-download-error {
-    flex-basis: 100%;
-    max-width: none;
-    text-align: left;
+    padding: 0.5rem 0;
   }
 }
 
@@ -3517,18 +3521,4 @@
     font-size: clamp(3rem, 16vw, 4.6rem);
   }
 
-  .library-populated .catalog-entry-link {
-    grid-template-columns: 1.6rem 6rem minmax(0, 1fr) auto;
-    min-height: 7.5rem;
-    gap: 0.7rem;
-  }
-
-  .library-populated .catalog-cover {
-    width: 6rem;
-    height: 6rem;
-  }
-
-  .library-populated .catalog-entry-actions {
-    padding-top: 0.2rem;
-  }
 }
