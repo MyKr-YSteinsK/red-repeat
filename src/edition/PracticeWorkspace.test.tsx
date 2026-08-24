@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AudioEngine, AudioEngineState } from '../audio/audio-engine'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
@@ -80,6 +80,12 @@ const model = assembleRuntimeSongEdition({
 afterEach(() => {
   cleanup()
   window.localStorage.clear()
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+beforeEach(() => {
+  vi.stubGlobal('ResizeObserver', undefined)
 })
 
 describe('PracticeWorkspace 1.0', () => {
@@ -146,6 +152,51 @@ describe('PracticeWorkspace 1.0', () => {
       'data-ramp-active',
       'false',
     )
+  })
+
+  it('updates the mobile content reserve from the measured dock occlusion', () => {
+    let notifyResize: ResizeObserverCallback | undefined
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          notifyResize = callback
+        }
+
+        observe = observe
+        disconnect = disconnect
+      },
+    )
+    const { container } = renderWorkspace()
+    const workspace = container.querySelector<HTMLElement>('.practice-workspace')
+    const dock = container.querySelector<HTMLElement>('.practice-dock')
+    expect(workspace).not.toBeNull()
+    expect(dock).not.toBeNull()
+    if (!workspace || !dock) {
+      return
+    }
+
+    vi.spyOn(dock, 'getBoundingClientRect').mockReturnValue({
+      top: 650,
+      bottom: 820,
+      height: 170,
+    } as DOMRect)
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 852 })
+    notifyResize?.([], {} as ResizeObserver)
+
+    expect(observe).toHaveBeenCalledWith(dock)
+    expect(workspace.style.getPropertyValue('--practice-dock-occlusion')).toBe('202px')
+
+    vi.mocked(dock.getBoundingClientRect).mockReturnValue({
+      top: 630,
+      bottom: 830,
+      height: 200,
+    } as DOMRect)
+    notifyResize?.([], {} as ResizeObserver)
+
+    expect(workspace.style.getPropertyValue('--practice-dock-occlusion')).toBe('222px')
   })
 
   it('plays one occurrence at the selected speed when both toggles are off', async () => {

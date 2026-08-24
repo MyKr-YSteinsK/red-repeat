@@ -3082,30 +3082,25 @@
 /* Practice 1.0 mobile dock: three compact rows plus safe-area reservation. */
 @media (max-width: 640px) {
   .practice-workspace {
-    --practice-dock-reserve: 11rem;
-    padding-bottom: calc(var(--practice-dock-reserve) + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--practice-dock-occlusion, 0px) + 0.25rem);
   }
 
   .practice-controls.practice-dock {
     display: grid;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: max(0.9rem, env(safe-area-inset-left));
+    right: max(0.9rem, env(safe-area-inset-right));
+    bottom: calc(env(safe-area-inset-bottom) + 0.55rem);
     top: auto;
     z-index: var(--z-player);
     grid-template-columns: minmax(0, 1fr);
-    width: 100%;
+    width: auto;
     max-height: none;
     overflow: visible;
     gap: var(--control-group-gap);
     margin: 0;
-    padding:
-      0.65rem
-      calc(0.65rem + env(safe-area-inset-right))
-      calc(0.65rem + env(safe-area-inset-bottom))
-      calc(0.65rem + env(safe-area-inset-left));
-    border-radius: 1.25rem 1.25rem 0 0;
+    padding: 0.65rem;
+    border-radius: 1.35rem;
   }
 
   .practice-dock-topline,
@@ -3120,7 +3115,7 @@
   }
 
   .practice-dock-primary {
-    grid-template-columns: minmax(5.25rem, 0.9fr) minmax(0, 2.1fr);
+    grid-template-columns: minmax(0, 3fr) minmax(5rem, 0.9fr);
     gap: 0.4rem;
   }
 

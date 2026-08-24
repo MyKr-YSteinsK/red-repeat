@@ -75,6 +75,8 @@ export function PracticeWorkspace({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [message, setMessage] = useState<string>()
   const operationRef = useRef(0)
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
   const pendingNavigationRef = useRef<{
     anchor: ReturnType<typeof captureScrollAnchor>
@@ -175,6 +177,40 @@ export function PracticeWorkspace({
       96,
     )
   }, [learningState.practiceUnitId])
+
+  useLayoutEffect(() => {
+    const workspace = workspaceRef.current
+    const dock = dockRef.current
+    if (!workspace || !dock) {
+      return
+    }
+
+    const updateDockOcclusion = (): void => {
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+      const dockRect = dock.getBoundingClientRect()
+      const bottomOffset = Math.max(0, viewportHeight - dockRect.bottom)
+      const occlusion = Math.max(0, dockRect.height + bottomOffset)
+      workspace.style.setProperty(
+        '--practice-dock-occlusion',
+        `${Math.ceil(occlusion)}px`,
+      )
+    }
+
+    updateDockOcclusion()
+    const resizeObserver =
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(updateDockOcclusion)
+        : undefined
+    resizeObserver?.observe(dock)
+    window.addEventListener('resize', updateDockOcclusion)
+    window.visualViewport?.addEventListener('resize', updateDockOcclusion)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateDockOcclusion)
+      window.visualViewport?.removeEventListener('resize', updateDockOcclusion)
+    }
+  }, [])
 
   useEffect(() => {
     if (!playback.engine) {
@@ -305,6 +341,7 @@ export function PracticeWorkspace({
 
   return (
     <section
+      ref={workspaceRef}
       className="practice-workspace"
       aria-label="学唱工作台"
       data-current-unit-id={currentUnit.id}
@@ -340,7 +377,7 @@ export function PracticeWorkspace({
 
       </div>
 
-      <aside className="practice-controls practice-dock" aria-label="练习控制">
+      <aside ref={dockRef} className="practice-controls practice-dock" aria-label="练习控制">
         <div className="practice-dock-topline">
           <button
             className="practice-player-button practice-context-navigation"
