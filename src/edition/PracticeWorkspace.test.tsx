@@ -77,7 +77,10 @@ const model = assembleRuntimeSongEdition({
   features: [],
 })
 
-afterEach(() => cleanup())
+afterEach(() => {
+  cleanup()
+  window.localStorage.clear()
+})
 
 describe('PracticeWorkspace 1.0', () => {
   it('shows only the compact high-frequency controls', () => {
@@ -98,19 +101,23 @@ describe('PracticeWorkspace 1.0', () => {
     const dock = container.querySelector('.practice-dock')
 
     expect(dock).not.toBeNull()
-    expect(dock).toHaveClass('control-sheet')
-    expect(dock?.querySelectorAll('.control-button')).toHaveLength(8)
-    expect(container.querySelector('.practice-unit-link')).not.toHaveClass('control-button')
+    expect(dock).not.toHaveClass('control-sheet')
+    expect(dock?.querySelectorAll('.practice-player-button')).toHaveLength(8)
+    expect(container.querySelector('.practice-segment-picker-layer')).toBeNull()
     expect(screen.getByRole('button', { name: '播放第 01 句' })).not.toHaveClass('control-button')
     expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
     expect(dock?.querySelector('.practice-dock-topline')).toBeInTheDocument()
     expect(dock?.querySelector('.practice-dock-primary .practice-play-button')).toBeInTheDocument()
-    expect(dock?.querySelectorAll('.practice-rate-actions .practice-action')).toHaveLength(3)
+    expect(dock?.querySelectorAll('.practice-rate-actions .practice-player-button')).toHaveLength(3)
     expect(dock?.querySelector('.practice-dock-modes')).toBeInTheDocument()
-    expect(dock?.querySelectorAll('.practice-dock-modes .practice-action')).toHaveLength(2)
+    expect(dock?.querySelectorAll('.practice-dock-modes .practice-player-button')).toHaveLength(2)
     expect(dock?.querySelectorAll(':scope > div')).toHaveLength(3)
     expect(screen.getByRole('button', { name: '上一段' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '下一段' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '选择学习段：Verse' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
     expect(screen.getByRole('button', { name: '1.00x' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -123,8 +130,8 @@ describe('PracticeWorkspace 1.0', () => {
 
     expect(continuousButton).toHaveAttribute('aria-pressed', 'true')
     expect(rampButton).toHaveAttribute('aria-pressed', 'true')
-    expect(continuousButton.matches(".practice-dock .practice-action[aria-pressed='true']")).toBe(true)
-    expect(rampButton.matches(".practice-dock .practice-action[aria-pressed='true']")).toBe(true)
+    expect(continuousButton.matches(".practice-dock .practice-player-button[aria-pressed='true']")).toBe(true)
+    expect(rampButton.matches(".practice-dock .practice-player-button[aria-pressed='true']")).toBe(true)
     expect(screen.getByRole('button', { name: '0.60x' })).toHaveAttribute(
       'data-ramp-active',
       'true',
@@ -179,50 +186,59 @@ describe('PracticeWorkspace 1.0', () => {
     )
   })
 
-  it('keeps the song map internally scrollable and marks only the current unit', () => {
+  it('uses the fixed segment picker for unit selection and closes after navigation', async () => {
     const { container } = renderWorkspace()
-    fireEvent.click(screen.getByText('歌曲地图'))
+    const contextButton = screen.getByRole('button', { name: '选择学习段：Verse' })
 
-    expect(container.querySelectorAll('.practice-unit-link')).toHaveLength(2)
-    expect(screen.getAllByText('当前')).toHaveLength(1)
-    expect(screen.queryByText('已访问')).not.toBeInTheDocument()
-    expect(screen.queryByText('未访问')).not.toBeInTheDocument()
+    fireEvent.click(contextButton)
+
+    expect(screen.getByRole('dialog', { name: '选择学习段' })).toBeInTheDocument()
+    expect(screen.getByRole('listbox', { name: '学习段' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: /Verse/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+
+    fireEvent.click(screen.getByRole('option', { name: /Chorus/ }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Chorus' })).toBeInTheDocument()
+      expect(screen.queryByRole('dialog', { name: '选择学习段' })).not.toBeInTheDocument()
+    })
+    expect(container.querySelector('.practice-segment-picker-layer')).toBeNull()
   })
 
-  it('reveals a selected map item inside the map without scrolling the page', async () => {
+  it('keeps previous and next slots stable at the practice boundaries', () => {
+    renderWorkspace()
+
+    const previous = screen.getByRole('button', { name: '上一段' })
+    const next = screen.getByRole('button', { name: '下一段' })
+    expect(previous).toBeDisabled()
+    expect(next).toBeEnabled()
+
+    fireEvent.click(next)
+
+    expect(screen.getByRole('heading', { name: 'Chorus' })).toBeInTheDocument()
+    expect(previous).toBeEnabled()
+    expect(next).toBeDisabled()
+  })
+
+  it('closes the segment picker with Escape or an outside click', () => {
     const { container } = renderWorkspace()
-    const mapNav = container.querySelector<HTMLElement>('[data-practice-map-scroll="true"]')
-    const mapItems = container.querySelectorAll<HTMLElement>('.practice-map li')
+    const contextButton = screen.getByRole('button', { name: '选择学习段：Verse' })
 
-    expect(mapNav).not.toBeNull()
-    expect(mapItems).toHaveLength(2)
-    if (!mapNav || !mapItems[1]) {
-      return
+    fireEvent.click(contextButton)
+    expect(screen.getByRole('dialog', { name: '选择学习段' })).toBeInTheDocument()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: '选择学习段' })).not.toBeInTheDocument()
+
+    fireEvent.click(contextButton)
+    const layer = container.querySelector<HTMLElement>('.practice-segment-picker-layer')
+    expect(layer).not.toBeNull()
+    if (layer) {
+      fireEvent.mouseDown(layer)
     }
-
-    Object.defineProperty(mapNav, 'clientHeight', {
-      configurable: true,
-      value: 120,
-    })
-    Object.defineProperty(mapNav, 'scrollTop', {
-      configurable: true,
-      value: 0,
-      writable: true,
-    })
-    vi.spyOn(mapNav, 'getBoundingClientRect').mockReturnValue({
-      top: 100,
-      bottom: 220,
-    } as DOMRect)
-    vi.spyOn(mapItems[1], 'getBoundingClientRect').mockReturnValue({
-      top: 260,
-      bottom: 300,
-    } as DOMRect)
-
-    fireEvent.click(screen.getByText('歌曲地图'))
-    fireEvent.click(screen.getByRole('button', { name: /Chorus/ }))
-
-    await waitFor(() => expect(mapNav.scrollTop).toBeCloseTo(94.4))
-    expect(mapNav).toHaveAttribute('data-practice-map-scroll', 'true')
+    expect(screen.queryByRole('dialog', { name: '选择学习段' })).not.toBeInTheDocument()
   })
 })
 

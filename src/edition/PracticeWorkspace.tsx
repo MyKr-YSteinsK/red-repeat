@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type {
@@ -24,10 +31,18 @@ import {
   readPracticePlaybackRate,
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
+import {
+  captureScrollAnchor,
+  restoreScrollPolicy,
+  runStableContextTransition,
+  type TransitionPolicy,
+} from '../navigation/stable-context-transition'
+import { PracticeSegmentPicker } from './PracticeSegmentPicker'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
 const PRACTICE_SPEEDS = [0.6, 0.8, 1] as const
 type PracticeSpeed = (typeof PRACTICE_SPEEDS)[number]
+type PracticeNavigationSource = 'previous' | 'next' | 'picker' | 'external'
 
 export interface PracticeWorkspaceProps {
   model: AssembledSongEdition
@@ -57,11 +72,14 @@ export function PracticeWorkspace({
   const [playbackRate, setPlaybackRate] = useState<PracticeSpeed>(() =>
     normalizePracticeSpeed(readPracticePlaybackRate(model.edition.song.songId)),
   )
-  const [mapOpen, setMapOpen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [message, setMessage] = useState<string>()
   const operationRef = useRef(0)
-  const mapNavRef = useRef<HTMLElement | null>(null)
-  const mapItemRefs = useRef(new Map<string, HTMLLIElement>())
+  const lyricsAnchorRef = useRef<HTMLElement | null>(null)
+  const pendingNavigationRef = useRef<{
+    anchor: ReturnType<typeof captureScrollAnchor>
+    policy: TransitionPolicy
+  } | undefined>(undefined)
 
   const currentUnit =
     practiceIndex.unitsById.get(learningState.practiceUnitId) ??
@@ -96,17 +114,29 @@ export function PracticeWorkspace({
     [learningState, persistLearningState, practiceIndex],
   )
 
-  const selectUnit = useCallback(
-    (practiceUnitId: string): void => {
+  const navigatePracticeUnit = useCallback(
+    (practiceUnitId: string, source: PracticeNavigationSource): void => {
+      if (practiceUnitId === learningState.practiceUnitId) {
+        setPickerOpen(false)
+        return
+      }
+      cancelPlayback()
+      pendingNavigationRef.current = {
+        anchor: captureScrollAnchor(lyricsAnchorRef.current),
+        policy: source === 'external' ? 'reveal-content-start' : 'preserve-anchor',
+      }
       const nextState = focusPracticeUnitStart(
         learningState,
         practiceIndex,
         practiceUnitId,
       )
-      persistLearningState(nextState)
-      setMessage(undefined)
+      runStableContextTransition(() => {
+        persistLearningState(nextState)
+        setPickerOpen(false)
+        setMessage(undefined)
+      })
     },
-    [learningState, persistLearningState, practiceIndex],
+    [cancelPlayback, learningState, persistLearningState, practiceIndex],
   )
 
   useEffect(() => {
@@ -118,7 +148,7 @@ export function PracticeWorkspace({
     }
     if (practiceIndex.unitsById.has(requestedPracticeUnitId)) {
       const timeoutId = globalThis.setTimeout(() => {
-        selectUnit(requestedPracticeUnitId)
+        navigatePracticeUnit(requestedPracticeUnitId, 'external')
         onRequestedPracticeUnitConsumed?.()
       }, 0)
       return () => globalThis.clearTimeout(timeoutId)
@@ -129,22 +159,22 @@ export function PracticeWorkspace({
     onRequestedPracticeUnitConsumed,
     practiceIndex.unitsById,
     requestedPracticeUnitId,
-    selectUnit,
+    navigatePracticeUnit,
   ])
 
-  useEffect(() => {
-    if (!mapOpen || !currentUnit) {
+  useLayoutEffect(() => {
+    const pendingNavigation = pendingNavigationRef.current
+    if (!pendingNavigation) {
       return
     }
-    const timeoutId = globalThis.setTimeout(() => {
-      const nav = mapNavRef.current
-      const item = mapItemRefs.current.get(currentUnit.id)
-      if (nav && item) {
-        revealPracticeMapItem(nav, item)
-      }
-    }, 0)
-    return () => globalThis.clearTimeout(timeoutId)
-  }, [currentUnit, mapOpen])
+    pendingNavigationRef.current = undefined
+    restoreScrollPolicy(
+      pendingNavigation.policy,
+      pendingNavigation.anchor,
+      lyricsAnchorRef.current,
+      96,
+    )
+  }, [learningState.practiceUnitId])
 
   useEffect(() => {
     if (!playback.engine) {
@@ -247,8 +277,7 @@ export function PracticeWorkspace({
     }
     const nextUnit = getAdjacentPracticeUnit(practiceIndex, currentUnit.id, direction)
     if (nextUnit) {
-      cancelPlayback()
-      selectUnit(nextUnit.id)
+      navigatePracticeUnit(nextUnit.id, direction)
     }
   }
 
@@ -286,7 +315,7 @@ export function PracticeWorkspace({
       <div className="practice-layout">
         <div className="practice-lyrics-column">
           <section className="practice-lyrics" aria-labelledby="practice-unit-title">
-            <header className="practice-unit-heading">
+            <header className="practice-unit-heading" ref={lyricsAnchorRef}>
               <div>
                 <p className="eyebrow">当前学习段 / {String(unitIndex + 1).padStart(2, '0')}</p>
                 <h2 id="practice-unit-title">{currentUnit.label}</h2>
@@ -309,58 +338,12 @@ export function PracticeWorkspace({
           </section>
         </div>
 
-        <details
-          className="practice-map"
-          open={mapOpen}
-          onToggle={(event) => setMapOpen(event.currentTarget.open)}
-        >
-          <summary aria-label={`歌曲地图，${String(unitIndex + 1).padStart(2, '0')} / ${String(practiceIndex.units.length).padStart(2, '0')}，${currentUnit.label}`}>
-            <span>歌曲地图</span>
-            <span className="practice-map-current">
-              {String(unitIndex + 1).padStart(2, '0')} / {String(practiceIndex.units.length).padStart(2, '0')} · {currentUnit.label}
-            </span>
-            <span className="practice-map-toggle">{mapOpen ? '收起' : '展开'}</span>
-          </summary>
-          <nav ref={mapNavRef} aria-label="学习段" data-practice-map-scroll="true">
-            <ol>
-              {practiceIndex.units.map((unit, index) => {
-                const isCurrent = unit.id === currentUnit.id
-                return (
-                  <li
-                    key={unit.id}
-                    ref={(element) => {
-                      if (element) {
-                        mapItemRefs.current.set(unit.id, element)
-                      } else {
-                        mapItemRefs.current.delete(unit.id)
-                      }
-                    }}
-                  >
-                    <button
-                      className={`practice-unit-link${isCurrent ? ' is-current' : ''}`}
-                      type="button"
-                      aria-current={isCurrent ? 'step' : undefined}
-                      onClick={() => {
-                        cancelPlayback()
-                        selectUnit(unit.id)
-                      }}
-                    >
-                      <span className="practice-unit-number">{String(index + 1).padStart(2, '0')}</span>
-                      <span className="practice-unit-label">{unit.label}</span>
-                      <span className="practice-unit-state">{isCurrent ? '当前' : ''}</span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ol>
-          </nav>
-        </details>
       </div>
 
-      <aside className="control-sheet practice-controls practice-dock" aria-label="练习控制">
+      <aside className="practice-controls practice-dock" aria-label="练习控制">
         <div className="practice-dock-topline">
           <button
-            className="control-button control-button--quiet practice-action practice-context-navigation"
+            className="practice-player-button practice-context-navigation"
             type="button"
             aria-label="上一段"
             onClick={() => changeUnit('previous')}
@@ -368,12 +351,19 @@ export function PracticeWorkspace({
           >
             ← 上一段
           </button>
-          <span className="practice-dock-context">
+          <button
+            className="practice-dock-context"
+            type="button"
+            aria-label={`选择学习段：${currentUnit.label}`}
+            aria-expanded={pickerOpen}
+            onClick={() => setPickerOpen(true)}
+          >
             <span>{currentUnit.label}</span>
             <span>{currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句</span>
-          </span>
+            <span className="practice-dock-context-chevron" aria-hidden="true">⌃</span>
+          </button>
           <button
-            className="control-button control-button--quiet practice-action practice-context-navigation"
+            className="practice-player-button practice-context-navigation"
             type="button"
             aria-label="下一段"
             onClick={() => changeUnit('next')}
@@ -383,19 +373,11 @@ export function PracticeWorkspace({
           </button>
         </div>
         <div className="practice-dock-primary">
-          <button
-            className="control-button control-button--primary control-button--lg practice-action practice-play-button"
-            type="button"
-            onClick={togglePlayback}
-            disabled={!playback.engine}
-          >
-            {playback.audioState.status === 'playing' ? '暂停' : '播放'}
-          </button>
           <div className="practice-rate-actions" aria-label="播放速度">
             {PRACTICE_SPEEDS.map((speed) => (
               <button
                 key={speed}
-                className="control-button control-button--sm control-button--toggle practice-action"
+                className="practice-player-button practice-speed-button"
                 type="button"
                 aria-pressed={playbackRate === speed}
                 aria-describedby="practice-ramp-explanation"
@@ -406,10 +388,18 @@ export function PracticeWorkspace({
               </button>
             ))}
           </div>
+          <button
+            className="practice-player-button practice-play-button"
+            type="button"
+            onClick={togglePlayback}
+            disabled={!playback.engine}
+          >
+            {playback.audioState.status === 'playing' ? '暂停' : '播放'}
+          </button>
         </div>
         <div className="practice-dock-modes">
           <button
-            className="control-button control-button--toggle practice-action"
+            className="practice-player-button practice-mode-button"
             type="button"
             aria-pressed={continuousPlayback}
             onClick={() => setContinuousPlayback((value) => !value)}
@@ -417,7 +407,7 @@ export function PracticeWorkspace({
             连续播放
           </button>
           <button
-            className="control-button control-button--toggle practice-action"
+            className="practice-player-button practice-mode-button"
             type="button"
             aria-pressed={rampPractice}
             aria-describedby="practice-ramp-explanation"
@@ -431,6 +421,13 @@ export function PracticeWorkspace({
         </p>
         {message ? <p className="practice-message" role="status">{message}</p> : null}
       </aside>
+      <PracticeSegmentPicker
+        units={practiceIndex.units}
+        currentUnitId={currentUnit.id}
+        open={pickerOpen}
+        onSelect={(practiceUnitId) => navigatePracticeUnit(practiceUnitId, 'picker')}
+        onClose={() => setPickerOpen(false)}
+      />
     </section>
   )
 }
@@ -514,52 +511,4 @@ function normalizePracticeSpeed(value: number): PracticeSpeed {
   return PRACTICE_SPEEDS.includes(value as PracticeSpeed)
     ? (value as PracticeSpeed)
     : 1
-}
-
-function revealPracticeMapItem(container: HTMLElement, item: HTMLElement): void {
-  if (container.clientHeight <= 0) {
-    return
-  }
-
-  const containerRect = container.getBoundingClientRect()
-  const itemRect = item.getBoundingClientRect()
-  const inset = Math.min(18, Math.max(10, container.clientHeight * 0.12))
-  const visibleTop = containerRect.top + inset
-  const visibleBottom = getPracticeMapVisibleBottom(containerRect, inset)
-
-  if (visibleBottom <= visibleTop) {
-    return
-  }
-
-  if (itemRect.top < visibleTop) {
-    container.scrollTop = Math.max(
-      0,
-      container.scrollTop + itemRect.top - visibleTop,
-    )
-    return
-  }
-
-  if (itemRect.bottom > visibleBottom) {
-    container.scrollTop = Math.max(
-      0,
-      container.scrollTop + itemRect.bottom - visibleBottom,
-    )
-  }
-}
-
-function getPracticeMapVisibleBottom(
-  containerRect: DOMRect,
-  inset: number,
-): number {
-  const defaultBottom = containerRect.bottom - inset
-  const dock = document.querySelector<HTMLElement>('.practice-dock')
-  if (!dock || window.getComputedStyle(dock).position !== 'fixed') {
-    return defaultBottom
-  }
-
-  const dockRect = dock.getBoundingClientRect()
-  if (dockRect.top <= containerRect.top || dockRect.top >= defaultBottom) {
-    return defaultBottom
-  }
-  return dockRect.top - inset
 }

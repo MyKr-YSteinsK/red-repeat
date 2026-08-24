@@ -1661,8 +1661,8 @@
 
 /* Practice 1.0 keeps the high-frequency controls in one compact dock. */
 .practice-layout {
-  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.75fr);
-  grid-template-areas: "map lyrics";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "lyrics";
 }
 
 .practice-controls.practice-dock {
@@ -1679,7 +1679,7 @@
   padding: 0.9rem;
   border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
   border-radius: 1.25rem;
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   box-shadow:
     0 1rem 2.75rem color-mix(in srgb, var(--color-ink) 12%, transparent),
     0 0.25rem 0.75rem color-mix(in srgb, var(--color-ink) 6%, transparent);
@@ -1701,6 +1701,8 @@
 }
 
 .practice-dock-context {
+  position: relative;
+  width: 100%;
   display: grid;
   min-width: 0;
   min-height: 2.75rem;
@@ -1713,12 +1715,20 @@
   border-radius: 0.9rem;
   color: var(--color-muted);
   background: color-mix(in srgb, var(--color-surface) 58%, transparent);
+  cursor: pointer;
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.04em;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.practice-dock-context:hover,
+.practice-dock-context:focus-visible,
+.practice-dock-context[aria-expanded='true'] {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
 }
 
 .practice-dock-context > span:first-child {
@@ -1730,6 +1740,15 @@
   white-space: nowrap;
 }
 
+.practice-dock-context-chevron {
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.2rem;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
 .practice-context-navigation {
   min-width: 0;
   padding-inline: 0.7rem;
@@ -1738,7 +1757,7 @@
 }
 
 .practice-dock-primary {
-  grid-template-columns: minmax(7rem, 0.9fr) minmax(0, 2.1fr);
+  grid-template-columns: minmax(0, 2.1fr) minmax(5.75rem, 0.9fr);
 }
 
 .practice-dock-modes {
@@ -1752,43 +1771,54 @@
   margin-top: 0;
 }
 
-.practice-dock .practice-action {
+.practice-dock .practice-player-button {
+  width: 100%;
   min-width: 0;
   min-height: 2.7rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-line) 82%, transparent);
   border-color: color-mix(in srgb, var(--color-line) 82%, transparent);
-  border-radius: 0.82rem;
+  border-radius: var(--radius-control-sm);
+  color: var(--color-ink);
   background: color-mix(in srgb, var(--color-surface) 54%, transparent);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+}
+
+.practice-dock .practice-player-button:hover,
+.practice-dock .practice-player-button:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.practice-dock .practice-player-button[aria-pressed='true'],
+.practice-dock .practice-speed-button[aria-pressed='true'] {
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+  background: var(--color-ink);
 }
 
 .practice-dock .practice-play-button {
   min-height: 2.85rem;
-  border-color: var(--color-ink);
-  color: var(--color-surface);
-  background: var(--color-ink);
   font-weight: 720;
 }
 
-.practice-dock .practice-play-button:hover,
-.practice-dock .practice-play-button:focus-visible {
-  border-color: var(--color-red);
-  color: var(--color-surface);
-  background: var(--color-red);
+.practice-dock .practice-player-button:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
-.practice-dock-modes .practice-action {
+.practice-dock-modes .practice-player-button {
   min-height: 2.45rem;
 }
 
 .practice-dock .practice-message {
   grid-column: 1 / -1;
   margin: 0;
-}
-
-.practice-map nav {
-  max-height: min(52svh, 34rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
 }
 
 /* Full Song: a quiet, continuous lyric stream. */
@@ -2290,131 +2320,29 @@
 
 .practice-layout {
   display: grid;
-  grid-template-columns: minmax(11rem, 0.78fr) minmax(0, 1.75fr) minmax(14rem, 0.9fr);
-  grid-template-areas: "map lyrics controls";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "lyrics";
   align-items: start;
   gap: clamp(1rem, 2.5vw, 2.5rem);
 }
 
-.practice-map,
 .practice-controls,
 .practice-lyrics,
 .practice-lyrics-column {
   min-width: 0;
 }
 
-.practice-map {
-  grid-area: map;
-}
-
 .practice-lyrics-column {
   grid-area: lyrics;
-  max-height: calc(100svh - 7rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-inline-end: 0.5rem;
+  max-height: none;
+  overflow: visible;
+  padding-inline-end: 0;
 }
 
 .practice-controls {
   grid-area: controls;
   position: sticky;
   top: 1rem;
-}
-
-.practice-map {
-  min-width: 0;
-}
-
-.practice-map summary {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid var(--color-line);
-  color: var(--color-ink);
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  list-style: none;
-}
-
-.practice-map summary::-webkit-details-marker {
-  display: none;
-}
-
-.practice-map-current {
-  overflow: hidden;
-  color: var(--color-red);
-  font-size: 0.62rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.practice-map-toggle {
-  flex: 0 0 auto;
-  color: var(--color-red);
-  font-size: 0.62rem;
-}
-
-.practice-map nav {
-  max-height: min(66svh, 36rem);
-  margin-top: 0.45rem;
-  overflow-y: auto;
-}
-
-.practice-map ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.practice-unit-link {
-  display: grid;
-  grid-template-columns: 1.8rem minmax(0, 1fr);
-  gap: 0.35rem 0.5rem;
-  width: 100%;
-  padding: 0.75rem 0;
-  border: 0;
-  border-bottom: 1px solid var(--color-line);
-  color: var(--color-muted);
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-}
-
-.practice-unit-link:hover,
-.practice-unit-link:focus-visible,
-.practice-unit-link.is-current {
-  color: var(--color-red);
-}
-
-.practice-unit-number,
-.practice-unit-state {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
-}
-
-.practice-unit-number {
-  grid-row: span 2;
-  padding-top: 0.1rem;
-}
-
-.practice-unit-label {
-  overflow: hidden;
-  color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: 1rem;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.practice-unit-state {
-  color: inherit;
-  text-transform: uppercase;
 }
 
 .practice-lyrics {
@@ -2643,12 +2571,6 @@
 .practice-rate-actions .practice-action[aria-pressed='true'] {
   border-color: var(--color-red);
   color: var(--color-red);
-}
-
-.practice-dock .practice-action[aria-pressed='true'] {
-  border-color: var(--color-red);
-  color: var(--color-surface);
-  background: var(--color-red);
 }
 
 .practice-dock .practice-rate-actions [data-ramp-active='true']:not([aria-pressed='true']) {
@@ -3080,23 +3002,14 @@
 
   .practice-lyrics-column,
   .practice-lyrics,
-  .practice-controls,
-  .practice-map {
+  .practice-controls {
     width: 100%;
-  }
-
-  .practice-map {
-    position: static;
   }
 
   .practice-lyrics-column {
     max-height: none;
     overflow: visible;
     padding-inline-end: 0;
-  }
-
-  .practice-map nav {
-    max-height: min(48svh, 26rem);
   }
 
   .practice-unit-heading {
@@ -3165,7 +3078,7 @@
     right: 0;
     bottom: 0;
     top: auto;
-    z-index: 4;
+    z-index: var(--z-player);
     grid-template-columns: minmax(0, 1fr);
     width: 100%;
     max-height: none;
@@ -3173,11 +3086,11 @@
     gap: var(--control-group-gap);
     margin: 0;
     padding:
-      var(--control-sheet-padding-block)
-      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-right))
-      calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))
-      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-left));
-    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+      0.65rem
+      calc(0.65rem + env(safe-area-inset-right))
+      calc(0.65rem + env(safe-area-inset-bottom))
+      calc(0.65rem + env(safe-area-inset-left));
+    border-radius: 1.25rem 1.25rem 0 0;
   }
 
   .practice-dock-topline,
@@ -3207,7 +3120,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .practice-dock .practice-action {
+  .practice-dock .practice-player-button {
     width: 100%;
     min-width: 0;
     min-height: 2.5rem;
@@ -3220,7 +3133,7 @@
     min-height: 2.7rem;
   }
 
-  .practice-dock-modes .practice-action {
+  .practice-dock-modes .practice-player-button {
     min-height: 2.35rem;
   }
 
@@ -3236,6 +3149,143 @@
   .practice-dock .practice-message {
     max-height: 2.5rem;
     overflow: auto;
+  }
+}
+
+/* Practice segment picker: a fixed, independently scrolling selector surface. */
+.practice-segment-picker-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-selector);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--color-ink) 16%, transparent);
+}
+
+.practice-segment-picker {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 36rem);
+  max-height: min(50dvh, 32rem);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+  box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--color-ink) 24%, transparent);
+}
+
+.practice-segment-picker-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0.8rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.practice-segment-picker-header p,
+.practice-segment-picker-header h2 {
+  margin: 0;
+}
+
+.practice-segment-picker-header h2 {
+  margin-top: 0.25rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.practice-segment-picker-close {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.practice-segment-picker-close:hover,
+.practice-segment-picker-close:focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.practice-segment-picker-list {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.65rem;
+  scrollbar-gutter: stable;
+}
+
+.practice-segment-picker-option {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) 1.25rem;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control-sm);
+  color: var(--color-muted);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.practice-segment-picker-option:hover,
+.practice-segment-picker-option:focus-visible {
+  border-color: var(--color-line);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+}
+
+.practice-segment-picker-option.is-selected {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+}
+
+.practice-segment-picker-index,
+.practice-segment-picker-state {
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+}
+
+.practice-segment-picker-label {
+  overflow: hidden;
+  color: inherit;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-segment-picker-state {
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-segment-picker,
+  .practice-segment-picker-option {
+    scroll-behavior: auto;
+    transition: none;
   }
 }
 
