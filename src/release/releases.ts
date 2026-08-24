@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.3.0',
+    date: '2026-08-24',
+    commit: '7b03b19',
+    level: 'minor',
+    title: '移动曲库卡片紧凑重排',
+    summary: '首页歌曲列表收敛为紧凑的横向作品记录，移动端更易扫读且操作保持在同一行。',
+    changes: [
+      '缩小移动端封面，稳定标题、歌手、元信息和学习 CTA 的信息栈高度。',
+      '将下载状态与下载/移除操作并入卡片右侧，删除低价值的跳转箭头。',
+      '为长标题、长歌手和各类本机下载状态补充卡片边界回归覆盖。',
+    ],
+  },
+  {
     version: '1.2.6',
     date: '2026-08-24',
     commit: 'a308045',

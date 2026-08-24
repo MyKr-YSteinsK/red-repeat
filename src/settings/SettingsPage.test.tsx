@@ -91,7 +91,7 @@ describe('SettingsPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getAllByText('1.2.6').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.3.0').length).toBeGreaterThan(0)
     expect(screen.getAllByText('当前版本').length).toBeGreaterThan(0)
     expect(screen.queryByText('GitHub Pages')).not.toBeInTheDocument()
     expect(screen.getByText('播放切口调试')).toBeInTheDocument()
@@ -105,8 +105,6 @@ describe('SettingsPage', () => {
     const milestones = [...document.querySelectorAll<HTMLDetailsElement>('[data-release-milestone]')]
     expect(milestones.length).toBeGreaterThan(1)
     expect(milestones.every((milestone) => !milestone.open)).toBe(true)
-    expect(screen.getByRole('heading', { name: '开发中的小版本' })).toBeInTheDocument()
-
     const onePointZero = milestones.find(
       (milestone) => milestone.querySelector('summary')?.textContent?.includes('1.0'),
     )
@@ -140,7 +138,7 @@ describe('SettingsPage', () => {
   it('manually checks for a newer build and exposes the immediate update action', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.0',
+        version: '1.3.1',
         commit: 'abcdef123456',
       }), { status: 200 })),
       locationHref: () => 'https://example.test/red-repeat/#settings',
@@ -159,7 +157,7 @@ describe('SettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
-    expect(await screen.findByText('发现新版本 1.3.0')).toBeInTheDocument()
+    expect(await screen.findByText('发现新版本 1.3.1')).toBeInTheDocument()
     expect(screen.getByText('发现新版本，但暂时无法读取更新说明。')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '立即更新' }))
     expect(applyUpdate).toHaveBeenCalledOnce()
@@ -168,10 +166,10 @@ describe('SettingsPage', () => {
   it('shows remote release notes without replacing the local changelog', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
-        version: '1.3.0',
+        version: '1.3.1',
         commit: 'abcdef123456',
         release: {
-          version: '1.3.0',
+          version: '1.3.1',
           date: '2026-08-24',
           level: 'minor',
           title: '远端学习更新',
@@ -198,7 +196,7 @@ describe('SettingsPage', () => {
     expect(screen.getByText('远端学习更新')).toBeInTheDocument()
     expect(screen.getByText('远端真实更新说明。')).toBeInTheDocument()
     expect(screen.getByText('旧 App 也能看到这条更新。')).toBeInTheDocument()
-    expect(screen.getAllByText('1.2.6').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1.3.0').length).toBeGreaterThan(0)
   })
 
   it('opens the milestone containing the requested release from the global update entry', () => {
@@ -217,6 +215,6 @@ describe('SettingsPage', () => {
     )
     expect(highlighted).toBeDefined()
     expect(highlighted?.open).toBe(true)
-    expect(highlighted?.textContent).toContain('PWA 一键更新')
+    expect(highlighted?.textContent).toContain('移动曲库卡片紧凑重排')
   })
 })
