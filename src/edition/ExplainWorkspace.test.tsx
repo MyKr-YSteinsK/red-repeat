@@ -165,6 +165,39 @@ describe('ExplainWorkspace', () => {
     }
   })
 
+  it('keeps directory changes anchored and reveals pager changes at a stable offset', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.tagName === 'H3') {
+          return { top: 420, bottom: 500 } as DOMRect
+        }
+        return { top: 0, bottom: 0 } as DOMRect
+      })
+
+    try {
+      render(
+        <ExplainWorkspace
+          model={model}
+          runtimeClient={runtimeClientFor()}
+          features={features}
+          featureErrors={[]}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'History' }))
+      expect(scrollTo).not.toHaveBeenCalled()
+
+      scrollTo.mockClear()
+      fireEvent.click(screen.getByRole('button', { name: '← 上一篇' }))
+      expect(scrollTo).toHaveBeenCalledWith({ top: 324, behavior: 'auto' })
+    } finally {
+      rect.mockRestore()
+      scrollTo.mockRestore()
+    }
+  })
+
   it('keeps previous, top, and next actions in a symmetric footer order', () => {
     render(
       <ExplainWorkspace

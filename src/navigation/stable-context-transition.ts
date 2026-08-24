@@ -45,14 +45,9 @@ export function restoreScrollPolicy(
 
   if (policy === 'reveal-content-start' && target) {
     const targetTop = target.getBoundingClientRect().top
-    const targetBottom = target.getBoundingClientRect().bottom
-    const viewportHeight = window.innerHeight
-    const needsReveal = targetTop < topOffset || targetBottom > viewportHeight
-    if (needsReveal) {
-      window.scrollTo({
-        top: Math.max(0, window.scrollY + targetTop - topOffset),
-        behavior: 'auto',
-      })
+    const nextScrollY = Math.max(0, window.scrollY + targetTop - topOffset)
+    if (Math.abs(nextScrollY - window.scrollY) > 0.5) {
+      window.scrollTo({ top: nextScrollY, behavior: 'auto' })
     }
   }
 }

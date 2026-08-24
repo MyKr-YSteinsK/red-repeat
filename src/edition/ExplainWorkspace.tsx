@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { RuntimeFeatureDescriptor } from '../library/runtime-schema'
 import type { RuntimeFeatureLoadError } from '../runtime/song-edition-loader'
@@ -14,6 +14,13 @@ import {
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import type { RuntimeClient } from '../runtime/runtime-client'
+import {
+  captureScrollAnchor,
+  prefersReducedMotion,
+  restoreScrollPolicy,
+  runStableContextTransition,
+  type TransitionPolicy,
+} from '../navigation/stable-context-transition'
 
 export interface ExplainWorkspaceProps {
   model: AssembledSongEdition
@@ -30,6 +37,8 @@ interface ExplainTopicEntry {
   article?: ExplainArticle
   unavailable: boolean
 }
+
+type ExplainNavigationSource = 'directory' | 'select' | 'previous' | 'next'
 
 export function ExplainWorkspace({
   model,
@@ -51,6 +60,42 @@ export function ExplainWorkspace({
   const selectedTopic =
     availableTopics.find(({ id }) => id === selectedTopicId) ??
     availableTopics[0]
+  const topicHeadingRef = useRef<HTMLHeadingElement | null>(null)
+  const pendingTopicNavigationRef = useRef<{
+    anchor: ReturnType<typeof captureScrollAnchor>
+    policy: TransitionPolicy
+  } | undefined>(undefined)
+
+  const navigateExplainTopic = (
+    nextTopicId: string,
+    source: ExplainNavigationSource,
+  ): void => {
+    if (nextTopicId === selectedTopic?.id) {
+      return
+    }
+    pendingTopicNavigationRef.current = {
+      anchor: captureScrollAnchor(topicHeadingRef.current),
+      policy:
+        source === 'previous' || source === 'next'
+          ? 'reveal-content-start'
+          : 'preserve-anchor',
+    }
+    runStableContextTransition(() => setSelectedTopicId(nextTopicId))
+  }
+
+  useLayoutEffect(() => {
+    const pendingNavigation = pendingTopicNavigationRef.current
+    if (!pendingNavigation) {
+      return
+    }
+    pendingTopicNavigationRef.current = undefined
+    restoreScrollPolicy(
+      pendingNavigation.policy,
+      pendingNavigation.anchor,
+      topicHeadingRef.current,
+      96,
+    )
+  }, [selectedTopic?.id])
 
   if (topics.length === 0) {
     return (
@@ -94,7 +139,7 @@ export function ExplainWorkspace({
               onChange={(event) => {
                 const nextTopicId = event.currentTarget.value
                 if (availableTopics.some(({ id }) => id === nextTopicId)) {
-                  setSelectedTopicId(nextTopicId)
+                  navigateExplainTopic(nextTopicId, 'select')
                 }
               }}
             >
@@ -119,7 +164,7 @@ export function ExplainWorkspace({
               active={topic.id === selectedTopic?.id}
               onSelect={() => {
                 if (topic.article) {
-                  setSelectedTopicId(topic.id)
+                  navigateExplainTopic(topic.id, 'directory')
                 }
               }}
             />
@@ -130,7 +175,7 @@ export function ExplainWorkspace({
           {selectedTopic?.article ? (
             <article className="explain-article">
               <p className="feature-label">主题 {String(selectedTopicIndex + 1).padStart(2, '0')}</p>
-              <h3>{selectedTopic.article.title}</h3>
+              <h3 ref={topicHeadingRef}>{selectedTopic.article.title}</h3>
               <ExplainArticleBody
                 article={selectedTopic.article}
                 model={model}
@@ -156,7 +201,7 @@ export function ExplainWorkspace({
               className="control-button explain-topic-pager-previous"
               type="button"
               disabled={!previousTopic}
-              onClick={() => previousTopic && setSelectedTopicId(previousTopic.id)}
+              onClick={() => previousTopic && navigateExplainTopic(previousTopic.id, 'previous')}
             >
               ← 上一篇
             </button>
@@ -167,7 +212,7 @@ export function ExplainWorkspace({
               className="control-button explain-topic-pager-next"
               type="button"
               disabled={!nextTopic}
-              onClick={() => nextTopic && setSelectedTopicId(nextTopic.id)}
+              onClick={() => nextTopic && navigateExplainTopic(nextTopic.id, 'next')}
             >
               下一篇 →
             </button>
@@ -179,12 +224,9 @@ export function ExplainWorkspace({
 }
 
 function scrollExplainToTop(): void {
-  const prefersReducedMotion = window.matchMedia?.(
-    '(prefers-reduced-motion: reduce)',
-  ).matches
   window.scrollTo({
     top: 0,
-    behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
   })
 }
 
