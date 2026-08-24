@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.4.1',
+    date: '2026-08-24',
+    commit: '61fdcb5',
+    level: 'patch',
+    title: '学唱地图与底部工作台体验',
+    summary: '让学唱地图、浮动工作台、讲解翻页和曲库状态在移动端更稳定、更轻。',
+    changes: [
+      '学唱工作台改为带安全间距的近白半透明浮动底栏，歌词末端不再留下过量空白。',
+      '歌曲地图提升移动端可视高度并独立滚动，切段时只在地图内部跟焦，避免整页跳动。',
+      '讲解底部导航重排为上一篇、回到顶部、下一篇，已下载状态改为轻量文字标识。',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-08-24',
     commit: '5e37fae',
