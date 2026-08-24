@@ -439,10 +439,37 @@ describe('App Library consumer', () => {
       const firstSurface = firstCard?.querySelector<HTMLElement>(
         '.catalog-entry-surface',
       )
+      const secondCard = document.querySelector<HTMLElement>(
+        '[data-song-id="second-signal"]',
+      )
+      const secondSurface = secondCard?.querySelector<HTMLElement>(
+        '.catalog-entry-surface',
+      )
       expect(firstSurface).not.toBeNull()
+      expect(secondSurface).not.toBeNull()
       expect(
         screen.queryByRole('button', { name: '删除 Second Signal' }),
       ).not.toBeInTheDocument()
+
+      fireEvent.pointerDown(secondSurface!, {
+        pointerId: 2,
+        pointerType: 'touch',
+        clientX: 220,
+        clientY: 24,
+      })
+      fireEvent.pointerMove(secondSurface!, {
+        pointerId: 2,
+        pointerType: 'touch',
+        clientX: 160,
+        clientY: 24,
+      })
+      fireEvent.pointerUp(secondSurface!, {
+        pointerId: 2,
+        pointerType: 'touch',
+        clientX: 160,
+        clientY: 24,
+      })
+      expect(secondCard).not.toHaveAttribute('data-swipe-open', 'true')
 
       fireEvent.pointerDown(firstSurface!, {
         pointerId: 1,

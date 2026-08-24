@@ -109,17 +109,29 @@ describe('PracticeWorkspace 1.0', () => {
       'true',
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    const continuousButton = screen.getByRole('button', { name: '连续播放' })
+    const rampButton = screen.getByRole('button', { name: '渐速练习' })
+    fireEvent.click(continuousButton)
+    fireEvent.click(rampButton)
 
-    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(continuousButton).toHaveAttribute('aria-pressed', 'true')
+    expect(rampButton).toHaveAttribute('aria-pressed', 'true')
+    expect(continuousButton.matches(".practice-dock .practice-action[aria-pressed='true']")).toBe(true)
+    expect(rampButton.matches(".practice-dock .practice-action[aria-pressed='true']")).toBe(true)
     expect(screen.getByRole('button', { name: '0.60x' })).toHaveAttribute(
       'data-ramp-active',
       'true',
     )
     expect(screen.getByText(/开启渐速练习时/)).toBeInTheDocument()
+
+    fireEvent.click(rampButton)
+    fireEvent.click(continuousButton)
+    expect(continuousButton).toHaveAttribute('aria-pressed', 'false')
+    expect(rampButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: '0.60x' })).toHaveAttribute(
+      'data-ramp-active',
+      'false',
+    )
   })
 
   it('plays one occurrence at the selected speed when both toggles are off', async () => {
