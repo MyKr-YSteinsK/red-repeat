@@ -1594,8 +1594,7 @@
 
 .practice-dock-context,
 .practice-dock-primary,
-.practice-dock-toggles,
-.practice-dock-navigation {
+.practice-dock-toggles {
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -1603,13 +1602,40 @@
 }
 
 .practice-dock-context {
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  justify-content: stretch;
   color: var(--color-muted);
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.04em;
+}
+
+.practice-dock-context-current {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 0.1rem;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.practice-dock-context-current > span:first-child {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--color-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-context-navigation {
+  min-width: 2.25rem;
+  padding-inline: 0.35rem;
+  color: var(--color-red);
+  font-size: 0.62rem;
 }
 
 .practice-dock-primary {
@@ -1618,10 +1644,6 @@
 
 .practice-dock-toggles {
   flex-wrap: wrap;
-}
-
-.practice-dock-navigation {
-  justify-content: flex-end;
 }
 
 .practice-dock .practice-rate-actions {
@@ -1646,97 +1668,6 @@
 
 .practice-map nav {
   max-height: min(52svh, 34rem);
-}
-
-@media (max-width: 900px) {
-  .practice-layout {
-    grid-template-columns: minmax(11rem, 0.72fr) minmax(0, 1.28fr);
-    grid-template-areas: "map lyrics";
-  }
-
-  .practice-dock {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  }
-
-  .practice-dock-navigation {
-    grid-column: 1 / -1;
-    justify-content: space-between;
-  }
-}
-
-@media (max-width: 640px) {
-  .practice-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "lyrics" "map";
-  }
-
-  .practice-workspace {
-    --practice-dock-height: 10.5rem;
-    padding-bottom: calc(var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem);
-  }
-
-  .practice-dock {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 4;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
-    border-inline: 0;
-    box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
-  }
-
-  .practice-dock-context,
-  .practice-dock-primary,
-  .practice-dock-toggles,
-  .practice-dock-navigation {
-    width: 100%;
-  }
-
-  .practice-dock-context {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .practice-dock-primary,
-  .practice-dock-toggles,
-  .practice-dock-navigation {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .practice-dock-primary .practice-play-button {
-    grid-column: span 1;
-  }
-
-  .practice-dock .practice-rate-actions {
-    display: contents;
-  }
-
-  .practice-dock-toggles,
-  .practice-dock-navigation {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .practice-dock-navigation {
-    grid-column: auto;
-  }
-
-  .practice-dock .practice-action {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .practice-map nav {
-    max-height: min(52svh, 34rem);
-  }
-
-  .practice-controls:not([data-mobile-expanded='true']) > :not(.practice-mobile-controls-toggle) {
-    display: initial;
-  }
 }
 
 /* Full Song: a quiet, continuous lyric stream. */
@@ -2578,6 +2509,18 @@
   color: var(--color-red);
 }
 
+.practice-dock .practice-action[aria-pressed='true'] {
+  border-color: var(--color-red);
+  color: var(--color-surface);
+  background: var(--color-red);
+}
+
+.practice-dock .practice-rate-actions [data-ramp-active='true'] {
+  border-color: color-mix(in srgb, var(--color-line) 72%, var(--color-red));
+  color: var(--color-muted);
+  opacity: 0.52;
+}
+
 .practice-action:disabled,
 .practice-pager-button:disabled {
   color: var(--color-muted);
@@ -2590,6 +2533,17 @@
 .practice-range-selection,
 .practice-target-summary {
   margin: 1rem 0 0;
+}
+
+.practice-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .practice-range-selection,
@@ -3005,38 +2959,6 @@
     font-size: var(--lyric-original-size);
   }
 
-  .practice-controls {
-    display: block;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 4;
-    width: 100%;
-    max-height: min(62svh, 33rem);
-    overflow-y: auto;
-    padding: 0.8rem 1.25rem calc(0.8rem + env(safe-area-inset-bottom));
-    border-inline: 0;
-    box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
-  }
-
-  .practice-mobile-controls-toggle {
-    display: block;
-  }
-
-  .practice-controls:not([data-mobile-expanded='true']) {
-    max-height: 4.55rem;
-    overflow: hidden;
-  }
-
-  .practice-controls:not([data-mobile-expanded='true']) > :not(.practice-mobile-controls-toggle) {
-    display: none;
-  }
-
-  .practice-workspace {
-    padding-bottom: calc(min(62svh, 33rem) + 1rem);
-  }
-
   .practice-primary-actions,
   .practice-adjacent-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3075,18 +2997,11 @@
   }
 }
 
-/* Final Practice 1.0 mobile overrides: the compact dock has no collapsed state. */
+/* Practice 1.0 mobile dock: three compact rows plus safe-area reservation. */
 @media (max-width: 640px) {
-  .practice-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "lyrics" "map";
-  }
-
   .practice-workspace {
-    --practice-dock-height: 11.25rem;
-    padding-bottom: calc(
-      var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem
-    );
+    --practice-dock-height: 7.5rem;
+    padding-bottom: calc(var(--practice-dock-height) + env(safe-area-inset-bottom) + 1rem);
   }
 
   .practice-dock {
@@ -3097,25 +3012,24 @@
     bottom: 0;
     z-index: 4;
     grid-template-columns: minmax(0, 1fr);
-    max-height: none;
+    max-height: calc(8rem + env(safe-area-inset-bottom));
     overflow: visible;
-    gap: 0.45rem;
+    gap: 0.3rem;
     margin: 0;
-    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+    padding: 0.45rem 1rem calc(0.45rem + env(safe-area-inset-bottom));
     border-inline: 0;
   }
 
   .practice-dock-context,
   .practice-dock-primary,
-  .practice-dock-toggles,
-  .practice-dock-navigation {
+  .practice-dock-toggles {
     width: 100%;
   }
 
   .practice-dock-context {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.25rem;
   }
 
   .practice-dock-primary {
@@ -3127,32 +3041,31 @@
     display: contents;
   }
 
-  .practice-dock-toggles,
-  .practice-dock-navigation {
+  .practice-dock-toggles {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .practice-dock-navigation {
-    grid-column: auto;
   }
 
   .practice-dock .practice-action {
     width: 100%;
     min-width: 0;
+    min-height: 2rem;
+    padding: 0.35rem 0.4rem;
+    font-size: 0.6rem;
   }
 
-  .practice-map nav {
-    max-height: min(52svh, 34rem);
+  .practice-dock-context-current {
+    font-size: 0.6rem;
   }
 
-  .practice-controls:not([data-mobile-expanded='true']) {
-    max-height: none;
-    overflow: visible;
+  .practice-context-navigation {
+    min-width: 2rem;
+    padding-inline: 0.25rem;
   }
 
-  .practice-controls:not([data-mobile-expanded='true']) > :not(.practice-mobile-controls-toggle) {
-    display: initial;
+  .practice-dock .practice-message {
+    max-height: 2.5rem;
+    overflow: auto;
   }
 }
 
