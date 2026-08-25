@@ -152,16 +152,17 @@ export const TimelineSchema = z
 
       const hasValidTiming =
         0 <= occurrence.playStartMs &&
-        occurrence.playStartMs <= occurrence.startMs &&
+        occurrence.playStartMs < occurrence.playEndMs &&
+        0 <= occurrence.startMs &&
         occurrence.startMs < occurrence.endMs &&
-        occurrence.endMs <= occurrence.playEndMs
+        0 <= occurrence.endMs
 
       if (!hasValidTiming) {
         context.addIssue({
           code: 'custom',
           path: ['occurrences', index],
           message:
-            'timing must satisfy 0 <= playStartMs <= startMs < endMs <= playEndMs',
+            'timing must satisfy 0 <= playStartMs < playEndMs and 0 <= startMs < endMs',
         })
       }
     })

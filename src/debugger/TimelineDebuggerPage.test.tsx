@@ -142,7 +142,11 @@ describe('Timeline Debugger live context', () => {
     expect(screen.getAllByText('450').length).toBeGreaterThan(0)
     expect(screen.getByText('靠近一些')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Increase endMs by 100ms' }))
+    for (let index = 0; index < 4; index += 1) {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Increase playStartMs by 100ms' }),
+      )
+    }
     expect(screen.getByRole('main')).toHaveAttribute(
       'data-working-copy-state',
       'invalid',
@@ -151,7 +155,12 @@ describe('Timeline Debugger live context', () => {
       screen.getByRole('alert', { name: 'Timeline validation errors' }),
     ).toHaveTextContent('occurrences[o002].timing')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Decrease endMs by 50ms' }))
+    for (let index = 0; index < 4; index += 1) {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Decrease playStartMs by 100ms' }),
+      )
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Increase endMs by 50ms' }))
     expect(screen.getByRole('main')).toHaveAttribute(
       'data-working-copy-state',
       'dirty',

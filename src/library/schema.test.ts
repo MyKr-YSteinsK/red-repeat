@@ -93,11 +93,26 @@ describe('Song Edition source schemas', () => {
     const result = TimelineSchema.safeParse({
       ...validTimeline,
       occurrences: [
-        { ...validTimeline.occurrences[0], playStartMs: 1200, startMs: 1000 },
+        { ...validTimeline.occurrences[0], playStartMs: 3200, playEndMs: 3000 },
       ],
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('accepts a precise playback window inside the editorial lyric range', () => {
+    const result = TimelineSchema.safeParse({
+      ...validTimeline,
+      occurrences: [
+        {
+          ...validTimeline.occurrences[0],
+          playStartMs: 1200,
+          playEndMs: 2200,
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
   })
 
   it('requires a lowercase SHA-256 audio source fingerprint', () => {

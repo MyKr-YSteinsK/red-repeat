@@ -76,7 +76,7 @@
       "startMs": 1143,
       "endMs": 5379,
       "playStartMs": 863,
-      "playEndMs": 5799
+      "playEndMs": 5419
     },
     {
       "id": "o002",
@@ -84,8 +84,8 @@
       "sectionId": "opening-verse",
       "startMs": 5499,
       "endMs": 10012,
-      "playStartMs": 5219,
-      "playEndMs": 10432
+      "playStartMs": 5459,
+      "playEndMs": 10032
     },
     {
       "id": "o003",
@@ -93,8 +93,8 @@
       "sectionId": "opening-verse",
       "startMs": 10132,
       "endMs": 14493,
-      "playStartMs": 9852,
-      "playEndMs": 14913
+      "playStartMs": 10072,
+      "playEndMs": 14393
     },
     {
       "id": "o004",
@@ -102,8 +102,8 @@
       "sectionId": "opening-verse",
       "startMs": 14613,
       "endMs": 18771,
-      "playStartMs": 14333,
-      "playEndMs": 19191
+      "playStartMs": 14633,
+      "playEndMs": 18691
     },
     {
       "id": "o005",
@@ -111,8 +111,8 @@
       "sectionId": "verse-1",
       "startMs": 18891,
       "endMs": 23163,
-      "playStartMs": 18611,
-      "playEndMs": 23583
+      "playStartMs": 19011,
+      "playEndMs": 23083
     },
     {
       "id": "o006",
@@ -120,8 +120,8 @@
       "sectionId": "verse-1",
       "startMs": 23283,
       "endMs": 27743,
-      "playStartMs": 23003,
-      "playEndMs": 28163
+      "playStartMs": 23323,
+      "playEndMs": 27843
     },
     {
       "id": "o007",
@@ -129,8 +129,8 @@
       "sectionId": "verse-1",
       "startMs": 27863,
       "endMs": 32234,
-      "playStartMs": 27583,
-      "playEndMs": 32654
+      "playStartMs": 27983,
+      "playEndMs": 32254
     },
     {
       "id": "o008",
@@ -138,7 +138,7 @@
       "sectionId": "verse-1",
       "startMs": 32354,
       "endMs": 36573,
-      "playStartMs": 32074,
+      "playStartMs": 32374,
       "playEndMs": 36993
     },
     {
@@ -147,8 +147,8 @@
       "sectionId": "rap-1",
       "startMs": 36693,
       "endMs": 39128,
-      "playStartMs": 36413,
-      "playEndMs": 39548,
+      "playStartMs": 36813,
+      "playEndMs": 39148,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -157,8 +157,8 @@
       "sectionId": "rap-1",
       "startMs": 39048,
       "endMs": 41477,
-      "playStartMs": 38768,
-      "playEndMs": 41897,
+      "playStartMs": 39068,
+      "playEndMs": 41397,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -167,8 +167,8 @@
       "sectionId": "rap-1",
       "startMs": 41397,
       "endMs": 42633,
-      "playStartMs": 41117,
-      "playEndMs": 43053,
+      "playStartMs": 41437,
+      "playEndMs": 42613,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -187,8 +187,8 @@
       "sectionId": "rap-1",
       "startMs": 43222,
       "endMs": 44282,
-      "playStartMs": 42942,
-      "playEndMs": 44702,
+      "playStartMs": 43242,
+      "playEndMs": 44282,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -197,8 +197,8 @@
       "sectionId": "rap-1",
       "startMs": 44202,
       "endMs": 46115,
-      "playStartMs": 43922,
-      "playEndMs": 46535,
+      "playStartMs": 44162,
+      "playEndMs": 46035,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -207,8 +207,8 @@
       "sectionId": "rap-1",
       "startMs": 46035,
       "endMs": 48143,
-      "playStartMs": 45755,
-      "playEndMs": 48563,
+      "playStartMs": 46095,
+      "playEndMs": 47803,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -217,8 +217,8 @@
       "sectionId": "rap-1",
       "startMs": 48063,
       "endMs": 50557,
-      "playStartMs": 47783,
-      "playEndMs": 50977,
+      "playStartMs": 47983,
+      "playEndMs": 50377,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -227,8 +227,8 @@
       "sectionId": "chorus-1",
       "startMs": 50637,
       "endMs": 55366,
-      "playStartMs": 50357,
-      "playEndMs": 55786
+      "playStartMs": 50557,
+      "playEndMs": 54986
     },
     {
       "id": "o018",
@@ -237,7 +237,7 @@
       "startMs": 55486,
       "endMs": 59801,
       "playStartMs": 55206,
-      "playEndMs": 60221
+      "playEndMs": 59681
     },
     {
       "id": "o019",
@@ -245,8 +245,8 @@
       "sectionId": "chorus-1",
       "startMs": 59921,
       "endMs": 64230,
-      "playStartMs": 59641,
-      "playEndMs": 64650
+      "playStartMs": 59681,
+      "playEndMs": 64150
     },
     {
       "id": "o020",
@@ -254,8 +254,8 @@
       "sectionId": "chorus-1",
       "startMs": 64350,
       "endMs": 70529,
-      "playStartMs": 64070,
-      "playEndMs": 70949
+      "playStartMs": 64210,
+      "playEndMs": 70549
     },
     {
       "id": "o021",
@@ -263,8 +263,8 @@
       "sectionId": "verse-2",
       "startMs": 70649,
       "endMs": 75076,
-      "playStartMs": 70369,
-      "playEndMs": 75496
+      "playStartMs": 70669,
+      "playEndMs": 74996
     },
     {
       "id": "o022",
@@ -272,8 +272,8 @@
       "sectionId": "verse-2",
       "startMs": 75196,
       "endMs": 79711,
-      "playStartMs": 74916,
-      "playEndMs": 80131
+      "playStartMs": 75316,
+      "playEndMs": 79531
     },
     {
       "id": "o023",
@@ -281,8 +281,8 @@
       "sectionId": "verse-2",
       "startMs": 79831,
       "endMs": 84175,
-      "playStartMs": 79551,
-      "playEndMs": 84595
+      "playStartMs": 79851,
+      "playEndMs": 84195
     },
     {
       "id": "o024",
@@ -290,8 +290,8 @@
       "sectionId": "verse-2",
       "startMs": 84295,
       "endMs": 88469,
-      "playStartMs": 84015,
-      "playEndMs": 88889
+      "playStartMs": 84515,
+      "playEndMs": 88489
     },
     {
       "id": "o025",
@@ -299,8 +299,8 @@
       "sectionId": "confession-verse",
       "startMs": 88589,
       "endMs": 93001,
-      "playStartMs": 88309,
-      "playEndMs": 93421
+      "playStartMs": 88709,
+      "playEndMs": 92881
     },
     {
       "id": "o026",
@@ -308,8 +308,8 @@
       "sectionId": "confession-verse",
       "startMs": 93121,
       "endMs": 97604,
-      "playStartMs": 92841,
-      "playEndMs": 98024
+      "playStartMs": 92881,
+      "playEndMs": 97624
     },
     {
       "id": "o027",
@@ -317,8 +317,8 @@
       "sectionId": "confession-verse",
       "startMs": 97724,
       "endMs": 101988,
-      "playStartMs": 97444,
-      "playEndMs": 102408
+      "playStartMs": 97644,
+      "playEndMs": 102008
     },
     {
       "id": "o028",
@@ -326,8 +326,8 @@
       "sectionId": "confession-verse",
       "startMs": 102108,
       "endMs": 106324,
-      "playStartMs": 101828,
-      "playEndMs": 106744
+      "playStartMs": 102128,
+      "playEndMs": 106844
     },
     {
       "id": "o029",
@@ -335,8 +335,8 @@
       "sectionId": "rap-2",
       "startMs": 106444,
       "endMs": 108880,
-      "playStartMs": 106164,
-      "playEndMs": 109300,
+      "playStartMs": 106364,
+      "playEndMs": 108800,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -345,8 +345,8 @@
       "sectionId": "rap-2",
       "startMs": 108800,
       "endMs": 110863,
-      "playStartMs": 108520,
-      "playEndMs": 111283,
+      "playStartMs": 108720,
+      "playEndMs": 110883,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -355,8 +355,8 @@
       "sectionId": "rap-2",
       "startMs": 110783,
       "endMs": 112860,
-      "playStartMs": 110503,
-      "playEndMs": 113280,
+      "playStartMs": 111003,
+      "playEndMs": 112880,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -365,8 +365,8 @@
       "sectionId": "rap-2",
       "startMs": 112780,
       "endMs": 115146,
-      "playStartMs": 112500,
-      "playEndMs": 115566,
+      "playStartMs": 112900,
+      "playEndMs": 115266,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -385,8 +385,8 @@
       "sectionId": "rap-2",
       "startMs": 115631,
       "endMs": 117061,
-      "playStartMs": 115351,
-      "playEndMs": 117481,
+      "playStartMs": 115751,
+      "playEndMs": 117081,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -395,8 +395,8 @@
       "sectionId": "rap-2",
       "startMs": 116981,
       "endMs": 119215,
-      "playStartMs": 116701,
-      "playEndMs": 119635,
+      "playStartMs": 117201,
+      "playEndMs": 119035,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -405,8 +405,8 @@
       "sectionId": "rap-2",
       "startMs": 119135,
       "endMs": 122065,
-      "playStartMs": 118855,
-      "playEndMs": 122485,
+      "playStartMs": 119055,
+      "playEndMs": 122185,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -415,8 +415,8 @@
       "sectionId": "rap-2",
       "startMs": 121985,
       "endMs": 123296,
-      "playStartMs": 121705,
-      "playEndMs": 123716,
+      "playStartMs": 122205,
+      "playEndMs": 123616,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
@@ -425,8 +425,8 @@
       "sectionId": "chorus-2",
       "startMs": 142232,
       "endMs": 146570,
-      "playStartMs": 141952,
-      "playEndMs": 146990
+      "playStartMs": 142052,
+      "playEndMs": 146790
     },
     {
       "id": "o039",
@@ -434,8 +434,8 @@
       "sectionId": "chorus-2",
       "startMs": 146690,
       "endMs": 151208,
-      "playStartMs": 146410,
-      "playEndMs": 151628
+      "playStartMs": 146710,
+      "playEndMs": 151328
     },
     {
       "id": "o040",
@@ -443,8 +443,8 @@
       "sectionId": "chorus-2",
       "startMs": 151328,
       "endMs": 155565,
-      "playStartMs": 151048,
-      "playEndMs": 155985
+      "playStartMs": 151448,
+      "playEndMs": 155685
     },
     {
       "id": "o041",
@@ -452,8 +452,8 @@
       "sectionId": "chorus-2",
       "startMs": 155685,
       "endMs": 160364,
-      "playStartMs": 155405,
-      "playEndMs": 160784
+      "playStartMs": 155625,
+      "playEndMs": 161684
     },
     {
       "id": "o042",
@@ -461,8 +461,8 @@
       "sectionId": "counterpoint",
       "startMs": 160484,
       "endMs": 162384,
-      "playStartMs": 160204,
-      "playEndMs": 162804,
+      "playStartMs": 160704,
+      "playEndMs": 162004,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
@@ -471,8 +471,8 @@
       "sectionId": "counterpoint",
       "startMs": 161768,
       "endMs": 163668,
-      "playStartMs": 161488,
-      "playEndMs": 164088,
+      "playStartMs": 161888,
+      "playEndMs": 163488,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
@@ -611,8 +611,8 @@
       "sectionId": "counterpoint",
       "startMs": 177413,
       "endMs": 180300,
-      "playStartMs": 177133,
-      "playEndMs": 180720,
+      "playStartMs": 177333,
+      "playEndMs": 180420,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
@@ -621,8 +621,8 @@
       "sectionId": "outro",
       "startMs": 180442,
       "endMs": 184787,
-      "playStartMs": 180162,
-      "playEndMs": 185207
+      "playStartMs": 180662,
+      "playEndMs": 185007
     },
     {
       "id": "o059",
@@ -631,7 +631,7 @@
       "startMs": 184907,
       "endMs": 189363,
       "playStartMs": 184627,
-      "playEndMs": 189783
+      "playEndMs": 189483
     },
     {
       "id": "o060",
@@ -639,8 +639,8 @@
       "sectionId": "outro",
       "startMs": 189483,
       "endMs": 193948,
-      "playStartMs": 189203,
-      "playEndMs": 194368
+      "playStartMs": 189623,
+      "playEndMs": 193768
     },
     {
       "id": "o061",
@@ -648,7 +648,7 @@
       "sectionId": "outro",
       "startMs": 194068,
       "endMs": 199800,
-      "playStartMs": 193788,
+      "playStartMs": 194088,
       "playEndMs": 200220,
       "performanceNote": "Final sustain/tail estimated from source duration; verify the release point."
     }
