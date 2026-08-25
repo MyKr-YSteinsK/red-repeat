@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.6.1',
+    date: '2026-08-25',
+    commit: '4cfe378',
+    level: 'patch',
+    title: '播放器玻璃层与切段体验修复',
+    summary: '修复移动播放器的控件比例、玻璃透视和底部遮挡，并让学唱与讲解切换不再经过黑闪动画路径。',
+    changes: [
+      '学唱移动控制行恢复三档速度与适中播放键的真实顺序，底栏改为四角内收浮层，并按实际高度计算内容留白。',
+      'Practice 与 Full Song 共享 72% 半透明玻璃材质，恢复 backdrop blur，同时放大全曲播放键并抬高底部操作。',
+      '移除原生 View Transition，学唱所有切段入口统一即时定位到新段标题，讲解保留原有锚点与翻页滚动语义。',
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-08-25',
     commit: '7039a15',
