@@ -110,6 +110,19 @@ runtime Skills and should not be duplicated here.
   branch/remote sync and push result when this occurs.
 - Never force-push and never force-update release tags.
 
+## Delivery and reporting conventions
+
+- Delivery reports default to Chinese prose, including `TASK_RESULT`, Plan/Task
+  summaries, changes, verification, risks, deviations, residual risks,
+  recommendations and USER CHECK notes. Keep paths, branches, tags, SHAs,
+  versions, commands, identifiers, APIs, URLs/routes, schema fields, test
+  names, status enums, formal third-party names, original error messages and
+  exact quotations in their precise original form.
+  Formal report H1 and primary H2 headings default to
+  `中文｜English`; new Plan filenames and numbering stay unchanged, while Plan
+  H1 titles default to `# RED-Plan-<n> — 中文标题｜English Title`. Explicit user,
+  Plan or quotation-format requirements take precedence.
+
 ## Stop conditions
 
 Stop and record the blocker rather than guessing when migration edits overlap
