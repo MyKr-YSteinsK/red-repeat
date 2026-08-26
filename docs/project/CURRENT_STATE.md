@@ -49,9 +49,9 @@ evidence only.
 The tracked public source contains one Song Edition:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, millennium parade × 椎名林檎),
 with 61 Segments/Occurrences, 13 Practice Units, 11 Sections, one canonical
-MP3, one SVG cover and two Explain Markdown features. The incomplete
-`.private/library-pending/senbonzakura/` intake remains private and excluded
-from compiler input.
+MP3, one SVG cover and two Explain Markdown features. The migration-era private
+`senbonzakura` intake has been removed; if the song is needed again, it must
+start a new intake from zero under the current source/content contracts.
 
 ## Technical shape and active owners
 
@@ -72,18 +72,10 @@ from compiler input.
 
 ## Known limitations and risks
 
-1. `RED-Plan-39` automated regression evidence passed: 37 focused UI contract
-   tests cover Practice, Segment Picker, Full Song, Song Edition navigation and
-   player layout. Real-device / installed-PWA current geometry and interaction
-   checks are `NOT_TESTED — user deferred`; this remains residual risk, not
-   active blocking work, and is not a target-device acceptance PASS.
-2. The old-installed-client → current-build PWA update lifecycle remains
-   `NOT_TESTED`; it is a separate residual risk and is not closed by
-   `RED-Plan-39`.
-3. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
+1. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
    are high-churn coupling surfaces. Refactoring them is separate work, not
    migration cleanup.
-4. CI repeats some compile/typecheck work; optimization is deferred to a normal
+2. CI repeats some compile/typecheck work; optimization is deferred to a normal
    task.
 
 ## Completed acceptance
@@ -103,11 +95,14 @@ from compiler input.
 - Automated regression evidence: `PASS` for 37 focused UI contract tests
   covering Practice, Segment Picker, Full Song, Song Edition navigation and
   player layout.
-- Real-device / installed-PWA current geometry and interaction checks:
-  `NOT_TESTED — user deferred`. This is retained as residual risk, not active
-  blocking work, and must not be interpreted as target-device acceptance PASS.
-- Old-installed-client → current-build PWA update lifecycle remains
-  `NOT_TESTED` and separate from this Plan.
+- Current-use baseline: user reports no material target-device / installed-PWA
+  geometry or interaction issue. The previously deferred formal matrix is not
+  represented as a full PASS and is no longer tracked as active debt; future
+  device-specific regressions reopen the matching acceptance boundary.
+- Current-use verification confirms installed clients can stably obtain newer
+  deployed versions. The previous old-installed-client acceptance debt is
+  closed for the current baseline; this does not claim event-by-event Service
+  Worker observation, and D-013 remains in force.
 - This Plan made no product behavior change; only repository governance and
   Project State documentation were updated.
 
@@ -132,12 +127,9 @@ from compiler input.
 
 ## Pending USER CHECK / UNKNOWN
 
-- Decide whether `senbonzakura` continues, is re-intaken or is archived after
-  source-rights/context review. Keep its private files untouched.
-- Decide retention of the duplicate private `work-millennium-parade` mirror
-  only after provenance comparison; migration authorizes no deletion.
-- Plan 31 is absent from retained historical Plans; this is a historical
-  unknown, not active authority and not an adoption blocker.
+- None currently identified for the current baseline. Future device-specific
+  regressions or PWA update-manager behavior changes reopen the matching
+  acceptance boundary.
 
 ## Active work and next lifecycle action
 
@@ -155,19 +147,23 @@ from compiler input.
   `main` build is the later release-metadata commit with live version `1.6.2`.
   The tag target and deployed build SHA are intentionally distinct identities.
 - `RED-Plan-39` is complete for this boundary with target-device checks
-  explicitly deferred by the user; no active mobile acceptance work is
-  blocking the next boundary.
-- Automated regression evidence is `PASS` (37 focused tests). Real-device /
-  installed-PWA checks remain `NOT_TESTED — user deferred` residual risk; they
-  are not a target-device acceptance PASS. The old-installed-client →
-  current-build PWA update lifecycle remains `NOT_TESTED` and is separate from
-  this Plan.
-- No product behavior changed in this Plan; only `AGENTS.md` governance and
-  Project State documentation changed. Version classification remains
-  `no-version`.
+  explicitly closed from active debt by current-use evidence; the formal
+  matrix is not claimed as a full PASS. Installed clients can stably obtain
+  newer deployed versions in the current baseline; the previous update
+  acceptance debt is closed without claiming event-by-event Service Worker
+  observation.
+- `RED-Plan-42` cleanup is complete for this boundary: the legacy private
+  `senbonzakura` intake and duplicate private WORK library mirror were removed;
+  `library/work-millennium-parade/` and
+  `.private/research/work-millennium-parade/` were preserved. Historical
+  migration archives were not rewritten. Future `senbonzakura` work starts
+  from zero under the current source/content contract.
+- No public product behavior, canonical timing, PWA/runtime code,
+  release/version metadata or tag changed in this cleanup. Version
+  classification remains `no-version`.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
   product code or canonical timing.
-- Next action: select the next unresolved Project State boundary; deferred
-  device checks remain available for a future focused acceptance boundary.
+- Lifecycle remains `Stabilization` pending a separate explicit lifecycle
+  checkpoint; no additional migration cleanup is active.

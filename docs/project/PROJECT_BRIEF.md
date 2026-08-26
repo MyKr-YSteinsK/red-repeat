@@ -13,11 +13,13 @@ Lifecycle stage: `Stabilization`.
 
 The repository has mature core capabilities and stable delivery machinery.
 Release identity is reconciled, timing acceptance is complete, and the Timing
-Debugger is production-public. Deferred target-device / installed-PWA geometry
-evidence and the unverified old-installed-client → current-build update
-lifecycle keep it from `Production` promotion. Here, Stabilization means the
-core product has formed while a small set of high-impact runtime/device
-evidence remains open; it does not mean the product is incomplete.
+Debugger is production-public. Current-use evidence has closed the previously
+deferred target-device / installed-PWA geometry and old-installed-client →
+current-build update acceptance debts for this baseline. The formal
+`RED-Plan-39` matrix is not claimed as a full PASS. Lifecycle remains
+`Stabilization` pending
+the next explicit lifecycle checkpoint; this does not mean the product is
+incomplete.
 
 ## Core loop
 
