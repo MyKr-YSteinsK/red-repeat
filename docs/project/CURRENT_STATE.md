@@ -69,15 +69,20 @@ from compiler input.
 
 ## Known limitations and risks
 
-1. No maintained browser/E2E or real-device acceptance harness proves current
-   iOS/PWA geometry, safe area, touch, scroll, perceived translucency or
-   old-installed-client upgrade behavior.
-2. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
+1. `RED-Plan-39` automated regression evidence passed: 37 focused UI contract
+   tests cover Practice, Segment Picker, Full Song, Song Edition navigation and
+   player layout. Real-device / installed-PWA current geometry and interaction
+   checks are `NOT_TESTED — user deferred`; this remains residual risk, not
+   active blocking work, and is not a target-device acceptance PASS.
+2. The old-installed-client → current-build PWA update lifecycle remains
+   `NOT_TESTED`; it is a separate residual risk and is not closed by
+   `RED-Plan-39`.
+3. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
    are high-churn coupling surfaces. Refactoring them is separate work, not
    migration cleanup.
-3. CI repeats some compile/typecheck work; optimization is deferred to a normal
+4. CI repeats some compile/typecheck work; optimization is deferred to a normal
    task.
-4. `#timing=debug` remains production-routable in code; its long-term public
+5. `#timing=debug` remains production-routable in code; its long-term public
    exposure is a product decision still pending.
 
 ## Completed acceptance
@@ -92,6 +97,19 @@ from compiler input.
 - This closeout made no canonical timing correction; `timeline.json` and the
   lyrics/practice/source data remain unchanged.
 
+## RED-Plan-39 acceptance status
+
+- Automated regression evidence: `PASS` for 37 focused UI contract tests
+  covering Practice, Segment Picker, Full Song, Song Edition navigation and
+  player layout.
+- Real-device / installed-PWA current geometry and interaction checks:
+  `NOT_TESTED — user deferred`. This is retained as residual risk, not active
+  blocking work, and must not be interpreted as target-device acceptance PASS.
+- Old-installed-client → current-build PWA update lifecycle remains
+  `NOT_TESTED` and separate from this Plan.
+- This Plan made no product behavior change; only repository governance and
+  Project State documentation were updated.
+
 ## Pending USER CHECK / UNKNOWN
 
 - Decide whether `#timing=debug` remains publicly reachable.
@@ -99,8 +117,6 @@ from compiler input.
   source-rights/context review. Keep its private files untouched.
 - Decide retention of the duplicate private `work-millennium-parade` mirror
   only after provenance comparison; migration authorizes no deletion.
-- Complete later target-device Practice/Full Song/PWA acceptance, including old
-  installed-client → current-build update behavior.
 - Plan 31 is absent from retained historical Plans; this is a historical
   unknown, not active authority and not an adoption blocker.
 
@@ -119,5 +135,16 @@ from compiler input.
   `1.6.2`, `v1.6.2` points to `c61f977`, and the latest successfully deployed
   `main` build is the later release-metadata commit with live version `1.6.2`.
   The tag target and deployed build SHA are intentionally distinct identities.
-- Next action: select the next unresolved Project State boundary; no timing
-  correction task is implied.
+- `RED-Plan-39` is complete for this boundary with target-device checks
+  explicitly deferred by the user; no active mobile acceptance work is
+  blocking the next boundary.
+- Automated regression evidence is `PASS` (37 focused tests). Real-device /
+  installed-PWA checks remain `NOT_TESTED — user deferred` residual risk; they
+  are not a target-device acceptance PASS. The old-installed-client →
+  current-build PWA update lifecycle remains `NOT_TESTED` and is separate from
+  this Plan.
+- No product behavior changed in this Plan; only `AGENTS.md` governance and
+  Project State documentation changed. Version classification remains
+  `no-version`.
+- Next action: select the next unresolved Project State boundary; deferred
+  device checks remain available for a future focused acceptance boundary.
