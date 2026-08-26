@@ -22,7 +22,7 @@ are evidence and never active execution instructions.
 | `src/App.tsx`, `src/navigation.ts`, `src/edition/*`, `src/settings/*`, `src/App.css`, `src/index.css`, co-located tests | Current detailed UI and interaction behavior | Active implementation owner; no standalone visual spec exists |
 | `src/audio/*`, `src/timeline/*`, `src/practice/*` | Shared playback, timing and Practice domain behavior | Active executable domain owners |
 | `src/pwa/*` | Offline/cache/update lifecycle and download state | Active executable PWA owner |
-| `src/debugger/*`, `src/settings/timing-export.ts` | Timeline authoring and timing repair/export surfaces | Active code; `#timing=debug` public intent remains unresolved |
+| `src/debugger/*`, `src/settings/timing-export.ts` | Timeline/Timing Debugger, timing repair and export surfaces | Active public product capability; detailed UI/behavior remains owned by code/tests |
 | `docs/project/PROJECT_BRIEF.md`, `DECISIONS.md`, `CURRENT_STATE.md` | Durable product identity, decisions and adoption-time project state | Active summary layer; links to detail rather than copying it |
 | `docs/archive/migration/*` | Historical migration evidence | Non-authoritative archive only |
 

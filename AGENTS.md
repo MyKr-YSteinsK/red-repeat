@@ -53,6 +53,9 @@ runtime Skills and should not be duplicated here.
   editorial timing.
 - Personal timing overrides are sparse local state bound to compatible song,
   content, audio and timeline identity. They do not mutate canonical source.
+- Timing Debugger is an intentional production-public supporting capability;
+  do not hide or remove it as generic debug cleanup without a new explicit
+  user decision.
 - Song workspaces use one coherent audio lifecycle owner. PWA update logic must
   preserve local business data and distinguish deployed build identity from an
   installed client's asynchronous worker activation state.

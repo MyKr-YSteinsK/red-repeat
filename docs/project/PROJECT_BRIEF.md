@@ -82,10 +82,13 @@ tool or complex backend. It does not restore the multi-Theme runtime, per-song
 arbitrary-repeat matrix, waveform requirement or native View Transition as a
 default correctness mechanism.
 
-## Optional modules and known intent boundary
+## Optional modules and public capability boundary
 
 The product includes per-song offline download/removal, Settings/release/update
-surfaces, timing repair/export and Explain Markdown references. The Timeline
-Debugger is authoring/calibration tooling. `#timing=debug` is currently
-production-routable in code, but whether that public reachability should remain
-is unresolved product intent; migration preserves the current behavior.
+surfaces, timing repair/export and Explain Markdown references. The
+Timeline/Timing Debugger is an intentional production-public supporting
+capability, reachable from Settings and the static-safe `#timing=debug` route.
+It supports timing inspection, audio audition, identity-bound local overrides
+and export without silently mutating canonical source. It remains a supporting
+capability rather than a fourth Song Edition mode; Practice, Full Song and
+Explain remain the primary Song Edition shell.

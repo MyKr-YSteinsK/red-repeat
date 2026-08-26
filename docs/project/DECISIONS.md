@@ -172,3 +172,22 @@ lifecycle or audible timing cuts. Plans must choose a matching browser/device or
 human oracle. More DOM assertions do not close a real-device or perceptual
 failure. The forensic migration report's incident analysis was extracted into
 these decisions and the current-state risk register before archival.
+
+## D-017｜Make Timing Debugger a production-public supporting capability
+
+- Status: Accepted
+- Source: `USER_DECISION`
+
+The Timeline/Timing Debugger is a formal RED:REPEAT product capability and may
+be used in production. The current public product entry is the Settings
+surface leading to the static-safe `#timing=debug` route; this is a supporting
+capability alongside, not a fourth replacement for, the Practice, Full Song and
+Explain Song Edition shell.
+
+The capability covers timing inspection, audio audition, calibration through
+identity-bound local timing overrides and export. Future routing cleanup,
+production hardening or debug-code pruning must not hide or remove it merely
+because its implementation is named `debugger`; that requires a new explicit
+user decision. D-011 and D-016 remain in force: public access does not bypass
+source validation, audio/timeline/Edition identity checks, canonical-source
+review, or the required human/audio evidence.

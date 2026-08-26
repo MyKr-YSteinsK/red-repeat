@@ -38,8 +38,10 @@ evidence only.
   for unavailable optional content.
 - Settings/update surface with build/version identity, release history, remote
   `version.json` probe and PWA apply/dismiss flow.
-- Timing repair/export with compatible local timing overrides; Timeline Debugger
-  remains authoring/calibration tooling.
+- Production-public Timeline/Timing Debugger and timing repair/export with
+  compatible identity-bound local timing overrides. The public entry is
+  Settings → 播放切口调试 → `#timing=debug`; it is a supporting capability, not
+  a fourth Song Edition mode.
 
 ## Current public content
 
@@ -82,8 +84,6 @@ from compiler input.
    migration cleanup.
 4. CI repeats some compile/typecheck work; optimization is deferred to a normal
    task.
-5. `#timing=debug` remains production-routable in code; its long-term public
-   exposure is a product decision still pending.
 
 ## Completed acceptance
 
@@ -110,9 +110,27 @@ from compiler input.
 - This Plan made no product behavior change; only repository governance and
   Project State documentation were updated.
 
+## RED-Plan-40 acceptance status
+
+- `D-017` records the user decision that the Timeline/Timing Debugger is a
+  formal production-public supporting capability.
+- Current discoverable entry: open Settings, choose `播放切口调试`, then use
+  the static-safe `#timing=debug` route; an optional `&edition=<song-id>`
+  selects a Song Edition directly.
+- The production route is parsed without a dev-mode gate and is served by the
+  existing `TimingDebuggerPage`. Settings and route tests cover the entry and
+  route semantics; the existing dev-only `#debug=timeline` working-copy route
+  remains separate from this public product entry.
+- The debugger loads compiled catalog, Edition, lyrics, Timeline, Practice and
+  audio resources through the existing runtime client and shared playback
+  ownership. No `.private/` or dev-server-only resource is required.
+- The existing public entry was already discoverable, so no product/navigation
+  code was changed and no fourth Song Edition mode was introduced.
+- Version classification is `no-version`: this closeout reconciles durable
+  product/governance documents only.
+
 ## Pending USER CHECK / UNKNOWN
 
-- Decide whether `#timing=debug` remains publicly reachable.
 - Decide whether `senbonzakura` continues, is re-intaken or is archived after
   source-rights/context review. Keep its private files untouched.
 - Decide retention of the duplicate private `work-millennium-parade` mirror
@@ -146,5 +164,9 @@ from compiler input.
 - No product behavior changed in this Plan; only `AGENTS.md` governance and
   Project State documentation changed. Version classification remains
   `no-version`.
+- `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
+  Debugger capability, the existing Settings entry and `#timing=debug` route
+  were verified, and the public-intent UNKNOWN was closed without changing
+  product code or canonical timing.
 - Next action: select the next unresolved Project State boundary; deferred
   device checks remain available for a future focused acceptance boundary.
