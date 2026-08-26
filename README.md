@@ -2,6 +2,8 @@
 
 A focused archive for returning to songs.
 
+Project context and canonical ownership: [docs/project/README.md](docs/project/README.md).
+
 ## Local development
 
 Requires Node.js 24 LTS and npm.
@@ -13,15 +15,19 @@ npm run dev
 
 ## Verification
 
+Choose checks for the boundary you changed. For example:
+
 ```bash
 npm run lint
-npm run typecheck
 npm test
-npm run library:validate
-npm run library:compile
 npm run build
-npm run pwa:inspect
 ```
+
+For source/content changes, run `npm run library:validate` and
+`npm run library:compile` as needed. `npm run build` already runs library
+compilation and TypeScript compilation; `npm run pwa:inspect` checks an existing
+static artifact. Release, deployment and real-device checks belong to their
+matching boundaries rather than every local change.
 
 `library/` is the production Song Edition source root. Every public song package
 under this directory is validated and compiled into the ignored
@@ -60,8 +66,9 @@ Production hosting uses GitHub Pages:
 https://mykr-ysteinsk.github.io/red-repeat/
 
 After the repository's Pages publishing source is set to `GitHub Actions`, a
-push to `main` runs `CI` first. A successful CI run triggers the separate Pages
-workflow, which validates and compiles `library/`, builds with the
+push to `main` runs the single `CI` workflow. Its `quality` job validates and
+builds the repository; a successful push to `main` then enables the dependent
+`deploy` job, which checks out the exact tested commit, builds with the
 `/red-repeat/` base path, verifies the PWA artifact, and publishes `dist/`.
 
 The deploy workflow checks out the exact commit tested by CI, so the published

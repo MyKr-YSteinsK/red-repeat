@@ -1,89 +1,100 @@
-# RED:REPEAT Agent Working Rules
+# RED:REPEAT Repository Contract
 
-These repository rules optimize development speed without weakening verification that can realistically catch the changed behavior.
+This file owns RED:REPEAT-specific boundaries and durable constraints. Generic
+Codex workflow, risk triage and verification habits are provided by the active
+runtime Skills and should not be duplicated here.
 
-## Instruction priority
+## Authority and scope
 
-- Follow the user's explicit request and explicit commands in a supplied Plan first.
-- Treat supplied Plans and handoffs as read-only temporary inputs unless the user explicitly asks to edit them.
-- Do not expand a focused task into a repository audit, refactor, release, or cleanup campaign.
+- Follow the user's explicit request and the current active Plan. A supplied
+  Plan, Handoff or ZIP is task input, not repository source, unless it is
+  deliberately adopted.
+- Treat the current repository, executable configuration and Git state as the
+  implementation facts. `docs/project/` records durable product intent and
+  state; historical material under `docs/archive/` is evidence, not authority.
+- Keep migration/documentation work separate from product behavior. Do not use
+  a documentation task to change product code, content, schema, PWA lifecycle,
+  release behavior or deployment topology.
 
-## Default workflow
+## Private, public and generated boundaries
 
-1. Inspect Git status and only the named or directly related implementation/test files.
-2. Classify the change before choosing verification.
-3. Implement the smallest coherent patch.
-4. Run the smallest test that would have failed before the fix.
-5. Broaden verification only when the changed boundary justifies it or a required check fails.
-6. Inspect the final diff once, then report concise evidence.
+- `.private/` is ignored private research, provenance and pending intake. Keep
+  it out of normal prompts, packages and commits. Do not reclassify private or
+  public content without explicit evidence and authorization.
+- Approved public Song Edition source under tracked `library/<song-id>/` is the
+  canonical content source; do not revive the obsolete blanket rule that all
+  audio or complete lyrics must remain private.
+- `public/library-runtime/`, `dist/`, `.cache/` and tool outputs are generated
+  and reproducible. They are not source authority and must not be hand-edited
+  or committed.
 
-Do not repeatedly read unchanged files, rerun successful commands after unrelated edits, or perform speculative reviews.
+## Canonical owners
 
-## Risk-proportional verification
+- `docs/歌曲内容生成规范.md` owns detailed source/content/timing authoring
+  guidance; `src/library/schema.ts`, validator and compiler own the executable
+  source contract and generated runtime behavior.
+- `src/library/runtime-schema.ts` and `src/runtime/*` own the runtime contract,
+  URL/fetch and compatibility behavior.
+- `docs/版本发布规范.md` owns release-reference prose; `src/release/*` and
+  release verification scripts own the executable ledger and identity checks;
+  `.github/workflows/ci.yml` owns delivery ordering.
+- Current UI behavior belongs to `src/App.tsx`, `src/edition/*`, `src/App.css`,
+  `src/index.css` and their tests. Do not create a visual specification by
+  reviving retired Theme or `visual.json` material.
 
-### Documentation, copy, comments, and non-functional metadata
+## Product and data invariants
 
-- Use `git diff --check` and direct inspection.
-- Do not run tests, typecheck, builds, browser checks, library commands, or PWA checks unless the file is executable configuration or the user explicitly requires them.
+- The product shell is Practice (default), Full Song and Explain. The old
+  multi-Theme runtime, body-level Practice map and native View Transition
+  workspace mechanism are retired; old Plans cannot reintroduce them.
+- Segment, Occurrence, Section and Practice Unit are distinct concepts.
+  Editorial `startMs/endMs` and playback `playStartMs/playEndMs` are
+  independently valid timing intervals; playback is not required to envelope
+  editorial timing.
+- Personal timing overrides are sparse local state bound to compatible song,
+  content, audio and timeline identity. They do not mutate canonical source.
+- Song workspaces use one coherent audio lifecycle owner. PWA update logic must
+  preserve local business data and distinguish deployed build identity from an
+  installed client's asynchronous worker activation state.
+- Full Song's player-specific mobile baseline is protected from broad shared
+  control styling. iOS/PWA geometry, scrolling, compositing, touch and audible
+  timing require matching browser/device or human evidence when relevant.
 
-### Focused bug or localized logic change
+## Boundary-specific verification
 
-- Add or update a regression test that genuinely reproduces the old defect.
-- Run only that test file or test name during development.
-- Run `npm run typecheck` once when TypeScript behavior, interfaces, state, or data flow changed.
-- Lint only changed source files with `npx eslint <files>` when practical. Use full `npm run lint` only for cross-cutting work or release verification.
-- Do not run the full test suite by default. CI is the broad safety net for ordinary focused patches.
+- Select checks for the changed boundary. `npm run build` already runs
+  `library:compile`, `tsc -b` and the Vite build, so duplicate standalone checks
+  are not ritual requirements.
+- Source/content/schema/compiler changes use the matching library validation,
+  audio-identity, compile and build oracles. PWA/build changes use artifact
+  inspection; release/deployment changes use the matching identity checks.
+- `npm run pwa:inspect` proves a static artifact, not installed-client worker
+  activation. `npm run release:smoke` is an external live-deployment oracle and
+  belongs at an authorized deployment/release boundary.
+- Real-device and human checks remain explicit USER CHECK items when automation
+  cannot prove browser-native, perceptual or installed-PWA behavior.
 
-### Focused styling or component markup change
+## Version and delivery model
 
-- Run the directly related component tests.
-- Use browser testing only when layout, responsive behavior, browser-native behavior, or a visual interaction actually changed.
-- For ordinary responsive checks, inspect one narrow mobile viewport (normally `375x812`) and one desktop viewport (`1280x800`).
-- Add `393x852` and `430x932` only when the task changes a breakpoint, safe-area behavior, wrapping threshold, fixed bottom layer, or explicitly requires a size matrix.
-- Capture one representative screenshot per materially different layout, not one per size. Prefer computed geometry for the remaining sizes.
+- Semantic user versions describe user-visible change, independently of Plan,
+  Phase, commit and push counts. Documentation/tests/internal maintenance are
+  normally `no-version`.
+- The single CI workflow can deploy every successful push to `main`: its
+  dependent Pages job checks out the exact tested SHA, builds `/red-repeat/` and
+  verifies the deployed identity.
+- At an authorized release boundary, package version, release ledger, build
+  identity, tag and deployed identity must converge. New tags should point to
+  the actual user-visible implementation commit. Historical tag inconsistencies
+  are recorded, not rewritten.
+- The current `c61f977` / `1.6.1` release-identity question remains unresolved;
+  migration does not decide whether that commit is no-version or the next
+  PATCH basis.
 
-### Library/content/compiler changes
+## Stop conditions
 
-- Run `npm run library:validate` only when source content, schema, validator behavior, or content contracts changed.
-- Run `npm run library:compile` only when compiler behavior or runtime library artifacts changed.
-- Do not run either command for unrelated UI or client-only bugs.
-
-### PWA, build, routing, deployment, or release changes
-
-- Run build/PWA checks only when the task affects bundling, service workers, cache/update behavior, base paths, deployment, release metadata, or when preparing an explicit release.
-- `npm run build` already runs library compilation and TypeScript compilation. Treat those embedded checks as satisfied unless the user explicitly requires the standalone commands.
-- Run the `/red-repeat/` base build and matching `pwa:inspect` only for base-path/deployment/PWA work or an explicit release, not for routine patches.
-- Run `repo:hygiene` only when ignore rules, private/generated paths, content import, packaging, or release boundaries changed.
-- Run `release:verify`, tag verification, and production `release:smoke` only for an explicit versioned release.
-
-### High-risk changes
-
-Broader verification remains required for changes involving content contracts, compiler output, persistence migrations, audio timing/playback semantics, service-worker update races, security/privacy boundaries, CI/release automation, or multiple subsystems. Do not use efficiency rules to skip checks capable of catching data loss, offline breakage, or incompatible runtime output.
-
-## Avoid duplicated work
-
-- Do not run the full suite after every intermediate edit. Use targeted checks while iterating and at most one justified broad pass at the end.
-- Do not run both standalone compile/typecheck commands and a build that already embeds them unless a failure needs isolation or explicit acceptance criteria list each command.
-- Do not repeat browser inspection after a code change that cannot affect the inspected page.
-- Do not perform both automated and manual verification for the same invariant unless browser rendering or integration behavior is the invariant.
-- Do not check ignored/generated tracking on every task; reserve it for content imports, hygiene changes, packaging, and releases.
-- Stop after three identical external-state failures. Report the blocker instead of performing open-ended retries, except when an explicit bounded monitor or release smoke command is already handling retries.
-
-## Reviews and exploration
-
-- Do not scan the whole repository for a focused task.
-- Do not perform accessibility, security, performance, dependency, responsive, or architecture audits unless requested or directly implicated by the change.
-- Preserve known unrelated warnings and issues; report them only if they block the task.
-- Inspect adjacent code only far enough to establish the real dependency boundary.
-
-## Git and releases
-
-- A normal small bug fix does not require a version bump, release-note entry, tag, deployment wait, or production probe.
-- Batch ordinary fixes into the next requested release instead of publishing a new version for every patch.
-- Create release metadata and a release tag only when the user or active Plan explicitly requests a release.
-- For a planned phase, follow its delivery section. If it is silent, use one focused commit after appropriate verification; push only when requested or when the phase explicitly requires delivery.
-- Never commit `.private/`, `public/library-runtime/`, `dist/`, supplied Plan files, or unrelated user changes.
-
-## Reporting
-
-Keep completion reports short. Include changed behavior, focused verification and result, unresolved risk, and commit/push details only when a commit or push occurred. Do not narrate every command or repeat the Plan.
+Stop and record the blocker rather than guessing when migration edits overlap
+user-owned work with unclear ownership, private/public status or rights are
+unclear, audio identity contradicts timing assumptions, a requested tag already
+points elsewhere, or satisfying documentation would require destructive cleanup.
+Also stop if an adoption task would require executable product/config/schema/PWA
+or release behavior changes; split that work into a separately authorized task.
