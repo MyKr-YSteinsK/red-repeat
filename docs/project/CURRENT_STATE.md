@@ -72,18 +72,28 @@ from compiler input.
 1. `c61f977` is later than the `1.6.1` package/ledger/tag identity; whether it
    becomes the next PATCH basis is unresolved, and production identity for the
    audited HEAD was not verified during read-only adoption review.
-2. Remaining timeline performance notes require by-ear review; schemas cannot
-   prove audible cuts, overlap/counterpoint or final release quality.
-3. No maintained browser/E2E or real-device acceptance harness proves current
+2. No maintained browser/E2E or real-device acceptance harness proves current
    iOS/PWA geometry, safe area, touch, scroll, perceived translucency or
    old-installed-client upgrade behavior.
-4. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
+3. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
    are high-churn coupling surfaces. Refactoring them is separate work, not
    migration cleanup.
-5. CI repeats some compile/typecheck work; optimization is deferred to a normal
+4. CI repeats some compile/typecheck work; optimization is deferred to a normal
    task.
-6. `#timing=debug` remains production-routable in code; its long-term public
+5. `#timing=debug` remains production-routable in code; its long-term public
    exposure is a product decision still pending.
+
+## Completed acceptance
+
+- `RED-Plan-37` / `PLAN-001` human listening acceptance is complete for all 40
+  bounded `work-millennium-parade` timing review units: `o001`, `o009`–`o020`,
+  `o029`–`o037`, `o042`–`o057`, `o061`, and the `instrumental` Section boundary.
+  Result: `PASS 40`, `NEEDS_CORRECTION 0`, `STILL_UNCERTAIN 0`.
+- Canonical audio identity is verified: `library/work-millennium-parade/audio/source.mp3`
+  SHA-256 is `facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083`
+  and matches `timeline.json.audioSourceHash`.
+- This closeout made no canonical timing correction; `timeline.json` and the
+  lyrics/practice/source data remain unchanged.
 
 ## Pending USER CHECK / UNKNOWN
 
@@ -94,18 +104,21 @@ from compiler input.
   source-rights/context review. Keep its private files untouched.
 - Decide retention of the duplicate private `work-millennium-parade` mirror
   only after provenance comparison; migration authorizes no deletion.
-- Complete by-ear timing review and later target-device Practice/Full Song/PWA
-  acceptance, including old installed-client → current-build update behavior.
+- Complete later target-device Practice/Full Song/PWA acceptance, including old
+  installed-client → current-build update behavior.
 - Plan 31 is absent from retained historical Plans; this is a historical
   unknown, not active authority and not an adoption blocker.
 
 ## Active work and next lifecycle action
 
-- Active task: `PLAN-MIGRATION-000` — repository adoption and ownership
-  reconciliation only.
-- No feature, stabilization, content-intake, release or deployment task is
-  authorized by this migration.
-- Next lifecycle action: **Migration Checkpoint**. The Development Architect
-  should re-read the resulting repo identity/worktree, final migration diff,
-  `AGENTS.md`, all three Project State files, the supporting manifest and the
-  labeled forensic archive before generating the first normal Plan.
+- `RED-Plan-37` / `PLAN-001` is complete; there is no active timing acceptance
+  work for `work-millennium-parade`.
+- Human listening result is `PASS 40`, `NEEDS_CORRECTION 0`,
+  `STILL_UNCERTAIN 0`. Canonical audio identity remains verified against the
+  source hash above.
+- No canonical timing source, schema, compiler, playback, or UI change was
+  made in this closeout. The remaining by-ear timing acceptance debt is closed;
+  any future timing change still requires a separate evidence-backed correction
+  boundary.
+- Next action: select the next unresolved Project State boundary; no timing
+  correction task is implied.
