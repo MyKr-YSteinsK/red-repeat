@@ -86,9 +86,26 @@ runtime Skills and should not be duplicated here.
   identity, tag and deployed identity must converge. New tags should point to
   the actual user-visible implementation commit. Historical tag inconsistencies
   are recorded, not rewritten.
-- The current `c61f977` / `1.6.1` release-identity question remains unresolved;
-  migration does not decide whether that commit is no-version or the next
-  PATCH basis.
+- Release identity facts come from the executable release owners and
+  `docs/project/CURRENT_STATE.md`; do not hardcode transient current versions
+  or SHAs in this contract. A release tag identifies the implementation commit,
+  while the deployed build SHA may be a later tested `main` metadata/source
+  commit; these are distinct but must remain coherent.
+- When a formal Plan satisfies all Acceptance, required USER CHECK is complete,
+  no Stop Condition applies, and required pre-push verification passes, Codex
+  must commit the authorized changes and normally push the current branch to
+  its tracking remote without waiting for a separate push confirmation.
+- This default auto-push rule is not blanket authorization for release/tag or
+  other external operations. Do not auto-push when the Plan says `no push`, the
+  Plan is PARTIAL or required USER CHECK is incomplete, the worktree contains
+  unowned or unclear changes, the remote diverged, branch ownership is unclear,
+  a force operation would be needed, a tag conflicts, a new release/version/tag
+  decision is not authorized, private/public rights or secrets are unclear, or
+  required verification fails.
+- A successful push to `main` enters the current CI quality and dependent Pages
+  deployment boundary; `TASK_RESULT` must report resulting HEAD, worktree,
+  branch/remote sync and push result when this occurs.
+- Never force-push and never force-update release tags.
 
 ## Stop conditions
 
