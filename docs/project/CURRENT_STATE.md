@@ -10,21 +10,21 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Adoption baseline HEAD: `c61f9776f6dd9799f6befa598bb510c35d93e103` — `fix: tighten song timing boundaries`
-- Package version: `1.6.1`
-- Latest ledger/tag: `1.6.1` / `v1.6.1 -> 4cfe378`; current HEAD is not tagged
+- Current user version: `1.6.2`
+- Latest ledger/tag: `1.6.2` / `v1.6.2 -> c61f977`; existing
+  `v1.6.1 -> 4cfe378` remains unchanged.
+- `c61f9776f6dd9799f6befa598bb510c35d93e103` is the implementation commit for
+  `1.6.2`. The later release-metadata commit on `main` is the independently
+  deployed build identity; it is distinct from the implementation tag target.
 - Adoption started with user-owned `AGENTS.md` changes and untracked
   `RED-REPEAT-Development-Forensics.md`. The former is reconciled into the
   canonical repo contract; the latter is preserved as a labeled archive at
   `docs/archive/migration/RED-REPEAT-Development-Forensics-2026-08-26.md`.
-- Migration edits are subject to the final Git diff and delivery decision; no
-  product Plan is active or partially implemented. The exact resulting HEAD is
-  recorded in the migration `TASK_RESULT` because this file describes the
-  adoption baseline and durable state rather than a self-referential commit.
-- At this adoption checkpoint, the migration diff is limited to `AGENTS.md`,
-  README/release prose, `docs/project/*` and the labeled forensic archive. No
-  product code, executable config, schema, public content, release metadata,
-  version or tag was changed; the private Handoff archive remains ignored.
+- Migration adoption and the RED-Plan-37 state closeout remain no-version
+  commits after `c61f977`; they do not change the `1.6.2` implementation tag.
+- Release finalization changes only package/lock version metadata, the release
+  ledger, build-version fallback and this Project State; no new product
+  behavior is introduced, and the private Handoff archive remains ignored.
 
 ## Current product capabilities
 
@@ -69,18 +69,15 @@ from compiler input.
 
 ## Known limitations and risks
 
-1. `c61f977` is later than the `1.6.1` package/ledger/tag identity; whether it
-   becomes the next PATCH basis is unresolved, and production identity for the
-   audited HEAD was not verified during read-only adoption review.
-2. No maintained browser/E2E or real-device acceptance harness proves current
+1. No maintained browser/E2E or real-device acceptance harness proves current
    iOS/PWA geometry, safe area, touch, scroll, perceived translucency or
    old-installed-client upgrade behavior.
-3. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
+2. `src/App.css`, Practice/Full Song workspaces and `src/pwa/update-manager.ts`
    are high-churn coupling surfaces. Refactoring them is separate work, not
    migration cleanup.
-4. CI repeats some compile/typecheck work; optimization is deferred to a normal
+3. CI repeats some compile/typecheck work; optimization is deferred to a normal
    task.
-5. `#timing=debug` remains production-routable in code; its long-term public
+4. `#timing=debug` remains production-routable in code; its long-term public
    exposure is a product decision still pending.
 
 ## Completed acceptance
@@ -97,8 +94,6 @@ from compiler input.
 
 ## Pending USER CHECK / UNKNOWN
 
-- Decide at an authorized release step how `c61f977` relates to `1.6.1`, and
-  verify production identity separately if relevant.
 - Decide whether `#timing=debug` remains publicly reachable.
 - Decide whether `senbonzakura` continues, is re-intaken or is archived after
   source-rights/context review. Keep its private files untouched.
@@ -120,5 +115,9 @@ from compiler input.
   made in this closeout. The remaining by-ear timing acceptance debt is closed;
   any future timing change still requires a separate evidence-backed correction
   boundary.
+- `RED-Plan-38` release identity is complete: package/latest ledger are
+  `1.6.2`, `v1.6.2` points to `c61f977`, and the latest successfully deployed
+  `main` build is the later release-metadata commit with live version `1.6.2`.
+  The tag target and deployed build SHA are intentionally distinct identities.
 - Next action: select the next unresolved Project State boundary; no timing
   correction task is implied.

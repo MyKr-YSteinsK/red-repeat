@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.6.2',
+    date: '2026-08-25',
+    commit: 'c61f977',
+    level: 'patch',
+    title: '歌曲切段边界修正',
+    summary: '收紧《WORK》歌曲的播放切段，减少相邻音节串入和过度留白，让学唱、全曲与讲解中的听感更贴合歌词边界。',
+    changes: [
+      '收紧快速段、重复副歌与尾句的播放起止点，减少前后句音节泄漏和不必要的空白。',
+      '让播放区间可独立于歌词高亮区间精确表达真实演唱边界。',
+      '保留真实连唱、叠唱、对位和延音，不以统一 padding 强行截短歌曲。',
+    ],
+  },
+  {
     version: '1.6.1',
     date: '2026-08-25',
     commit: '4cfe378',
