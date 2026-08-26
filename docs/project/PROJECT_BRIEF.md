@@ -9,10 +9,15 @@ browser and installed PWA are primary; desktop browser is supported. Delivery
 is a static site with no runtime backend, database, account service or server
 API.
 
-The lifecycle stage is not canonically declared. The repository has mature
-capabilities and delivery machinery, but unresolved release identity,
-real-device acceptance and installed-PWA upgrade evidence mean migration does
-not promote it to `Production`.
+Lifecycle stage: `Stabilization`.
+
+The repository has mature core capabilities and stable delivery machinery.
+Release identity is reconciled, timing acceptance is complete, and the Timing
+Debugger is production-public. Deferred target-device / installed-PWA geometry
+evidence and the unverified old-installed-client → current-build update
+lifecycle keep it from `Production` promotion. Here, Stabilization means the
+core product has formed while a small set of high-impact runtime/device
+evidence remains open; it does not mean the product is incomplete.
 
 ## Core loop
 

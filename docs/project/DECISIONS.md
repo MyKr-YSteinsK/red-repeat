@@ -148,9 +148,8 @@ single workflow, so “batching” cannot be described as if `main` were non-
 deploying. New tags should point to the user-visible implementation commit;
 historical inconsistencies are recorded, not rewritten.
 
-Migration caveat: `c61f977` is newer than the `1.6.1` ledger/tag identity. It is
-not decided here whether that timing change is intentionally no-version or the
-basis of the next PATCH.
+The former `c61f977` / `1.6.1` migration caveat was resolved by RED-Plan-38:
+`1.6.2` / `v1.6.2 -> c61f977`, with deployed build identity tracked separately.
 
 ## D-015｜Use one audio lifecycle owner across song workspaces
 

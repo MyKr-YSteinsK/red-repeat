@@ -11,6 +11,7 @@ evidence only.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
 - Current user version: `1.6.2`
+- Current lifecycle stage: `Stabilization`
 - Latest ledger/tag: `1.6.2` / `v1.6.2 -> c61f977`; existing
   `v1.6.1 -> 4cfe378` remains unchanged.
 - `c61f9776f6dd9799f6befa598bb510c35d93e103` is the implementation commit for
