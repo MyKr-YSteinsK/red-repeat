@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.7.1',
+    date: '2026-08-28',
+    commit: 'a98e300',
+    level: 'patch',
+    title: '《Ｗ●ＲＫ》封面、翻译与 Explain 刷新',
+    summary: '更新《Ｗ●ＲＫ》封面和 61 条中文译文，并扩展作品背景、制作与歌词解读内容。',
+    changes: [
+      '使用新的 1280×1280 JPEG 封面，移除旧 SVG 封面。',
+      '替换 61 条中文 translation；保留 canonical Japanese lyrics、ruby、音频、结构和 timing。',
+      '将 WORK Explain 从 2 篇扩展为 6 篇，补充作品背景、制作阵容、语言、主题与对位阅读。',
+    ],
+  },
+  {
     version: '1.7.0',
     date: '2026-08-27',
     commit: '325d418',

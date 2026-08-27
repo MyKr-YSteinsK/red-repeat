@@ -10,10 +10,14 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.7.0`
+- Current user version: `1.7.1`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.7.0` / `v1.7.0 -> 325d418`; existing
-  `v1.6.2 -> c61f977` remains unchanged.
+- Latest ledger/tag: `1.7.1` / `v1.7.1 -> a98e300`; existing
+  `v1.7.0 -> 325d418` and `v1.6.2 -> c61f977` remain unchanged.
+- `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
+  content implementation commit for `1.7.1`; the later release-metadata commit
+  on `main` is the independently deployed build identity and is distinct from
+  the implementation tag target.
 - `325d418adc96adfab89ac70ed9beade496e9f19a` is the implementation commit for
   `1.7.0`. The later release-metadata commit on `main` is the independently
   deployed build identity; it is distinct from the implementation tag target.
@@ -52,7 +56,7 @@ evidence only.
 The tracked public source contains two Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
-one SVG cover and two Explain Markdown features; and
+one JPG cover and six Explain Markdown features; and
 `library/senbonzakura/` (`千本桜`, 黒うさP × 初音未来) with 30 unique
 Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
 one JPG cover and four Explain Markdown features. Japanese lyrics may carry
@@ -237,6 +241,42 @@ uses the separately authorized task-input source package.
   behavior was changed. Version classification is `no-version`, and
   `USER CHECK` is `NONE` for this governance boundary.
 
+## RED-Plan-47 implementation and release status
+
+- The WORK artwork replacement is complete: the old
+  `library/work-millennium-parade/artwork/cover.svg` was removed and
+  `library/work-millennium-parade/artwork/cover.jpg` is the exact supplied
+  1280×1280 JPEG (`SHA-256`
+  `8ee6dd18a5ed7c840babb321ed9566cd8cfc1b1119d11d37f62d2a755d9545ba`). The
+  canonical artwork directory contains exactly one `cover.*` and no hero.
+- The supplied WORK translation input was verified as
+  `SHA-256 74687c7dd333b43cbb4c4f361333654bfe4a03e21ad87d692283a79ff0d4ca23`.
+  It contains 122 non-empty lines and maps 61/61, in source order, to the
+  current Segments. Five evidence lines use conservative unique orthographic,
+  spacing or abbreviated-form matches; none replaced canonical Japanese
+  `lyrics`. All 61 `translation` values are copied from the input, while
+  Segment IDs, ruby, layers and notes remain unchanged.
+- WORK Explain now contains six features:
+  `01-作品背景.md`, `02-佛教语汇与二元结构.md`, `03-双主创与制作阵容.md`,
+  `04-劳动债务肉身与欲望.md`, `05-日英混杂与高密度歌词.md` and
+  `06-对位段与结构高潮.md`. Their lyric references validate against the
+  canonical Segment set; fact and `RED:REPEAT 编辑观察` are explicitly
+  distinguished, with official anime, release and official MV sources used.
+- The canonical audio identity remains
+  `facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083` and
+  still matches `timeline.json.audioSourceHash`. `timeline.json`,
+  `practice.json`, all Section/Occurrence/timing identities, Japanese lyrics,
+  ruby, artist metadata and `library/senbonzakura/` remain unchanged.
+- Product-focused commit `a98e300` carries the source/content change. Release
+  metadata moves the user version from `1.7.0` to `1.7.1` at PATCH level;
+  `v1.7.1` targets the product commit, while the later metadata commit remains
+  the deployed build identity. This Plan does not change executable product
+  behavior, timing, schema, compiler, runtime, UI or PWA logic.
+- No pre-publish human gate was required. New cover display, translation
+  wording, Explain factual phrasing and ordinary mobile readability remain
+  `POST-DEPLOY OBSERVATION`; they are not represented as human `PASS`.
+- Version classification is `PATCH`: `1.7.0 -> 1.7.1`.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
@@ -303,10 +343,10 @@ uses the separately authorized task-input source package.
   matching automated/local verification may enter Production after focused
   commit and normal push. Explicit or high-risk `BLOCKING USER CHECK` items
   remain release gates; other real-use evidence is observed after deployment.
-- Next normal product work begins after `RED-Plan-46` at a separately authorized
-  Plan boundary; the next normal content work remains the WORK new cover, the
-  user-provided new WORK 61 translations and WORK Explain expansion. This state
-  does not implement any subsequent Plan.
+- `RED-Plan-47` is complete for this boundary: the authorized WORK cover,
+  translation and Explain refresh is recorded above, with canonical timing and
+  structure preserved. The next normal product work begins at a separately
+  authorized Plan boundary; this state does not implement any subsequent Plan.
 - Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
   closeout is complete, with no active migration cleanup; current work proceeds
   as normal Production maintenance and feature evolution. Future boundary
