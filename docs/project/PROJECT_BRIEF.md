@@ -9,17 +9,16 @@ browser and installed PWA are primary; desktop browser is supported. Delivery
 is a static site with no runtime backend, database, account service or server
 API.
 
-Lifecycle stage: `Stabilization`.
+Lifecycle stage: `Production`.
 
 The repository has mature core capabilities and stable delivery machinery.
 Release identity is reconciled, timing acceptance is complete, and the Timing
-Debugger is production-public. Current-use evidence has closed the previously
-deferred target-device / installed-PWA geometry and old-installed-client →
-current-build update acceptance debts for this baseline. The formal
-`RED-Plan-39` matrix is not claimed as a full PASS. Lifecycle remains
-`Stabilization` pending
-the next explicit lifecycle checkpoint; this does not mean the product is
-incomplete.
+Debugger is production-public. Current-use device and installed-client update
+evidence has closed the previous active acceptance debt for this baseline; this
+does not claim exhaustive device-matrix coverage. No current `USER CHECK` /
+`UNKNOWN` blocks the baseline. `Production` means the established product
+boundary can be used, deployed and maintained while future behavior changes
+still require matching regression, device, human or production evidence.
 
 ## Core loop
 

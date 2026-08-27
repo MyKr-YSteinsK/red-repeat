@@ -1,6 +1,6 @@
 # CURRENT_STATE
 
-This is the adoption-time repository state. Current repo evidence supersedes
+This is the current repository state. Current repo evidence supersedes
 the external migration snapshot; archived Plans and forensics are historical
 evidence only.
 
@@ -11,7 +11,7 @@ evidence only.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
 - Current user version: `1.6.2`
-- Current lifecycle stage: `Stabilization`
+- Current lifecycle stage: `Production`
 - Latest ledger/tag: `1.6.2` / `v1.6.2 -> c61f977`; existing
   `v1.6.1 -> 4cfe378` remains unchanged.
 - `c61f9776f6dd9799f6befa598bb510c35d93e103` is the implementation commit for
@@ -165,5 +165,8 @@ start a new intake from zero under the current source/content contracts.
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
   product code or canonical timing.
-- Lifecycle remains `Stabilization` pending a separate explicit lifecycle
-  checkpoint; no additional migration cleanup is active.
+- Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
+  closeout is complete, with no active migration cleanup; current work proceeds
+  as normal Production maintenance and feature evolution. Future boundary
+  regressions reopen matching validation, but do not automatically downgrade
+  lifecycle.
