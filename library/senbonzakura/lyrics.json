@@ -1,0 +1,634 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "大胆不敵に ハイカラ革命",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "大胆不敵",
+          "reading": "だいたんふてき"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "ハイカラ",
+          "reading": "はいから"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "革命",
+          "reading": "かくめい"
+        }
+      ],
+      "translation": "大胆无畏维新革命"
+    },
+    {
+      "id": "s002",
+      "lyrics": "磊々落々 反戦国家",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "磊々落々",
+          "reading": "らいらいらくらく"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "反戦国家",
+          "reading": "はんせんこっか"
+        }
+      ],
+      "translation": "光明磊落反战国家",
+      "notes": [
+        {
+          "title": "磊々落々",
+          "body": "按歌词中的惯用语读作「らいらいらくらく」，表示坦荡、洒脱。"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "日の丸印の二輪車転がし",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "日の丸印",
+          "reading": "ひのまるじるし"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "二輪車",
+          "reading": "にりんしゃ"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "転がし",
+          "reading": "ころがし"
+        }
+      ],
+      "translation": "骑着日之丸印的二轮车"
+    },
+    {
+      "id": "s004",
+      "lyrics": "悪霊退散 ICBM",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "悪霊退散",
+          "reading": "あくりょうたいさん"
+        }
+      ],
+      "translation": "恶灵退散ICBM"
+    },
+    {
+      "id": "s005",
+      "lyrics": "環状線を走り抜けて",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "環状線",
+          "reading": "かんじょうせん"
+        },
+        {
+          "start": 4,
+          "end": 9,
+          "base": "走り抜けて",
+          "reading": "はしりぬけて"
+        }
+      ],
+      "translation": "奔驰穿过环状线"
+    },
+    {
+      "id": "s006",
+      "lyrics": "東奔西走なんのその",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "東奔西走",
+          "reading": "とうほんせいそう"
+        }
+      ],
+      "translation": "东奔西走不算什么"
+    },
+    {
+      "id": "s007",
+      "lyrics": "少年少女戦国無双",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "少年少女",
+          "reading": "しょうねんしょうじょ"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "戦国無双",
+          "reading": "せんごくむそう"
+        }
+      ],
+      "translation": "少年少女战国无双"
+    },
+    {
+      "id": "s008",
+      "lyrics": "浮世の随に",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "浮世",
+          "reading": "うきよ"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "随に",
+          "reading": "まにまに"
+        }
+      ],
+      "translation": "跟从着浮世浪",
+      "notes": [
+        {
+          "title": "随に",
+          "body": "此处按歌词短语读作「まにまに」，意为任其流转、随波而行。"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "千本桜 夜ニ紛レ",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "千本桜",
+          "reading": "せんぼんざくら"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "夜ニ紛レ",
+          "reading": "よるにまぎれ"
+        }
+      ],
+      "translation": "千本樱融入夜中"
+    },
+    {
+      "id": "s010",
+      "lyrics": "君ノ声モ届カナイヨ",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 9,
+          "base": "君ノ声モ届カナイヨ",
+          "reading": "きみのこえもとどかないよ"
+        }
+      ],
+      "translation": "连你的声音也传不到啊"
+    },
+    {
+      "id": "s011",
+      "lyrics": "此処は宴 鋼の檻",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "此処",
+          "reading": "ここ"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "宴",
+          "reading": "うたげ"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "鋼",
+          "reading": "はがね"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "檻",
+          "reading": "おり"
+        }
+      ],
+      "translation": "此处开宴钢铁牢笼中"
+    },
+    {
+      "id": "s012",
+      "lyrics": "その断頭台で見下ろして",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "断頭台",
+          "reading": "だんとうだい"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "見下ろして",
+          "reading": "みおろして"
+        }
+      ],
+      "translation": "自那断头台上往下看吧"
+    },
+    {
+      "id": "s013",
+      "lyrics": "三千世界 常世之闇",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "三千世界",
+          "reading": "さんぜんせかい"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "常世之闇",
+          "reading": "とこよのやみ"
+        }
+      ],
+      "translation": "三千世界黄泉之暗"
+    },
+    {
+      "id": "s014",
+      "lyrics": "嘆ク唄モ聞コエナイヨ",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 10,
+          "base": "嘆ク唄モ聞コエナイヨ",
+          "reading": "なげくうたもきこえないよ"
+        }
+      ],
+      "translation": "连哀叹之歌也听不见啊"
+    },
+    {
+      "id": "s015",
+      "lyrics": "青藍の空 遥か彼方",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "青藍",
+          "reading": "せいらん"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "空",
+          "reading": "そら"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "遥か彼方",
+          "reading": "はるかかなた"
+        }
+      ],
+      "translation": "青蓝天空遥远彼端"
+    },
+    {
+      "id": "s016",
+      "lyrics": "その光線銃で打ち抜いて",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "光線銃",
+          "reading": "こうせんじゅう"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "打ち抜いて",
+          "reading": "うちぬいて"
+        }
+      ],
+      "translation": "就用那光线枪射穿吧"
+    },
+    {
+      "id": "s017",
+      "lyrics": "百戦錬磨の見た目は将校",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "百戦錬磨",
+          "reading": "ひゃくせんれんま"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "見た目",
+          "reading": "みため"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "将校",
+          "reading": "しょうこう"
+        }
+      ],
+      "translation": "看来身经百战实为将校"
+    },
+    {
+      "id": "s018",
+      "lyrics": "いったりきたりの花魁道中",
+      "ruby": [
+        {
+          "start": 8,
+          "end": 12,
+          "base": "花魁道中",
+          "reading": "おいらんどうちゅう"
+        }
+      ],
+      "translation": "人潮来往的花魁道中"
+    },
+    {
+      "id": "s019",
+      "lyrics": "アイツもコイツも皆で集まれ",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "アイツ",
+          "reading": "あいつ"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "コイツ",
+          "reading": "こいつ"
+        },
+        {
+          "start": 8,
+          "end": 9,
+          "base": "皆",
+          "reading": "みんな"
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "base": "集まれ",
+          "reading": "あつまれ"
+        }
+      ],
+      "translation": "不管那个人或这个人大家都过来吧"
+    },
+    {
+      "id": "s020",
+      "lyrics": "聖者の行進",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "聖者",
+          "reading": "せいじゃ"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "行進",
+          "reading": "こうしん"
+        }
+      ],
+      "translation": "圣者的行进"
+    },
+    {
+      "id": "s021",
+      "lyrics": "ワン ツー サン シー",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "ワン",
+          "reading": "わん"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "ツー",
+          "reading": "つー"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "サン",
+          "reading": "さん"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "シー",
+          "reading": "しー"
+        }
+      ],
+      "translation": "一二三四"
+    },
+    {
+      "id": "s022",
+      "lyrics": "禅定門を潜り抜けて",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "禅定門",
+          "reading": "ぜんじょうもん"
+        },
+        {
+          "start": 4,
+          "end": 9,
+          "base": "潜り抜けて",
+          "reading": "くぐりぬけて"
+        }
+      ],
+      "translation": "穿过出家僧人旁"
+    },
+    {
+      "id": "s023",
+      "lyrics": "安楽浄土厄払い",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "安楽浄土",
+          "reading": "あんらくじょうど"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "厄払い",
+          "reading": "やくはらい"
+        }
+      ],
+      "translation": "极乐净土驱凶避邪"
+    },
+    {
+      "id": "s024",
+      "lyrics": "きっと終幕は大団円",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 5,
+          "base": "終幕",
+          "reading": "しゅうまく"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "大団円",
+          "reading": "だいだんえん"
+        }
+      ],
+      "translation": "最后一幕一定就是大团圆"
+    },
+    {
+      "id": "s025",
+      "lyrics": "拍手の合間に",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "拍手",
+          "reading": "はくしゅ"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "合間",
+          "reading": "あいま"
+        }
+      ],
+      "translation": "在掌声的同时"
+    },
+    {
+      "id": "s026",
+      "lyrics": "希望の丘 遥か彼方",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "希望",
+          "reading": "きぼう"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "丘",
+          "reading": "おか"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "遥か彼方",
+          "reading": "はるかかなた"
+        }
+      ],
+      "translation": "希望之丘遥远彼端"
+    },
+    {
+      "id": "s027",
+      "lyrics": "その閃光弾を打ち上げろ",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "閃光弾",
+          "reading": "せんこうだん"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "打ち上げろ",
+          "reading": "うちあげろ"
+        }
+      ],
+      "translation": "就将那闪光弹射入天吧"
+    },
+    {
+      "id": "s028",
+      "lyrics": "その断頭台を飛び降りて",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "断頭台",
+          "reading": "だんとうだい"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "飛び降りて",
+          "reading": "とびおりて"
+        }
+      ],
+      "translation": "自那断头台上跳下来吧"
+    },
+    {
+      "id": "s029",
+      "lyrics": "君が歌い僕は踊る",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "歌い",
+          "reading": "うたい"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "僕",
+          "reading": "ぼく"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "踊る",
+          "reading": "おどる"
+        }
+      ],
+      "translation": "你歌我舞"
+    },
+    {
+      "id": "s030",
+      "lyrics": "さあ光線銃を撃ちまくれ",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "光線銃",
+          "reading": "こうせんじゅう"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "撃ちまくれ",
+          "reading": "うちまくれ"
+        }
+      ],
+      "translation": "扣下光线枪的扳机吧"
+    }
+  ]
+}

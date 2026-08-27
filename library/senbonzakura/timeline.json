@@ -1,0 +1,485 @@
+{
+  "audioSourceHash": "5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19",
+  "sections": [
+    {
+      "id": "intro",
+      "label": "Intro",
+      "startMs": 0,
+      "endMs": 32300
+    },
+    {
+      "id": "verse-1",
+      "label": "Verse 1",
+      "startMs": 32300,
+      "endMs": 56690
+    },
+    {
+      "id": "chorus-1",
+      "label": "Chorus 1",
+      "startMs": 56690,
+      "endMs": 82990
+    },
+    {
+      "id": "instrumental-1",
+      "label": "Instrumental 1",
+      "startMs": 82990,
+      "endMs": 94600
+    },
+    {
+      "id": "verse-2",
+      "label": "Verse 2",
+      "startMs": 94600,
+      "endMs": 119020
+    },
+    {
+      "id": "chorus-2",
+      "label": "Chorus 2",
+      "startMs": 119020,
+      "endMs": 145150
+    },
+    {
+      "id": "instrumental-2",
+      "label": "Instrumental 2",
+      "startMs": 145150,
+      "endMs": 175850
+    },
+    {
+      "id": "reprise",
+      "label": "Reprise",
+      "startMs": 175850,
+      "endMs": 187600
+    },
+    {
+      "id": "final-chorus",
+      "label": "Final Chorus",
+      "startMs": 187600,
+      "endMs": 214800
+    },
+    {
+      "id": "outro",
+      "label": "Outro",
+      "startMs": 214800,
+      "endMs": 252460
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "o001",
+      "segmentId": "s001",
+      "sectionId": "verse-1",
+      "startMs": 32380,
+      "endMs": 35320,
+      "playStartMs": 32300,
+      "playEndMs": 35390,
+      "performanceNote": "Source-audio onset aligned to the first vocal entry; the short pickup is kept distinct from the Intro boundary."
+    },
+    {
+      "id": "o002",
+      "segmentId": "s002",
+      "sectionId": "verse-1",
+      "startMs": 35450,
+      "endMs": 38480,
+      "playStartMs": 35405,
+      "playEndMs": 38520
+    },
+    {
+      "id": "o003",
+      "segmentId": "s003",
+      "sectionId": "verse-1",
+      "startMs": 38580,
+      "endMs": 41580,
+      "playStartMs": 38515,
+      "playEndMs": 41665
+    },
+    {
+      "id": "o004",
+      "segmentId": "s004",
+      "sectionId": "verse-1",
+      "startMs": 41700,
+      "endMs": 44730,
+      "playStartMs": 41675,
+      "playEndMs": 44760
+    },
+    {
+      "id": "o005",
+      "segmentId": "s005",
+      "sectionId": "verse-1",
+      "startMs": 44820,
+      "endMs": 47770,
+      "playStartMs": 44765,
+      "playEndMs": 47830
+    },
+    {
+      "id": "o006",
+      "segmentId": "s006",
+      "sectionId": "verse-1",
+      "startMs": 47930,
+      "endMs": 50860,
+      "playStartMs": 47895,
+      "playEndMs": 50905
+    },
+    {
+      "id": "o007",
+      "segmentId": "s007",
+      "sectionId": "verse-1",
+      "startMs": 51040,
+      "endMs": 53920,
+      "playStartMs": 50950,
+      "playEndMs": 54010
+    },
+    {
+      "id": "o008",
+      "segmentId": "s008",
+      "sectionId": "verse-1",
+      "startMs": 54130,
+      "endMs": 56620,
+      "playStartMs": 54090,
+      "playEndMs": 56905,
+      "performanceNote": "Verse-to-chorus boundary: the vocal release is kept independent from the following chorus pickup."
+    },
+    {
+      "id": "o009",
+      "segmentId": "s009",
+      "sectionId": "chorus-1",
+      "startMs": 57000,
+      "endMs": 59880,
+      "playStartMs": 56925,
+      "playEndMs": 59955,
+      "performanceNote": "Chorus pickup follows the brief transition after Verse 1; actual and playback boundaries are independently set."
+    },
+    {
+      "id": "o010",
+      "segmentId": "s010",
+      "sectionId": "chorus-1",
+      "startMs": 60000,
+      "endMs": 63020,
+      "playStartMs": 59970,
+      "playEndMs": 63070
+    },
+    {
+      "id": "o011",
+      "segmentId": "s011",
+      "sectionId": "chorus-1",
+      "startMs": 63120,
+      "endMs": 66110,
+      "playStartMs": 63060,
+      "playEndMs": 66175
+    },
+    {
+      "id": "o012",
+      "segmentId": "s012",
+      "sectionId": "chorus-1",
+      "startMs": 66240,
+      "endMs": 69270,
+      "playStartMs": 66220,
+      "playEndMs": 69295
+    },
+    {
+      "id": "o013",
+      "segmentId": "s013",
+      "sectionId": "chorus-1",
+      "startMs": 69360,
+      "endMs": 72350,
+      "playStartMs": 69310,
+      "playEndMs": 72430
+    },
+    {
+      "id": "o014",
+      "segmentId": "s014",
+      "sectionId": "chorus-1",
+      "startMs": 72470,
+      "endMs": 75460,
+      "playStartMs": 72385,
+      "playEndMs": 75500
+    },
+    {
+      "id": "o015",
+      "segmentId": "s015",
+      "sectionId": "chorus-1",
+      "startMs": 75590,
+      "endMs": 78570,
+      "playStartMs": 75555,
+      "playEndMs": 78625
+    },
+    {
+      "id": "o016",
+      "segmentId": "s016",
+      "sectionId": "chorus-1",
+      "startMs": 78710,
+      "endMs": 81260,
+      "playStartMs": 78600,
+      "playEndMs": 81380,
+      "performanceNote": "Chorus release before the long instrumental break; actual end stops at the audible vocal release."
+    },
+    {
+      "id": "o017",
+      "segmentId": "s017",
+      "sectionId": "verse-2",
+      "startMs": 94680,
+      "endMs": 97660,
+      "playStartMs": 94640,
+      "playEndMs": 97705
+    },
+    {
+      "id": "o018",
+      "segmentId": "s018",
+      "sectionId": "verse-2",
+      "startMs": 97800,
+      "endMs": 100800,
+      "playStartMs": 97730,
+      "playEndMs": 100870
+    },
+    {
+      "id": "o019",
+      "segmentId": "s019",
+      "sectionId": "verse-2",
+      "startMs": 100920,
+      "endMs": 103900,
+      "playStartMs": 100890,
+      "playEndMs": 103935
+    },
+    {
+      "id": "o020",
+      "segmentId": "s020",
+      "sectionId": "verse-2",
+      "startMs": 104030,
+      "endMs": 105500,
+      "playStartMs": 103975,
+      "playEndMs": 105560,
+      "performanceNote": "Short interjection into the following count-in; bounded separately from the next Occurrence."
+    },
+    {
+      "id": "o021",
+      "segmentId": "s021",
+      "sectionId": "verse-2",
+      "startMs": 105600,
+      "endMs": 107030,
+      "playStartMs": 105575,
+      "playEndMs": 107060,
+      "performanceNote": "Count-in transition: the short phrase uses its own release boundary."
+    },
+    {
+      "id": "o022",
+      "segmentId": "s022",
+      "sectionId": "verse-2",
+      "startMs": 107150,
+      "endMs": 110130,
+      "playStartMs": 107070,
+      "playEndMs": 110215
+    },
+    {
+      "id": "o023",
+      "segmentId": "s023",
+      "sectionId": "verse-2",
+      "startMs": 110270,
+      "endMs": 113250,
+      "playStartMs": 110225,
+      "playEndMs": 113300
+    },
+    {
+      "id": "o024",
+      "segmentId": "s024",
+      "sectionId": "verse-2",
+      "startMs": 113380,
+      "endMs": 115950,
+      "playStartMs": 113320,
+      "playEndMs": 116015
+    },
+    {
+      "id": "o025",
+      "segmentId": "s025",
+      "sectionId": "verse-2",
+      "startMs": 116110,
+      "endMs": 117480,
+      "playStartMs": 116090,
+      "playEndMs": 117520,
+      "performanceNote": "Verse-2 release before the chorus return; playback tail is intentionally asymmetric."
+    },
+    {
+      "id": "o026",
+      "segmentId": "s009",
+      "sectionId": "chorus-2",
+      "startMs": 119340,
+      "endMs": 122210,
+      "playStartMs": 119245,
+      "playEndMs": 122300,
+      "performanceNote": "Chorus return begins after a brief transition; source-audio onset is not copied from the LRC timestamp."
+    },
+    {
+      "id": "o027",
+      "segmentId": "s010",
+      "sectionId": "chorus-2",
+      "startMs": 122340,
+      "endMs": 125350,
+      "playStartMs": 122305,
+      "playEndMs": 125385
+    },
+    {
+      "id": "o028",
+      "segmentId": "s011",
+      "sectionId": "chorus-2",
+      "startMs": 125460,
+      "endMs": 128440,
+      "playStartMs": 125395,
+      "playEndMs": 128515
+    },
+    {
+      "id": "o029",
+      "segmentId": "s012",
+      "sectionId": "chorus-2",
+      "startMs": 128580,
+      "endMs": 131580,
+      "playStartMs": 128555,
+      "playEndMs": 131610
+    },
+    {
+      "id": "o030",
+      "segmentId": "s013",
+      "sectionId": "chorus-2",
+      "startMs": 131700,
+      "endMs": 134680,
+      "playStartMs": 131625,
+      "playEndMs": 134740
+    },
+    {
+      "id": "o031",
+      "segmentId": "s014",
+      "sectionId": "chorus-2",
+      "startMs": 134810,
+      "endMs": 137820,
+      "playStartMs": 134770,
+      "playEndMs": 137865
+    },
+    {
+      "id": "o032",
+      "segmentId": "s026",
+      "sectionId": "chorus-2",
+      "startMs": 137930,
+      "endMs": 140880,
+      "playStartMs": 137875,
+      "playEndMs": 140960
+    },
+    {
+      "id": "o033",
+      "segmentId": "s027",
+      "sectionId": "chorus-2",
+      "startMs": 141030,
+      "endMs": 143650,
+      "playStartMs": 141000,
+      "playEndMs": 143685,
+      "performanceNote": "Chorus-2 release before the long instrumental/bridge; actual end and playback tail are kept separate."
+    },
+    {
+      "id": "o034",
+      "segmentId": "s005",
+      "sectionId": "reprise",
+      "startMs": 176040,
+      "endMs": 178710,
+      "playStartMs": 175920,
+      "playEndMs": 178870,
+      "performanceNote": "Reprise re-entry after the long instrumental; acoustic onset is later than the candidate lyric marker."
+    },
+    {
+      "id": "o035",
+      "segmentId": "s006",
+      "sectionId": "reprise",
+      "startMs": 178840,
+      "endMs": 181790,
+      "playStartMs": 178795,
+      "playEndMs": 181835
+    },
+    {
+      "id": "o036",
+      "segmentId": "s007",
+      "sectionId": "reprise",
+      "startMs": 181940,
+      "endMs": 184550,
+      "playStartMs": 181915,
+      "playEndMs": 184575
+    },
+    {
+      "id": "o037",
+      "segmentId": "s008",
+      "sectionId": "reprise",
+      "startMs": 184690,
+      "endMs": 187580,
+      "playStartMs": 184620,
+      "playEndMs": 187650,
+      "performanceNote": "Reprise-to-final-chorus boundary; release closes before the final return."
+    },
+    {
+      "id": "o038",
+      "segmentId": "s009",
+      "sectionId": "final-chorus",
+      "startMs": 187710,
+      "endMs": 190800,
+      "playStartMs": 187675,
+      "playEndMs": 190835,
+      "performanceNote": "Final chorus begins across the reprise boundary; playback lead is independent from actual onset."
+    },
+    {
+      "id": "o039",
+      "segmentId": "s010",
+      "sectionId": "final-chorus",
+      "startMs": 190920,
+      "endMs": 193890,
+      "playStartMs": 190835,
+      "playEndMs": 193975
+    },
+    {
+      "id": "o040",
+      "segmentId": "s011",
+      "sectionId": "final-chorus",
+      "startMs": 194030,
+      "endMs": 197030,
+      "playStartMs": 194010,
+      "playEndMs": 197050
+    },
+    {
+      "id": "o041",
+      "segmentId": "s028",
+      "sectionId": "final-chorus",
+      "startMs": 197150,
+      "endMs": 200140,
+      "playStartMs": 197085,
+      "playEndMs": 200205
+    },
+    {
+      "id": "o042",
+      "segmentId": "s009",
+      "sectionId": "final-chorus",
+      "startMs": 200270,
+      "endMs": 203260,
+      "playStartMs": 200230,
+      "playEndMs": 203300
+    },
+    {
+      "id": "o043",
+      "segmentId": "s029",
+      "sectionId": "final-chorus",
+      "startMs": 203380,
+      "endMs": 206370,
+      "playStartMs": 203285,
+      "playEndMs": 206465
+    },
+    {
+      "id": "o044",
+      "segmentId": "s011",
+      "sectionId": "final-chorus",
+      "startMs": 206500,
+      "endMs": 209470,
+      "playStartMs": 206470,
+      "playEndMs": 209500
+    },
+    {
+      "id": "o045",
+      "segmentId": "s030",
+      "sectionId": "final-chorus",
+      "startMs": 209610,
+      "endMs": 213450,
+      "playStartMs": 209550,
+      "playEndMs": 213650,
+      "performanceNote": "Final release is followed by an extended instrumental outro; playback tail ends before the outro section."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "units": [
+    {
+      "id": "p001",
+      "sectionId": "verse-1",
+      "label": "Verse 1 · 时代与革命",
+      "occurrenceIds": [
+        "o001",
+        "o002",
+        "o003",
+        "o004",
+        "o005",
+        "o006",
+        "o007",
+        "o008"
+      ]
+    },
+    {
+      "id": "p002",
+      "sectionId": "chorus-1",
+      "label": "Chorus 1 · 千本樱",
+      "occurrenceIds": [
+        "o009",
+        "o010",
+        "o011",
+        "o012",
+        "o013",
+        "o014",
+        "o015",
+        "o016"
+      ]
+    },
+    {
+      "id": "p003",
+      "sectionId": "verse-2",
+      "label": "Verse 2 · 将校与花魁",
+      "occurrenceIds": [
+        "o017",
+        "o018",
+        "o019",
+        "o020",
+        "o021",
+        "o022",
+        "o023",
+        "o024",
+        "o025"
+      ]
+    },
+    {
+      "id": "p004",
+      "sectionId": "chorus-2",
+      "label": "Chorus 2 · 希望与闪光",
+      "occurrenceIds": [
+        "o026",
+        "o027",
+        "o028",
+        "o029",
+        "o030",
+        "o031",
+        "o032",
+        "o033"
+      ]
+    },
+    {
+      "id": "p005",
+      "sectionId": "reprise",
+      "label": "Reprise · 再入",
+      "occurrenceIds": [
+        "o034",
+        "o035",
+        "o036",
+        "o037"
+      ]
+    },
+    {
+      "id": "p006",
+      "sectionId": "final-chorus",
+      "label": "Final Chorus · 终幕",
+      "occurrenceIds": [
+        "o038",
+        "o039",
+        "o040",
+        "o041",
+        "o042",
+        "o043",
+        "o044",
+        "o045"
+      ]
+    }
+  ]
+}
