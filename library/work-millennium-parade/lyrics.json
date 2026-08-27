@@ -3,7 +3,7 @@
     {
       "id": "s001",
       "lyrics": "変幻自在の命剥き出してやれ",
-      "translation": "把那变幻无定的生命彻底袒露出来。",
+      "translation": "揭露这变化莫测的生命吧",
       "layers": [
         {
           "id": "romaji",
@@ -35,7 +35,7 @@
     {
       "id": "s002",
       "lyrics": "実態がない分まだ出来損ない",
-      "translation": "正因为尚无确切实体，才仍是未完成品。",
+      "translation": "因未经历 遂不知如何",
       "layers": [
         {
           "id": "romaji",
@@ -67,7 +67,7 @@
     {
       "id": "s003",
       "lyrics": "名詮自性です 噂ごと吸い取れ",
-      "translation": "名称正揭示本性；连同流言也一并吸收。",
+      "translation": "名诠自性 听取传闻",
       "layers": [
         {
           "id": "kana",
@@ -110,7 +110,7 @@
     {
       "id": "s004",
       "lyrics": "本懐果たした その先が見たい",
-      "translation": "遂了本愿之后，我还想看看更前方。",
+      "translation": "实现夙愿 唯想看那种未来",
       "layers": [
         {
           "id": "romaji",
@@ -148,7 +148,7 @@
     {
       "id": "s005",
       "lyrics": "伽藍の空疎な五体 使い捨て いざ前祝い",
-      "translation": "空洞如伽蓝的这副身体，用过即弃；来，先行庆贺。",
+      "translation": "就如伽蓝般空洞的身躯 大可庆祝舍弃",
       "layers": [
         {
           "id": "kana",
@@ -203,7 +203,7 @@
     {
       "id": "s006",
       "lyrics": "名前名乗ってやるよ 観念して頂戴？",
-      "translation": "就让我报上名号吧——请你认命、也请你看破。",
+      "translation": "报上名来吧 要不就此认命？",
       "layers": [
         {
           "id": "romaji",
@@ -247,7 +247,7 @@
     {
       "id": "s007",
       "lyrics": "勝ち筋なぞ欲していない 土台殆ど運次第",
-      "translation": "我不稀罕什么必胜路线；说到底大半取决于运气。",
+      "translation": "内心毫无胜欲 胜负全凭运气",
       "layers": [
         {
           "id": "romaji",
@@ -291,7 +291,7 @@
     {
       "id": "s008",
       "lyrics": "答えも出してやるよ 刹那の銘采配？",
-      "translation": "答案也替你揭出来吧——这刹那间的“铭”采配？",
+      "translation": "就让我给予你答案吧 刹那间竖起麾令旗？",
       "layers": [
         {
           "id": "romaji",
@@ -335,7 +335,7 @@
     {
       "id": "s009",
       "lyrics": "此方 堂々巡りの最中",
-      "translation": "我们仍困在原地打转之中。",
+      "translation": "于此 苦思冥想而无果",
       "layers": [
         {
           "id": "romaji",
@@ -367,7 +367,7 @@
     {
       "id": "s010",
       "lyrics": "労働鼠の性だ",
-      "translation": "这就是劳作鼠辈的天性。",
+      "translation": "此乃工鼠本性",
       "layers": [
         {
           "id": "romaji",
@@ -405,17 +405,17 @@
     {
       "id": "s011",
       "lyrics": "Wake Up Bankers",
-      "translation": "叫醒银行家们。"
+      "translation": "醒醒吧 庄家"
     },
     {
       "id": "s012",
       "lyrics": "Pay Back!",
-      "translation": "把欠账还来！"
+      "translation": "开始惩罚！"
     },
     {
       "id": "s013",
       "lyrics": "今日も労働",
-      "translation": "今天照旧劳动。",
+      "translation": "今日依旧劳动",
       "layers": [
         {
           "id": "romaji",
@@ -441,7 +441,7 @@
     {
       "id": "s014",
       "lyrics": "One verse One Punchを",
-      "translation": "一段主歌，一记重拳。",
+      "translation": "一糖一鞭",
       "layers": [
         {
           "id": "romaji",
@@ -453,7 +453,7 @@
     {
       "id": "s015",
       "lyrics": "AnswerにはFantasyを",
-      "translation": "答案里要有幻想。",
+      "translation": "要予以他们幻想的答案",
       "layers": [
         {
           "id": "romaji",
@@ -465,12 +465,12 @@
     {
       "id": "s016",
       "lyrics": "Stand up my fav people",
-      "translation": "站起来吧，我所珍爱的人们。"
+      "translation": "起身吧 我最爱之人"
     },
     {
       "id": "s017",
       "lyrics": "試してくれ 一層蓄えた技を",
-      "translation": "来试试我吧，试我愈发积蓄的本领。",
+      "translation": "尝试吧 至此积蓄的技能",
       "layers": [
         {
           "id": "romaji",
@@ -509,7 +509,7 @@
     {
       "id": "s018",
       "lyrics": "計ってくれ 真新しい腰挿しで",
-      "translation": "来衡量我吧，用那崭新的腰间佩刀。",
+      "translation": "帮我测量吧 用那崭新的腰刀",
       "layers": [
         {
           "id": "romaji",
@@ -542,7 +542,7 @@
     {
       "id": "s019",
       "lyrics": "弾いてくれ 此方人等尚四面楚歌",
-      "translation": "来弹开我吧；我们依旧四面楚歌。",
+      "translation": "弹唱吧 为我们奏响四面楚歌",
       "layers": [
         {
           "id": "romaji",
@@ -587,7 +587,7 @@
     {
       "id": "s020",
       "lyrics": "対する人を介して この身の欠点が思い知りたい",
-      "translation": "我想透过与对手交锋，认清这副身体的缺陷。",
+      "translation": "我想通过他人 来知晓自身的缺点",
       "layers": [
         {
           "id": "romaji",
@@ -638,7 +638,7 @@
     {
       "id": "s021",
       "lyrics": "俗界は乱世 飽く迄潜って行け",
-      "translation": "俗世正逢乱世；尽管潜入其中前行。",
+      "translation": "俗界乱世 穷途末路",
       "layers": [
         {
           "id": "kana",
@@ -693,7 +693,7 @@
     {
       "id": "s022",
       "lyrics": "毎回火線よ まだまだ死ねない",
-      "translation": "每回都在火线之上——我还不能死。",
+      "translation": "奔波战场 仍然未死",
       "layers": [
         {
           "id": "romaji",
@@ -725,7 +725,7 @@
     {
       "id": "s023",
       "lyrics": "煩悩菩提です 恥と欲抱き抱え",
-      "translation": "烦恼即菩提；把羞耻与欲望一并抱住。",
+      "translation": "烦恼菩提 怀抱耻与欲",
       "layers": [
         {
           "id": "kana",
@@ -780,7 +780,7 @@
     {
       "id": "s024",
       "lyrics": "乾杯し終えた その先が見たい",
-      "translation": "干完这一杯之后，我还想看看更前方。",
+      "translation": "以干杯来结束吧 我想看这未来",
       "layers": [
         {
           "id": "romaji",
@@ -818,7 +818,7 @@
     {
       "id": "s025",
       "lyrics": "気付いた時はもう遅い 淡い願い云えず了い",
-      "translation": "察觉时已太迟；微弱的愿望终究没能说出口。",
+      "translation": "等回过神来为时已晚 无法说出那微薄心愿",
       "layers": [
         {
           "id": "kana",
@@ -885,7 +885,7 @@
     {
       "id": "s026",
       "lyrics": "洗い浚い明かして弁解したい後悔",
-      "translation": "想把一切摊开说明，为这份后悔辩解。",
+      "translation": "想彻查清楚 内心充斥着想狡辩的后悔",
       "layers": [
         {
           "id": "romaji",
@@ -923,7 +923,7 @@
     {
       "id": "s027",
       "lyrics": "市井の静かな暮らし 普通の人心地を",
-      "translation": "市井中安静的生活、普通人那般的安稳感——",
+      "translation": "市井的宁静生活 正常的心境",
       "layers": [
         {
           "id": "romaji",
@@ -973,7 +973,7 @@
     {
       "id": "s028",
       "lyrics": "望んでいいのだろうか 永遠に至上の議題",
-      "translation": "我可以企求吗？这是永远至高无上的议题。",
+      "translation": "我是否可以去渴望 此乃永远至上的议题",
       "layers": [
         {
           "id": "romaji",
@@ -1011,7 +1011,7 @@
     {
       "id": "s029",
       "lyrics": "本格派の道楽家",
-      "translation": "正统派的享乐家。",
+      "translation": "正宗的浪荡之徒",
       "layers": [
         {
           "id": "romaji",
@@ -1037,7 +1037,7 @@
     {
       "id": "s030",
       "lyrics": "Social的には凶悪犯？",
-      "translation": "放到社会规则里，却成了凶恶罪犯？",
+      "translation": "这是凶恶犯的聚集？",
       "layers": [
         {
           "id": "romaji",
@@ -1063,7 +1063,7 @@
     {
       "id": "s031",
       "lyrics": "禁止事項已日々進歩",
-      "translation": "只有禁令事项日日进步。",
+      "translation": "唯有禁止事项在每日进步",
       "layers": [
         {
           "id": "kana",
@@ -1112,7 +1112,7 @@
     {
       "id": "s032",
       "lyrics": "慇懃尾籠無礼行為",
-      "translation": "过分恭敬、粗鄙而失礼的行径。",
+      "translation": "阳奉阴违无礼行为",
       "layers": [
         {
           "id": "kana",
@@ -1149,12 +1149,12 @@
     {
       "id": "s033",
       "lyrics": "Damn it!!!",
-      "translation": "可恶！"
+      "translation": "该死！！！"
     },
     {
       "id": "s034",
       "lyrics": "性行為の伝道師",
-      "translation": "性行为的传教士。",
+      "translation": "性行为的布道者",
       "layers": [
         {
           "id": "romaji",
@@ -1180,7 +1180,7 @@
     {
       "id": "s035",
       "lyrics": "Play boyなのに正常位許り",
-      "translation": "明明是花花公子，却只守着正常体位。",
+      "translation": "明明是浪荡之徒 却只允许正常位",
       "layers": [
         {
           "id": "kana",
@@ -1217,7 +1217,7 @@
     {
       "id": "s036",
       "lyrics": "無鉄砲にStand up my fav people",
-      "translation": "莽撞地站起来吧，我所珍爱的人们。",
+      "translation": "从不考虑后果 起身吧 我最爱之人",
       "layers": [
         {
           "id": "romaji",
@@ -1237,12 +1237,12 @@
     {
       "id": "s037",
       "lyrics": "Right now!!",
-      "translation": "就现在！"
+      "translation": "此时此刻！！"
     },
     {
       "id": "s038",
       "lyrics": "許してくれ 嘗て犯した科を",
-      "translation": "原谅我吧，原谅我曾犯下的罪过。",
+      "translation": "请原谅我 曾经犯下的罪恶",
       "layers": [
         {
           "id": "kana",
@@ -1292,7 +1292,7 @@
     {
       "id": "s039",
       "lyrics": "裁いてくれ 真新しい良し悪しで",
-      "translation": "审判我吧，用全新的善恶尺度。",
+      "translation": "请制裁我 重新定义我的善恶",
       "layers": [
         {
           "id": "romaji",
@@ -1325,7 +1325,7 @@
     {
       "id": "s040",
       "lyrics": "諭してくれ どうせ助かったのなら",
-      "translation": "劝诫我吧——既然终究得救了。",
+      "translation": "议论我吧 总之这能予我帮助",
       "layers": [
         {
           "id": "romaji",
@@ -1352,7 +1352,7 @@
     {
       "id": "s041",
       "lyrics": "愛する人を介してこの世の絶景が拝みたい",
-      "translation": "我想透过所爱之人，朝拜这世间的绝景。",
+      "translation": "我想经由所爱之人 拜见世间绝景",
       "layers": [
         {
           "id": "romaji",
@@ -1403,7 +1403,7 @@
     {
       "id": "s042",
       "lyrics": "疎んでいた",
-      "translation": "连曾经厌弃的——",
+      "translation": "曾已疏远",
       "layers": [
         {
           "id": "romaji",
@@ -1423,7 +1423,7 @@
     {
       "id": "s043",
       "lyrics": "迷いさえも",
-      "translation": "那份迷惘也——",
+      "translation": "就连迷茫",
       "layers": [
         {
           "id": "romaji",
@@ -1443,7 +1443,7 @@
     {
       "id": "s044",
       "lyrics": "大自然の",
-      "translation": "都是大自然中的——",
+      "translation": "大自然的",
       "layers": [
         {
           "id": "romaji",
@@ -1463,7 +1463,7 @@
     {
       "id": "s045",
       "lyrics": "自分自身",
-      "translation": "自我本身。",
+      "translation": "自身本色",
       "layers": [
         {
           "id": "romaji",
@@ -1483,7 +1483,7 @@
     {
       "id": "s046",
       "lyrics": "弱きを知って",
-      "translation": "认识自身的弱，",
+      "translation": "知晓懦弱",
       "layers": [
         {
           "id": "romaji",
@@ -1509,7 +1509,7 @@
     {
       "id": "s047",
       "lyrics": "強きを覚える",
-      "translation": "才学会自身的强。",
+      "translation": "铭记强大",
       "layers": [
         {
           "id": "romaji",
@@ -1535,7 +1535,7 @@
     {
       "id": "s048",
       "lyrics": "闇散って",
-      "translation": "黑暗散去，",
+      "translation": "驱散黑暗",
       "layers": [
         {
           "id": "romaji",
@@ -1561,7 +1561,7 @@
     {
       "id": "s049",
       "lyrics": "光咲う",
-      "translation": "光芒绽笑。",
+      "translation": "光芒绽放",
       "layers": [
         {
           "id": "kana",
@@ -1598,7 +1598,7 @@
     {
       "id": "s050",
       "lyrics": "女と男",
-      "translation": "女人与男人，",
+      "translation": "男女之间",
       "layers": [
         {
           "id": "romaji",
@@ -1624,7 +1624,7 @@
     {
       "id": "s051",
       "lyrics": "憎し愛し",
-      "translation": "憎恨与爱恋，",
+      "translation": "相憎相爱",
       "layers": [
         {
           "id": "romaji",
@@ -1650,7 +1650,7 @@
     {
       "id": "s052",
       "lyrics": "正しさよ",
-      "translation": "正确啊，",
+      "translation": "正确与否",
       "layers": [
         {
           "id": "romaji",
@@ -1670,7 +1670,7 @@
     {
       "id": "s053",
       "lyrics": "間違いよ",
-      "translation": "错误啊，",
+      "translation": "错误与否",
       "layers": [
         {
           "id": "romaji",
@@ -1690,7 +1690,7 @@
     {
       "id": "s054",
       "lyrics": "罪と罰そして",
-      "translation": "罪与罚，以及——",
+      "translation": "罪与罚啊",
       "layers": [
         {
           "id": "romaji",
@@ -1716,7 +1716,7 @@
     {
       "id": "s055",
       "lyrics": "生き死に一切",
-      "translation": "生与死的一切，",
+      "translation": "生死万物",
       "layers": [
         {
           "id": "romaji",
@@ -1742,7 +1742,7 @@
     {
       "id": "s056",
       "lyrics": "両極の間",
-      "translation": "在两极之间，",
+      "translation": "两极之间",
       "layers": [
         {
           "id": "kana",
@@ -1779,7 +1779,7 @@
     {
       "id": "s057",
       "lyrics": "結合して甘んぜよ",
-      "translation": "彼此结合，并甘然领受吧。",
+      "translation": "倘若结合 便已甘愿",
       "layers": [
         {
           "id": "romaji",
@@ -1806,7 +1806,7 @@
     {
       "id": "s058",
       "lyrics": "さあ今日は今日で明日は又明日",
-      "translation": "来吧，今天只是今天，明天又是明天。",
+      "translation": " 好了 今日是今日 明日又是明日",
       "layers": [
         {
           "id": "romaji",
@@ -1851,7 +1851,7 @@
     {
       "id": "s059",
       "lyrics": "煩って行こうぞ 生身の流離",
-      "translation": "就带着烦恼前行吧，肉身继续流离。",
+      "translation": " 尽情烦恼吧 肉身该流离何处",
       "layers": [
         {
           "id": "kana",
@@ -1895,7 +1895,7 @@
     {
       "id": "s060",
       "lyrics": "色即是空です 瞬く間に移ろう",
-      "translation": "色即是空；万物在转瞬间迁变。",
+      "translation": "色即是空 转瞬即逝",
       "layers": [
         {
           "id": "kana",
@@ -1945,7 +1945,7 @@
     {
       "id": "s061",
       "lyrics": "万歳鼓動が ほら玉響果敢ない",
-      "translation": "万岁——心脏仍在跳动；你看，那一瞬何其短暂。",
+      "translation": "万声心跳 顷刻之间",
       "layers": [
         {
           "id": "kana",
