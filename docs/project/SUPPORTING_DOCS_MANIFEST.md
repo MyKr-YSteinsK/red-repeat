@@ -17,7 +17,7 @@ are evidence and never active execution instructions.
 | `scripts/verify-pwa-build.ts`, `vite.config.ts` | Static PWA artifact, base path, cache and version expectations | Active artifact owner; not installed-client proof |
 | `.github/workflows/ci.yml` | Push/PR quality, exact-SHA Pages build/deploy and live probe ordering | Sole delivery workflow |
 | `.gitignore`, `scripts/verify-gitignore.ts` | Private/generated/tool-output boundary | Active repository boundary owner |
-| `library/<song-id>/` | Approved public Song Edition source | Tracked canonical content; current public package is `work-millennium-parade` |
+| `library/<song-id>/` | Approved public Song Edition source | Tracked canonical content; current public packages are `work-millennium-parade` and `senbonzakura` |
 | `.private/research/<song>/...` and `.private/library-pending/...` | Private provenance, research and pending intake | Human-only/private; do not expose or import wholesale |
 | `src/App.tsx`, `src/navigation.ts`, `src/edition/*`, `src/settings/*`, `src/App.css`, `src/index.css`, co-located tests | Current detailed UI and interaction behavior | Active implementation owner; no standalone visual spec exists |
 | `src/audio/*`, `src/timeline/*`, `src/practice/*` | Shared playback, timing and Practice domain behavior | Active executable domain owners |

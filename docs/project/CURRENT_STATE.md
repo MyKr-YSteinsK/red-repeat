@@ -10,22 +10,23 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.6.2`
+- Current user version: `1.7.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.6.2` / `v1.6.2 -> c61f977`; existing
-  `v1.6.1 -> 4cfe378` remains unchanged.
-- `c61f9776f6dd9799f6befa598bb510c35d93e103` is the implementation commit for
-  `1.6.2`. The later release-metadata commit on `main` is the independently
+- Latest ledger/tag: `1.7.0` / `v1.7.0 -> 325d418`; existing
+  `v1.6.2 -> c61f977` remains unchanged.
+- `325d418adc96adfab89ac70ed9beade496e9f19a` is the implementation commit for
+  `1.7.0`. The later release-metadata commit on `main` is the independently
   deployed build identity; it is distinct from the implementation tag target.
 - Adoption started with user-owned `AGENTS.md` changes and untracked
   `RED-REPEAT-Development-Forensics.md`. The former is reconciled into the
   canonical repo contract; the latter is preserved as a labeled archive at
   `docs/archive/migration/RED-REPEAT-Development-Forensics-2026-08-26.md`.
-- Migration adoption and the RED-Plan-37 state closeout remain no-version
-  commits after `c61f977`; they do not change the `1.6.2` implementation tag.
-- Release finalization changes only package/lock version metadata, the release
-  ledger, build-version fallback and this Project State; no new product
-  behavior is introduced, and the private Handoff archive remains ignored.
+- Migration adoption and the RED-Plan-37/44 state closeouts remain no-version
+  commits after the `1.6.2` implementation tag. RED-Plan-45 adds the authorized
+  public `senbonzakura` Song Edition in a separate product-focused commit.
+- RED-Plan-45 release finalization updates package/lock version metadata, the
+  release ledger, build-version fallback and this Project State after the
+  product commit; the private Handoff archive remains ignored.
 
 ## Current product capabilities
 
@@ -48,14 +49,17 @@ evidence only.
 
 ## Current public content
 
-The tracked public source contains one Song Edition:
-`library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希),
-with 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical
-MP3, one SVG cover and two Explain Markdown features. Japanese lyrics may carry
+The tracked public source contains two Song Editions:
+`library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
+61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
+one SVG cover and two Explain Markdown features; and
+`library/senbonzakura/` (`千本桜`, 黒うさP × 初音未来) with 30 unique
+Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
+one JPG cover and four Explain Markdown features. Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
-text and the existing `layers` remain separate source contracts. The migration-era private
-`senbonzakura` intake has been removed; if the song is needed again, it must
-start a new intake from zero under the current source/content contracts.
+text and existing `layers` remain separate source contracts. The legacy
+migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
+uses the separately authorized task-input source package.
 
 ## Technical shape and active owners
 
@@ -155,24 +159,66 @@ start a new intake from zero under the current source/content contracts.
   in `src/edition/FeatureMarkdown.tsx`.
 - Manifest artist is now the user-authorized `椎名林檎 × 常田大希`. No 千本桜
   source, translation, Explain expansion, Timeline or audio change was made.
-- Future `千本桜` import, cover/translation intake and Explain expansion remain
-  separate follow-up scope; no private material was reclassified in this Plan.
+- At the RED-Plan-44 boundary, `千本桜` import, cover/translation intake and
+  Explain expansion remained separate follow-up scope; RED-Plan-45 now
+  completes that follow-up from its authorized public task input. No private
+  material was reclassified in either Plan.
 - `RED-Plan-44` is `COMPLETE` under `D-019`: matching automated/local evidence
   passed and the implementation is ready for Production delivery. Dedicated
   human/browser and real-device checks are recorded below as
   `POST-DEPLOY OBSERVATION`; they are not claimed as human PASS.
 - Version classification is `no-version`.
 
+## RED-Plan-45 implementation and release status
+
+- `library/senbonzakura/` is the second tracked public Song Edition. Its
+  manifest identity is `songId=senbonzakura`, title `千本桜`, artist
+  `黒うさP × 初音未来`, album `千本桜`, year `2011`.
+- The canonical audio is
+  `library/senbonzakura/audio/source.mp3` with SHA-256
+  `5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19`; it
+  matches `timeline.json.audioSourceHash` and the supplied task-input hash.
+  The supplied cover is copied byte-for-byte to
+  `library/senbonzakura/artwork/cover.jpg`.
+- The content contract contains 30 unique Segments and 45 Occurrences with
+  exact repeated-Segment mapping and translation pairing from the task input.
+  All Han/Katakana characters in all 30 Segments have position-verified
+  Hiragana `ruby` coverage. Four Explain Markdown features use validated
+  lyric references.
+- Timing was established against the canonical MP3 using local source-audio
+  acoustic/spectral evidence, with LRC timestamps used only as search anchors.
+  All 45 Occurrences have independently chosen actual timing and playback
+  ranges; lead/tail values are variable, with explicit notes for the long
+  instrumental breaks, count-in, reprise, final chorus and outro release.
+  No fixed-padding rule was used, and no `STILL_UNCERTAIN` timing item remains
+  for this import.
+- Practice source contains 6 natural melodic Units covering `o001`–`o045`
+  exactly once. Instrumental passages and the outro remain represented by
+  Sections without fabricated lyric Occurrences.
+- Focused/local evidence passed: audio hash, `npm run library:validate`,
+  `npm run library:compile` through `npm run build`, `npm run typecheck`,
+  49 test files / 330 tests, `npm run lint` with no errors, and
+  `npm run pwa:inspect`. The only lint output is the two pre-existing
+  Fast Refresh warnings in `src/edition/FeatureMarkdown.tsx`; validation
+  retains the expected optional `NO_HERO_ARTWORK` warnings.
+- Product-focused commit is `325d418` and `v1.7.0` points to that commit.
+  Release metadata records user version `1.7.0` with level `minor`. The later
+  release-metadata commit is the deployed build identity and is kept distinct
+  from the implementation tag target.
+- Version classification is `MINOR`: `1.6.2 -> 1.7.0`.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
-- `POST-DEPLOY OBSERVATION (RED-Plan-44)`: mobile/iOS/PWA ruby geometry,
+- `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
   wrapping, touch and perceived readability were not separately executed. The
   three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
   `o049`→`o050`) were also not separately verified by subjective continuous
-  listening. These are not claimed as human PASS and are not active blocking
-  debt under `D-019`; users can surface any low-cost follow-up during normal
-  Production use.
-- No `BLOCKING USER CHECK` or current RED-Plan-44 `UNKNOWN` remains open. This
+  listening; the new `senbonzakura` timing has source-audio evidence but was
+  not a separate human listening claim. These are not claimed as human PASS
+  and are not active blocking debt under `D-019`; users can surface any
+  low-cost follow-up during normal Production use.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45 `UNKNOWN` remains open.
+  This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
 - No new unresolved reading ambiguity was identified from the available user
@@ -191,8 +237,8 @@ start a new intake from zero under the current source/content contracts.
   any future timing change still requires a separate evidence-backed correction
   boundary.
 - `RED-Plan-38` release identity is complete: package/latest ledger are
-  `1.6.2`, `v1.6.2` points to `c61f977`, and the latest successfully deployed
-  `main` build is the later release-metadata commit with live version `1.6.2`.
+  `1.6.2`, `v1.6.2` points to `c61f977`, and its later release-metadata
+  `main` build carried live version `1.6.2`.
   The tag target and deployed build SHA are intentionally distinct identities.
 - `RED-Plan-39` is complete for this boundary with target-device checks
   explicitly closed from active debt by current-use evidence; the formal
@@ -200,15 +246,17 @@ start a new intake from zero under the current source/content contracts.
   newer deployed versions in the current baseline; the previous update
   acceptance debt is closed without claiming event-by-event Service Worker
   observation.
-- `RED-Plan-42` cleanup is complete for this boundary: the legacy private
+- `RED-Plan-42` cleanup is complete for its boundary: the legacy private
   `senbonzakura` intake and duplicate private WORK library mirror were removed;
   `library/work-millennium-parade/` and
   `.private/research/work-millennium-parade/` were preserved. Historical
-  migration archives were not rewritten. Future `senbonzakura` work starts
-  from zero under the current source/content contract.
-- No public product behavior, canonical timing, PWA/runtime code,
-  release/version metadata or tag changed in this cleanup. Version
-  classification remains `no-version`.
+  migration archives were not rewritten. RED-Plan-45 imports a new authorized
+  public source package and does not revive that private intake.
+- `RED-Plan-45` is complete for this boundary: the second public Song Edition,
+  exact content/ruby contract, source-audio-backed timing, Explain features
+  and Practice grouping are recorded above. The canonical source was not
+  modified after import, and the no-force release boundary uses
+  `1.7.0` / `v1.7.0`.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
@@ -225,8 +273,8 @@ start a new intake from zero under the current source/content contracts.
   matching automated/local verification may enter Production after focused
   commit and normal push. Explicit or high-risk `BLOCKING USER CHECK` items
   remain release gates; other real-use evidence is observed after deployment.
-- Next normal product work begins at `RED-Plan-45`; this Closeout does not
-  implement that Plan.
+- Next normal product work begins after `RED-Plan-45` at a separately authorized
+  Plan boundary; this state does not implement any subsequent Plan.
 - Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
   closeout is complete, with no active migration cleanup; current work proceeds
   as normal Production maintenance and feature evolution. Future boundary

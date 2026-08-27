@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.7.0',
+    date: '2026-08-27',
+    commit: '325d418',
+    level: 'minor',
+    title: '《千本桜》Song Edition 正式导入',
+    summary: '新增第二个公开 Song Edition，完成《千本桜》的歌词、振假名、Explain 内容、练习分段与音频时序校准。',
+    changes: [
+      '新增 30 个可复用 Segment、45 个演唱 Occurrence 和 6 个 Practice Unit，保留重复歌词的独立演唱位置。',
+      '为日文 canonical lyrics 补充位置可验证的 Hiragana ruby，并提供四篇作品背景与学唱观察。',
+      '基于 canonical MP3 的局部声学证据建立独立 actual timing 与 playback range，覆盖长间奏、再入、副歌回返和尾奏边界。',
+    ],
+  },
+  {
     version: '1.6.2',
     date: '2026-08-25',
     commit: 'c61f977',
