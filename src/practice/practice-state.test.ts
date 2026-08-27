@@ -174,11 +174,53 @@ describe('Practice learning state', () => {
     ).toBeUndefined()
     expect(
       resolvePracticeResumeSummary(
-        { ...staleMetadata, practiceUnitId: 'p001', occurrenceId: 'o003' },
+        { ...staleMetadata, practiceUnitId: 'p001', occurrenceId: 'missing' },
         practice,
         timeline,
       ),
     ).toBeUndefined()
+  })
+
+  it('rebinds persisted progress by Occurrence when Practice Units are regrouped', () => {
+    const regroupedPractice = {
+      units: [
+        { id: 'p001', sectionId: 'verse', label: 'First', occurrenceIds: ['o001'] },
+        { id: 'p003', sectionId: 'verse', label: 'Merged', occurrenceIds: ['o002', 'o003'] },
+      ],
+    }
+    const storage = new MemoryStorage()
+    storage.value = JSON.stringify({
+      schemaVersion: 1,
+      // p002 is the old unit id for the same occurrence; the new source uses p003.
+      practiceUnitId: 'p002',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p002: 'o002' },
+    })
+
+    expect(
+      loadPracticeLearningState(
+        'first-light',
+        regroupedPractice,
+        timeline,
+        storage,
+      ),
+    ).toMatchObject({
+      practiceUnitId: 'p003',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p003: 'o002' },
+    })
+    expect(
+      resolvePracticeResumeSummary(
+        { practiceUnitId: 'p002', occurrenceId: 'o002' },
+        regroupedPractice,
+        timeline,
+      ),
+    ).toMatchObject({
+      practiceUnitId: 'p003',
+      unitLabel: 'Merged',
+      lineIndex: 1,
+      lineCount: 2,
+    })
   })
 
   it('falls back safely for corrupt or stale state', () => {

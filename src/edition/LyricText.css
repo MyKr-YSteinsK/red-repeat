@@ -1,0 +1,21 @@
+.lyric-ruby-text {
+  white-space: pre-wrap;
+}
+
+.lyric-ruby-text ruby {
+  ruby-align: center;
+  ruby-position: over;
+  white-space: nowrap;
+}
+
+.lyric-ruby-text rt {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.52em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

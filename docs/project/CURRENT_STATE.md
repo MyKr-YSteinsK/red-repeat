@@ -37,6 +37,8 @@ evidence only.
 - Full Song continuous audio with timed lyric following, seek/progress and rate.
 - Explain compiled Markdown features, lyric-reference playback and soft failure
   for unavailable optional content.
+- Japanese lyric ruby/furigana rendering for position-verified Han/Katakana
+  readings, with canonical original text retained for lyric semantics.
 - Settings/update surface with build/version identity, release history, remote
   `version.json` probe and PWA apply/dismiss flow.
 - Production-public Timeline/Timing Debugger and timing repair/export with
@@ -47,9 +49,11 @@ evidence only.
 ## Current public content
 
 The tracked public source contains one Song Edition:
-`library/work-millennium-parade/` (`Ｗ●ＲＫ`, millennium parade × 椎名林檎),
-with 61 Segments/Occurrences, 13 Practice Units, 11 Sections, one canonical
-MP3, one SVG cover and two Explain Markdown features. The migration-era private
+`library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希),
+with 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical
+MP3, one SVG cover and two Explain Markdown features. Japanese lyrics may carry
+position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
+text and the existing `layers` remain separate source contracts. The migration-era private
 `senbonzakura` intake has been removed; if the song is needed again, it must
 start a new intake from zero under the current source/content contracts.
 
@@ -62,6 +66,12 @@ start a new intake from zero under the current source/content contracts.
 - `localStorage` owns Practice resume/rate and identity-bound timing overrides;
   Cache Storage/Workbox owns explicit downloads and runtime caches; no server
   persistence exists. Runtime contract version is 3.
+- The strict source schema validates ruby spans against canonical lyric
+  positions and carries them through the compiler into Runtime. User-facing
+  lyric surfaces use the shared semantic ruby renderer; pure English lines may
+  omit ruby. Existing persisted Practice resume is rebound by stable Occurrence
+  ID when Unit boundaries are regrouped, so stale Unit IDs do not silently select
+  the wrong new group.
 - `.github/workflows/ci.yml` is the sole workflow. A quality job runs on push/
   PR; successful `main` pushes enable its dependent Pages deploy, which checks
   out the exact SHA, builds `/red-repeat/`, publishes `dist` and probes live
@@ -125,11 +135,44 @@ start a new intake from zero under the current source/content contracts.
 - Version classification is `no-version`: this closeout reconciles durable
   product/governance documents only.
 
+## RED-Plan-44 implementation status
+
+- Source contract: accepted `ruby` spans use exact canonical positions and
+  Hiragana readings; Validator coverage includes Han/Katakana, base alignment,
+  overlap/range errors, pure English omission and special readings.
+- WORK source backfill: all 61 Segments with Han/Katakana characters have
+  validated ruby coverage. The canonical `lyrics` strings, all 61 Occurrence
+  references, Section IDs and timing values remain unchanged.
+- Practice source now has the requested 10 continuous learning Units covering
+  `o001`–`o061` exactly once. Old persisted Practice resume metadata is resolved
+  by Occurrence identity when the old Unit boundary no longer matches.
+- Renderer coverage includes Practice, Full Song, Explain lyric references,
+  production Timing Debugger and the legacy Timeline Debugger surface. Existing
+  `layers` were retained for backward compatibility.
+- Automated regression evidence: `PASS` for 49 test files / 330 tests,
+  `npm run typecheck`, `npm run library:validate` and `npm run build`; `lint`
+  completed with no errors and only the two pre-existing Fast Refresh warnings
+  in `src/edition/FeatureMarkdown.tsx`.
+- Manifest artist is now the user-authorized `椎名林檎 × 常田大希`. No 千本桜
+  source, translation, Explain expansion, Timeline or audio change was made.
+- Future `千本桜` import, cover/translation intake and Explain expansion remain
+  separate follow-up scope; no private material was reclassified in this Plan.
+- Version classification is `no-version`. This implementation has not yet
+  closed the required human/browser USER CHECK.
+
 ## Pending USER CHECK / UNKNOWN
 
-- None currently identified for the current baseline. Future device-specific
-  regressions or PWA update-manager behavior changes reopen the matching
-  acceptance boundary.
+- `USER CHECK — pending (RED-Plan-44)`: listen/inspect representative
+  Han-dense, mixed Japanese/English and special-reading lines in Practice,
+  Full Song, Explain and production Timing Debugger; verify click playback,
+  the 10-unit grouping and continuous playback across former `o012`→`o013`,
+  `o033`→`o034` and `o049`→`o050` boundaries.
+- `Real-device verification: not executed`: mobile/iOS/PWA ruby geometry,
+  wrapping, touch and perceived readability remain unverified for this Plan;
+  automated regression evidence must not be promoted to a real-device PASS.
+- No new unresolved reading ambiguity was identified from the available user
+  material and existing Kana/romaji evidence. Existing future PWA/device risks
+  remain governed by D-013/D-016 and are not reopened by this content change.
 
 ## Active work and next lifecycle action
 
@@ -165,6 +208,11 @@ start a new intake from zero under the current source/content contracts.
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
   product code or canonical timing.
+- `RED-Plan-44` implementation is complete, but formal closeout remains pending
+  the USER CHECK above. The source/runtime/UI ruby contract, 61-segment WORK
+  backfill, artist correction and 13→10 Practice regroup are in the local
+  no-version commit boundary; `timeline.json`, canonical audio identity and
+  playback timing are unchanged.
 - Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
   closeout is complete, with no active migration cleanup; current work proceeds
   as normal Production maintenance and feature evolution. Future boundary

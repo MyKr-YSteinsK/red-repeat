@@ -81,6 +81,32 @@ describe('Library Validator', () => {
     expect(result.warnings).toBe(0)
   })
 
+  it('reports invalid ruby coverage through the source validator', () => {
+    const root = createTemporaryRoot()
+    const packageDirectory = createValidPackage(root)
+    writeJson(path.join(packageDirectory, 'lyrics.json'), {
+      segments: [
+        {
+          id: 's001',
+          lyrics: '歌',
+          translation: 'Song',
+          ruby: [{ start: 0, end: 1, base: '唄', reading: 'うた' }],
+        },
+      ],
+    })
+
+    const result = validateLibrary(root)
+    const diagnostic = result.diagnostics.find(
+      ({ code, fieldPath }) =>
+        code === 'SCHEMA_INVALID' && fieldPath === 'segments.0.ruby.0.base',
+    )
+
+    expect(diagnostic).toMatchObject({
+      severity: 'error',
+      sourcePath: 'first-light/lyrics.json',
+    })
+  })
+
   it('reports a Timeline audio source hash mismatch', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)

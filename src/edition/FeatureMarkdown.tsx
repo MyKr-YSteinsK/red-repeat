@@ -3,6 +3,7 @@ import type {
   AssembledSongEdition,
   RuntimeFeatureContent,
 } from '../runtime/song-edition'
+import { LyricText } from './LyricText'
 
 export type ExplainBlock =
   | { kind: 'heading'; level: number; text: string }
@@ -264,7 +265,9 @@ function DefaultLyricReference({
   const reading = segment.layers?.[0]?.text
   return (
     <div className="feature-lyric-reference" role="group" aria-label="歌词引用">
-      <p className="feature-lyric-reference-original">{segment.lyrics}</p>
+      <p className="feature-lyric-reference-original">
+        <LyricText segment={segment} />
+      </p>
       <p className="feature-lyric-reference-translation">{segment.translation}</p>
       {reading ? (
         <p className="feature-lyric-reference-reading">{reading}</p>

@@ -35,6 +35,7 @@ import {
   restoreScrollPolicy,
 } from '../navigation/stable-context-transition'
 import { PracticeSegmentPicker } from './PracticeSegmentPicker'
+import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
 const PRACTICE_SPEEDS = [0.6, 0.8, 1] as const
@@ -479,7 +480,7 @@ function PracticeLyricRow({
         onClick={onPlay}
         aria-label={`播放第 ${String(lyricNumber).padStart(2, '0')} 句`}
       >
-        {segment.lyrics}
+        <LyricText segment={segment} />
       </button>
       <p className="practice-translation">{segment.translation}</p>
       {segment.layers?.length ? (

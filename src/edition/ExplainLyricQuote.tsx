@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
 import { createPracticeIndex } from '../practice/practice-scope'
+import { LyricText } from './LyricText'
 
 export interface ExplainLyricQuoteProps {
   model: AssembledSongEdition
@@ -126,7 +127,9 @@ export function ExplainLyricQuote({
       data-selected-occurrence-id={selectedOccurrence?.occurrence.id}
     >
       <div className="explain-lyric-quote-copy">
-        <p className="explain-lyric-quote-original">{segment.lyrics}</p>
+        <p className="explain-lyric-quote-original">
+          <LyricText segment={segment} />
+        </p>
         <p className="explain-lyric-quote-translation">{segment.translation}</p>
         {reading ? (
           <p className="explain-lyric-quote-reading">{reading}</p>

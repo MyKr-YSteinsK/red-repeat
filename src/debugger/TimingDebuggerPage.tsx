@@ -18,6 +18,7 @@ import type { RuntimeClient } from '../runtime/runtime-client'
 import type { RuntimeSongEditionCore } from '../runtime/song-edition-loader'
 import { useSongEditionPlayback } from '../edition/use-song-edition-playback'
 import { useSongEditionCore } from '../edition/use-song-edition-core'
+import { LyricText } from '../edition/LyricText'
 
 export type TimingDebuggerCatalogState =
   | { status: 'loading' }
@@ -334,7 +335,7 @@ function TimingDebuggerReady({
                           aria-pressed={isSelected}
                           onClick={() => selectOccurrence(occurrence.id)}
                         >
-                          <span>{assembledOccurrence.segment.lyrics}</span>
+                          <LyricText segment={assembledOccurrence.segment} />
                           <small>{isPrimary ? '当前播放' : occurrence.id}</small>
                         </button>
                       </li>
@@ -350,7 +351,13 @@ function TimingDebuggerReady({
 
         <aside className="timing-debugger-console" aria-label="当前句播放切口控制台">
           <p className="eyebrow">当前句播放切口</p>
-          <h2>{selectedOccurrence ? model.occurrencesById[selectedOccurrence.id]?.segment.lyrics : '请选择一句歌词'}</h2>
+          <h2>
+            {selectedOccurrence ? (
+              <LyricText
+                segment={model.occurrencesById[selectedOccurrence.id]!.segment}
+              />
+            ) : '请选择一句歌词'}
+          </h2>
           {selectedOccurrence ? (
             <>
               <dl className="timing-debugger-values">

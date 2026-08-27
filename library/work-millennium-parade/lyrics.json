@@ -10,6 +10,26 @@
           "label": "Romaji",
           "text": "hengen jizai no inochi mukidashite yare"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "変幻自在",
+          "reading": "へんげんじざい"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "命",
+          "reading": "いのち"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "剥き出し",
+          "reading": "むきだし"
+        }
       ]
     },
     {
@@ -21,6 +41,26 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "jittai ga nai bun mada dekisokonai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "実態",
+          "reading": "じったい"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "分",
+          "reading": "ぶん"
+        },
+        {
+          "start": 8,
+          "end": 13,
+          "base": "出来損ない",
+          "reading": "できそこない"
         }
       ]
     },
@@ -45,6 +85,26 @@
           "title": "名詮自性",
           "body": "佛教与语言哲学语汇，指名称能够表明事物的自性。这里既谈“名与实”，也为后文报上名号、身份与存在感埋下轴线。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "名詮自性",
+          "reading": "みょうせんじしょう"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "噂",
+          "reading": "うわさ"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "吸い取れ",
+          "reading": "すいとれ"
+        }
       ]
     },
     {
@@ -56,6 +116,32 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "honkai hatashita sono saki ga mitai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "本懐",
+          "reading": "ほんかい"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "果たした",
+          "reading": "はたした"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "先",
+          "reading": "さき"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "見たい",
+          "reading": "みたい"
         }
       ]
     },
@@ -80,6 +166,38 @@
           "title": "伽藍／前祝い",
           "body": "“伽藍”本指寺院建筑群，也可联想到空旷、空壳；“前祝い”是事情实现前先行庆贺。此行把身体写成可耗尽的容器。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "伽藍",
+          "reading": "がらん"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "空疎",
+          "reading": "くうそ"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "五体",
+          "reading": "ごたい"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "使い捨て",
+          "reading": "つかいすて"
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "base": "前祝い",
+          "reading": "まえいわい"
+        }
       ]
     },
     {
@@ -98,6 +216,32 @@
           "title": "観念",
           "body": "既可指认命、死心，也保留佛教语境中的观照与念。译文故意同时保留“认命”与“看破”。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "名前",
+          "reading": "なまえ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "名乗って",
+          "reading": "なのって"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "観念",
+          "reading": "かんねん"
+        },
+        {
+          "start": 14,
+          "end": 16,
+          "base": "頂戴",
+          "reading": "ちょうだい"
+        }
       ]
     },
     {
@@ -109,6 +253,38 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "kachisuji nazo hosshite inai dodai hotondo un shidai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "勝ち筋",
+          "reading": "かちすじ"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "欲して",
+          "reading": "ほっして"
+        },
+        {
+          "start": 12,
+          "end": 14,
+          "base": "土台",
+          "reading": "どだい"
+        },
+        {
+          "start": 14,
+          "end": 16,
+          "base": "殆ど",
+          "reading": "ほとんど"
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "base": "運次第",
+          "reading": "うんしだい"
         }
       ]
     },
@@ -128,6 +304,32 @@
           "title": "銘采配",
           "body": "“銘”可能借“名采配”的音构成文字游戏，同时呼应前文“名詮自性”。建议用正式歌词册再次核对字形。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "答え",
+          "reading": "こたえ"
+        },
+        {
+          "start": 3,
+          "end": 6,
+          "base": "出して",
+          "reading": "だして"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "刹那",
+          "reading": "せつな"
+        },
+        {
+          "start": 13,
+          "end": 16,
+          "base": "銘采配",
+          "reading": "めいさいはい"
+        }
       ]
     },
     {
@@ -139,6 +341,26 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "kochira doudou meguri no sanaka"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "此方",
+          "reading": "こちら"
+        },
+        {
+          "start": 3,
+          "end": 7,
+          "base": "堂々巡り",
+          "reading": "どうどうめぐり"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "最中",
+          "reading": "さなか"
         }
       ]
     },
@@ -157,6 +379,26 @@
         {
           "title": "労働鼠",
           "body": "把劳动者压缩成不停转轮的鼠辈意象；与标题 W●RK、银行家、偿还等资本与劳动词汇形成一组。"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "労働",
+          "reading": "ろうどう"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "鼠",
+          "reading": "ねずみ"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "性",
+          "reading": "さが"
         }
       ]
     },
@@ -179,6 +421,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "kyou mo roudou"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "労働",
+          "reading": "ろうどう"
         }
       ]
     },
@@ -222,7 +478,33 @@
           "text": "tameshite kure issou takuwaeta waza wo"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "試して",
+          "reading": "ためして"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "一層",
+          "reading": "いっそう"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "蓄えた",
+          "reading": "たくわえた"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "技",
+          "reading": "わざ"
+        }
+      ]
     },
     {
       "id": "s018",
@@ -235,7 +517,27 @@
           "text": "hakatte kure maatarashii koshi-zashi de"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "計って",
+          "reading": "はかって"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "真新しい",
+          "reading": "まあたらしい"
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "base": "腰挿し",
+          "reading": "こしざし"
+        }
+      ]
     },
     {
       "id": "s019",
@@ -254,7 +556,33 @@
           "body": "汉语典故进入日语后的固定成语，表示四面受敌、孤立无援。"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "弾いて",
+          "reading": "はじいて"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "此方人等",
+          "reading": "こちとら"
+        },
+        {
+          "start": 10,
+          "end": 11,
+          "base": "尚",
+          "reading": "なお"
+        },
+        {
+          "start": 11,
+          "end": 15,
+          "base": "四面楚歌",
+          "reading": "しめんそか"
+        }
+      ]
     },
     {
       "id": "s020",
@@ -267,7 +595,45 @@
           "text": "taisuru hito wo kaishite kono mi no ketten ga omoishiritai"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "対する",
+          "reading": "たいする"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "人",
+          "reading": "ひと"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "介して",
+          "reading": "かいして"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "身",
+          "reading": "み"
+        },
+        {
+          "start": 13,
+          "end": 15,
+          "base": "欠点",
+          "reading": "けってん"
+        },
+        {
+          "start": 16,
+          "end": 22,
+          "base": "思い知りたい",
+          "reading": "おもいしりたい"
+        }
+      ]
     },
     {
       "id": "s021",
@@ -290,6 +656,38 @@
           "title": "潜って",
           "body": "此处按歌词语境读作「くぐって」，不是常见的「もぐって」；有穿过、钻过乱世之意。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "俗界",
+          "reading": "ぞっかい"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "乱世",
+          "reading": "らんせい"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "飽く迄",
+          "reading": "あくまで"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "潜って",
+          "reading": "くぐって"
+        },
+        {
+          "start": 12,
+          "end": 14,
+          "base": "行け",
+          "reading": "いけ"
+        }
       ]
     },
     {
@@ -301,6 +699,26 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "maikai kasen yo mada mada shinenai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "毎回",
+          "reading": "まいかい"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "火線",
+          "reading": "かせん"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "死ねない",
+          "reading": "しねない"
         }
       ]
     },
@@ -325,6 +743,38 @@
           "title": "煩悩菩提",
           "body": "来自“烦恼即菩提”的思想：烦恼与觉悟并非简单二分，人的欲望与苦恼也可能成为认识与转化的契机。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "煩悩",
+          "reading": "ぼんのう"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "菩提",
+          "reading": "ぼだい"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "恥",
+          "reading": "はじ"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "欲",
+          "reading": "よく"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "抱き抱え",
+          "reading": "だきかかえ"
+        }
       ]
     },
     {
@@ -336,6 +786,32 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "kanpai shi oeta sono saki ga mitai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "乾杯",
+          "reading": "かんぱい"
+        },
+        {
+          "start": 3,
+          "end": 6,
+          "base": "終えた",
+          "reading": "おえた"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "先",
+          "reading": "さき"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "見たい",
+          "reading": "みたい"
         }
       ]
     },
@@ -360,6 +836,50 @@
           "title": "云えず了い",
           "body": "以旧字与非常规表记写现代语「言えずじまい」，意为最终没能说出口。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "気付いた",
+          "reading": "きづいた"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "時",
+          "reading": "とき"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "遅い",
+          "reading": "おそい"
+        },
+        {
+          "start": 11,
+          "end": 13,
+          "base": "淡い",
+          "reading": "あわい"
+        },
+        {
+          "start": 13,
+          "end": 15,
+          "base": "願い",
+          "reading": "ねがい"
+        },
+        {
+          "start": 15,
+          "end": 18,
+          "base": "云えず",
+          "reading": "いえず"
+        },
+        {
+          "start": 18,
+          "end": 20,
+          "base": "了い",
+          "reading": "じまい"
+        }
       ]
     },
     {
@@ -371,6 +891,32 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "arai zarai akashite benkai shitai koukai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "洗い浚い",
+          "reading": "あらいざらい"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "明かして",
+          "reading": "あかして"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "弁解",
+          "reading": "べんかい"
+        },
+        {
+          "start": 13,
+          "end": 15,
+          "base": "後悔",
+          "reading": "こうかい"
         }
       ]
     },
@@ -390,6 +936,38 @@
           "title": "市井／人心地",
           "body": "“市井”是普通人的生活社会；“人心地”指恢复成普通人的安稳感、活过来的感觉。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "市井",
+          "reading": "しせい"
+        },
+        {
+          "start": 3,
+          "end": 6,
+          "base": "静かな",
+          "reading": "しずかな"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "暮らし",
+          "reading": "くらし"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "普通",
+          "reading": "ふつう"
+        },
+        {
+          "start": 13,
+          "end": 16,
+          "base": "人心地",
+          "reading": "ひとごこち"
+        }
       ]
     },
     {
@@ -401,6 +979,32 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "nozonde ii no darou ka towa ni shijou no gidai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "望んで",
+          "reading": "のぞんで"
+        },
+        {
+          "start": 11,
+          "end": 13,
+          "base": "永遠",
+          "reading": "とわ"
+        },
+        {
+          "start": 14,
+          "end": 16,
+          "base": "至上",
+          "reading": "しじょう"
+        },
+        {
+          "start": 17,
+          "end": 19,
+          "base": "議題",
+          "reading": "ぎだい"
         }
       ]
     },
@@ -414,6 +1018,20 @@
           "label": "Romaji",
           "text": "honkakuha no dourakuka"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "本格派",
+          "reading": "ほんかくは"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "道楽家",
+          "reading": "どうらくか"
+        }
       ]
     },
     {
@@ -425,6 +1043,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "Social-teki ni wa kyouakuhan"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 6,
+          "end": 7,
+          "base": "的",
+          "reading": "てき"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "凶悪犯",
+          "reading": "きょうあくはん"
         }
       ]
     },
@@ -449,6 +1081,32 @@
           "title": "已（のみ）",
           "body": "这里把「のみ」写作特殊字形“已”，是歌词的视觉性表记。阅读层按「のみ」处理，仍建议以正式歌词册复核。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "禁止事項",
+          "reading": "きんしじこう"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "已",
+          "reading": "のみ"
+        },
+        {
+          "start": 5,
+          "end": 7,
+          "base": "日々",
+          "reading": "ひび"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "進歩",
+          "reading": "しんぽ"
+        }
       ]
     },
     {
@@ -472,6 +1130,20 @@
           "title": "慇懃尾籠無礼行為",
           "body": "把“慇懃無礼”（表面恭敬、实则失礼）与“尾籠”（粗鄙、不洁）叠成夸张复合词，语气故意繁复而冒犯。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "慇懃尾籠",
+          "reading": "いんぎんびろう"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "無礼行為",
+          "reading": "ぶれいこうい"
+        }
       ]
     },
     {
@@ -488,6 +1160,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "seikoui no dendoushi"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "性行為",
+          "reading": "せいこうい"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "伝道師",
+          "reading": "でんどうし"
         }
       ]
     },
@@ -512,6 +1198,20 @@
           "title": "許り",
           "body": "旧字表记，读作「ばかり」，意思是“净是、只会”。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 11,
+          "end": 14,
+          "base": "正常位",
+          "reading": "せいじょうい"
+        },
+        {
+          "start": 14,
+          "end": 16,
+          "base": "許り",
+          "reading": "ばかり"
+        }
       ]
     },
     {
@@ -523,6 +1223,14 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "muteppou ni Stand up my fav people"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "無鉄砲",
+          "reading": "むてっぽう"
         }
       ]
     },
@@ -553,7 +1261,33 @@
           "body": "此处读作「とが」，指罪过、过失，与后文“罪与罚”相连。"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "許して",
+          "reading": "ゆるして"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "嘗て",
+          "reading": "かつて"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "犯した",
+          "reading": "おかした"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "科",
+          "reading": "とが"
+        }
+      ]
     },
     {
       "id": "s039",
@@ -566,7 +1300,27 @@
           "text": "sabaite kure maatarashii yoshiashi de"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "裁いて",
+          "reading": "さばいて"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "真新しい",
+          "reading": "まあたらしい"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "良し悪し",
+          "reading": "よしあし"
+        }
+      ]
     },
     {
       "id": "s040",
@@ -579,7 +1333,21 @@
           "text": "satoshite kure douse tasukatta no nara"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "諭して",
+          "reading": "さとして"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "助かった",
+          "reading": "たすかった"
+        }
+      ]
     },
     {
       "id": "s041",
@@ -592,7 +1360,45 @@
           "text": "aisuru hito wo kaishite kono yo no zekkei ga ogamitai"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "愛する",
+          "reading": "あいする"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "人",
+          "reading": "ひと"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "介して",
+          "reading": "かいして"
+        },
+        {
+          "start": 10,
+          "end": 11,
+          "base": "世",
+          "reading": "よ"
+        },
+        {
+          "start": 12,
+          "end": 14,
+          "base": "絶景",
+          "reading": "ぜっけい"
+        },
+        {
+          "start": 15,
+          "end": 19,
+          "base": "拝みたい",
+          "reading": "おがみたい"
+        }
+      ]
     },
     {
       "id": "s042",
@@ -603,6 +1409,14 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "utondeita"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "疎んでいた",
+          "reading": "うとんでいた"
         }
       ]
     },
@@ -616,6 +1430,14 @@
           "label": "Romaji",
           "text": "mayoi sae mo"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "迷い",
+          "reading": "まよい"
+        }
       ]
     },
     {
@@ -627,6 +1449,14 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "daishizen no"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "大自然",
+          "reading": "だいしぜん"
         }
       ]
     },
@@ -640,6 +1470,14 @@
           "label": "Romaji",
           "text": "jibun jishin"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "自分自身",
+          "reading": "じぶんじしん"
+        }
       ]
     },
     {
@@ -651,6 +1489,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "yowaki wo shitte"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "弱き",
+          "reading": "よわき"
+        },
+        {
+          "start": 3,
+          "end": 6,
+          "base": "知って",
+          "reading": "しって"
         }
       ]
     },
@@ -664,6 +1516,20 @@
           "label": "Romaji",
           "text": "tsuyoki wo oboeru"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "強き",
+          "reading": "つよき"
+        },
+        {
+          "start": 3,
+          "end": 6,
+          "base": "覚える",
+          "reading": "おぼえる"
+        }
       ]
     },
     {
@@ -675,6 +1541,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "yami chitte"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "闇",
+          "reading": "やみ"
+        },
+        {
+          "start": 1,
+          "end": 4,
+          "base": "散って",
+          "reading": "ちって"
         }
       ]
     },
@@ -699,6 +1579,20 @@
           "title": "咲う",
           "body": "以“咲”写「わらう」，让“光发笑”同时带有花朵绽放的视觉。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "光",
+          "reading": "ひかり"
+        },
+        {
+          "start": 1,
+          "end": 3,
+          "base": "咲う",
+          "reading": "わらう"
+        }
       ]
     },
     {
@@ -710,6 +1604,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "onna to otoko"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "女",
+          "reading": "おんな"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "男",
+          "reading": "おとこ"
         }
       ]
     },
@@ -723,6 +1631,20 @@
           "label": "Romaji",
           "text": "nikushi aishi"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "憎し",
+          "reading": "にくし"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "愛し",
+          "reading": "あいし"
+        }
       ]
     },
     {
@@ -734,6 +1656,14 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "tadashisa yo"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "正しさ",
+          "reading": "ただしさ"
         }
       ]
     },
@@ -747,6 +1677,14 @@
           "label": "Romaji",
           "text": "machigai yo"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "間違い",
+          "reading": "まちがい"
+        }
       ]
     },
     {
@@ -759,6 +1697,20 @@
           "label": "Romaji",
           "text": "tsumi to batsu soshite"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "罪",
+          "reading": "つみ"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "罰",
+          "reading": "ばつ"
+        }
       ]
     },
     {
@@ -770,6 +1722,20 @@
           "id": "romaji",
           "label": "Romaji",
           "text": "ikishini issai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "生き死に",
+          "reading": "いきしに"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "一切",
+          "reading": "いっさい"
         }
       ]
     },
@@ -794,6 +1760,20 @@
           "title": "間",
           "body": "这里按歌词标注读作「あわい」，不是普通的「あいだ」；指两者之间的间隙、边界与暧昧地带。"
         }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "両極",
+          "reading": "りょうきょく"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "間",
+          "reading": "あわい"
+        }
       ]
     },
     {
@@ -807,7 +1787,21 @@
           "text": "ketsugou shite aman zeyo"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "結合",
+          "reading": "けつごう"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "甘んぜよ",
+          "reading": "あまんぜよ"
+        }
+      ]
     },
     {
       "id": "s058",
@@ -820,7 +1814,39 @@
           "text": "saa kyou wa kyou de ashita wa mata ashita"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 4,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 5,
+          "end": 7,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "明日",
+          "reading": "あした"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "又",
+          "reading": "また"
+        },
+        {
+          "start": 12,
+          "end": 14,
+          "base": "明日",
+          "reading": "あした"
+        }
+      ]
     },
     {
       "id": "s059",
@@ -838,7 +1864,33 @@
           "text": "wazuratte ikou zo namami no sasurai"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "煩って",
+          "reading": "わずらって"
+        },
+        {
+          "start": 3,
+          "end": 7,
+          "base": "行こうぞ",
+          "reading": "いこうぞ"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "生身",
+          "reading": "なまみ"
+        },
+        {
+          "start": 11,
+          "end": 13,
+          "base": "流離",
+          "reading": "さすらい"
+        }
+      ]
     },
     {
       "id": "s060",
@@ -862,7 +1914,33 @@
           "body": "《般若心经》的核心句之一：一切有形现象都没有恒常不变的自性。这里与“瞬间迁变”直接相扣。"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "色即是空",
+          "reading": "しきそくぜくう"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "瞬く",
+          "reading": "またたく"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "間",
+          "reading": "ま"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "移ろう",
+          "reading": "うつろう"
+        }
+      ]
     },
     {
       "id": "s061",
@@ -886,7 +1964,33 @@
           "body": "“玉響”表示极短暂的一瞬；“果敢ない”在此按「はかない」理解，是对“儚い”的视觉化表记。"
         }
       ],
-      "emphasis": "strong"
+      "emphasis": "strong",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "万歳",
+          "reading": "ばんざい"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "鼓動",
+          "reading": "こどう"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "玉響",
+          "reading": "たまゆら"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "果敢ない",
+          "reading": "はかない"
+        }
+      ]
     }
   ]
 }

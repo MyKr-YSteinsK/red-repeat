@@ -19,6 +19,7 @@ import {
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
 import { useAudioProgress } from './use-audio-progress'
+import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 
 export interface FullSongWorkspaceProps {
@@ -241,11 +242,10 @@ export function FullSongWorkspace({
           model={model}
           engine={playback.engine}
           sectionLabel={playback.resolution.currentSection?.label ?? '间奏 / 空白'}
-          lineLabel={
+          lineSegment={
             primaryOccurrenceId
-              ? model.occurrencesById[primaryOccurrenceId]?.segment.lyrics ??
-                '无歌词'
-              : '无歌词'
+              ? model.occurrencesById[primaryOccurrenceId]?.segment
+              : undefined
           }
           onScrollToTop={scrollToTop}
           onReset={resetPlayback}
@@ -447,7 +447,7 @@ function FullSongOccurrence({
         aria-label={`从这里连续播放：${segment.lyrics}`}
         onClick={() => onSelect(assembledOccurrence)}
       >
-        {segment.lyrics}
+        <LyricText segment={segment} />
       </button>
       <p className="full-song-translation">{segment.translation}</p>
       {segment.layers?.length ? (
@@ -484,14 +484,14 @@ function FullSongPlayer({
   model,
   engine,
   sectionLabel,
-  lineLabel,
+  lineSegment,
   onScrollToTop,
   onReset,
 }: {
   model: AssembledSongEdition
   engine: AudioEngine | null
   sectionLabel: string
-  lineLabel: string
+  lineSegment?: AssembledOccurrence['segment']
   onScrollToTop: () => void
   onReset: () => void
 }) {
@@ -566,7 +566,10 @@ function FullSongPlayer({
       />
       <div className="full-song-player-context" aria-live="polite">
         <span>当前段：{sectionLabel}</span>
-        <span>当前句：{lineLabel}</span>
+        <span>
+          当前句：
+          {lineSegment ? <LyricText segment={lineSegment} /> : '无歌词'}
+        </span>
       </div>
       <div className="full-song-player-speed" aria-label="播放速度">
         {PRACTICE_PLAYBACK_RATES.map((rate) => (

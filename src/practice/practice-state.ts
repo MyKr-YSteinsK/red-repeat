@@ -153,8 +153,14 @@ export function resolvePracticeResumeSummary(
 ): PracticeResumeSummary | undefined {
   try {
     const index = createPracticeIndex(practice, timeline)
-    const unit = index.unitsById.get(metadata.practiceUnitId)
-    const occurrenceIds = index.occurrenceIdsByUnitId.get(metadata.practiceUnitId)
+    // Occurrence identity is more stable than a Practice Unit boundary. This
+    // lets a regrouped source document recover an old resume without trusting
+    // a stale unit id whose meaning may now belong to another group.
+    const practiceUnitId =
+      index.unitIdByOccurrenceId.get(metadata.occurrenceId) ??
+      metadata.practiceUnitId
+    const unit = index.unitsById.get(practiceUnitId)
+    const occurrenceIds = index.occurrenceIdsByUnitId.get(practiceUnitId)
     if (!unit || !occurrenceIds) {
       return undefined
     }
@@ -166,6 +172,7 @@ export function resolvePracticeResumeSummary(
 
     return {
       ...metadata,
+      practiceUnitId,
       unitLabel: unit.label,
       lineIndex: lineIndex + 1,
       lineCount: occurrenceIds.length,
@@ -274,13 +281,26 @@ function normalizeCoveredUntil(
   }
 
   const result: Record<string, string> = {}
+  const resultIndexes = new Map<string, number>()
   Object.entries(value).forEach(([unitId, occurrenceId]) => {
     if (typeof occurrenceId !== 'string') {
       return
     }
-    const occurrenceIds = index.occurrenceIdsByUnitId.get(unitId)
-    if (occurrenceIds?.includes(occurrenceId)) {
-      result[unitId] = occurrenceId
+    const resolvedUnitId =
+      index.unitIdByOccurrenceId.get(occurrenceId) ??
+      (index.unitsById.has(unitId) ? unitId : undefined)
+    if (!resolvedUnitId) {
+      return
+    }
+    const occurrenceIds = index.occurrenceIdsByUnitId.get(resolvedUnitId)
+    const occurrenceIndex = occurrenceIds?.indexOf(occurrenceId) ?? -1
+    if (occurrenceIndex < 0) {
+      return
+    }
+    const previousIndex = resultIndexes.get(resolvedUnitId) ?? -1
+    if (occurrenceIndex >= previousIndex) {
+      result[resolvedUnitId] = occurrenceId
+      resultIndexes.set(resolvedUnitId, occurrenceIndex)
     }
   })
   return result

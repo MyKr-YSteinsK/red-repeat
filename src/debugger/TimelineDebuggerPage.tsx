@@ -21,6 +21,7 @@ import {
   type SectionTimingField,
 } from './timeline-debugger-model'
 import { useTimelineDebuggerPlayback } from './use-timeline-debugger-playback'
+import { LyricText } from '../edition/LyricText'
 
 export type TimelineDebuggerCatalogState =
   | { status: 'loading' }
@@ -262,6 +263,9 @@ function TimelineDebuggerReady({
   const activeOccurrenceIds = new Set(
     playback.resolution.activeOccurrences.map((occurrence) => occurrence.id),
   )
+  const selectedSegment = selectedOccurrence
+    ? segmentById.get(selectedOccurrence.segmentId)
+    : undefined
 
   const runEngineAction = (action: () => void | Promise<void>): void => {
     try {
@@ -628,7 +632,11 @@ function TimelineDebuggerReady({
                       onClick={() => selectOccurrence(occurrence.id)}
                     >
                       <span>{occurrence.id}</span>
-                      <strong>{segment?.lyrics ?? occurrence.segmentId}</strong>
+                      <strong>
+                        {segment ? (
+                          <LyricText segment={segment} />
+                        ) : occurrence.segmentId}
+                      </strong>
                       {playback.resolution.primaryOccurrence?.id === occurrence.id ? (
                         <em>PRIMARY</em>
                       ) : null}
@@ -879,8 +887,9 @@ function TimelineDebuggerReady({
               <div className="timeline-debugger-timing-wide">
                 <dt>Original lyric</dt>
                 <dd>
-                  {segmentById.get(selectedOccurrence.segmentId)?.lyrics ??
-                    'Missing Segment'}
+                  {selectedSegment ? (
+                    <LyricText segment={selectedSegment} />
+                  ) : 'Missing Segment'}
                 </dd>
               </div>
               <div className="timeline-debugger-timing-wide">
@@ -1006,7 +1015,11 @@ function TimelineDebuggerReady({
                             <span>
                               {occurrence.id} / source {sourceIndex + 1}
                             </span>
-                            <strong>{segment?.lyrics ?? occurrence.segmentId}</strong>
+                            <strong>
+                              {segment ? (
+                                <LyricText segment={segment} />
+                              ) : occurrence.segmentId}
+                            </strong>
                             <span>
                               actual {occurrence.startMs}–{occurrence.endMs} ms · play{' '}
                               {occurrence.playStartMs}–{occurrence.playEndMs} ms

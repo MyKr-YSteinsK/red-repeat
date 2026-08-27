@@ -190,3 +190,22 @@ because its implementation is named `debugger`; that requires a new explicit
 user decision. D-011 and D-016 remain in force: public access does not bypass
 source validation, audio/timeline/Edition identity checks, canonical-source
 review, or the required human/audio evidence.
+
+## D-018｜Keep canonical Japanese lyrics and add position-verifiable ruby
+
+- Status: Accepted
+- Source: `USER_DECISION` + RED-Plan-44
+
+Japanese `Segment.lyrics` remains the canonical original text, including its
+original 字形、标点、大小写和必要空格。Furigana is an additional `ruby` span
+contract, not an HTML/JSX replacement for the source lyric. Each span carries a
+half-open position, exact `base` substring and Hiragana `reading`; the source
+validator rejects range errors, overlap, base mismatch, missing Han/Katakana
+coverage and invalid readings. Semantic spans may cover okurigana, jukujikun or
+special readings without requiring per-character decomposition.
+
+The compiler carries ruby data into Runtime. User-facing lyric rendering uses
+semantic `<ruby>/<rt>` while preserving the canonical original for accessible
+names, copy-oriented semantics, playback selection and lyric references. The
+existing `layers` contract remains backward compatible. Ruby and content
+changes do not authorize Timeline/audio timing edits.

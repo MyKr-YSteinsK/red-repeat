@@ -5,6 +5,11 @@ const integerMilliseconds = z.number().int().nonnegative()
 const sha256Hash = z
   .string()
   .regex(/^[a-f0-9]{64}$/, 'must be a lowercase SHA-256 hex digest')
+const hiraganaReading = z
+  .string()
+  .regex(/^[\u3041-\u3096ーゝゞ]+$/u, 'must use Hiragana reading text')
+const rubyRequiredCharacter = /[\p{Script=Han}\p{Script=Katakana}]/u
+const rubyRequiredCharacterOnly = /^[\p{Script=Han}\p{Script=Katakana}]$/u
 
 export const SongIdSchema = z
   .string()
@@ -52,16 +57,89 @@ export const NoteSchema = z
   })
   .strict()
 
+export const RubySpanSchema = z
+  .object({
+    start: z.number().int().nonnegative(),
+    end: z.number().int().positive(),
+    base: z.string().min(1),
+    reading: hiraganaReading,
+  })
+  .strict()
+  .refine((span) => span.start < span.end, {
+    path: ['end'],
+    message: 'ruby span must satisfy start < end',
+  })
+
 export const SegmentSchema = z
   .object({
     id: SegmentIdSchema,
     lyrics: nonEmptyText,
+    ruby: z.array(RubySpanSchema).optional(),
     translation: nonEmptyText,
     layers: z.array(LayerSchema).optional(),
     notes: z.array(NoteSchema).optional(),
     emphasis: z.enum(['subtle', 'strong']).optional(),
   })
   .strict()
+  .superRefine((segment, context) => {
+    const rubySpans = segment.ruby ?? []
+    let previousEnd = -1
+
+    rubySpans.forEach((span, index) => {
+      const hasValidRange =
+        span.start < span.end && span.start < segment.lyrics.length
+      if (!hasValidRange || span.end > segment.lyrics.length) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ruby', index],
+          message: `ruby span range [${span.start}, ${span.end}) is outside canonical lyrics`,
+        })
+        return
+      }
+
+      if (span.start < previousEnd) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ruby', index],
+          message: 'ruby spans must not overlap',
+        })
+      }
+      previousEnd = Math.max(previousEnd, span.end)
+
+      const base = segment.lyrics.slice(span.start, span.end)
+      if (base !== span.base) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ruby', index, 'base'],
+          message: `ruby base must match canonical lyrics substring ${JSON.stringify(base)}`,
+        })
+      }
+
+      if (!rubyRequiredCharacter.test(base)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ruby', index, 'base'],
+          message: 'ruby base must contain a Han or Katakana character',
+        })
+      }
+    })
+
+    let offset = 0
+    for (const character of segment.lyrics) {
+      const end = offset + character.length
+      if (
+        rubyRequiredCharacterOnly.test(character) &&
+        !rubySpans.some((span) => span.start <= offset && end <= span.end)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['ruby'],
+          message: `canonical Han/Katakana character ${JSON.stringify(character)} at index ${offset} must be covered by ruby`,
+        })
+      }
+      offset = end
+    }
+  })
 
 export const LyricsSchema = z
   .object({
@@ -186,6 +264,7 @@ export const PracticeSchema = z
 export type SongManifest = z.infer<typeof ManifestSchema>
 export type Layer = z.infer<typeof LayerSchema>
 export type Note = z.infer<typeof NoteSchema>
+export type RubySpan = z.infer<typeof RubySpanSchema>
 export type Segment = z.infer<typeof SegmentSchema>
 export type LyricsDocument = z.infer<typeof LyricsSchema>
 export type Section = z.infer<typeof SectionSchema>

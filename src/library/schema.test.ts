@@ -89,6 +89,73 @@ describe('Song Edition source schemas', () => {
     expect(result.success).toBe(false)
   })
 
+  it('validates position-verifiable Hiragana ruby coverage', () => {
+    const rubySegment = {
+      id: 's001',
+      lyrics: '歌プレイ',
+      translation: 'Song play',
+      ruby: [
+        { start: 0, end: 1, base: '歌', reading: 'うた' },
+        { start: 1, end: 4, base: 'プレイ', reading: 'ぷれい' },
+      ],
+    }
+
+    expect(LyricsSchema.safeParse({ segments: [rubySegment] }).success).toBe(true)
+    expect(
+      LyricsSchema.safeParse({
+        segments: [{ ...rubySegment, ruby: rubySegment.ruby?.slice(0, 1) }],
+      }).success,
+    ).toBe(false)
+    expect(
+      LyricsSchema.safeParse({
+        segments: [
+          {
+            ...rubySegment,
+            ruby: [
+              { start: 0, end: 2, base: '歌', reading: 'うた' },
+              rubySegment.ruby[1],
+            ],
+          },
+        ],
+      }).success,
+    ).toBe(false)
+    expect(
+      LyricsSchema.safeParse({
+        segments: [
+          {
+            ...rubySegment,
+            ruby: [
+              rubySegment.ruby[0],
+              { start: 1, end: 4, base: 'プレイ', reading: 'プレイ' },
+            ],
+          },
+        ],
+      }).success,
+    ).toBe(false)
+    expect(
+      LyricsSchema.safeParse({
+        segments: [
+          {
+            id: 's001',
+            lyrics: '已',
+            translation: 'Only',
+            ruby: [{ start: 0, end: 1, base: '已', reading: 'のみ' }],
+          },
+        ],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('allows pure English lyrics without ruby', () => {
+    expect(
+      LyricsSchema.safeParse({
+        segments: [
+          { id: 's001', lyrics: 'Wake Up Bankers', translation: '醒醒吧' },
+        ],
+      }).success,
+    ).toBe(true)
+  })
+
   it('rejects invalid timing order', () => {
     const result = TimelineSchema.safeParse({
       ...validTimeline,
