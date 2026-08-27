@@ -207,6 +207,36 @@ uses the separately authorized task-input source package.
   from the implementation tag target.
 - Version classification is `MINOR`: `1.6.2 -> 1.7.0`.
 
+## RED-Plan-46 workflow decision status
+
+- `D-020` is accepted: future new Song Editions use a two-stage timing
+  lifecycle, `Provisional Timing` → `Calibrated Timing`.
+- `Provisional Timing` is the default first-import acceptance. It requires
+  verified canonical audio identity, valid independent actual/play intervals,
+  LRC or lyric anchors, lightweight sanity checks, correct gross musical
+  topology and no obvious neighbor leakage, but it does not claim human audible
+  calibration or `PASS` for every Occurrence.
+- `Calibrated Timing` is recorded only for the range covered by a user's actual
+  listening and an identity-matched `Timing Correction Export` that Codex has
+  focused-merged into canonical source. Fixed padding and mechanical
+  `end = next LRC timestamp` remain prohibited; D-011, D-012, D-016 and D-019
+  remain in force.
+- The current Production Timing Debugger / Settings export is identity-safe for
+  its implemented correction scope. It carries `songId`, `editionContentHash`,
+  `audioSourceHash`, `baseTimelineUrl`, target source, build identity and
+  per-Occurrence correction data; stale or incompatible local overrides are not
+  exported as compatible corrections. The current public export covers
+  `playStartMs` / `playEndMs`; `startMs` / `endMs` remain canonical editorial
+  fields and were not expanded in this governance Plan.
+- Existing `work-millennium-parade` and `senbonzakura` timing history is not
+  downgraded or reclassified by D-020: WORK retains its historical `PASS 40`
+  human acceptance, and `senbonzakura` retains the RED-Plan-45 source-audio
+  evidence recorded above.
+- This Plan changed only future authoring/delivery semantics and Project State;
+  no timeline, audio, lyrics, Practice, schema, compiler, runtime, UI or PWA
+  behavior was changed. Version classification is `no-version`, and
+  `USER CHECK` is `NONE` for this governance boundary.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
@@ -273,8 +303,10 @@ uses the separately authorized task-input source package.
   matching automated/local verification may enter Production after focused
   commit and normal push. Explicit or high-risk `BLOCKING USER CHECK` items
   remain release gates; other real-use evidence is observed after deployment.
-- Next normal product work begins after `RED-Plan-45` at a separately authorized
-  Plan boundary; this state does not implement any subsequent Plan.
+- Next normal product work begins after `RED-Plan-46` at a separately authorized
+  Plan boundary; the next normal content work remains the WORK new cover, the
+  user-provided new WORK 61 translations and WORK Explain expansion. This state
+  does not implement any subsequent Plan.
 - Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
   closeout is complete, with no active migration cleanup; current work proceeds
   as normal Production maintenance and feature evolution. Future boundary

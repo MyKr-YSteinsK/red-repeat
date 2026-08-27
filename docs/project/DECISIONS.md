@@ -226,3 +226,29 @@ compositing 或其他真实设备/感知属性。只有高风险、不可逆、�
 lifecycle 变更，当前 Plan 明确要求真人 gate，或问题无法安全部署后发现时，
 USER CHECK 才作为 `BLOCKING USER CHECK`。这项策略不减少匹配边界的自动化验证
 要求，也不取消必要的真实证据。
+
+## D-020｜新曲采用 Provisional → Calibrated 两阶段 timing lifecycle
+
+- Status: Accepted
+- Source: `USER_DECISION` + `RED-Plan-46`
+
+新 Song Edition 首次进入 Production 时，可以使用 `Provisional Timing`：以已
+验证的 canonical audio identity、LRC/歌词 anchor、轻量音频检查和结构性约束，
+建立足够可用的初始 timing。每个 Occurrence 仍必须有有效的
+`startMs/endMs` 与 `playStartMs/playEndMs`；Provisional Timing 不得包含明显
+跨句清晰音节、错误的长 intro/间奏/outro 归属、机械的 fixed padding 或
+`end = next LRC timestamp`。它可以保留几十到几百毫秒级的后续精调空间，但
+不得被描述为 human audible PASS 或最终校准完成。
+
+用户随后通过 Production Timing Debugger 在真实使用中校准 correction package
+所覆盖的 timing 字段（当前 Production export 覆盖 `playStartMs/playEndMs`；
+明确授权的其他 package 也可以覆盖 `startMs/endMs`）。与当前 song、Edition、
+audio 和 Timeline identity 匹配的 `Timing Correction Export`，由 Codex 作为
+focused canonical timing correction 合入 source；只修改导出覆盖的 timing
+与必要的 matching notes，经过 validation/build 后发布。未被用户实际校准的
+Occurrence 不得虚构为 `Calibrated Timing` 或 human PASS。
+
+D-011、D-012、D-016 与 D-019 继续有效：Provisional 不降低 audio identity、
+gross structure、obvious leakage 或 source validation 门槛；local override
+不能直接突变 canonical source；identity mismatch 的 correction 不得合入；
+自动化和静态证据不能伪装成 audible timing 或真实设备验收。

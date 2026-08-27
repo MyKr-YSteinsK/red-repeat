@@ -55,7 +55,12 @@ runtime Skills and should not be duplicated here.
   content, audio and timeline identity. They do not mutate canonical source.
 - Timing Debugger is an intentional production-public supporting capability;
   do not hide or remove it as generic debug cleanup without a new explicit
-  user decision.
+  user decision. New song intake may use `Provisional Timing` under D-020, but
+  a `Timing Correction Export` may enter canonical source only after song,
+  Edition, audio and Timeline identity validation.
+- `Provisional Timing` is a usable first-import state, not an audible human
+  `PASS`; future user calibration remains identity-bound and must not silently
+  mutate canonical source through local overrides.
 - Song workspaces use one coherent audio lifecycle owner. PWA update logic must
   preserve local business data and distinguish deployed build identity from an
   installed client's asynchronous worker activation state.
@@ -82,13 +87,17 @@ runtime Skills and should not be duplicated here.
 - A `BLOCKING USER CHECK` remains required when the current Plan explicitly
   requires a human gate, the work is high-risk or destructive for data,
   persistence, identity or release state, audio identity is uncertain,
-  canonical timing lacks credible audio evidence, the PWA update-manager or
-  installed-client lifecycle itself changed with explicit lifecycle acceptance,
-  or the issue cannot be safely discovered and corrected after deployment.
+  `Calibrated Timing` or final audible timing is being claimed without credible
+  audio evidence, the PWA update-manager or installed-client lifecycle itself
+  changed with explicit lifecycle acceptance, or the issue cannot be safely
+  discovered and corrected after deployment.
 - A `POST-DEPLOY OBSERVATION` covers ordinary mobile visual behavior, ruby
   geometry or wrapping, general touch feel, low-risk content display, Practice
   grouping comfort and other low-cost follow-up observations. It is recorded
   honestly and does not itself block completion or normal delivery.
+- Under D-020, `Provisional Timing` is not itself a blocking human gate when
+  canonical audio identity, gross structure and obvious leakage checks pass;
+  its state must remain explicitly uncalibrated.
 - This classification changes the default delivery gate, not the evidence
   boundary: D-016 remains in force. Automated or static evidence must not be
   described as proof of real-device geometry, compositing, touch, audible
