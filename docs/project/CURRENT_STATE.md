@@ -277,6 +277,19 @@ uses the separately authorized task-input source package.
   `POST-DEPLOY OBSERVATION`; they are not represented as human `PASS`.
 - Version classification is `PATCH`: `1.7.0 -> 1.7.1`.
 
+## RED-Plan-48 workflow contract status
+
+- Future new-song work may arrive as pre-authored `Structured Song Handoff`
+  packages containing research, complete Explain drafts, approved content/assets,
+  mappings and Provisional candidates. The Handoff remains task input, not
+  canonical source.
+- Codex's default boundary is repo-contract validation and source integration;
+  it does not independently re-author approved upstream content or exact assets
+  without a validation conflict. The executable repo contract wins conflicts,
+  and `D-020`'s `Provisional Timing` → `Calibrated Timing` lifecycle is unchanged.
+- This closeout is `no-version`; no song source, executable product, release or
+  deployment behavior is changed.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,

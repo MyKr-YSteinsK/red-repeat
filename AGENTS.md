@@ -9,6 +9,10 @@ runtime Skills and should not be duplicated here.
 - Follow the user's explicit request and the current active Plan. A supplied
   Plan, Handoff or ZIP is task input, not repository source, unless it is
   deliberately adopted.
+- A structured Song Handoff is an upstream-authored task package. When it
+  already contains approved content, mappings or exact assets, Codex validates
+  and integrates them rather than independently re-authoring them; the current
+  repository contract remains the final implementation authority.
 - Treat the current repository, executable configuration and Git state as the
   implementation facts. `docs/project/` records durable product intent and
   state; historical material under `docs/archive/` is evidence, not authority.
