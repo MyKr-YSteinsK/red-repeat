@@ -209,3 +209,20 @@ semantic `<ruby>/<rt>` while preserving the canonical original for accessible
 names, copy-oriented semantics, playback selection and lyric references. The
 existing `layers` contract remains backward compatible. Ruby and content
 changes do not authorize Timeline/audio timing edits.
+
+## D-019｜常规真人验收作为部署后观察｜Routine Real-use Checks as Post-deploy Observation
+
+- Status: Accepted
+- Source: `USER_DECISION` + RED-Plan-44 Closeout
+
+对 RED:REPEAT 的常规 UI、内容、歌曲 source、普通交互和低风险维护，匹配
+边界的自动化/本地验证通过后即可视为开发完成并进入 Production 交付。真实
+设备、听感、PWA 实际使用等无法自动证明的属性，不再默认作为阻塞 commit/push
+的 USER CHECK；它们作为 `POST-DEPLOY OBSERVATION`，在用户正常使用中发现
+问题后再开 focused fix Task。
+
+D-016 继续有效：自动化证据不能被描述成已经证明 iOS/PWA 几何、听感、触控、
+compositing 或其他真实设备/感知属性。只有高风险、不可逆、数据/identity/PWA
+lifecycle 变更，当前 Plan 明确要求真人 gate，或问题无法安全部署后发现时，
+USER CHECK 才作为 `BLOCKING USER CHECK`。这项策略不减少匹配边界的自动化验证
+要求，也不取消必要的真实证据。

@@ -157,19 +157,24 @@ start a new intake from zero under the current source/content contracts.
   source, translation, Explain expansion, Timeline or audio change was made.
 - Future `千本桜` import, cover/translation intake and Explain expansion remain
   separate follow-up scope; no private material was reclassified in this Plan.
-- Version classification is `no-version`. This implementation has not yet
-  closed the required human/browser USER CHECK.
+- `RED-Plan-44` is `COMPLETE` under `D-019`: matching automated/local evidence
+  passed and the implementation is ready for Production delivery. Dedicated
+  human/browser and real-device checks are recorded below as
+  `POST-DEPLOY OBSERVATION`; they are not claimed as human PASS.
+- Version classification is `no-version`.
 
-## Pending USER CHECK / UNKNOWN
+## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
-- `USER CHECK — pending (RED-Plan-44)`: listen/inspect representative
-  Han-dense, mixed Japanese/English and special-reading lines in Practice,
-  Full Song, Explain and production Timing Debugger; verify click playback,
-  the 10-unit grouping and continuous playback across former `o012`→`o013`,
-  `o033`→`o034` and `o049`→`o050` boundaries.
-- `Real-device verification: not executed`: mobile/iOS/PWA ruby geometry,
-  wrapping, touch and perceived readability remain unverified for this Plan;
-  automated regression evidence must not be promoted to a real-device PASS.
+- `POST-DEPLOY OBSERVATION (RED-Plan-44)`: mobile/iOS/PWA ruby geometry,
+  wrapping, touch and perceived readability were not separately executed. The
+  three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
+  `o049`→`o050`) were also not separately verified by subjective continuous
+  listening. These are not claimed as human PASS and are not active blocking
+  debt under `D-019`; users can surface any low-cost follow-up during normal
+  Production use.
+- No `BLOCKING USER CHECK` or current RED-Plan-44 `UNKNOWN` remains open. This
+  does not promote automated regression evidence to a real-device, perceptual,
+  audible-timing or installed-client lifecycle PASS.
 - No new unresolved reading ambiguity was identified from the available user
   material and existing Kana/romaji evidence. Existing future PWA/device risks
   remain governed by D-013/D-016 and are not reopened by this content change.
@@ -208,11 +213,20 @@ start a new intake from zero under the current source/content contracts.
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
   product code or canonical timing.
-- `RED-Plan-44` implementation is complete, but formal closeout remains pending
-  the USER CHECK above. The source/runtime/UI ruby contract, 61-segment WORK
-  backfill, artist correction and 13→10 Practice regroup are in the local
-  no-version commit boundary; `timeline.json`, canonical audio identity and
-  playback timing are unchanged.
+- `RED-Plan-44` is complete under `D-019`: the source/runtime/UI ruby contract,
+  61-segment WORK backfill, artist correction and 13→10 Practice regroup are
+  in the no-version commit boundary; `timeline.json`, canonical audio identity
+  and playback timing are unchanged. The unexecuted device geometry/touch
+  checks and subjective listening across the three former merge boundaries are
+  retained as `POST-DEPLOY OBSERVATION`, not as a claimed human PASS or active
+  blocking debt.
+- `D-019` establishes the default delivery model: ordinary in-scope UI,
+  content, song-source, interaction and low-risk maintenance work with passing
+  matching automated/local verification may enter Production after focused
+  commit and normal push. Explicit or high-risk `BLOCKING USER CHECK` items
+  remain release gates; other real-use evidence is observed after deployment.
+- Next normal product work begins at `RED-Plan-45`; this Closeout does not
+  implement that Plan.
 - Lifecycle checkpoint conclusion: `Production`. Migration/stabilization
   closeout is complete, with no active migration cleanup; current work proceeds
   as normal Production maintenance and feature evolution. Future boundary

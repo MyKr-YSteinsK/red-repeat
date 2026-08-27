@@ -77,6 +77,23 @@ runtime Skills and should not be duplicated here.
 - Real-device and human checks remain explicit USER CHECK items when automation
   cannot prove browser-native, perceptual or installed-PWA behavior.
 
+## USER CHECK classification
+
+- A `BLOCKING USER CHECK` remains required when the current Plan explicitly
+  requires a human gate, the work is high-risk or destructive for data,
+  persistence, identity or release state, audio identity is uncertain,
+  canonical timing lacks credible audio evidence, the PWA update-manager or
+  installed-client lifecycle itself changed with explicit lifecycle acceptance,
+  or the issue cannot be safely discovered and corrected after deployment.
+- A `POST-DEPLOY OBSERVATION` covers ordinary mobile visual behavior, ruby
+  geometry or wrapping, general touch feel, low-risk content display, Practice
+  grouping comfort and other low-cost follow-up observations. It is recorded
+  honestly and does not itself block completion or normal delivery.
+- This classification changes the default delivery gate, not the evidence
+  boundary: D-016 remains in force. Automated or static evidence must not be
+  described as proof of real-device geometry, compositing, touch, audible
+  timing, perception or installed-client lifecycle behavior.
+
 ## Version and delivery model
 
 - Semantic user versions describe user-visible change, independently of Plan,
@@ -94,17 +111,20 @@ runtime Skills and should not be duplicated here.
   or SHAs in this contract. A release tag identifies the implementation commit,
   while the deployed build SHA may be a later tested `main` metadata/source
   commit; these are distinct but must remain coherent.
-- When a formal Plan satisfies all Acceptance, required USER CHECK is complete,
-  no Stop Condition applies, and required pre-push verification passes, Codex
-  must commit the authorized changes and normally push the current branch to
-  its tracking remote without waiting for a separate push confirmation.
+- When a formal Plan's in-scope implementation is complete, matching
+  automated/local verification passes, no Stop Condition or high-risk
+  destructive/data/identity/release conflict applies, the Plan does not say
+  `no push`, and no explicit `BLOCKING USER CHECK` remains, Codex must mark it
+  COMPLETE, commit the authorized changes and normally push the current branch
+  to its tracking remote without waiting for a separate push confirmation.
 - This default auto-push rule is not blanket authorization for release/tag or
   other external operations. Do not auto-push when the Plan says `no push`, the
-  Plan is PARTIAL or required USER CHECK is incomplete, the worktree contains
-  unowned or unclear changes, the remote diverged, branch ownership is unclear,
-  a force operation would be needed, a tag conflicts, a new release/version/tag
-  decision is not authorized, private/public rights or secrets are unclear, or
-  required verification fails.
+  Plan is PARTIAL or an explicit `BLOCKING USER CHECK` is incomplete, the
+  worktree contains unowned or unclear changes, the remote diverged, branch
+  ownership is unclear, a force operation would be needed, a tag conflicts, a
+  new release/version/tag decision is not authorized, private/public rights or
+  secrets are unclear, or required verification fails. An ordinary
+  `POST-DEPLOY OBSERVATION` does not itself prevent COMPLETE or auto-push.
 - A successful push to `main` enters the current CI quality and dependent Pages
   deployment boundary; `TASK_RESULT` must report resulting HEAD, worktree,
   branch/remote sync and push result when this occurs.
