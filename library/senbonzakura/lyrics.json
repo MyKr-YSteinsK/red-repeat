@@ -24,6 +24,13 @@
         }
       ],
       "translation": "大胆无畏维新革命",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "daitan futeki ni haikara kakumei"
+        }
+      ],
       "notes": [
         {
           "title": "ハイカラ",
@@ -49,6 +56,13 @@
         }
       ],
       "translation": "光明磊落反战国家",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "rairai rakuraku hansen kokka"
+        }
+      ],
       "notes": [
         {
           "title": "磊々落々",
@@ -79,7 +93,14 @@
           "reading": "ころがし"
         }
       ],
-      "translation": "骑着日之丸印的二轮车"
+      "translation": "骑着日之丸印的二轮车",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hinomaru jirushi no nirinsha korogashi"
+        }
+      ]
     },
     {
       "id": "s004",
@@ -93,6 +114,13 @@
         }
       ],
       "translation": "恶灵退散ICBM",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "akuryou taisan ICBM"
+        }
+      ],
       "notes": [
         {
           "title": "悪霊退散／ICBM",
@@ -117,7 +145,14 @@
           "reading": "はしりぬけて"
         }
       ],
-      "translation": "奔驰穿过环状线"
+      "translation": "奔驰穿过环状线",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kanjousen o hashirinukete"
+        }
+      ]
     },
     {
       "id": "s006",
@@ -130,7 +165,14 @@
           "reading": "とうほんせいそう"
         }
       ],
-      "translation": "东奔西走不算什么"
+      "translation": "东奔西走不算什么",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "touhon seisou nanno sono"
+        }
+      ]
     },
     {
       "id": "s007",
@@ -149,7 +191,14 @@
           "reading": "せんごくむそう"
         }
       ],
-      "translation": "少年少女战国无双"
+      "translation": "少年少女战国无双",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shounen shoujo sengoku musou"
+        }
+      ]
     },
     {
       "id": "s008",
@@ -169,6 +218,13 @@
         }
       ],
       "translation": "跟从着浮世浪",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ukiyo no manimani"
+        }
+      ],
       "notes": [
         {
           "title": "随に",
@@ -193,7 +249,14 @@
           "reading": "よるにまぎれ"
         }
       ],
-      "translation": "千本樱融入夜中"
+      "translation": "千本樱融入夜中",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "senbonzakura yoru ni magire"
+        }
+      ]
     },
     {
       "id": "s010",
@@ -206,7 +269,14 @@
           "reading": "きみのこえもとどかないよ"
         }
       ],
-      "translation": "连你的声音也传不到啊"
+      "translation": "连你的声音也传不到啊",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi no koe mo todokanai yo"
+        }
+      ]
     },
     {
       "id": "s011",
@@ -237,7 +307,14 @@
           "reading": "おり"
         }
       ],
-      "translation": "此处开宴钢铁牢笼中"
+      "translation": "此处开宴钢铁牢笼中",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "koko wa utage hagane no ori"
+        }
+      ]
     },
     {
       "id": "s012",
@@ -256,7 +333,14 @@
           "reading": "みおろして"
         }
       ],
-      "translation": "自那断头台上往下看吧"
+      "translation": "自那断头台上往下看吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono dantoudai de mioroshite"
+        }
+      ]
     },
     {
       "id": "s013",
@@ -276,6 +360,13 @@
         }
       ],
       "translation": "三千世界黄泉之暗",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sanzen sekai tokoyo no yami"
+        }
+      ],
       "notes": [
         {
           "title": "三千世界／常世",
@@ -294,7 +385,14 @@
           "reading": "なげくうたもきこえないよ"
         }
       ],
-      "translation": "连哀叹之歌也听不见啊"
+      "translation": "连哀叹之歌也听不见啊",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nageku uta mo kikoenai yo"
+        }
+      ]
     },
     {
       "id": "s015",
@@ -319,7 +417,14 @@
           "reading": "はるかかなた"
         }
       ],
-      "translation": "青蓝天空遥远彼端"
+      "translation": "青蓝天空遥远彼端",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "seiran no sora haruka kanata"
+        }
+      ]
     },
     {
       "id": "s016",
@@ -338,7 +443,14 @@
           "reading": "うちぬいて"
         }
       ],
-      "translation": "就用那光线枪射穿吧"
+      "translation": "就用那光线枪射穿吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono kousenjuu de uchinuite"
+        }
+      ]
     },
     {
       "id": "s017",
@@ -364,6 +476,13 @@
         }
       ],
       "translation": "看来身经百战实为将校",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hyakusen renma no mitame wa shoukou"
+        }
+      ],
       "notes": [
         {
           "title": "百戦錬磨／将校",
@@ -383,6 +502,13 @@
         }
       ],
       "translation": "人潮来往的花魁道中",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ittarikitari no oiran douchuu"
+        }
+      ],
       "notes": [
         {
           "title": "花魁道中",
@@ -419,7 +545,14 @@
           "reading": "あつまれ"
         }
       ],
-      "translation": "不管那个人或这个人大家都过来吧"
+      "translation": "不管那个人或这个人大家都过来吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "aitsu mo koitsu mo minna de atsumare"
+        }
+      ]
     },
     {
       "id": "s020",
@@ -438,7 +571,14 @@
           "reading": "こうしん"
         }
       ],
-      "translation": "圣者的行进"
+      "translation": "圣者的行进",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "seija no koushin"
+        }
+      ]
     },
     {
       "id": "s021",
@@ -469,7 +609,14 @@
           "reading": "しー"
         }
       ],
-      "translation": "一二三四"
+      "translation": "一二三四",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "wan tsuu san shii"
+        }
+      ]
     },
     {
       "id": "s022",
@@ -489,6 +636,13 @@
         }
       ],
       "translation": "穿过出家僧人旁",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "zenjoumon o kugurinukete"
+        }
+      ],
       "notes": [
         {
           "title": "禅定門",
@@ -514,6 +668,13 @@
         }
       ],
       "translation": "极乐净土驱凶避邪",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "anraku joudo yakuharai"
+        }
+      ],
       "notes": [
         {
           "title": "安楽浄土／厄払い",
@@ -538,7 +699,14 @@
           "reading": "だいだんえん"
         }
       ],
-      "translation": "最后一幕一定就是大团圆"
+      "translation": "最后一幕一定就是大团圆",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kitto shuumaku wa daidan'en"
+        }
+      ]
     },
     {
       "id": "s025",
@@ -557,7 +725,14 @@
           "reading": "あいま"
         }
       ],
-      "translation": "在掌声的同时"
+      "translation": "在掌声的同时",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hakushu no aima"
+        }
+      ]
     },
     {
       "id": "s026",
@@ -582,7 +757,14 @@
           "reading": "はるかかなた"
         }
       ],
-      "translation": "希望之丘遥远彼端"
+      "translation": "希望之丘遥远彼端",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kibou no oka haruka kanata"
+        }
+      ]
     },
     {
       "id": "s027",
@@ -601,7 +783,14 @@
           "reading": "うちあげろ"
         }
       ],
-      "translation": "就将那闪光弹射入天吧"
+      "translation": "就将那闪光弹射入天吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono senkoudan o uchiagero"
+        }
+      ]
     },
     {
       "id": "s028",
@@ -620,7 +809,14 @@
           "reading": "とびおりて"
         }
       ],
-      "translation": "自那断头台上跳下来吧"
+      "translation": "自那断头台上跳下来吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono dantoudai o tobiorite"
+        }
+      ]
     },
     {
       "id": "s029",
@@ -651,7 +847,14 @@
           "reading": "おどる"
         }
       ],
-      "translation": "你歌我舞"
+      "translation": "你歌我舞",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi ga utai boku wa odoru"
+        }
+      ]
     },
     {
       "id": "s030",
@@ -670,7 +873,14 @@
           "reading": "うちまくれ"
         }
       ],
-      "translation": "扣下光线枪的扳机吧"
+      "translation": "扣下光线枪的扳机吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "saa kousenjuu o uchimakure"
+        }
+      ]
     }
   ]
 }
