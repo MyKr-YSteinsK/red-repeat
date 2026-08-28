@@ -255,6 +255,40 @@ describe('PracticeWorkspace 1.0', () => {
     )
   })
 
+  it('follows Resolver primary occurrence during continuous playback without persisting frame updates', async () => {
+    const engine = createFakeEngine()
+    const { container } = renderWorkspace(engine)
+
+    fireEvent.click(screen.getByRole('button', { name: '连续播放' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
+    await waitFor(() => expect(engine.playRangeUntilComplete).toHaveBeenCalledOnce())
+
+    const storedAfterSelection = snapshotLocalStorage()
+    engine.update({ status: 'playing', currentTimeMs: 700 })
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-occurrence-id="o002"]')).toHaveClass(
+        'is-current',
+      )
+      expect(container.querySelector('.practice-workspace')).toHaveAttribute(
+        'data-audible-occurrence-id',
+        'o002',
+      )
+    })
+    expect(snapshotLocalStorage()).toEqual(storedAfterSelection)
+
+    engine.update({ currentTimeMs: 200 })
+    await waitFor(() => {
+      expect(document.querySelector('[data-occurrence-id="o001"]')).toHaveClass(
+        'is-current',
+      )
+      expect(container.querySelector('.practice-workspace')).toHaveAttribute(
+        'data-current-occurrence-id',
+        'o001',
+      )
+    })
+  })
+
   it('keeps one, two, and four-line units on the same measured dock reserve', () => {
     vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(852)
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
@@ -505,9 +539,18 @@ function createFakeEngine() {
     pause: vi.fn(() => update({ status: 'paused', intent: 'continuous' })),
     setPlaybackRate: vi.fn((rate: number) => update({ playbackRate: rate })),
     playRangeUntilComplete: vi.fn(async () => ({ status: 'completed' as const })),
+    update,
   }
   return engine as unknown as AudioEngine & {
     playRangeUntilComplete: ReturnType<typeof vi.fn>
     setPlaybackRate: ReturnType<typeof vi.fn>
+    update: (next: Partial<AudioEngineState>) => void
   }
+}
+
+function snapshotLocalStorage(): string[] {
+  return Array.from({ length: window.localStorage.length }, (_, index) => {
+    const key = window.localStorage.key(index)
+    return `${key}:${key ? window.localStorage.getItem(key) : ''}`
+  }).sort()
 }

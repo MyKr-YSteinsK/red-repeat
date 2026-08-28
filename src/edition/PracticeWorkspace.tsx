@@ -322,6 +322,17 @@ export function PracticeWorkspace({
   const currentUnitOccurrences = currentUnit.occurrenceIds
     .map((occurrenceId) => model.occurrencesById[occurrenceId])
     .filter((occurrence): occurrence is AssembledOccurrence => Boolean(occurrence))
+  const followsPlayback =
+    (continuousPlayback || rampPractice) && playback.audioState.status === 'playing'
+  const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
+  const audibleCurrentOccurrenceId =
+    followsPlayback &&
+    primaryOccurrenceId &&
+    currentUnit.occurrenceIds.includes(primaryOccurrenceId)
+      ? primaryOccurrenceId
+      : undefined
+  const visibleCurrentOccurrenceId =
+    audibleCurrentOccurrenceId ?? currentOccurrence.occurrence.id
   const currentOccurrenceIndex = currentUnitOccurrences.findIndex(
     ({ occurrence }) => occurrence.id === currentOccurrence.occurrence.id,
   )
@@ -333,7 +344,8 @@ export function PracticeWorkspace({
       className="practice-workspace"
       aria-label="学唱工作台"
       data-current-unit-id={currentUnit.id}
-      data-current-occurrence-id={currentOccurrence.occurrence.id}
+      data-current-occurrence-id={visibleCurrentOccurrenceId}
+      data-audible-occurrence-id={audibleCurrentOccurrenceId}
       data-continuous-playback={continuousPlayback}
       data-ramp-practice={rampPractice}
     >
@@ -355,7 +367,7 @@ export function PracticeWorkspace({
                   key={assembledOccurrence.occurrence.id}
                   assembledOccurrence={assembledOccurrence}
                   lyricNumber={index + 1}
-                  isCurrent={assembledOccurrence.occurrence.id === currentOccurrence.occurrence.id}
+                  isCurrent={assembledOccurrence.occurrence.id === visibleCurrentOccurrenceId}
                   onPlay={() => handleOccurrenceClick(assembledOccurrence.occurrence.id)}
                 />
               ))}
@@ -474,37 +486,39 @@ function PracticeLyricRow({
       className={`practice-lyric-row${isCurrent ? ' is-current' : ''}`}
       data-occurrence-id={occurrence.id}
     >
-      <button
-        className="practice-original"
-        type="button"
-        onClick={onPlay}
-        aria-label={`播放第 ${String(lyricNumber).padStart(2, '0')} 句`}
-      >
-        <LyricText segment={segment} />
-      </button>
-      <p className="practice-translation">{segment.translation}</p>
-      {segment.layers?.length ? (
-        <div className="practice-readings" aria-label="读音">
-          {segment.layers.map((layer) => (
-            <p key={layer.id}>
-              <span>{layer.label}</span> {layer.text}
-            </p>
-          ))}
-        </div>
-      ) : null}
-      {segment.notes?.length ? (
-        <details className="practice-note">
-          <summary>查看提示</summary>
-          <div>
-            {segment.notes.map((note, index) => (
-              <p key={`${note.title ?? 'note'}-${index}`}>
-                {note.title ? <strong>{note.title}</strong> : null}
-                {note.body}
+      <div className="practice-lyric-cluster">
+        <button
+          className="practice-original"
+          type="button"
+          onClick={onPlay}
+          aria-label={`播放第 ${String(lyricNumber).padStart(2, '0')} 句`}
+        >
+          <LyricText segment={segment} />
+        </button>
+        <p className="practice-translation">{segment.translation}</p>
+        {segment.layers?.length ? (
+          <div className="practice-readings" aria-label="读音">
+            {segment.layers.map((layer) => (
+              <p key={layer.id}>
+                <span>{layer.label}</span> {layer.text}
               </p>
             ))}
           </div>
-        </details>
-      ) : null}
+        ) : null}
+        {segment.notes?.length ? (
+          <details className="practice-note">
+            <summary>查看提示</summary>
+            <div>
+              {segment.notes.map((note, index) => (
+                <p key={`${note.title ?? 'note'}-${index}`}>
+                  {note.title ? <strong>{note.title}</strong> : null}
+                  {note.body}
+                </p>
+              ))}
+            </div>
+          </details>
+        ) : null}
+      </div>
     </li>
   )
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { Catalog, CatalogEdition } from '../library/runtime-schema'
 import {
@@ -8,7 +8,6 @@ import {
   createEffectivePracticeTimingProvider,
   createTimingOverridesDocument,
   readTimingOverrides,
-  resetTimingOverride,
   saveTimingOverrides,
   updateTimingOverride,
   type TimingOverrideIdentity,
@@ -147,6 +146,8 @@ function TimingDebuggerReady({
 }) {
   const model = core.assembled
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
+  const debuggerRef = useRef<HTMLElement | null>(null)
+  const dockRef = useRef<HTMLElement | null>(null)
   const identity = useMemo<TimingOverrideIdentity>(
     () => ({
       songId: core.edition.song.songId,
@@ -212,25 +213,6 @@ function TimingDebuggerReady({
     }
   }
 
-  const setTimingFromPlayback = (field: 'playStartMs' | 'playEndMs'): void => {
-    if (!selectedOccurrence) {
-      return
-    }
-    try {
-      setDocument((current) =>
-        updateTimingOverride(
-          current,
-          selectedOccurrence,
-          field,
-          playback.audioState.currentTimeMs,
-        ),
-      )
-      setMessage(undefined)
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : '播放切口无效。')
-    }
-  }
-
   const previewSelectedOccurrence = (): void => {
     if (!selectedOccurrence || !playback.engine) {
       setMessage('当前环境无法播放音频。')
@@ -262,14 +244,6 @@ function TimingDebuggerReady({
     }
   }
 
-  const resetSelected = (): void => {
-    if (!selectedOccurrence) {
-      return
-    }
-    setDocument((current) => resetTimingOverride(current, selectedOccurrence.id))
-    setMessage('当前句已恢复 canonical timing。保存后生效。')
-  }
-
   const selectRelative = (offset: -1 | 1): void => {
     const target = chronologicalOccurrences[selectedIndex + offset]
     if (target) {
@@ -277,8 +251,46 @@ function TimingDebuggerReady({
     }
   }
 
+  useLayoutEffect(() => {
+    const debuggerElement = debuggerRef.current
+    const dock = dockRef.current
+    if (!debuggerElement || !dock) {
+      return
+    }
+
+    const updateDockOcclusion = (): void => {
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+      const dockRect = dock.getBoundingClientRect()
+      const bottomOffset = Math.max(0, viewportHeight - dockRect.bottom)
+      const occlusion = Math.max(0, dockRect.height + bottomOffset)
+      debuggerElement.style.setProperty(
+        '--timing-debugger-dock-occlusion',
+        `${Math.ceil(occlusion)}px`,
+      )
+    }
+
+    updateDockOcclusion()
+    const resizeObserver =
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(updateDockOcclusion)
+        : undefined
+    resizeObserver?.observe(dock)
+    window.addEventListener('resize', updateDockOcclusion)
+    window.visualViewport?.addEventListener('resize', updateDockOcclusion)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateDockOcclusion)
+      window.visualViewport?.removeEventListener('resize', updateDockOcclusion)
+    }
+  }, [])
+
   return (
-    <main className="timing-debugger" data-debugger-state="ready">
+    <main
+      ref={debuggerRef}
+      className="timing-debugger"
+      data-debugger-state="ready"
+    >
       <header className="timing-debugger-header">
         <div>
           <p className="eyebrow">播放切口调试 / {core.edition.song.songId}</p>
@@ -299,9 +311,6 @@ function TimingDebuggerReady({
           <span className="timing-debugger-identity">Edition {core.edition.contentHash.slice(0, 12)}</span>
         </div>
         <div className="timing-debugger-transport" aria-label="播放切口播放控制">
-          <button type="button" onClick={previewSelectedOccurrence} disabled={!selectedOccurrence || !playback.engine}>
-            试听当前句
-          </button>
           <button type="button" onClick={() => selectRelative(-1)} disabled={selectedIndex <= 0}>
             上一句
           </button>
@@ -312,7 +321,6 @@ function TimingDebuggerReady({
           >
             下一句
           </button>
-          <button type="button" onClick={save}>保存本机微调</button>
         </div>
       </section>
 
@@ -349,21 +357,17 @@ function TimingDebuggerReady({
           ))}
         </section>
 
-        <aside className="timing-debugger-console" aria-label="当前句播放切口控制台">
+        <aside
+          ref={dockRef}
+          className="timing-debugger-console"
+          aria-label="当前句播放切口控制台"
+        >
           <p className="eyebrow">当前句播放切口</p>
-          <h2>
-            {selectedOccurrence ? (
-              <LyricText
-                segment={model.occurrencesById[selectedOccurrence.id]!.segment}
-              />
-            ) : '请选择一句歌词'}
-          </h2>
           {selectedOccurrence ? (
             <>
               <dl className="timing-debugger-values">
-                <div><dt>playStartMs</dt><dd>{timingProvider.getTiming(selectedOccurrence).playStartMs}</dd></div>
-                <div><dt>playEndMs</dt><dd>{timingProvider.getTiming(selectedOccurrence).playEndMs}</dd></div>
-                <div><dt>当前播放位置</dt><dd>{playback.audioState.currentTimeMs} ms</dd></div>
+                <div><dt>起点</dt><dd>{timingProvider.getTiming(selectedOccurrence).playStartMs} ms</dd></div>
+                <div><dt>终点</dt><dd>{timingProvider.getTiming(selectedOccurrence).playEndMs} ms</dd></div>
               </dl>
               <div className="timing-debugger-adjustment-group">
                 <span>起点</span>
@@ -373,7 +377,6 @@ function TimingDebuggerReady({
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
-                  <button type="button" onClick={() => setTimingFromPlayback('playStartMs')}>用当前位置</button>
                 </div>
               </div>
               <div className="timing-debugger-adjustment-group">
@@ -384,12 +387,11 @@ function TimingDebuggerReady({
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
-                  <button type="button" onClick={() => setTimingFromPlayback('playEndMs')}>用当前位置</button>
                 </div>
               </div>
               <div className="timing-debugger-console-actions">
-                <button type="button" onClick={resetSelected}>恢复当前句默认</button>
-                <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine}>试听当前句</button>
+                <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine}>播放</button>
+                <button type="button" onClick={save}>保存本机微调</button>
               </div>
             </>
           ) : null}

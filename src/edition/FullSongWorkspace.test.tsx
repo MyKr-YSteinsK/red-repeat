@@ -170,6 +170,17 @@ describe('FullSongWorkspace', () => {
     expect(screen.getByText('Repeat me')).toBeInTheDocument()
     expect(screen.getByText('再来一次')).toBeInTheDocument()
     expect(screen.getByText('器乐段')).toBeInTheDocument()
+    expect(
+      document.querySelectorAll(
+        '.full-song-instrumental-marker-signal',
+      ),
+    ).toHaveLength(1)
+    expect(
+      document.querySelectorAll(
+        '.full-song-instrumental-marker > span:not(.full-song-instrumental-marker-signal)',
+      ),
+    ).toHaveLength(3)
+    expect(document.querySelectorAll('.full-song-lyric-cluster')).toHaveLength(4)
     expect(screen.queryByText('Only a private note.')).not.toBeInTheDocument()
     expect(screen.getByText('リピート・ミー')).toBeInTheDocument()
   })

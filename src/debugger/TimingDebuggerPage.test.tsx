@@ -145,9 +145,18 @@ describe('TimingDebuggerPage', () => {
 
     expect(screen.queryByText('startMs')).not.toBeInTheDocument()
     expect(screen.queryByText('endMs')).not.toBeInTheDocument()
+    expect(screen.queryByText('playStartMs')).not.toBeInTheDocument()
+    expect(screen.queryByText('playEndMs')).not.toBeInTheDocument()
+    expect(screen.queryByText('当前播放位置')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '用当前位置' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '恢复当前句默认' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: '播放' })).toHaveLength(1)
+    expect(screen.getByRole('button', { name: '保存本机微调' })).toBeInTheDocument()
+    expect(screen.getAllByText('起点')).toHaveLength(2)
+    expect(screen.getAllByText('终点')).toHaveLength(2)
     fireEvent.click(screen.getAllByRole('button', { name: '+20ms' })[0])
 
-    expect(screen.getByText('70')).toBeInTheDocument()
+    expect(screen.getByText('70 ms')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
 
     await waitFor(() => {

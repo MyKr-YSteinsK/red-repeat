@@ -356,7 +356,7 @@ function FullSongLyrics({
               aria-label={`播放器乐段：${section.label}`}
               onClick={() => onSelectSection(section)}
             >
-              <span aria-hidden="true" />
+              <span className="full-song-instrumental-marker-signal" aria-hidden="true" />
               <span>器乐段</span>
               <span aria-hidden="true"> / </span>
               <span>{section.label}</span>
@@ -441,25 +441,27 @@ function FullSongOccurrence({
       data-active-kind={isPrimary ? 'primary' : isActive ? 'secondary' : 'none'}
       aria-current={isPrimary ? 'true' : undefined}
     >
-      <button
-        className="full-song-original"
-        type="button"
-        aria-label={`从这里连续播放：${segment.lyrics}`}
-        onClick={() => onSelect(assembledOccurrence)}
-      >
-        <LyricText segment={segment} />
-      </button>
-      <p className="full-song-translation">{segment.translation}</p>
-      {segment.layers?.length ? (
-        <div className="full-song-reading" aria-label="读音">
-          {segment.layers.map((layer) => (
-            <p key={layer.id}>
-              <span>{layer.label}</span>
-              {layer.text}
-            </p>
-          ))}
-        </div>
-      ) : null}
+      <div className="full-song-lyric-cluster">
+        <button
+          className="full-song-original"
+          type="button"
+          aria-label={`从这里连续播放：${segment.lyrics}`}
+          onClick={() => onSelect(assembledOccurrence)}
+        >
+          <LyricText segment={segment} />
+        </button>
+        <p className="full-song-translation">{segment.translation}</p>
+        {segment.layers?.length ? (
+          <div className="full-song-reading" aria-label="读音">
+            {segment.layers.map((layer) => (
+              <p key={layer.id}>
+                <span>{layer.label}</span>
+                {layer.text}
+              </p>
+            ))}
+          </div>
+        ) : null}
+      </div>
       {isSelected ? (
         <div className="full-song-quick-actions" aria-label="当前句操作">
           <button className="full-song-quick-action" type="button" onClick={() => onReplay(assembledOccurrence)}>
