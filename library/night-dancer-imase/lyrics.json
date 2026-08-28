@@ -1,0 +1,922 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "どうでもいいような 夜だけど",
+      "ruby": [
+        {
+          "start": 10,
+          "end": 11,
+          "base": "夜",
+          "reading": "よる"
+        }
+      ],
+      "translation": "虽是个无所谓的夜晚",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dou demo ii you na yoru dakedo"
+        }
+      ]
+    },
+    {
+      "id": "s002",
+      "lyrics": "響めき 煌めきと君も",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "響めき",
+          "reading": "どよめき"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "煌めき",
+          "reading": "きらめき"
+        },
+        {
+          "start": 8,
+          "end": 9,
+          "base": "君",
+          "reading": "きみ"
+        }
+      ],
+      "translation": "即使你的回声也在闪耀",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "doyomeki kirameki to kimi mo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "響めき／煌めき",
+          "body": "「響めき」はここでは「どよめき」と歌われ、声や音が鳴り響くざわめきを指す。「煌めき（きらめき）」は光のきらめき。音と光を並べることで、サビの夜景に聴覚と視覚の両方を持ち込んでいる。"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "まだ止まった 刻む針も",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 6,
+          "base": "止まった",
+          "reading": "とまった"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "刻む",
+          "reading": "きざむ"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "針",
+          "reading": "はり"
+        }
+      ],
+      "translation": "即使是还没停的指针",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mada tomatta kizamu hari mo"
+        }
+      ]
+    },
+    {
+      "id": "s004",
+      "lyrics": "入り浸った 散らかる部屋も",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "入り浸った",
+          "reading": "いりびたった"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "散らかる",
+          "reading": "ちらかる"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "部屋",
+          "reading": "へや"
+        }
+      ],
+      "translation": "即使是乱糟糟的房间",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "iribitatta chirakaru heya mo"
+        }
+      ]
+    },
+    {
+      "id": "s005",
+      "lyrics": "変わらないね 思い出しては",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "変わらない",
+          "reading": "かわらない"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "base": "思い出して",
+          "reading": "おもいだして"
+        }
+      ],
+      "translation": "现在想起来 还有没有变呢",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kawaranai ne omoidashite wa"
+        }
+      ]
+    },
+    {
+      "id": "s006",
+      "lyrics": "二人 歳を重ねてた",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "二人",
+          "reading": "ふたり"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "歳",
+          "reading": "とし"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "重ねてた",
+          "reading": "かさねてた"
+        }
+      ],
+      "translation": "两个人上了年龄",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "futari toshi o kasaneteta"
+        }
+      ]
+    },
+    {
+      "id": "s007",
+      "lyrics": "また止まった 落とす針を",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 6,
+          "base": "止まった",
+          "reading": "とまった"
+        },
+        {
+          "start": 7,
+          "end": 10,
+          "base": "落とす",
+          "reading": "おとす"
+        },
+        {
+          "start": 10,
+          "end": 11,
+          "base": "針",
+          "reading": "はり"
+        }
+      ],
+      "translation": "像停止后落下的针",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mata tomatta otosu hari o"
+        }
+      ],
+      "notes": [
+        {
+          "title": "「針」がつなぐ時間とレコード",
+          "body": "前段の「刻む針」は時計の針を自然に連想させる一方、「落とす針」はレコード針の動作に近い。後の「ズレた針」まで含めると、時間・音楽・二人のずれが同じ「針」で重なる。これは歌詞構造上の RED:REPEAT 編集観察。"
+        }
+      ]
+    },
+    {
+      "id": "s008",
+      "lyrics": "よく流した 聞き飽きるほど",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "流した",
+          "reading": "ながした"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "聞き飽きる",
+          "reading": "ききあきる"
+        }
+      ],
+      "translation": "听腻了流言蜚语",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yoku nagashita kikiakiru hodo"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "変わらないね 変わらないで",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "変わらない",
+          "reading": "かわらない"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "base": "変わらない",
+          "reading": "かわらない"
+        }
+      ],
+      "translation": "不会变吧 请不要变",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kawaranai ne kawaranaide"
+        }
+      ]
+    },
+    {
+      "id": "s010",
+      "lyrics": "いられたのは 君だけか",
+      "ruby": [
+        {
+          "start": 7,
+          "end": 8,
+          "base": "君",
+          "reading": "きみ"
+        }
+      ],
+      "translation": "呆在那的只有你",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "irareta no wa kimi dake ka"
+        }
+      ]
+    },
+    {
+      "id": "s011",
+      "lyrics": "無駄話で はぐらかして",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "無駄話",
+          "reading": "むだばなし"
+        }
+      ],
+      "translation": "用废话搪塞过去",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mudabanashi de hagurakashite"
+        }
+      ]
+    },
+    {
+      "id": "s012",
+      "lyrics": "触れた先を ためらうように",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "触れた",
+          "reading": "ふれた"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "先",
+          "reading": "さき"
+        }
+      ],
+      "translation": "在触碰之前犹豫不决",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "fureta saki o tamerau you ni"
+        }
+      ]
+    },
+    {
+      "id": "s013",
+      "lyrics": "足踏みして ズレた針を",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "足踏み",
+          "reading": "あしぶみ"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "ズレた",
+          "reading": "ずれた"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "針",
+          "reading": "はり"
+        }
+      ],
+      "translation": "因踏步而错位的针",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ashibumi shite zureta hari o"
+        }
+      ]
+    },
+    {
+      "id": "s014",
+      "lyrics": "余所に 揃い始めてた",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "余所",
+          "reading": "よそ"
+        },
+        {
+          "start": 4,
+          "end": 10,
+          "base": "揃い始めてた",
+          "reading": "そろいはじめてた"
+        }
+      ],
+      "translation": "开始在别处集合了",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yoso ni soroi hajimeteta"
+        }
+      ],
+      "notes": [
+        {
+          "title": "余所に",
+          "body": "「よそに」。場所としての「別の所」だけでなく、「〜を余所に」で「〜を顧みず／そっちのけに」の意味にもなる。本曲では直前の「ズレた針を」とつながり、「ずれた針をよそに」という流れで読むのが自然。"
+        }
+      ]
+    },
+    {
+      "id": "s015",
+      "lyrics": "息が",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "息",
+          "reading": "いき"
+        }
+      ],
+      "translation": "呼吸",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "iki ga"
+        }
+      ]
+    },
+    {
+      "id": "s016",
+      "lyrics": "踊ろう",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "踊ろう",
+          "reading": "おどろう"
+        }
+      ],
+      "translation": "跳起来(指跳舞)",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "odorou"
+        }
+      ]
+    },
+    {
+      "id": "s017",
+      "lyrics": "二人刻もう",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "二人",
+          "reading": "ふたり"
+        },
+        {
+          "start": 2,
+          "end": 5,
+          "base": "刻もう",
+          "reading": "きざもう"
+        }
+      ],
+      "translation": "雕刻上两人吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "futari kizamou"
+        }
+      ],
+      "notes": [
+        {
+          "title": "刻もう",
+          "body": "「刻む」は物に刻み付けるほか、時間やリズムを刻むとも言う。繰り返される「針」と同じ語彙圏にあり、「二人刻もう」は二人の時間を残す／リズムを共有するイメージを同時に呼び込みやすい。"
+        }
+      ]
+    },
+    {
+      "id": "s018",
+      "lyrics": "透き通った 白い肌も",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "透き通った",
+          "reading": "すきとおった"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "白い",
+          "reading": "しろい"
+        },
+        {
+          "start": 8,
+          "end": 9,
+          "base": "肌",
+          "reading": "はだ"
+        }
+      ],
+      "translation": "透明白皙的皮肤",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sukitootta shiroi hada mo"
+        }
+      ]
+    },
+    {
+      "id": "s019",
+      "lyrics": "その笑った 無邪気な顔も",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "笑った",
+          "reading": "わらった"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "無邪気",
+          "reading": "むじゃき"
+        },
+        {
+          "start": 10,
+          "end": 11,
+          "base": "顔",
+          "reading": "かお"
+        }
+      ],
+      "translation": "那张天真无邪的脸",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono waratta mujaki na kao mo"
+        }
+      ]
+    },
+    {
+      "id": "s020",
+      "lyrics": "いられるのは 今だけか",
+      "ruby": [
+        {
+          "start": 7,
+          "end": 8,
+          "base": "今",
+          "reading": "いま"
+        }
+      ],
+      "translation": "只有现在还在吗",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "irareru no wa ima dake ka"
+        }
+      ]
+    },
+    {
+      "id": "s021",
+      "lyrics": "見つめるほどに",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "見つめる",
+          "reading": "みつめる"
+        }
+      ],
+      "translation": "越是发现",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mitsumeru hodo ni"
+        }
+      ]
+    },
+    {
+      "id": "s022",
+      "lyrics": "溢れる メモリー",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "溢れる",
+          "reading": "あふれる"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "メモリー",
+          "reading": "めもりー"
+        }
+      ],
+      "translation": "那溢出的记忆",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "afureru memorii"
+        }
+      ]
+    },
+    {
+      "id": "s023",
+      "lyrics": "浮つく心に コーヒーを",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "浮つく",
+          "reading": "うわつく"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "心",
+          "reading": "こころ"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "コーヒー",
+          "reading": "こーひー"
+        }
+      ],
+      "translation": "给浮动的心一杯咖啡吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "uwatsuku kokoro ni koohii o"
+        }
+      ],
+      "notes": [
+        {
+          "title": "浮つく",
+          "body": "「うわつく」。気持ちが落ち着かず、そわそわしたり浮足立ったりすること。「浮つく心にコーヒーを」は、昂ぶった夜の心を日常的な飲み物で少し落ち着かせるような軽い対比になっている。"
+        }
+      ]
+    },
+    {
+      "id": "s024",
+      "lyrics": "乱れた部屋に 掠れたメロディー",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "乱れた",
+          "reading": "みだれた"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "部屋",
+          "reading": "へや"
+        },
+        {
+          "start": 7,
+          "end": 10,
+          "base": "掠れた",
+          "reading": "かすれた"
+        },
+        {
+          "start": 10,
+          "end": 15,
+          "base": "メロディー",
+          "reading": "めろでぃー"
+        }
+      ],
+      "translation": "在凌乱的房间中掠过的旋律",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "midareta heya ni kasureta merodii"
+        }
+      ],
+      "notes": [
+        {
+          "title": "掠れた",
+          "body": "「かすれた」。声や音が十分に出ず、乾いたり擦れたりして聞こえる状態にも使う。「掠れたメロディー」は、部屋の空気や記憶の曖昧さと相性のよい音の描写。"
+        }
+      ]
+    },
+    {
+      "id": "s025",
+      "lyrics": "混ざりあってよう",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 8,
+          "base": "混ざりあってよう",
+          "reading": "まざりあってよう"
+        }
+      ],
+      "translation": "混杂在一起",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mazariatte you"
+        }
+      ]
+    },
+    {
+      "id": "s026",
+      "lyrics": "もう一度",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 4,
+          "base": "一度",
+          "reading": "いちど"
+        }
+      ],
+      "translation": "再一次",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mou ichido"
+        }
+      ]
+    },
+    {
+      "id": "s027",
+      "lyrics": "ときめき 色めきと君も",
+      "ruby": [
+        {
+          "start": 5,
+          "end": 8,
+          "base": "色めき",
+          "reading": "いろめき"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "君",
+          "reading": "きみ"
+        }
+      ],
+      "translation": "你和心跳的颜色",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tokimeki iromeki to kimi mo"
+        }
+      ]
+    },
+    {
+      "id": "s028",
+      "lyrics": "夜は長い おぼつかない",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "夜",
+          "reading": "よる"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "長い",
+          "reading": "ながい"
+        }
+      ],
+      "translation": "目标很远还不可靠",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yoru wa nagai obotsukanai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "おぼつかない",
+          "body": "確かでなく頼りない、または足取りが不安定な様子。「夜は長い」と並ぶことで先行きの不確かさを作り、後半の「ふらつき」「よろめき」という身体感覚にもつながる。"
+        }
+      ]
+    },
+    {
+      "id": "s029",
+      "lyrics": "今にも止まりそうな ミュージック",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "今",
+          "reading": "いま"
+        },
+        {
+          "start": 3,
+          "end": 8,
+          "base": "止まりそう",
+          "reading": "とまりそう"
+        },
+        {
+          "start": 10,
+          "end": 16,
+          "base": "ミュージック",
+          "reading": "みゅーじっく"
+        }
+      ],
+      "translation": "随时可能停止的音乐",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ima ni mo tomarisou na myuujikku"
+        }
+      ]
+    },
+    {
+      "id": "s030",
+      "lyrics": "君といたい 溺れてたい",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "溺れてたい",
+          "reading": "おぼれてたい"
+        }
+      ],
+      "translation": "想和你一起沉溺",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi to itai oboretetai"
+        }
+      ]
+    },
+    {
+      "id": "s031",
+      "lyrics": "明日がこなくたって もういいの",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "明日",
+          "reading": "あした"
+        }
+      ],
+      "translation": "明天不来也可以吗",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ashita ga konakutatte mou ii no"
+        }
+      ]
+    },
+    {
+      "id": "s032",
+      "lyrics": "あぁ あぁ 愛して",
+      "ruby": [
+        {
+          "start": 6,
+          "end": 9,
+          "base": "愛して",
+          "reading": "あいして"
+        }
+      ],
+      "translation": "啊 啊 爱我吧",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "aa aa aishite"
+        }
+      ]
+    },
+    {
+      "id": "s033",
+      "lyrics": "どうでもいいから 僕だけを",
+      "ruby": [
+        {
+          "start": 9,
+          "end": 10,
+          "base": "僕",
+          "reading": "ぼく"
+        }
+      ],
+      "translation": "你只管把我",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dou demo ii kara boku dake o"
+        }
+      ]
+    },
+    {
+      "id": "s034",
+      "lyrics": "ふらつき よろめきながらも",
+      "translation": "虽然摆动着摇晃着",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "furatsuki yoromeki nagara mo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "ふらつき／よろめき",
+          "body": "どちらも身体が安定せず揺れる動きを表す。「踊ろう」の直前に置かれるため、きれいに整ったダンスだけでなく、感情まで揺れながら二人で夜を進む感覚が強くなる。"
+        }
+      ]
+    }
+  ]
+}

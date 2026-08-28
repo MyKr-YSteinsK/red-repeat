@@ -1,0 +1,416 @@
+{
+  "audioSourceHash": "373393efa184640fab23dee91bc1a691094003f6ac42bb082bf21d0de29dc9e3",
+  "sections": [
+    {
+      "id": "opening-hook",
+      "label": "Opening Hook",
+      "startMs": 0,
+      "endMs": 9180
+    },
+    {
+      "id": "instrumental-1",
+      "label": "Instrumental 1",
+      "startMs": 9180,
+      "endMs": 25060
+    },
+    {
+      "id": "verse-1",
+      "label": "Verse 1",
+      "startMs": 25060,
+      "endMs": 57690
+    },
+    {
+      "id": "pre-chorus-1",
+      "label": "Pre-Chorus",
+      "startMs": 57690,
+      "endMs": 74610
+    },
+    {
+      "id": "chorus-1",
+      "label": "Chorus 1",
+      "startMs": 74610,
+      "endMs": 91960
+    },
+    {
+      "id": "interlude",
+      "label": "Interlude",
+      "startMs": 91960,
+      "endMs": 106540
+    },
+    {
+      "id": "verse-2",
+      "label": "Verse 2",
+      "startMs": 106540,
+      "endMs": 140360
+    },
+    {
+      "id": "chorus-2",
+      "label": "Chorus 2",
+      "startMs": 140360,
+      "endMs": 156670
+    },
+    {
+      "id": "bridge",
+      "label": "Bridge",
+      "startMs": 156670,
+      "endMs": 175420
+    },
+    {
+      "id": "final-chorus",
+      "label": "Final Chorus",
+      "startMs": 175420,
+      "endMs": 208300
+    },
+    {
+      "id": "outro",
+      "label": "Outro",
+      "startMs": 208300,
+      "endMs": 210991
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "o001",
+      "segmentId": "s001",
+      "sectionId": "opening-hook",
+      "startMs": 1050,
+      "endMs": 4630
+    },
+    {
+      "id": "o002",
+      "segmentId": "s002",
+      "sectionId": "opening-hook",
+      "startMs": 4710,
+      "endMs": 9000
+    },
+    {
+      "id": "o003",
+      "segmentId": "s003",
+      "sectionId": "verse-1",
+      "startMs": 25060,
+      "endMs": 28760
+    },
+    {
+      "id": "o004",
+      "segmentId": "s004",
+      "sectionId": "verse-1",
+      "startMs": 29000,
+      "endMs": 33050
+    },
+    {
+      "id": "o005",
+      "segmentId": "s005",
+      "sectionId": "verse-1",
+      "startMs": 33110,
+      "endMs": 37080
+    },
+    {
+      "id": "o006",
+      "segmentId": "s006",
+      "sectionId": "verse-1",
+      "startMs": 37130,
+      "endMs": 41090
+    },
+    {
+      "id": "o007",
+      "segmentId": "s007",
+      "sectionId": "verse-1",
+      "startMs": 41310,
+      "endMs": 45170
+    },
+    {
+      "id": "o008",
+      "segmentId": "s008",
+      "sectionId": "verse-1",
+      "startMs": 45280,
+      "endMs": 49260
+    },
+    {
+      "id": "o009",
+      "segmentId": "s009",
+      "sectionId": "verse-1",
+      "startMs": 49430,
+      "endMs": 53280
+    },
+    {
+      "id": "o010",
+      "segmentId": "s010",
+      "sectionId": "verse-1",
+      "startMs": 53320,
+      "endMs": 57460
+    },
+    {
+      "id": "o011",
+      "segmentId": "s011",
+      "sectionId": "pre-chorus-1",
+      "startMs": 57690,
+      "endMs": 61600
+    },
+    {
+      "id": "o012",
+      "segmentId": "s012",
+      "sectionId": "pre-chorus-1",
+      "startMs": 61740,
+      "endMs": 65620
+    },
+    {
+      "id": "o013",
+      "segmentId": "s013",
+      "sectionId": "pre-chorus-1",
+      "startMs": 65680,
+      "endMs": 70080
+    },
+    {
+      "id": "o014",
+      "segmentId": "s014",
+      "sectionId": "pre-chorus-1",
+      "startMs": 70120,
+      "endMs": 73110
+    },
+    {
+      "id": "o015",
+      "segmentId": "s015",
+      "sectionId": "pre-chorus-1",
+      "startMs": 73180,
+      "endMs": 74380
+    },
+    {
+      "id": "o016",
+      "segmentId": "s001",
+      "sectionId": "chorus-1",
+      "startMs": 74610,
+      "endMs": 78450
+    },
+    {
+      "id": "o017",
+      "segmentId": "s002",
+      "sectionId": "chorus-1",
+      "startMs": 78510,
+      "endMs": 81550
+    },
+    {
+      "id": "o018",
+      "segmentId": "s016",
+      "sectionId": "chorus-1",
+      "startMs": 81800,
+      "endMs": 82550
+    },
+    {
+      "id": "o019",
+      "segmentId": "s001",
+      "sectionId": "chorus-1",
+      "startMs": 82740,
+      "endMs": 87100
+    },
+    {
+      "id": "o020",
+      "segmentId": "s017",
+      "sectionId": "chorus-1",
+      "startMs": 87150,
+      "endMs": 91400
+    },
+    {
+      "id": "o021",
+      "segmentId": "s018",
+      "sectionId": "verse-2",
+      "startMs": 106540,
+      "endMs": 110790
+    },
+    {
+      "id": "o022",
+      "segmentId": "s019",
+      "sectionId": "verse-2",
+      "startMs": 110920,
+      "endMs": 115050
+    },
+    {
+      "id": "o023",
+      "segmentId": "s009",
+      "sectionId": "verse-2",
+      "startMs": 115100,
+      "endMs": 119050
+    },
+    {
+      "id": "o024",
+      "segmentId": "s020",
+      "sectionId": "verse-2",
+      "startMs": 119100,
+      "endMs": 124010
+    },
+    {
+      "id": "o025",
+      "segmentId": "s021",
+      "sectionId": "verse-2",
+      "startMs": 124060,
+      "endMs": 125610
+    },
+    {
+      "id": "o026",
+      "segmentId": "s022",
+      "sectionId": "verse-2",
+      "startMs": 126020,
+      "endMs": 128250
+    },
+    {
+      "id": "o027",
+      "segmentId": "s023",
+      "sectionId": "verse-2",
+      "startMs": 128300,
+      "endMs": 132310
+    },
+    {
+      "id": "o028",
+      "segmentId": "s024",
+      "sectionId": "verse-2",
+      "startMs": 132400,
+      "endMs": 136360
+    },
+    {
+      "id": "o029",
+      "segmentId": "s025",
+      "sectionId": "verse-2",
+      "startMs": 136420,
+      "endMs": 139030
+    },
+    {
+      "id": "o030",
+      "segmentId": "s026",
+      "sectionId": "verse-2",
+      "startMs": 139320,
+      "endMs": 140000
+    },
+    {
+      "id": "o031",
+      "segmentId": "s001",
+      "sectionId": "chorus-2",
+      "startMs": 140360,
+      "endMs": 144070
+    },
+    {
+      "id": "o032",
+      "segmentId": "s027",
+      "sectionId": "chorus-2",
+      "startMs": 144130,
+      "endMs": 147630
+    },
+    {
+      "id": "o033",
+      "segmentId": "s016",
+      "sectionId": "chorus-2",
+      "startMs": 147680,
+      "endMs": 148190
+    },
+    {
+      "id": "o034",
+      "segmentId": "s001",
+      "sectionId": "chorus-2",
+      "startMs": 148520,
+      "endMs": 152850
+    },
+    {
+      "id": "o035",
+      "segmentId": "s017",
+      "sectionId": "chorus-2",
+      "startMs": 152900,
+      "endMs": 156440
+    },
+    {
+      "id": "o036",
+      "segmentId": "s028",
+      "sectionId": "bridge",
+      "startMs": 156670,
+      "endMs": 160310
+    },
+    {
+      "id": "o037",
+      "segmentId": "s029",
+      "sectionId": "bridge",
+      "startMs": 160560,
+      "endMs": 164410
+    },
+    {
+      "id": "o038",
+      "segmentId": "s030",
+      "sectionId": "bridge",
+      "startMs": 164680,
+      "endMs": 168490
+    },
+    {
+      "id": "o039",
+      "segmentId": "s031",
+      "sectionId": "bridge",
+      "startMs": 168730,
+      "endMs": 173300
+    },
+    {
+      "id": "o040",
+      "segmentId": "s001",
+      "sectionId": "final-chorus",
+      "startMs": 175420,
+      "endMs": 178980
+    },
+    {
+      "id": "o041",
+      "segmentId": "s002",
+      "sectionId": "final-chorus",
+      "startMs": 179030,
+      "endMs": 182270
+    },
+    {
+      "id": "o042",
+      "segmentId": "s016",
+      "sectionId": "final-chorus",
+      "startMs": 182530,
+      "endMs": 182950
+    },
+    {
+      "id": "o043",
+      "segmentId": "s001",
+      "sectionId": "final-chorus",
+      "startMs": 183280,
+      "endMs": 186800
+    },
+    {
+      "id": "o044",
+      "segmentId": "s032",
+      "sectionId": "final-chorus",
+      "startMs": 186860,
+      "endMs": 191580
+    },
+    {
+      "id": "o045",
+      "segmentId": "s033",
+      "sectionId": "final-chorus",
+      "startMs": 191640,
+      "endMs": 195320
+    },
+    {
+      "id": "o046",
+      "segmentId": "s034",
+      "sectionId": "final-chorus",
+      "startMs": 195400,
+      "endMs": 198620
+    },
+    {
+      "id": "o047",
+      "segmentId": "s016",
+      "sectionId": "final-chorus",
+      "startMs": 198670,
+      "endMs": 199530
+    },
+    {
+      "id": "o048",
+      "segmentId": "s001",
+      "sectionId": "final-chorus",
+      "startMs": 199770,
+      "endMs": 204030
+    },
+    {
+      "id": "o049",
+      "segmentId": "s017",
+      "sectionId": "final-chorus",
+      "startMs": 204080,
+      "endMs": 207650
+    }
+  ]
+}

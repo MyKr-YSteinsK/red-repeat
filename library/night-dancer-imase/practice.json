@@ -1,0 +1,130 @@
+{
+  "units": [
+    {
+      "id": "p001",
+      "sectionId": "opening-hook",
+      "label": "Opening Hook · 夜的入口",
+      "occurrenceIds": [
+        "o001",
+        "o002"
+      ]
+    },
+    {
+      "id": "p002",
+      "sectionId": "verse-1",
+      "label": "Verse 1A · 房间与时间",
+      "occurrenceIds": [
+        "o003",
+        "o004",
+        "o005",
+        "o006"
+      ]
+    },
+    {
+      "id": "p003",
+      "sectionId": "verse-1",
+      "label": "Verse 1B · 唱针与不变",
+      "occurrenceIds": [
+        "o007",
+        "o008",
+        "o009",
+        "o010"
+      ]
+    },
+    {
+      "id": "p004",
+      "sectionId": "pre-chorus-1",
+      "label": "Pre-Chorus · 呼吸对齐",
+      "occurrenceIds": [
+        "o011",
+        "o012",
+        "o013",
+        "o014",
+        "o015"
+      ]
+    },
+    {
+      "id": "p005",
+      "sectionId": "chorus-1",
+      "label": "Chorus 1 · 一起跳舞",
+      "occurrenceIds": [
+        "o016",
+        "o017",
+        "o018",
+        "o019",
+        "o020"
+      ]
+    },
+    {
+      "id": "p006",
+      "sectionId": "verse-2",
+      "label": "Verse 2A · 眼前的人",
+      "occurrenceIds": [
+        "o021",
+        "o022",
+        "o023",
+        "o024"
+      ]
+    },
+    {
+      "id": "p007",
+      "sectionId": "verse-2",
+      "label": "Verse 2B · 记忆与旋律",
+      "occurrenceIds": [
+        "o025",
+        "o026",
+        "o027",
+        "o028",
+        "o029",
+        "o030"
+      ]
+    },
+    {
+      "id": "p008",
+      "sectionId": "chorus-2",
+      "label": "Chorus 2 · 再一次",
+      "occurrenceIds": [
+        "o031",
+        "o032",
+        "o033",
+        "o034",
+        "o035"
+      ]
+    },
+    {
+      "id": "p009",
+      "sectionId": "bridge",
+      "label": "Bridge · 夜还很长",
+      "occurrenceIds": [
+        "o036",
+        "o037",
+        "o038",
+        "o039"
+      ]
+    },
+    {
+      "id": "p010",
+      "sectionId": "final-chorus",
+      "label": "Final Chorus A · 热度上升",
+      "occurrenceIds": [
+        "o040",
+        "o041",
+        "o042",
+        "o043",
+        "o044"
+      ]
+    },
+    {
+      "id": "p011",
+      "sectionId": "final-chorus",
+      "label": "Final Chorus B · 僕だけを",
+      "occurrenceIds": [
+        "o045",
+        "o046",
+        "o047",
+        "o048",
+        "o049"
+      ]
+    }
+  ]
+}
