@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.9.0`
+- Current user version: `1.9.1`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.9.0` / `v1.9.0 -> a006304`; existing
-  `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
+- Latest ledger/tag: `1.9.1` / `v1.9.1 -> 3cd207e`; existing
+  `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
@@ -453,11 +453,11 @@ uses the separately authorized task-input source package.
 
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
-- `POST-DEPLOY OBSERVATION (RED-Plan-50)`: actual target-device/iOS installed-
-  PWA dock feel, continuous-focus perception, short/long lyric wrapping and
-  final-row spacing still require ordinary production observation; this Plan's
-  narrow browser geometry and static behavior checks do not claim true-device
-  or installed-client evidence.
+- `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
+  installed-PWA dock/glass feel, continuous-focus perception and short/long
+  lyric wrapping still require ordinary production observation. RED-Plan-54
+  verified final-row reachability and narrow browser geometry, but did not
+  execute real-device, Safari or installed-client evidence.
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
   wrapping, touch and perceived readability were not separately executed. The
   three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
@@ -475,7 +475,7 @@ uses the separately authorized task-input source package.
 - `POST-DEPLOY OBSERVATION (RED-Plan-52)`: ordinary reading may still surface
   a fact or wording issue in the new Explain Features or lyric notes. No
   additional human gate was required for this content-only integration.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -535,6 +535,19 @@ uses the separately authorized task-input source package.
   commit `a006304`, with `v1.9.0` / `MINOR` release metadata finalized in the
   following metadata commit. The tag target remains the product commit and
   the metadata commit is the deployed build identity.
+- `RED-Plan-54` is complete: Practice and Full Song lyric clusters use a stable
+  left reading axis; Practice uses a measured minimum final-row reachability
+  reserve; Practice, Full Song and Timing Debugger use the lighter shared glass
+  surface; and the mobile Timing Debugger is an edge-to-edge safe-area sheet.
+  At `390×844`, the pre-fix `176px` computed Practice padding and `88.457px`
+  max-scroll final-row gap became a `104px` measured reserve and `16.175px`
+  final-row-to-dock gap; the same gap held at `390×1000`. Browser stacking
+  probes placed real lyric elements beneath the dock/player. Product commit
+  `3cd207e` carries the UI fix, `1.9.1` is `PATCH`, and `v1.9.1` targets that
+  product commit; the following metadata commit is the independently deployed
+  build identity. No canonical timing, audio, content, schema, compiler,
+  runtime or PWA lifecycle behavior changed. Real-device/Safari/installed-PWA
+  perception remains `POST-DEPLOY OBSERVATION`, not a claimed human PASS.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

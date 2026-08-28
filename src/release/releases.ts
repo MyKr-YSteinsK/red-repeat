@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.9.1',
+    date: '2026-08-28',
+    commit: '3cd207e',
+    level: 'patch',
+    title: '移动端歌词布局与底部控制层校正',
+    summary: '修复窄屏歌词左侧阅读锚点、Practice 尾部可达性和 Practice / Full Song / Timing Debugger 控制层的玻璃与贴边几何。',
+    changes: [
+      '恢复 Practice 与 Full Song 歌词内容簇的稳定左侧阅读轴，保留 ruby、翻译、点击目标和换行对齐。',
+      '用基于 fixed dock 实测高度和最终行可达性的最小 reserve 替代 Practice 完整 dock 高度留白。',
+      '降低控制层背景 alpha 并提供显式 fallback，统一 Practice、Full Song 与 Timing Debugger 的轻量 glass surface；移动 Timing Debugger 改为 safe-area 内收的 edge-to-edge bottom sheet。',
+    ],
+  },
+  {
     version: '1.9.0',
     date: '2026-08-28',
     commit: 'a006304',
