@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.9.1`
+- Current user version: `1.9.2`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.9.1` / `v1.9.1 -> 3cd207e`; existing
+- Latest ledger/tag: `1.9.2` / `v1.9.2 -> 449e3ce`; existing
+  `v1.9.1 -> 3cd207e`,
   `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
@@ -64,7 +65,9 @@ Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
 one JPG cover, six Explain Markdown features and 9 reviewed note targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
-text and existing `layers` remain separate source contracts. The legacy
+text and existing `layers` remain separate source contracts. Both public
+editions retain their canonical source layers; `senbonzakura` now has one
+non-empty `Romaji` layer on each of its 30 Segments. The legacy
 migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
 uses the separately authorized task-input source package.
 
@@ -451,6 +454,35 @@ uses the separately authorized task-input source package.
   metadata commit and deployed build identity are recorded after metadata
   finalization.
 
+## RED-Plan-55 implementation and release status
+
+- Preflight passed for the canonical `senbonzakura` source: exactly 30 unique
+  Segment IDs `s001`–`s030`, all lyrics non-empty, translations present and
+  existing ruby spans valid.
+- Every one of the 30 Segments now has exactly one non-empty `layers[id=romaji]`
+  entry labeled `Romaji`. The completed text is lowercase ASCII except for the
+  intentional Latin token `ICBM`; it contains no Han/Kana, macrons, repeated
+  spaces or surrounding whitespace. Representative checked readings include
+  `ukiyo no manimani`, `senbonzakura yoru ni magire`, `tokoyo no yami`,
+  `oiran douchuu`, `wan tsuu san shii` and `saa kousenjuu o uchimakure`.
+- Strict preservation audit confirmed that only the new `layers` field changed;
+  canonical Japanese lyrics, ruby, translation, notes, timing, Occurrence,
+  Practice, Section, audio and all other source fields remain unchanged. The
+  `senbonzakura` audio identity remains
+  `5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19`.
+- `npm run library:validate`, `npm run library:compile`, `npm run build`,
+  `npm run pwa:inspect`, `npm run pwa:inspect -- /red-repeat/` and
+  `git diff --check` passed. Runtime spot-checks confirmed Romaji display in
+  Practice, Full Song and Explain representative lyric paths. Existing
+  optional `NO_HERO_ARTWORK` warnings remain unchanged.
+- Product-focused commit is `449e3ce`; release metadata records `1.9.2` at
+  `PATCH` level (`1.9.1 -> 1.9.2`), and `v1.9.2` targets that product commit.
+  The following release-metadata commit is the independently deployed build
+  identity.
+- No executable source, timing, UI, PWA lifecycle or runtime contract change
+  was made. `USER CHECK` is `NONE` for this content-only boundary; no new
+  real-device or audible-timing gate was required.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -475,6 +507,10 @@ uses the separately authorized task-input source package.
 - `POST-DEPLOY OBSERVATION (RED-Plan-52)`: ordinary reading may still surface
   a fact or wording issue in the new Explain Features or lyric notes. No
   additional human gate was required for this content-only integration.
+- `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
+  surface a preferred Romaji segmentation or spelling convention. The 30
+  source layers are complete and validated; this is residual observation, not
+  a blocking acceptance gate.
 - No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
@@ -548,6 +584,12 @@ uses the separately authorized task-input source package.
   build identity. No canonical timing, audio, content, schema, compiler,
   runtime or PWA lifecycle behavior changed. Real-device/Safari/installed-PWA
   perception remains `POST-DEPLOY OBSERVATION`, not a claimed human PASS.
+- `RED-Plan-55` is complete: all 30 canonical `senbonzakura` Segments carry a
+  validated Romaji layer, with source timing, audio, structure and runtime
+  behavior preserved. Product commit `449e3ce` is tagged as `v1.9.2` at PATCH
+  level; the following metadata commit is the independently deployed build
+  identity. Any future Romaji preference refinement remains a separate
+  content boundary.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.9.2',
+    date: '2026-08-28',
+    commit: '449e3ce',
+    level: 'patch',
+    title: '《千本桜》全歌词罗马音完整补齐',
+    summary: '为《千本桜》全部 30 个 canonical Segment 补齐可直接用于学唱的 Romaji layer。',
+    changes: [
+      '为 s001–s030 全部 30 个唯一 Segment 添加一个非空 Romaji layer，并保留 ruby、歌词、translation 与 notes。',
+      '沿用现有 WORK Romaji 风格，覆盖片假名拼写、特殊读音、助词、长音和 ICBM 混合 Latin token。',
+      '保持 Occurrence、timing、Practice、Section、audio、schema、compiler、runtime 与 UI 不变。',
+    ],
+  },
+  {
     version: '1.9.1',
     date: '2026-08-28',
     commit: '3cd207e',
