@@ -106,6 +106,55 @@ describe('SongEditionPage 学唱入口', () => {
     expect(screen.queryByRole('button', { name: 'Immersive' })).not.toBeInTheDocument()
   })
 
+  it('opens the high-quality cover in a centered backdrop without a close button', async () => {
+    render(<SongEditionPage {...propsFor()} />)
+
+    await screen.findByRole('heading', { name: 'First Light' })
+    const trigger = screen.getByRole('button', {
+      name: '查看First Light封面大图',
+    })
+    expect(trigger.querySelector('img')).toHaveAttribute(
+      'src',
+      '/app/library-runtime/cover.webp',
+    )
+
+    fireEvent.click(trigger)
+
+    const dialog = screen.getByRole('dialog', { name: 'First Light封面预览' })
+    const image = screen.getByRole('img', { name: 'First Light封面大图' })
+    expect(image).toHaveAttribute(
+      'src',
+      '/app/library-runtime/cover-large.webp',
+    )
+    expect(dialog.querySelector('button')).toBeNull()
+    expect(document.body.style.overflow).toBe('hidden')
+
+    fireEvent.click(image)
+    expect(screen.getByRole('dialog', { name: 'First Light封面预览' })).toBeInTheDocument()
+
+    fireEvent.click(dialog.parentElement!)
+    expect(screen.queryByRole('dialog', { name: 'First Light封面预览' })).not.toBeInTheDocument()
+    expect(document.body.style.overflow).toBe('')
+    expect(trigger).toHaveFocus()
+  })
+
+  it('closes the cover backdrop with Escape', async () => {
+    render(<SongEditionPage {...propsFor()} />)
+
+    await screen.findByRole('heading', { name: 'First Light' })
+    const trigger = screen.getByRole('button', {
+      name: '查看First Light封面大图',
+    })
+    fireEvent.click(trigger)
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'First Light封面预览' })).not.toBeInTheDocument()
+    })
+    expect(trigger).toHaveFocus()
+  })
+
   it('keeps 全曲 and 讲解 as explicit transition tabs', async () => {
     render(<SongEditionPage {...propsFor()} />)
     await screen.findByRole('heading', { name: 'First Light' })
@@ -193,6 +242,7 @@ describe('SongEditionPage 学唱入口', () => {
     const loadCountBeforeRender = media.load.mock.calls.length
     render(<SongEditionPage {...propsFor(undefined, engine)} />)
     await screen.findByRole('heading', { name: 'First Light' })
+    await waitFor(() => expect(media.load).toHaveBeenCalledTimes(loadCountBeforeRender + 1))
 
     fireEvent.click(screen.getByRole('button', { name: '播放第 01 句' }))
     await waitFor(() => expect(media.play).toHaveBeenCalledOnce())

@@ -118,6 +118,13 @@ const resumePracticeForApp = {
   ],
 }
 
+const resumeLyricsForApp = {
+  segments: [
+    { id: 's001', lyrics: 'First resume line', translation: '第一句' },
+    { id: 's002', lyrics: 'Second resume line', translation: '第二句' },
+  ],
+}
+
 beforeEach(() => {
   window.history.replaceState({}, '', '/')
   window.localStorage.clear()
@@ -321,7 +328,7 @@ describe('App Library consumer', () => {
     ).not.toBeInTheDocument()
     expect(document.querySelectorAll('[data-song-id]')).toHaveLength(2)
     expect(
-      await screen.findByRole('link', { name: '开始学唱 First Light' }),
+      await screen.findByRole('link', { name: '打开 First Light' }),
     ).toHaveAttribute('href', '/#edition=first-light')
     expect(document.querySelectorAll('.catalog-arrow')).toHaveLength(0)
     expect(document.querySelectorAll('.catalog-entry-main')).toHaveLength(2)
@@ -337,7 +344,7 @@ describe('App Library consumer', () => {
       screen.getByRole('button', { name: '下载 Second Signal' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: '开始学唱 Second Signal' }),
+      screen.getByRole('link', { name: '打开 Second Signal' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Returning / 2026')).toBeInTheDocument()
     expect(screen.getByText('Another Composer')).toBeInTheDocument()
@@ -351,7 +358,7 @@ describe('App Library consumer', () => {
     const longArtist =
       'Very Long Primary Artist Name × Another Collaborating Artist × Guest Artist'
     const longLink = await screen.findByRole('link', {
-      name: `开始学唱 ${longTitle}`,
+      name: `打开 ${longTitle}`,
     })
     const longCard = longLink.closest('.catalog-entry')
     const artist = screen.getByText(longArtist)
@@ -365,7 +372,7 @@ describe('App Library consumer', () => {
     )
     expect(screen.queryByText('↗')).not.toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: '开始学唱 Year Only' }),
+      screen.getByRole('link', { name: '打开 Year Only' }),
     ).toBeInTheDocument()
   })
 
@@ -546,7 +553,7 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={clientFor(populatedCatalog)} />)
 
     fireEvent.click(
-      await screen.findByRole('link', { name: '开始学唱 First Light' }),
+      await screen.findByRole('link', { name: '打开 First Light' }),
     )
     expect(
       await screen.findByRole('heading', { name: 'First Light' }),
@@ -561,7 +568,7 @@ describe('App Library consumer', () => {
     })
   })
 
-  it('renders the catalog before resume enrichment and then shows a direct continue summary', async () => {
+  it('keeps catalog cards focused on metadata and skips resume enrichment', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
       JSON.stringify({
@@ -572,108 +579,27 @@ describe('App Library consumer', () => {
         updatedAt: 200,
       }),
     )
-    let resolveEdition: ((response: Response) => void) | undefined
     const fetchImpl = vi.fn<typeof fetch>(async (input) => {
       const url = String(input)
-      if (url.endsWith('/catalog.json')) {
-        return jsonResponse(populatedCatalog)
-      }
-      if (url.endsWith('/edition.a.json')) {
-        return new Promise<Response>((resolve) => {
-          resolveEdition = resolve
-        })
-      }
+      if (url.endsWith('/catalog.json')) return jsonResponse(populatedCatalog)
       return responseForResumeUrl(input)
     })
 
     render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
 
-    expect(
-      await screen.findByRole('heading', { name: '曲库' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: '开始学唱 First Light' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
     expect(screen.queryByText('上次：主歌 B · 第2句')).not.toBeInTheDocument()
-
-    resolveEdition?.(jsonResponse(runtimeEditionForApp))
-
+    expect(screen.queryByText('开始学唱')).not.toBeInTheDocument()
+    expect(screen.queryByText('继续学唱')).not.toBeInTheDocument()
     expect(
-      (await screen.findAllByRole('link', { name: '继续学唱 First Light' })).length,
-    ).toBe(1)
-    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(1)
-    expect(
-      fetchImpl.mock.calls.some(([input]) => String(input).endsWith('/lyrics.a.json')),
+      fetchImpl.mock.calls.some(([input]) =>
+        /\/edition\.|\/practice\.|\/timeline\./.test(String(input)),
+      ),
     ).toBe(false)
   })
 
-  it('shows a legacy resume summary without writing a timestamp', async () => {
-    const legacyState = JSON.stringify({
-      schemaVersion: 1,
-      practiceUnitId: 'p001',
-      currentOccurrenceId: 'o002',
-      coveredUntilByUnit: { p001: 'o002' },
-    })
-    window.localStorage.setItem('red-repeat:practice:first-light', legacyState)
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
-
-    try {
-      render(
-        <App
-          runtimeClient={createRuntimeClient({
-            fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)),
-          })}
-        />,
-      )
-
-      expect(
-        await screen.findByRole('link', { name: '继续学唱 First Light' }),
-      ).toBeInTheDocument()
-      expect(screen.getByText('上次：主歌 B · 第2句')).toBeInTheDocument()
-      expect(
-        screen.queryByRole('heading', { name: '最近学习' }),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.getByRole('link', { name: '开始学唱 Second Signal' }),
-      ).toBeInTheDocument()
-      expect(window.localStorage.getItem('red-repeat:practice:first-light')).toBe(
-        legacyState,
-      )
-      expect(setItemSpy).not.toHaveBeenCalled()
-    } finally {
-      setItemSpy.mockRestore()
-    }
-  })
-
-  it('falls back to start when a legacy resume position is stale', async () => {
-    window.localStorage.setItem(
-      'red-repeat:practice:first-light',
-      JSON.stringify({
-        schemaVersion: 1,
-        practiceUnitId: 'missing',
-        currentOccurrenceId: 'missing',
-        coveredUntilByUnit: { missing: 'missing' },
-      }),
-    )
-
-    render(
-      <App
-        runtimeClient={createRuntimeClient({
-          fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)),
-        })}
-      />,
-    )
-
-    expect(
-      await screen.findByRole('link', { name: '开始学唱 First Light' }),
-    ).toBeInTheDocument()
-    expect(screen.queryByText(/上次：/)).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('heading', { name: '最近学习' }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('isolates a single resume enrichment failure and keeps its card usable', async () => {
+  it('restores persisted Practice state after entering an edition', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
       JSON.stringify({
@@ -684,75 +610,38 @@ describe('App Library consumer', () => {
         updatedAt: 200,
       }),
     )
-    window.localStorage.setItem(
-      'red-repeat:practice:second-signal',
-      JSON.stringify({
-        schemaVersion: 1,
-        practiceUnitId: 'p001',
-        currentOccurrenceId: 'o002',
-        coveredUntilByUnit: { p001: 'o002' },
-        updatedAt: 100,
-      }),
-    )
-    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
-      const url = String(input)
-      if (url.endsWith('/catalog.json')) {
-        return jsonResponse(populatedCatalog)
-      }
-      if (url.includes('/second-signal/')) {
-        throw new TypeError('resume offline')
-      }
-      return responseForResumeUrl(input)
-    })
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => responseForResumeUrl(input))
 
     render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
 
-    expect(
-      (await screen.findAllByRole('link', { name: '继续学唱 First Light' })).length,
-    ).toBe(1)
-    expect(
-      screen.getByRole('link', { name: '开始学唱 Second Signal' }),
-    ).toBeInTheDocument()
-    expect(screen.getAllByText('上次：主歌 B · 第2句')).toHaveLength(1)
+    fireEvent.click(await screen.findByRole('link', { name: '打开 First Light' }))
+    expect(await screen.findByRole('heading', { name: 'First Light' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '主歌 B' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
+        'data-current-occurrence-id',
+        'o002',
+      )
+    })
   })
 
   it('keeps catalog order and filters title or artist in Unicode text', async () => {
-    window.localStorage.setItem(
-      'red-repeat:practice:first-light',
-      JSON.stringify({
-        schemaVersion: 1,
-        practiceUnitId: 'p001',
-        currentOccurrenceId: 'o001',
-        coveredUntilByUnit: { p001: 'o001' },
-        updatedAt: 100,
-      }),
-    )
-    window.localStorage.setItem(
-      'red-repeat:practice:second-signal',
-      JSON.stringify({
-        schemaVersion: 1,
-        practiceUnitId: 'p001',
-        currentOccurrenceId: 'o002',
-        coveredUntilByUnit: { p001: 'o002' },
-        updatedAt: 300,
-      }),
-    )
     render(<App runtimeClient={createRuntimeClient({ fetchImpl: vi.fn(async (input) => responseForResumeUrl(input)) })} />)
 
-    await screen.findByRole('link', { name: '继续学唱 Second Signal' })
-    expect(screen.getByRole('link', { name: '继续学唱 First Light' })).toBeInTheDocument()
+    await screen.findByRole('link', { name: '打开 Second Signal' })
+    expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: '最近学习' }),
     ).not.toBeInTheDocument()
 
     const search = screen.getByRole('searchbox', { name: '搜索歌曲或歌手' })
     fireEvent.change(search, { target: { value: 'another' } })
-    expect(screen.getByRole('link', { name: '继续学唱 Second Signal' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: '继续学唱 First Light' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '打开 Second Signal' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '打开 First Light' })).not.toBeInTheDocument()
 
     fireEvent.change(search, { target: { value: '不存在' } })
     expect(screen.getByRole('status')).toHaveTextContent('没有找到歌曲')
-    expect(screen.queryByRole('link', { name: '继续学唱 Second Signal' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
   })
 })
 
@@ -800,7 +689,7 @@ function responseForResumeUrl(input: RequestInfo | URL): Response {
   if (url.endsWith('/practice.a.json')) {
     return jsonResponse(resumePracticeForApp)
   }
-  return jsonResponse({ segments: [] })
+  return jsonResponse(resumeLyricsForApp)
 }
 
 function jsonResponse(payload: unknown): Response {

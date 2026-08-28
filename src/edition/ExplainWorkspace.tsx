@@ -27,7 +27,6 @@ export interface ExplainWorkspaceProps {
   features: readonly RuntimeFeatureContent[]
   featureErrors: readonly RuntimeFeatureLoadError[]
   audioEngine?: AudioEngine
-  onStartPracticeUnit?: (practiceUnitId: string) => void
 }
 
 interface ExplainTopicEntry {
@@ -45,7 +44,6 @@ export function ExplainWorkspace({
   features,
   featureErrors,
   audioEngine,
-  onStartPracticeUnit,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [selectedTopicId, setSelectedTopicId] = useState(
@@ -184,7 +182,6 @@ export function ExplainWorkspace({
                     model={model}
                     segmentId={segmentId}
                     audioEngine={playback.engine}
-                    onStartPracticeUnit={onStartPracticeUnit}
                   />
                 )}
               />

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -30,7 +30,39 @@ export function SongEditionPage({
   const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
     string | undefined
   >()
+  const [coverViewerOpen, setCoverViewerOpen] = useState(false)
+  const coverTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const coverViewerRef = useRef<HTMLDivElement | null>(null)
+  const coverViewerWasOpenRef = useRef(false)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
+
+  useEffect(() => {
+    if (!coverViewerOpen) {
+      if (coverViewerWasOpenRef.current) {
+        coverViewerWasOpenRef.current = false
+        coverTriggerRef.current?.focus()
+      }
+      return
+    }
+
+    coverViewerWasOpenRef.current = true
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setCoverViewerOpen(false)
+      }
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    coverViewerRef.current?.focus()
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [coverViewerOpen])
 
   if (state.status === 'loading') {
     return <SongEditionStatus homeHref={homeHref} />
@@ -88,11 +120,21 @@ export function SongEditionPage({
               </p>
             ) : null}
           </div>
-          <img
-            className="practice-page-cover"
-            src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
-            alt={`${song.title}封面`}
-          />
+          <button
+            ref={coverTriggerRef}
+            className="practice-page-cover-trigger"
+            type="button"
+            aria-label={`查看${song.title}封面大图`}
+            aria-haspopup="dialog"
+            aria-expanded={coverViewerOpen}
+            onClick={() => setCoverViewerOpen(true)}
+          >
+            <img
+              className="practice-page-cover"
+              src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
+              alt=""
+            />
+          </button>
         </div>
         <div className="practice-page-tools">
           <nav className="edition-task-nav" aria-label="歌曲任务">
@@ -153,12 +195,30 @@ export function SongEditionPage({
           features={core.features}
           featureErrors={core.featureErrors}
           audioEngine={audioEngine}
-          onStartPracticeUnit={(practiceUnitId) => {
-            setPracticeNavigationRequest(practiceUnitId)
-            setTab('practice')
-          }}
         />
       )}
+      {coverViewerOpen ? (
+        <div
+          className="cover-viewer-backdrop"
+          onClick={() => setCoverViewerOpen(false)}
+        >
+          <div
+            ref={coverViewerRef}
+            className="cover-viewer"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${song.title}封面预览`}
+            tabIndex={-1}
+          >
+            <img
+              className="cover-viewer-image"
+              src={runtimeClient.resolveAsset(core.edition.artwork.coverLargeUrl)}
+              alt={`${song.title}封面大图`}
+              onClick={(event) => event.stopPropagation()}
+            />
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }

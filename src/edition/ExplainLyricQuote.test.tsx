@@ -110,7 +110,6 @@ describe('ExplainLyricQuote', () => {
         model={model}
         segmentId="s021"
         audioEngine={engine}
-        onStartPracticeUnit={vi.fn()}
       />,
     )
 
@@ -140,26 +139,23 @@ describe('ExplainLyricQuote', () => {
     })
   })
 
-  it('hands the selected occurrence to its Practice Unit without autoplay or navigation', () => {
+  it('keeps the quote focused on listening without a Practice CTA', () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
     engine.loadSource('/audio.m4a')
-    const onStartPracticeUnit = vi.fn()
     render(
       <ExplainLyricQuote
         model={model}
         segmentId="s021"
         audioEngine={engine}
-        onStartPracticeUnit={onStartPracticeUnit}
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '学习这一段 →' }))
-
     expect(screen.getByRole('button', { name: '试听这句' })).toHaveClass('control-button')
-    expect(screen.getByRole('button', { name: '学习这一段 →' })).toHaveClass('control-button')
-    expect(onStartPracticeUnit).toHaveBeenCalledWith('p001')
+    expect(
+      screen.queryByRole('button', { name: '学习这一段 →' }),
+    ).not.toBeInTheDocument()
     expect(media.play).not.toHaveBeenCalled()
   })
 

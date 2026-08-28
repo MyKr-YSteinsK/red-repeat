@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
-import { createPracticeIndex } from '../practice/practice-scope'
 import { LyricText } from './LyricText'
 
 export interface ExplainLyricQuoteProps {
   model: AssembledSongEdition
   segmentId: string
   audioEngine?: AudioEngine | null
-  onStartPracticeUnit?: (practiceUnitId: string) => void
 }
 
 export function ExplainLyricQuote({
   model,
   segmentId,
   audioEngine,
-  onStartPracticeUnit,
 }: ExplainLyricQuoteProps) {
   const segment = model.segmentsById[segmentId]
   const occurrences = useMemo(
@@ -32,10 +29,6 @@ export function ExplainLyricQuote({
   const [message, setMessage] = useState<string>()
   const [playingOccurrenceId, setPlayingOccurrenceId] = useState<string>()
   const operationRef = useRef(0)
-  const practiceIndex = useMemo(
-    () => createPracticeIndex(model.practice, model.timeline),
-    [model.practice, model.timeline],
-  )
 
   useEffect(
     () => () => {
@@ -64,9 +57,6 @@ export function ExplainLyricQuote({
   const selectedOccurrence =
     occurrences.find(({ occurrence }) => occurrence.id === selectedOccurrenceId) ??
     occurrences[0]
-  const practiceUnitId = selectedOccurrence
-    ? practiceIndex.unitIdByOccurrenceId.get(selectedOccurrence.occurrence.id)
-    : undefined
   const reading = segment.layers?.[0]?.text
 
   const playSelectedOccurrence = (): void => {
@@ -160,15 +150,6 @@ export function ExplainLyricQuote({
               ? '播放中…'
               : '试听这句'}
           </button>
-          {practiceUnitId && onStartPracticeUnit ? (
-            <button
-              className="control-button control-button--primary control-button--sm"
-              type="button"
-              onClick={() => onStartPracticeUnit(practiceUnitId)}
-            >
-              学习这一段 →
-            </button>
-          ) : null}
         </div>
       ) : (
         <p className="explain-lyric-quote-unavailable">

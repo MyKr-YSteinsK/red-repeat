@@ -9,11 +9,6 @@ import {
 } from 'react'
 import './App.css'
 import type { Catalog, CatalogEdition } from './library/runtime-schema'
-import { loadCatalogPracticeResume } from './library/catalog-resume'
-import {
-  readPracticeResumeMetadata,
-  type PracticeResumeSummary,
-} from './practice/practice-state'
 import {
   createEditionHref,
   createLibraryHref,
@@ -325,9 +320,6 @@ function CatalogLibrary({
   runtimeClient: RuntimeClient
 }) {
   const [query, setQuery] = useState('')
-  const [resumeBySongId, setResumeBySongId] = useState<
-    Readonly<Record<string, PracticeResumeSummary>>
-  >({})
   const [downloadBySongId, setDownloadBySongId] = useState<
     Readonly<Record<string, SongDownloadState>>
   >({})
@@ -335,33 +327,6 @@ function CatalogLibrary({
     new Set(),
   )
   const [openSongId, setOpenSongId] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-    const controller = new AbortController()
-    const candidates = catalog.editions.filter((edition) =>
-      Boolean(readPracticeResumeMetadata(edition.songId)),
-    )
-
-    candidates.forEach((edition) => {
-      void loadCatalogPracticeResume(runtimeClient, edition, {
-        signal: controller.signal,
-      }).then((summary) => {
-        if (!active || !summary) {
-          return
-        }
-        setResumeBySongId((current) => ({
-          ...current,
-          [edition.songId]: summary,
-        }))
-      })
-    })
-
-    return () => {
-      active = false
-      controller.abort()
-    }
-  }, [catalog, runtimeClient])
 
   useEffect(() => {
     let active = true
@@ -453,7 +418,7 @@ function CatalogLibrary({
     <main className="library library-populated" aria-labelledby="library-title">
       <div className="library-heading">
         <h1 id="library-title">曲库</h1>
-        <p className="library-lede">选择一首歌，开始或继续学唱。</p>
+        <p className="library-lede">选择一首歌，开始阅读与学唱。</p>
         <label className="library-search">
           <span>搜索歌曲或歌手</span>
           <input
@@ -485,7 +450,6 @@ function CatalogLibrary({
               edition={edition}
               index={catalog.editions.indexOf(edition)}
               runtimeClient={runtimeClient}
-              resume={resumeBySongId[edition.songId]}
               download={
                 downloadBySongId[edition.songId] ?? {
                   songId: edition.songId,
@@ -534,7 +498,6 @@ function CatalogEditionCard({
   edition,
   index,
   runtimeClient,
-  resume,
   download,
   isRemoving,
   onDownload,
@@ -546,7 +509,6 @@ function CatalogEditionCard({
   edition: CatalogEdition
   index: number
   runtimeClient: RuntimeClient
-  resume?: PracticeResumeSummary
   download: SongDownloadState
   isRemoving: boolean
   onDownload: (edition: CatalogEdition) => void
@@ -555,7 +517,6 @@ function CatalogEditionCard({
   onSwipeOpen: () => void
   onSwipeClose: () => void
 }) {
-  const action = resume ? '继续学唱' : '开始学唱'
   const isInstalled = download.status === 'installed'
   const swipe = useSwipeReveal({
     enabled: isInstalled,
@@ -596,7 +557,7 @@ function CatalogEditionCard({
             <a
               className="catalog-entry-link"
               href={createEditionHref(edition.songId, window.location)}
-              aria-label={`${action} ${edition.title}`}
+              aria-label={`打开 ${edition.title}`}
             >
               <img
                 className="catalog-cover"
@@ -614,12 +575,6 @@ function CatalogEditionCard({
                     {edition.year ?? ''}
                   </span>
                 ) : null}
-                {resume ? (
-                  <span className="catalog-resume">
-                    上次：{resume.unitLabel} · 第{resume.lineIndex}句
-                  </span>
-                ) : null}
-                <span className="catalog-action">{action}</span>
               </span>
             </a>
             <CatalogDownloadSlot

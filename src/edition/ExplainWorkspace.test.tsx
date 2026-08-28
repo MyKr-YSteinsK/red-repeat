@@ -86,29 +86,20 @@ describe('ExplainWorkspace', () => {
     )
   })
 
-  it('hands a selected quote to Practice without autoplay or progress state changes', () => {
-    const media = new FakeMedia()
-    const engine = createAudioEngine(media)
-    activeEngine = engine
-    engine.loadSource('/app/library-runtime/audio.m4a')
-    const onStartPracticeUnit = vi.fn()
-
+  it('keeps lyric quotes available for listening without a Practice CTA', () => {
     render(
       <ExplainWorkspace
         model={model}
         runtimeClient={runtimeClientFor()}
         features={features}
         featureErrors={[]}
-        audioEngine={engine}
-        onStartPracticeUnit={onStartPracticeUnit}
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '学习这一段 →' }))
-
-    expect(onStartPracticeUnit).toHaveBeenCalledWith('p001')
-    expect(media.play).not.toHaveBeenCalled()
-    expect(engine.getState().activeOccurrenceId).toBeUndefined()
+    expect(screen.getByRole('button', { name: '试听这句' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '学习这一段 →' }),
+    ).not.toBeInTheDocument()
   })
 
   it('reuses the current audio session when explain rerenders', () => {

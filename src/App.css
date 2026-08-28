@@ -1019,10 +1019,10 @@
 
 .feature-markdown h3 {
   margin: 2rem 0 0.8rem;
-  font-size: clamp(1.55rem, 3vw, 2.2rem);
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
   font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 .feature-markdown p {
@@ -1252,15 +1252,15 @@
   max-width: 48rem;
 }
 
-.explain-article h3 {
+.explain-article > h3 {
   max-width: 42rem;
   margin: 0.8rem 0 0;
   color: var(--color-ink);
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4.5vw, 4rem);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
   font-weight: 400;
-  letter-spacing: -0.075em;
-  line-height: 0.94;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
 }
 
 .explain-article .feature-markdown {
@@ -1427,26 +1427,6 @@
 
 .catalog-section .catalog-list {
   margin-top: 1.2rem;
-}
-
-.catalog-resume,
-.catalog-action {
-  min-width: 0;
-  overflow: hidden;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.catalog-resume {
-  color: var(--color-muted);
-}
-
-.catalog-action {
-  color: var(--color-red);
 }
 
 .catalog-no-results {
@@ -2298,12 +2278,62 @@
   font-size: 0.85rem;
 }
 
-.practice-page-cover {
-  width: 3.5rem;
-  height: 3.5rem;
+.practice-page-cover-trigger {
+  display: inline-flex;
+  width: clamp(4.5rem, 8vw, 6rem);
+  height: clamp(4.5rem, 8vw, 6rem);
   flex: 0 0 auto;
-  object-fit: cover;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  color: inherit;
   background: var(--color-line);
+  cursor: zoom-in;
+}
+
+.practice-page-cover-trigger:hover,
+.practice-page-cover-trigger:focus-visible {
+  border-color: var(--color-red);
+}
+
+.practice-page-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: max(1.25rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--color-ink) 84%, transparent);
+  overscroll-behavior: contain;
+}
+
+.cover-viewer {
+  max-width: min(90vw, 72rem);
+  max-height: min(90vh, 72rem);
+  outline: none;
+}
+
+.cover-viewer-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(88vw, 72rem);
+  max-height: min(88vh, 72rem);
+  object-fit: contain;
+  background: var(--color-surface);
+  box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--color-ink) 35%, transparent);
 }
 
 .practice-page-tools {
@@ -2926,8 +2956,13 @@
     flex: 1 1 12rem;
   }
 
+  .practice-page-cover-trigger {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
   .practice-page-song h1 {
-    max-width: calc(100vw - 8rem);
+    max-width: calc(100vw - 9rem);
     font-size: 2rem;
   }
 
@@ -2993,8 +3028,8 @@
     padding-inline: 0.25rem !important;
   }
 
-  .explain-article h3 {
-    font-size: clamp(2.1rem, 11vw, 3.3rem);
+  .explain-article > h3 {
+    font-size: clamp(1.6rem, 7vw, 2rem);
   }
 
   .explain-article .feature-markdown {
