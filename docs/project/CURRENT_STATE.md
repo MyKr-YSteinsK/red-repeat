@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.8.2`
+- Current user version: `1.9.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.8.2` / `v1.8.2 -> cbb3bd0`; existing
-  `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
+- Latest ledger/tag: `1.9.0` / `v1.9.0 -> a006304`; existing
+  `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
@@ -447,6 +447,9 @@ uses the separately authorized task-input source package.
   `NONE`; post-deploy observation remains limited to perceived lyric boundaries
   and Full Song highlight/play alignment, and is not claimed as human `PASS`.
 - Version classification is `MINOR`: `1.8.2 -> 1.9.0`.
+- Product commit is `a006304`; `v1.9.0` targets the product commit. Release
+  metadata commit and deployed build identity are recorded after metadata
+  finalization.
 
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
@@ -528,6 +531,10 @@ uses the separately authorized task-input source package.
   each, 9 reviewed Senbon note targets and 18 reviewed WORK replacements.
   The product commit is `cbb3bd0`, `v1.8.2` targets it, and ordinary reading
   follow-up remains non-blocking.
+- `RED-Plan-53` is complete: the Occurrence timing migration is in product
+  commit `a006304`, with `v1.9.0` / `MINOR` release metadata finalized in the
+  following metadata commit. The tag target remains the product commit and
+  the metadata commit is the deployed build identity.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

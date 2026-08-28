@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.9.0',
+    date: '2026-08-28',
+    commit: 'a006304',
+    level: 'minor',
+    title: '统一 Occurrence 时序模型',
+    summary: '将 Occurrence 的双 timing 收敛为一个由人工校准值驱动的权威 startMs/endMs 区间，并让解析、高亮与播放共享同一时序边界。',
+    changes: [
+      '将两个公开 Song Edition 的 106 个 Occurrences 从旧 playback pair 精确迁移到单一 startMs/endMs，保留《千本桜》45/45 人工校准值。',
+      '统一 Resolver、Practice、Full Song、Explain 与 Timing Debugger 的 effective timing 消费路径，移除 active contract 中的 playStartMs/playEndMs。',
+      '将 identity-bound local timing overrides 升级为 schema v3 的同字段 sparse overlay，并将 Timing Correction Export 收敛为 single-pair contract。',
+    ],
+  },
+  {
     version: '1.8.2',
     date: '2026-08-28',
     commit: 'cbb3bd0',
