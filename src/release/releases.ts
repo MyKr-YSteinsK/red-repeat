@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.10.0',
+    date: '2026-08-28',
+    commit: '426069c',
+    level: 'minor',
+    title: '《NIGHT DANCER》新曲正式导入',
+    summary: '将 imase《NIGHT DANCER》作为第三首公开 Song Edition 导入 Production。',
+    changes: [
+      '新增完整的 34 个 canonical Segment、49 个 sung Occurrence、11 个 Section、11 个 Practice Unit 与 6 篇 Explain Feature。',
+      '整合 34/34 ruby 与 Romaji、用户翻译和 8 个高价值 lyric notes，并保留受保护的 部屋 与 あぁ あぁ 愛して 内容。',
+      '使用精确 MP3/JPEG 资产与统一 startMs/endMs Provisional Timing，不引入 schema、compiler、runtime、UI 或 PWA 生命周期改动。',
+    ],
+  },
+  {
     version: '1.9.2',
     date: '2026-08-28',
     commit: '449e3ce',

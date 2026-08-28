@@ -6,7 +6,7 @@ export const buildInfo = Object.freeze({
   version:
     typeof __RED_REPEAT_VERSION__ === 'string'
       ? __RED_REPEAT_VERSION__
-      : '1.9.2',
+      : '1.10.0',
   commit:
     typeof __RED_REPEAT_BUILD_SHA__ === 'string'
       ? __RED_REPEAT_BUILD_SHA__

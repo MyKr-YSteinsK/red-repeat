@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.9.2`
+- Current user version: `1.10.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.9.2` / `v1.9.2 -> 449e3ce`; existing
-  `v1.9.1 -> 3cd207e`,
+- Latest ledger/tag: `1.10.0` / `v1.10.0 -> 426069c`; existing
+  `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
   `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
@@ -56,13 +56,16 @@ evidence only.
 
 ## Current public content
 
-The tracked public source contains two Song Editions:
+The tracked public source contains three Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
 one JPG cover and six Explain Markdown features; and
 `library/senbonzakura/` (`千本桜`, 黒うさP × 初音未来) with 30 unique
 Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
 one JPG cover, six Explain Markdown features and 9 reviewed note targets.
+`library/night-dancer-imase/` (`NIGHT DANCER`, imase) adds 34 unique Segments,
+49 Occurrences, 11 Practice Units, 11 Sections, one canonical MP3, one JPG
+cover, six Explain Markdown features and 8 reviewed note targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
 text and existing `layers` remain separate source contracts. Both public
@@ -483,6 +486,45 @@ uses the separately authorized task-input source package.
   was made. `USER CHECK` is `NONE` for this content-only boundary; no new
   real-device or audible-timing gate was required.
 
+## RED-Plan-56 implementation and release status
+
+- Handoff integrity preflight passed: the 21 manifest entries, exact MP3/LRC/
+  translation/JPEG hashes, MP3 metadata (`44.1 kHz`, stereo, `320 kbps`,
+  `210.99102s`) and `800×800` JPEG metadata all matched the supplied package.
+- The canonical source is `library/night-dancer-imase/`. It contains 34 unique
+  Segments, 49 Occurrences, 11 Sections, 11 Practice Units, 6 Explain
+  Features, 8 note targets and 34/34 non-empty `Romaji` layers. All feature
+  references and cross-file references validate.
+- Protected content was retained exactly: `乱れた部屋に 掠れたメロディー`
+  remains unchanged, the sung lead-in `あぁ あぁ 愛して` remains present, and
+  all Segment translations remain the first selected user-provided values for
+  deduplicated Segments.
+- Exact source assets are preserved: audio SHA-256
+  `373393efa184640fab23dee91bc1a691094003f6ac42bb082bf21d0de29dc9e3`, LRC
+  SHA-256 `ae91eae91bf407b89aa7f27e5d26bc275062390c0b0b8b59a2439d7615ae12ba`,
+  translation SHA-256
+  `e17a7e09c0f40e433b88a05738f5d3cfbb45662e87d28257f0fd06f55e44d39f`, and
+  cover SHA-256 `6cfdb111e5c74972a561fb7156b9524645d2427a76faf65fc1a8d58ffd6e3d5e`.
+- All 49 timing intervals remain the supplied single-pair `startMs/endMs`
+  `Provisional Timing`. Blank/instrumental anchors at `9180ms` and `91960ms`,
+  intro/interlude/outro structure and repeated chorus Segment references were
+  preserved; no human audible `PASS` is claimed.
+- `npm run library:audio-hash -- night-dancer-imase`,
+  `npm run library:validate`, `npm run library:compile`, `npm run build --
+  --base=/red-repeat/`, `npm run pwa:inspect -- /red-repeat/` and the final
+  browser/runtime smoke passed. The browser smoke covered the third Catalog
+  card, Song Edition/cover, all 11 Practice Units, Full Song repeated chorus
+  and instrumental markers, 34/34 ruby/Romaji/translation displays, and all 6
+  Explain topics with 22 valid lyric references. Runtime error log was empty.
+- Product-focused commit is `426069c`; release metadata records `1.10.0` at
+  `MINOR` level (`1.9.2 -> 1.10.0`), and `v1.10.0` targets that product
+  commit. The following release-metadata commit is the independently deployed
+  build identity.
+- No schema, compiler architecture, runtime contract, UI, CSS, PWA lifecycle
+  or existing-song source behavior was changed. `USER CHECK` is `NONE` for
+  import completion; post-deploy timing listening/calibration remains an
+  explicit user follow-up and is not a reason to mark this Plan partial.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -511,12 +553,16 @@ uses the separately authorized task-input source package.
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
   a blocking acceptance gate.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54 `UNKNOWN` remains open.
+- `POST-DEPLOY OBSERVATION (RED-Plan-56)`: the 49 `NIGHT DANCER` intervals are
+  intentionally `Provisional Timing`; users may listen and calibrate them later
+  in the Production Timing Debugger. This is the normal post-import lifecycle,
+  not an import blocker or human timing PASS.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
-- No new unresolved reading ambiguity was identified from the available user
-  material and existing Kana/romaji evidence. Existing future PWA/device risks
+- No new unresolved reading ambiguity was identified from the available Handoff
+  material and candidate ruby/Romaji evidence. Existing future PWA/device risks
   remain governed by D-013/D-016 and are not reopened by this content change.
 
 ## Active work and next lifecycle action
@@ -590,6 +636,13 @@ uses the separately authorized task-input source package.
   level; the following metadata commit is the independently deployed build
   identity. Any future Romaji preference refinement remains a separate
   content boundary.
+- `RED-Plan-56` is complete: `library/night-dancer-imase/` is the third public
+  Song Edition with exact user assets, validated source structure, complete
+  ruby/Romaji/content coverage, preserved user translation and `Provisional
+  Timing`. Product commit `426069c` is tagged as `v1.10.0` at MINOR level;
+  the following metadata commit is the independently deployed build identity.
+  Future audible timing calibration remains a separate focused correction
+  boundary.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
