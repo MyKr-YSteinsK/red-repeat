@@ -10,10 +10,11 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.7.2`
+- Current user version: `1.8.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.7.2` / `v1.7.2 -> 50e7114`; existing
-  `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and `v1.6.2 -> c61f977` remain unchanged.
+- Latest ledger/tag: `1.8.0` / `v1.8.0 -> 01cdd64`; existing
+  `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
+  `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
   content implementation commit for `1.7.1`; the later release-metadata commit
   on `main` is the independently deployed build identity and is distinct from
@@ -309,8 +310,46 @@ uses the separately authorized task-input source package.
   user's real Production Timing Debugger listening. Ordinary Production use
   remains observation only.
 
+## RED-Plan-50 implementation and release status
+
+- Timing Debugger mobile control is now a compact bottom-fixed dock. It keeps
+  Chinese 起点/终点 labels, millisecond values, ±20/±100 adjustments,
+  `播放` and `保存本机微调`; enlarged lyric, current-position, use-current,
+  restore-default and `试听当前句` controls were removed. Dock occlusion is
+  measured from the actual fixed element and includes its bottom safe-area/
+  spacing, rather than a half-screen reserve.
+- Practice continuous/ramp playback now derives the visible current row from
+  Resolver `primaryOccurrence` while the audio is playing. It does not write
+  persisted Practice resume state on audio frames; selection remains the
+  separate resume anchor.
+- Practice's obsolete responsive grid no longer creates empty `map`/`controls`
+  tracks. Practice and Full Song lyric content uses an overall centered cluster
+  with left-aligned original/ruby/translation/note layers. Full Song's
+  instrumental marker styles only its dedicated visual signal span; Section
+  text remains normal and Section click/play semantics are unchanged.
+- No canonical timing, audio identity, lyrics, ruby, Practice grouping,
+  Section grouping, schema, compiler, runtime, PWA lifecycle or release
+  behavior was changed by the product implementation.
+- Focused evidence passed for Timing Debugger, Practice and Full Song (29/29);
+  full regression passed at 49 test files / 331 tests. `npm run typecheck`,
+  `npm run lint` (no errors; two pre-existing warnings), `npm run build`,
+  `npm run pwa:inspect` and `git diff --check` passed. Browser-level checks
+  covered a 390×844 narrow viewport and desktop/tablet styling probes; the
+  narrow dock was additionally checked by actual geometry and tail-content
+  scrolling.
+- Product-focused commit is `01cdd64`; release metadata records `1.8.0` at
+  `MINOR` level (`1.7.2 -> 1.8.0`), and `v1.8.0` targets the product commit.
+  The metadata commit is the independently deployed build identity.
+- `USER CHECK` is `NONE` for this boundary. Real target-device/iOS installed-
+  PWA perception remains a `POST-DEPLOY OBSERVATION`, not a claimed human PASS.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
+- `POST-DEPLOY OBSERVATION (RED-Plan-50)`: actual target-device/iOS installed-
+  PWA dock feel, continuous-focus perception, short/long lyric wrapping and
+  final-row spacing still require ordinary production observation; this Plan's
+  narrow browser geometry and static behavior checks do not claim true-device
+  or installed-client evidence.
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
   wrapping, touch and perceived readability were not separately executed. The
   three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
@@ -320,7 +359,7 @@ uses the separately authorized task-input source package.
   `startMs`/`endMs` were not changed or claimed as human-reviewed. These are not claimed as human PASS
   and are not active blocking debt under `D-019`; users can surface any
   low-cost follow-up during normal Production use.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -360,6 +399,12 @@ uses the separately authorized task-input source package.
   and Practice grouping are recorded above. The canonical source was unchanged
   within that Plan; RED-Plan-49 later merged a playback-only correction under
   `1.7.2` / `v1.7.2`.
+- `RED-Plan-50` is complete: the mobile Timing Debugger dock, Practice
+  continuous-focus behavior, Practice bottom-space reserve, Full Song
+  instrumental marker and Practice/Full Song lyric cluster alignment were
+  corrected without changing canonical timing or song source data. The
+  product commit is `01cdd64`, `v1.8.0` targets it, and residual true-device
+  observations remain explicitly non-blocking.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

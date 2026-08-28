@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.8.0',
+    date: '2026-08-28',
+    commit: '01cdd64',
+    level: 'minor',
+    title: '移动端播放与歌词阅读体验修复',
+    summary: '收紧移动端播放控制与歌词阅读主链，让学唱、全曲和 Timing Debugger 在窄屏下更易阅读和跟随。',
+    changes: [
+      '将 Timing Debugger 移动端控制台收拢为实际 dock geometry，移除半屏级硬编码预留并保留安全区避让。',
+      '让 Practice 连续播放与渐速播放的当前歌词跟随 Resolver primary occurrence，同时保持 persisted resume 与 canonical timing 不变。',
+      '修正 Full Song 器乐段 marker 的独立视觉 signal，并将 Practice / Full Song 歌词内容簇改为整体居中、内部左对齐。',
+    ],
+  },
+  {
     version: '1.7.2',
     date: '2026-08-28',
     commit: '50e7114',
