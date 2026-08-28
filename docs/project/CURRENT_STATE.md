@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.8.1`
+- Current user version: `1.8.2`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.8.1` / `v1.8.1 -> 91b703a`; existing
-  `v1.8.0 -> 01cdd64`,
+- Latest ledger/tag: `1.8.2` / `v1.8.2 -> cbb3bd0`; existing
+  `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
@@ -61,7 +61,8 @@ The tracked public source contains two Song Editions:
 one JPG cover and six Explain Markdown features; and
 `library/senbonzakura/` (`千本桜`, 黒うさP × 初音未来) with 30 unique
 Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
-one JPG cover and four Explain Markdown features. Japanese lyrics may carry
+one JPG cover, six Explain Markdown features and 9 reviewed note targets.
+Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
 text and existing `layers` remain separate source contracts. The legacy
 migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
@@ -381,6 +382,38 @@ uses the separately authorized task-input source package.
   title hierarchy and Catalog simplicity remain `POST-DEPLOY OBSERVATION`,
   not a claimed real-device PASS or active blocking debt.
 
+## RED-Plan-52 implementation and release status
+
+- Mutation preflight passed for the Architect-authored Handoff: all 12 Feature
+  files matched the supplied manifest, every `[[segment:...]]` reference maps
+  to a real canonical Segment, no Occurrence ID was used as a Segment
+  reference, and the corrected Feature 05 mapping is `s005/s006/s008/s009`.
+- `senbonzakura` now has 6 Explain Features, with 9 reviewed note targets:
+  existing `s002`/`s008` were replaced and 7 additional high-value notes were
+  added at the listed targets. `work-millennium-parade` keeps 6 Explain
+  Features, all replaced by the reviewed versions, and all 18 listed notes
+  were replaced.
+- The Handoff content was integrated without semantic re-authoring. User
+  translations, canonical Japanese lyrics, ruby, layers, timing, Practice,
+  Section data, artist/manifest, audio and audio identity are unchanged; no
+  executable source, UI, schema, compiler, runtime or PWA behavior changed.
+- Content-only evidence passed: `npm run library:audio-hash -- senbonzakura`
+  reported `5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19`;
+  `npm run library:audio-hash -- work-millennium-parade` reported
+  `facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083`.
+  `npm run library:validate`, `npm run library:compile`, `npm run build`,
+  `npm run pwa:inspect` and `git diff --check` passed. The compiler emitted
+  27 runtime files for 2 editions. The full test suite was not rerun because
+  no executable file or compiler/validator code changed, as allowed by this
+  content-only Plan.
+- Product-focused commit is `cbb3bd0`; release metadata records `1.8.2` at
+  `PATCH` level (`1.8.1 -> 1.8.2`), and `v1.8.2` targets the product commit.
+  The later release-metadata commit is the independently deployed build
+  identity.
+- `USER CHECK` is `NONE` for this boundary. Any future fact or wording issue
+  found during ordinary reading remains a `POST-DEPLOY OBSERVATION`, not an
+  active blocking debt.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50)`: actual target-device/iOS installed-
@@ -402,7 +435,10 @@ uses the separately authorized task-input source package.
   should be observed in normal Production use. Local browser evidence does not
   claim true-device, perceptual or installed-client lifecycle acceptance; this
   remains residual risk and is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51 `UNKNOWN` remains open.
+- `POST-DEPLOY OBSERVATION (RED-Plan-52)`: ordinary reading may still surface
+  a fact or wording issue in the new Explain Features or lyric notes. No
+  additional human gate was required for this content-only integration.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -453,6 +489,11 @@ uses the separately authorized task-input source package.
   was enlarged and formalized with a fixed high-quality overlay. The product
   commit is `91b703a`, `v1.8.1` targets it, and remaining real-use observations
   are explicitly non-blocking.
+- `RED-Plan-52` is complete: the two public Song Editions now carry the
+  Architect-reviewed Explain Feature and lyric-note content, with 6 Features
+  each, 9 reviewed Senbon note targets and 18 reviewed WORK replacements.
+  The product commit is `cbb3bd0`, `v1.8.2` targets it, and ordinary reading
+  follow-up remains non-blocking.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

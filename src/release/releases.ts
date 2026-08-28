@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.8.2',
+    date: '2026-08-28',
+    commit: 'cbb3bd0',
+    level: 'patch',
+    title: '歌词注解与 Explain 知识内容升级',
+    summary: '升级两首公开 Song Edition 的 Explain 文章与歌词注解，补充可核对的文化、语言和作品背景信息。',
+    changes: [
+      '《千本桜》Explain 从 4 篇扩展为 6 篇，并保留 9 个经审核的高价值 note target。',
+      '《Ｗ●ＲＫ》6 篇 Explain 全部替换为 reviewed version，更新 18 个歌词 note。',
+      '保持 translation、canonical Japanese lyrics、ruby、timing、Practice、Section、audio 与 UI/runtime 不变。',
+    ],
+  },
+  {
     version: '1.8.1',
     date: '2026-08-28',
     commit: '91b703a',
