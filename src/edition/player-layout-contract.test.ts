@@ -11,7 +11,7 @@ const indexCss = readFileSync(
   'utf8',
 )
 const practiceMobileStart = appCss.indexOf(
-  '/* Practice 1.0 mobile dock: three compact rows plus safe-area reservation. */',
+  '/* Practice mobile dock: three compact rows plus measured final-row reachability. */',
 )
 const practiceMobileEnd = appCss.indexOf(
   '/* Practice segment picker:',
@@ -20,25 +20,39 @@ const practiceMobileEnd = appCss.indexOf(
 const practiceMobileCss = appCss.slice(practiceMobileStart, practiceMobileEnd)
 
 describe('mobile player layout contracts', () => {
-  it('keeps the Practice rates before a bounded play column without fixed reserve guesses', () => {
+  it('keeps the Practice rates before a bounded play column with measured reachability reserve', () => {
     expect(practiceMobileCss).toContain(
       'grid-template-columns: minmax(0, 3fr) minmax(5rem, 0.9fr);',
     )
     expect(practiceMobileCss).toContain(
-      'padding-bottom: calc(var(--practice-dock-occlusion, 0px) + 0.25rem);',
+      'padding-bottom: var(--practice-dock-reachability-reserve, 1rem);',
     )
-    expect(practiceMobileCss).not.toContain('--practice-dock-reserve')
+    expect(practiceMobileCss).not.toContain(
+      'padding-bottom: calc(var(--practice-dock-occlusion',
+    )
+    expect(appCss).toMatch(
+      /\.full-song-lyric-cluster,\s*\.practice-lyric-cluster\s*\{[^}]*width: 100%;[^}]*margin-inline: 0;/s,
+    )
+    expect(appCss).toMatch(
+      /\.full-song-lyric-cluster > \.full-song-original,\s*\.practice-lyric-cluster > \.practice-original\s*\{[^}]*width: 100%;/s,
+    )
   })
 
   it('shares a translucent player glass material with explicit backdrop filters', () => {
     expect(indexCss).toContain(
-      '--player-glass-bg: color-mix(in srgb, var(--color-surface) 72%, transparent);',
+      '--player-glass-bg: color-mix(in srgb, var(--color-surface) 30%, transparent);',
+    )
+    expect(indexCss).toContain(
+      '--player-glass-control-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);',
     )
     expect(appCss).toMatch(
       /\.practice-controls\.practice-dock\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
     expect(appCss).toMatch(
       /\.full-song-player\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
+    )
+    expect(appCss).toMatch(
+      /\.timing-debugger-console\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
     expect(appCss).not.toContain(
       'background: color-mix(in srgb, var(--color-surface) 92%, transparent);',
@@ -57,6 +71,19 @@ describe('mobile player layout contracts', () => {
     )
     expect(appCss).toContain(
       'calc(0.95rem + env(safe-area-inset-bottom))',
+    )
+  })
+
+  it('makes the mobile Timing Debugger console an edge-to-edge safe-area sheet', () => {
+    expect(appCss).toMatch(
+      /\.timing-debugger-console\s*\{[^}]*left: 0;[^}]*right: 0;[^}]*bottom: 0;/s,
+    )
+    expect(appCss).toContain(
+      'calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))',
+    )
+    expect(appCss).toContain('border-inline: 0;')
+    expect(appCss).toContain(
+      'border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;',
     )
   })
 })

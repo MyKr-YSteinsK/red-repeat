@@ -1660,6 +1660,7 @@
   padding: 0.9rem;
   border: 1px solid var(--player-glass-border);
   border-radius: 1.25rem;
+  background: rgb(251 250 246 / 0.30);
   background: var(--player-glass-bg);
   box-shadow:
     0 1rem 2.75rem color-mix(in srgb, var(--color-ink) 12%, transparent),
@@ -1695,7 +1696,8 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 76%, transparent);
   border-radius: 0.9rem;
   color: var(--color-muted);
-  background: color-mix(in srgb, var(--color-surface) 58%, transparent);
+  background: rgb(251 250 246 / 0.38);
+  background: var(--player-glass-control-bg);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 0.62rem;
@@ -1761,7 +1763,8 @@
   border-color: color-mix(in srgb, var(--color-line) 82%, transparent);
   border-radius: var(--radius-control-sm);
   color: var(--color-ink);
-  background: color-mix(in srgb, var(--color-surface) 54%, transparent);
+  background: rgb(251 250 246 / 0.38);
+  background: var(--player-glass-control-bg);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 0.65rem;
@@ -1945,15 +1948,15 @@
 .practice-lyric-cluster {
   display: grid;
   justify-items: start;
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
-  margin-inline: auto;
+  margin-inline: 0;
   text-align: left;
 }
 
 .full-song-lyric-cluster > .full-song-original,
 .practice-lyric-cluster > .practice-original {
-  width: auto;
+  width: 100%;
 }
 
 .full-song-translation {
@@ -2039,6 +2042,7 @@
   padding: 1rem;
   border: 1px solid var(--player-glass-border);
   border-radius: var(--radius-control-lg);
+  background: rgb(251 250 246 / 0.30);
   background: var(--player-glass-bg);
   box-shadow: 0 0.6rem 1.6rem color-mix(in srgb, var(--color-ink) 9%, transparent);
   backdrop-filter: var(--player-glass-blur);
@@ -2121,7 +2125,8 @@
   border: 1px solid var(--color-line);
   border-radius: var(--radius-control-sm);
   color: var(--color-ink);
-  background: color-mix(in srgb, var(--color-surface) 62%, transparent);
+  background: rgb(251 250 246 / 0.38);
+  background: var(--player-glass-control-bg);
   cursor: pointer;
   font: inherit;
 }
@@ -2144,7 +2149,8 @@
   min-width: 4.2rem;
   padding-inline: 0.65rem;
   border-color: var(--color-ink);
-  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  background: rgb(251 250 246 / 0.38);
+  background: var(--player-glass-control-bg);
   font-weight: 680;
 }
 
@@ -3117,10 +3123,10 @@
   }
 }
 
-/* Practice 1.0 mobile dock: three compact rows plus safe-area reservation. */
+/* Practice mobile dock: three compact rows plus measured final-row reachability. */
 @media (max-width: 640px) {
   .practice-workspace {
-    padding-bottom: calc(var(--practice-dock-occlusion, 0px) + 0.25rem);
+    padding-bottom: var(--practice-dock-reachability-reserve, 1rem);
   }
 
   .practice-controls.practice-dock {
@@ -3486,6 +3492,11 @@
 .timing-debugger-console {
   position: sticky;
   top: 1rem;
+  border-color: var(--player-glass-border);
+  background: rgb(251 250 246 / 0.30);
+  background: var(--player-glass-bg);
+  backdrop-filter: var(--player-glass-blur);
+  -webkit-backdrop-filter: var(--player-glass-blur);
   padding: 1rem;
 }
 
@@ -3578,15 +3589,20 @@
 
   .timing-debugger-console {
     position: fixed;
-    right: max(0.75rem, env(safe-area-inset-right));
-    bottom: calc(env(safe-area-inset-bottom) + 0.55rem);
-    left: max(0.75rem, env(safe-area-inset-left));
+    left: 0;
+    right: 0;
+    bottom: 0;
     top: auto;
-    z-index: 4;
+    z-index: var(--z-player);
     max-height: none;
     overflow: visible;
-    padding: 0.65rem 0.7rem;
-    border-radius: 1.25rem;
+    padding:
+      var(--control-sheet-padding-block)
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-right))
+      calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))
+      calc(var(--control-sheet-padding-inline) + env(safe-area-inset-left));
+    border-inline: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: 0 -0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 10%, transparent);
   }
 

@@ -182,6 +182,37 @@ export function PracticeWorkspace({
         '--practice-dock-occlusion',
         `${Math.ceil(occlusion)}px`,
       )
+
+      const scrollRoot = document.scrollingElement ?? document.documentElement
+      const finalRow = workspace.querySelector<HTMLElement>(
+        '.practice-lyric-row:last-child',
+      )
+      const currentReserve = Math.max(
+        0,
+        Number.parseFloat(getComputedStyle(workspace).paddingBottom) || 0,
+      )
+      const finalRowDocumentBottom = finalRow
+        ? finalRow.getBoundingClientRect().bottom + scrollRoot.scrollTop
+        : 0
+      const baseScrollHeight = Math.max(
+        0,
+        scrollRoot.scrollHeight - currentReserve,
+      )
+      const breathingRoom =
+        Number.parseFloat(getComputedStyle(workspace).fontSize) || 16
+      const reachabilityReserve = finalRow
+        ? Math.max(
+            breathingRoom,
+            finalRowDocumentBottom -
+              baseScrollHeight +
+              occlusion +
+              breathingRoom,
+          )
+        : breathingRoom
+      workspace.style.setProperty(
+        '--practice-dock-reachability-reserve',
+        `${Math.ceil(reachabilityReserve)}px`,
+      )
     }
 
     updateDockOcclusion()
@@ -189,6 +220,7 @@ export function PracticeWorkspace({
       typeof ResizeObserver === 'function'
         ? new ResizeObserver(updateDockOcclusion)
         : undefined
+    resizeObserver?.observe(workspace)
     resizeObserver?.observe(dock)
     window.addEventListener('resize', updateDockOcclusion)
     window.visualViewport?.addEventListener('resize', updateDockOcclusion)
@@ -198,7 +230,7 @@ export function PracticeWorkspace({
       window.removeEventListener('resize', updateDockOcclusion)
       window.visualViewport?.removeEventListener('resize', updateDockOcclusion)
     }
-  }, [])
+  }, [currentUnit?.id])
 
   useEffect(() => {
     if (!playback.engine) {
