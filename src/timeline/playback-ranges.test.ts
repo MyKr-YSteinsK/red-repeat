@@ -16,10 +16,10 @@ const timeline: TimelineDocument = {
     { id: 'verse-2', label: 'Verse 2', startMs: 2500, endMs: 4000 },
   ],
   occurrences: [
-    occurrence('o001', 200, 400, 0, 450),
-    occurrence('o002', 400, 700, 350, 750),
-    occurrence('o003', 400, 550, 350, 600),
-    occurrence('o004', 800, 900, 750, 950),
+    occurrence('o001', 0, 450),
+    occurrence('o002', 350, 750),
+    occurrence('o003', 350, 600),
+    occurrence('o004', 750, 950),
   ],
 }
 
@@ -85,8 +85,6 @@ function occurrence(
   id: string,
   startMs: number,
   endMs: number,
-  playStartMs: number,
-  playEndMs: number,
 ) {
   return {
     id,
@@ -94,8 +92,6 @@ function occurrence(
     sectionId: 'verse-1',
     startMs,
     endMs,
-    playStartMs,
-    playEndMs,
   }
 }
 

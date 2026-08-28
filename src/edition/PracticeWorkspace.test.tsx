@@ -53,9 +53,9 @@ const timeline = {
     { id: 'chorus', label: 'Chorus', startMs: 2200, endMs: 3000 },
   ],
   occurrences: [
-    { id: 'o001', segmentId: 's001', sectionId: 'verse', startMs: 100, endMs: 400, playStartMs: 50, playEndMs: 450 },
-    { id: 'o002', segmentId: 's002', sectionId: 'verse', startMs: 600, endMs: 900, playStartMs: 550, playEndMs: 950 },
-    { id: 'o003', segmentId: 's003', sectionId: 'chorus', startMs: 2300, endMs: 2600, playStartMs: 2250, playEndMs: 2650 },
+    { id: 'o001', segmentId: 's001', sectionId: 'verse', startMs: 50, endMs: 450 },
+    { id: 'o002', segmentId: 's002', sectionId: 'verse', startMs: 550, endMs: 950 },
+    { id: 'o003', segmentId: 's003', sectionId: 'chorus', startMs: 2250, endMs: 2650 },
   ],
 }
 
@@ -98,10 +98,8 @@ const variableLengthModel = assembleRuntimeSongEdition({
       id: `vo${index + 1}`,
       segmentId: `v${index + 1}`,
       sectionId: 'verse',
-      startMs: 100 + index * 350,
-      endMs: 350 + index * 350,
-      playStartMs: 50 + index * 350,
-      playEndMs: 400 + index * 350,
+      startMs: 50 + index * 350,
+      endMs: 400 + index * 350,
     })),
   },
   practice: {

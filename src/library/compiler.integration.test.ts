@@ -186,7 +186,7 @@ describe('Library Compiler media pipeline', () => {
       fs.readFileSync(timelinePath, 'utf8'),
     ) as TimelineDocument
     const editedTimeline = updateSectionTiming(
-      updateOccurrenceTiming(sourceTimeline, 'o001', 'playEndMs', 50),
+      updateOccurrenceTiming(sourceTimeline, 'o001', 'endMs', 50),
       'verse-1',
       'endMs',
       100,
@@ -214,7 +214,7 @@ describe('Library Compiler media pipeline', () => {
     )
     expect(runtimeTimeline).toEqual(exportedTimeline)
     expect(runtimeTimeline.audioSourceHash).toBe(runtime.edition.audio.sourceHash)
-    expect(runtimeTimeline.occurrences[0].playEndMs).toBe(850)
+    expect(runtimeTimeline.occurrences[0].endMs).toBe(850)
     expect(runtimeTimeline.sections[0].endMs).toBe(1100)
   }, 30_000)
 
@@ -270,8 +270,8 @@ describe('Library Compiler media pipeline', () => {
     ).toBe(false)
   }, 30_000)
 
-  it('fails when Timeline playback exceeds probed audio duration', async () => {
-    const fixture = await createFixture({ playEndMs: 2_000 })
+  it('fails when Timeline occurrence timing exceeds probed audio duration', async () => {
+    const fixture = await createFixture({ occurrenceEndMs: 2_000 })
 
     const result = await compileLibrary(fixture.options)
 
@@ -353,7 +353,7 @@ interface Fixture {
 }
 
 async function createFixture(
-  options: { playEndMs?: number; sectionEndMs?: number } = {},
+  options: { occurrenceEndMs?: number; sectionEndMs?: number } = {},
 ): Promise<Fixture> {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'red-repeat-compiler-media-'))
   temporaryRoots.push(root)
@@ -388,10 +388,8 @@ async function createFixture(
         id: 'o001',
         segmentId: 's001',
         sectionId: 'verse-1',
-        startMs: 100,
-        endMs: 700,
-        playStartMs: 0,
-        playEndMs: options.playEndMs ?? 800,
+        startMs: 0,
+        endMs: options.occurrenceEndMs ?? 800,
       },
     ],
   }

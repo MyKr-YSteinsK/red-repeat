@@ -114,8 +114,8 @@ export function FullSongWorkspace({
       void playback.engine
         .playRangeUntilComplete(
           {
-            startMs: timing.playStartMs,
-            endMs: timing.playEndMs,
+            startMs: timing.startMs,
+            endMs: timing.endMs,
           },
           assembledOccurrence.occurrence.id,
         )

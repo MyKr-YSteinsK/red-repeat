@@ -11,7 +11,7 @@ import type {
   PracticeDocument,
   TimelineDocument,
 } from '../library/schema'
-import { createEffectivePracticeTimingProvider } from '../practice/practice-timing-overrides'
+import { createEffectiveOccurrenceTimingProvider } from '../practice/practice-timing-overrides'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 
@@ -221,19 +221,15 @@ const model = assembleRuntimeSongEdition({
         id: 'o001',
         segmentId: 's021',
         sectionId: 'verse',
-        startMs: 100,
-        endMs: 250,
-        playStartMs: 50,
-        playEndMs: 300,
+        startMs: 50,
+        endMs: 300,
       },
       {
         id: 'o002',
         segmentId: 's021',
         sectionId: 'verse',
-        startMs: 500,
-        endMs: 650,
-        playStartMs: 450,
-        playEndMs: 700,
+        startMs: 450,
+        endMs: 700,
       },
     ],
   } satisfies TimelineDocument,
@@ -252,13 +248,13 @@ const model = assembleRuntimeSongEdition({
 
 const modelWithTimingOverride = {
   ...model,
-  timingProvider: createEffectivePracticeTimingProvider(model.timeline, {
-    schemaVersion: 2,
+  timingProvider: createEffectiveOccurrenceTimingProvider(model.timeline, {
+    schemaVersion: 3,
     songId: 'first-light',
     editionContentHash: 'a'.repeat(64),
     audioSourceHash: 'b'.repeat(64),
     baseTimelineUrl: '/library-runtime/timeline.json',
-    occurrences: { o001: { playStartMs: 75, playEndMs: 325 } },
+    occurrences: { o001: { startMs: 75, endMs: 325 } },
   }),
 }
 

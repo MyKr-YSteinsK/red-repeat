@@ -82,10 +82,8 @@ const timeline = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse',
-      startMs: 100,
-      endMs: 500,
-      playStartMs: 0,
-      playEndMs: 600,
+      startMs: 0,
+      endMs: 600,
     },
   ],
 }

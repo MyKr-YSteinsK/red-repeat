@@ -71,19 +71,15 @@ const timeline: TimelineDocument = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse',
-      startMs: 100,
-      endMs: 600,
-      playStartMs: 50,
-      playEndMs: 650,
+      startMs: 50,
+      endMs: 650,
     },
     {
       id: 'o002',
       segmentId: 's002',
       sectionId: 'verse',
-      startMs: 500,
-      endMs: 800,
-      playStartMs: 450,
-      playEndMs: 850,
+      startMs: 450,
+      endMs: 850,
     },
   ],
 }
@@ -138,13 +134,13 @@ describe('Timeline Debugger live context', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: /o002.*Stay near/ })[0])
     expect(screen.getByRole('heading', { name: 'o002' })).toBeInTheDocument()
-    expect(screen.getAllByText('playStartMs').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('startMs').length).toBeGreaterThan(0)
     expect(screen.getAllByText('450').length).toBeGreaterThan(0)
     expect(screen.getByText('靠近一些')).toBeInTheDocument()
 
     for (let index = 0; index < 4; index += 1) {
       fireEvent.click(
-        screen.getByRole('button', { name: 'Increase playStartMs by 100ms' }),
+        screen.getByRole('button', { name: 'Increase startMs by 100ms' }),
       )
     }
     expect(screen.getByRole('main')).toHaveAttribute(
@@ -157,7 +153,7 @@ describe('Timeline Debugger live context', () => {
 
     for (let index = 0; index < 4; index += 1) {
       fireEvent.click(
-        screen.getByRole('button', { name: 'Decrease playStartMs by 100ms' }),
+        screen.getByRole('button', { name: 'Decrease startMs by 100ms' }),
       )
     }
     fireEvent.click(screen.getByRole('button', { name: 'Increase endMs by 50ms' }))
@@ -167,13 +163,9 @@ describe('Timeline Debugger live context', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Seek startMs' }))
-    expect(media.currentTime).toBe(0.5)
+    expect(media.currentTime).toBe(0.45)
     fireEvent.click(screen.getByRole('button', { name: 'Jump endMs' }))
-    expect(media.currentTime).toBe(0.85)
-    fireEvent.click(screen.getByRole('button', { name: 'Jump playEndMs' }))
-    expect(media.currentTime).toBe(0.85)
-    fireEvent.click(screen.getByRole('button', { name: 'Play actual range' }))
-    await waitFor(() => expect(media.currentTime).toBe(0.5))
+    expect(media.currentTime).toBe(0.9)
     fireEvent.click(screen.getByRole('button', { name: 'Replay practice range' }))
     await waitFor(() => expect(media.currentTime).toBe(0.45))
 

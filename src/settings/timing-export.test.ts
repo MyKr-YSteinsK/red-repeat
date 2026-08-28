@@ -42,20 +42,18 @@ const timeline: TimelineDocument = {
     id: 'o001',
     segmentId: 's001',
     sectionId: 'verse',
-    startMs: 100,
-    endMs: 300,
-    playStartMs: 50,
-    playEndMs: 350,
+    startMs: 50,
+    endMs: 350,
   }],
 }
 
 const overrides: TimingOverridesDocument = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   songId: 'first-light',
   editionContentHash: edition.contentHash,
   audioSourceHash: edition.audio.sourceHash,
   baseTimelineUrl: edition.timelineUrl,
-  occurrences: { o001: { playStartMs: 70 } },
+  occurrences: { o001: { startMs: 70 } },
 }
 
 describe('timing export', () => {
@@ -74,13 +72,13 @@ describe('timing export', () => {
 
     expect(markdown).toContain('library/first-light/timeline.json')
     expect(markdown).toContain('First line')
-    expect(markdown).toContain('canonical playStartMs: 50')
-    expect(markdown).toContain('override playStartMs: 70')
-    expect(markdown).toContain('override playEndMs: 未修改')
+    expect(markdown).toContain('canonical startMs: 50')
+    expect(markdown).toContain('override startMs: 70')
+    expect(markdown).toContain('override endMs: 未修改')
     expect(markdown).toContain('MyKr-YSteinsK/red-repeat')
     expect(markdown).toContain('Edition content hash: ' + edition.contentHash)
     expect(markdown).toContain('"editionContentHash": "' + edition.contentHash + '"')
     expect(markdown).toContain('"occurrences": {')
-    expect(markdown).toContain('"playStartMs": 70')
+    expect(markdown).toContain('"startMs": 70')
   })
 })

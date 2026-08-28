@@ -67,418 +67,328 @@
       "id": "o001",
       "segmentId": "s001",
       "sectionId": "verse-1",
-      "startMs": 32380,
-      "endMs": 35320,
-      "playStartMs": 32580,
-      "playEndMs": 35550,
+      "startMs": 32580,
+      "endMs": 35550,
       "performanceNote": "Source-audio onset aligned to the first vocal entry; the short pickup is kept distinct from the Intro boundary."
     },
     {
       "id": "o002",
       "segmentId": "s002",
       "sectionId": "verse-1",
-      "startMs": 35450,
-      "endMs": 38480,
-      "playStartMs": 35665,
-      "playEndMs": 38560
+      "startMs": 35665,
+      "endMs": 38560
     },
     {
       "id": "o003",
       "segmentId": "s003",
       "sectionId": "verse-1",
-      "startMs": 38580,
-      "endMs": 41580,
-      "playStartMs": 38715,
-      "playEndMs": 41705
+      "startMs": 38715,
+      "endMs": 41705
     },
     {
       "id": "o004",
       "segmentId": "s004",
       "sectionId": "verse-1",
-      "startMs": 41700,
-      "endMs": 44730,
-      "playStartMs": 41935,
-      "playEndMs": 44760
+      "startMs": 41935,
+      "endMs": 44760
     },
     {
       "id": "o005",
       "segmentId": "s005",
       "sectionId": "verse-1",
-      "startMs": 44820,
-      "endMs": 47770,
-      "playStartMs": 44805,
-      "playEndMs": 47870
+      "startMs": 44805,
+      "endMs": 47870
     },
     {
       "id": "o006",
       "segmentId": "s006",
       "sectionId": "verse-1",
-      "startMs": 47930,
-      "endMs": 50860,
-      "playStartMs": 47995,
-      "playEndMs": 50905
+      "startMs": 47995,
+      "endMs": 50905
     },
     {
       "id": "o007",
       "segmentId": "s007",
       "sectionId": "verse-1",
-      "startMs": 51040,
-      "endMs": 53920,
-      "playStartMs": 51110,
-      "playEndMs": 53890
+      "startMs": 51110,
+      "endMs": 53890
     },
     {
       "id": "o008",
       "segmentId": "s008",
       "sectionId": "verse-1",
-      "startMs": 54130,
-      "endMs": 56620,
-      "playStartMs": 54110,
-      "playEndMs": 56805,
+      "startMs": 54110,
+      "endMs": 56805,
       "performanceNote": "Verse-to-chorus boundary: the vocal release is kept independent from the following chorus pickup."
     },
     {
       "id": "o009",
       "segmentId": "s009",
       "sectionId": "chorus-1",
-      "startMs": 57000,
-      "endMs": 59880,
-      "playStartMs": 57025,
-      "playEndMs": 59995,
+      "startMs": 57025,
+      "endMs": 59995,
       "performanceNote": "Chorus pickup follows the brief transition after Verse 1; actual and playback boundaries are independently set."
     },
     {
       "id": "o010",
       "segmentId": "s010",
       "sectionId": "chorus-1",
-      "startMs": 60000,
-      "endMs": 63020,
-      "playStartMs": 60130,
-      "playEndMs": 63110
+      "startMs": 60130,
+      "endMs": 63110
     },
     {
       "id": "o011",
       "segmentId": "s011",
       "sectionId": "chorus-1",
-      "startMs": 63120,
-      "endMs": 66110,
-      "playStartMs": 63240,
-      "playEndMs": 66195
+      "startMs": 63240,
+      "endMs": 66195
     },
     {
       "id": "o012",
       "segmentId": "s012",
       "sectionId": "chorus-1",
-      "startMs": 66240,
-      "endMs": 69270,
-      "playStartMs": 66340,
-      "playEndMs": 69275
+      "startMs": 66340,
+      "endMs": 69275
     },
     {
       "id": "o013",
       "segmentId": "s013",
       "sectionId": "chorus-1",
-      "startMs": 69360,
-      "endMs": 72350,
-      "playStartMs": 69390,
-      "playEndMs": 72510
+      "startMs": 69390,
+      "endMs": 72510
     },
     {
       "id": "o014",
       "segmentId": "s014",
       "sectionId": "chorus-1",
-      "startMs": 72470,
-      "endMs": 75460,
-      "playStartMs": 72505,
-      "playEndMs": 75540
+      "startMs": 72505,
+      "endMs": 75540
     },
     {
       "id": "o015",
       "segmentId": "s015",
       "sectionId": "chorus-1",
-      "startMs": 75590,
-      "endMs": 78570,
-      "playStartMs": 75655,
-      "playEndMs": 78665
+      "startMs": 75655,
+      "endMs": 78665
     },
     {
       "id": "o016",
       "segmentId": "s016",
       "sectionId": "chorus-1",
-      "startMs": 78710,
-      "endMs": 81260,
-      "playStartMs": 78820,
-      "playEndMs": 82380,
+      "startMs": 78820,
+      "endMs": 82380,
       "performanceNote": "Chorus release before the long instrumental break; actual end stops at the audible vocal release."
     },
     {
       "id": "o017",
       "segmentId": "s017",
       "sectionId": "verse-2",
-      "startMs": 94680,
-      "endMs": 97660,
-      "playStartMs": 94660,
-      "playEndMs": 97805
+      "startMs": 94660,
+      "endMs": 97805
     },
     {
       "id": "o018",
       "segmentId": "s018",
       "sectionId": "verse-2",
-      "startMs": 97800,
-      "endMs": 100800,
-      "playStartMs": 97970,
-      "playEndMs": 100910
+      "startMs": 97970,
+      "endMs": 100910
     },
     {
       "id": "o019",
       "segmentId": "s019",
       "sectionId": "verse-2",
-      "startMs": 100920,
-      "endMs": 103900,
-      "playStartMs": 101010,
-      "playEndMs": 104015
+      "startMs": 101010,
+      "endMs": 104015
     },
     {
       "id": "o020",
       "segmentId": "s020",
       "sectionId": "verse-2",
-      "startMs": 104030,
-      "endMs": 105500,
-      "playStartMs": 104175,
-      "playEndMs": 105660,
+      "startMs": 104175,
+      "endMs": 105660,
       "performanceNote": "Short interjection into the following count-in; bounded separately from the next Occurrence."
     },
     {
       "id": "o021",
       "segmentId": "s021",
       "sectionId": "verse-2",
-      "startMs": 105600,
-      "endMs": 107030,
-      "playStartMs": 105775,
-      "playEndMs": 107200,
+      "startMs": 105775,
+      "endMs": 107200,
       "performanceNote": "Count-in transition: the short phrase uses its own release boundary."
     },
     {
       "id": "o022",
       "segmentId": "s022",
       "sectionId": "verse-2",
-      "startMs": 107150,
-      "endMs": 110130,
-      "playStartMs": 107210,
-      "playEndMs": 110215
+      "startMs": 107210,
+      "endMs": 110215
     },
     {
       "id": "o023",
       "segmentId": "s023",
       "sectionId": "verse-2",
-      "startMs": 110270,
-      "endMs": 113250,
-      "playStartMs": 110245,
-      "playEndMs": 113300
+      "startMs": 110245,
+      "endMs": 113300
     },
     {
       "id": "o024",
       "segmentId": "s024",
       "sectionId": "verse-2",
-      "startMs": 113380,
-      "endMs": 115950,
-      "playStartMs": 113420,
-      "playEndMs": 116175
+      "startMs": 113420,
+      "endMs": 116175
     },
     {
       "id": "o025",
       "segmentId": "s025",
       "sectionId": "verse-2",
-      "startMs": 116110,
-      "endMs": 117480,
-      "playStartMs": 116230,
-      "playEndMs": 118760,
+      "startMs": 116230,
+      "endMs": 118760,
       "performanceNote": "Verse-2 release before the chorus return; playback tail is intentionally asymmetric."
     },
     {
       "id": "o026",
       "segmentId": "s009",
       "sectionId": "chorus-2",
-      "startMs": 119340,
-      "endMs": 122210,
-      "playStartMs": 119365,
-      "playEndMs": 122300,
+      "startMs": 119365,
+      "endMs": 122300,
       "performanceNote": "Chorus return begins after a brief transition; source-audio onset is not copied from the LRC timestamp."
     },
     {
       "id": "o027",
       "segmentId": "s010",
       "sectionId": "chorus-2",
-      "startMs": 122340,
-      "endMs": 125350,
-      "playStartMs": 122505,
-      "playEndMs": 125425
+      "startMs": 122505,
+      "endMs": 125425
     },
     {
       "id": "o028",
       "segmentId": "s011",
       "sectionId": "chorus-2",
-      "startMs": 125460,
-      "endMs": 128440,
-      "playStartMs": 125595,
-      "playEndMs": 128515
+      "startMs": 125595,
+      "endMs": 128515
     },
     {
       "id": "o029",
       "segmentId": "s012",
       "sectionId": "chorus-2",
-      "startMs": 128580,
-      "endMs": 131580,
-      "playStartMs": 128675,
-      "playEndMs": 131650
+      "startMs": 128675,
+      "endMs": 131650
     },
     {
       "id": "o030",
       "segmentId": "s013",
       "sectionId": "chorus-2",
-      "startMs": 131700,
-      "endMs": 134680,
-      "playStartMs": 131725,
-      "playEndMs": 134880
+      "startMs": 131725,
+      "endMs": 134880
     },
     {
       "id": "o031",
       "segmentId": "s014",
       "sectionId": "chorus-2",
-      "startMs": 134810,
-      "endMs": 137820,
-      "playStartMs": 135010,
-      "playEndMs": 138025
+      "startMs": 135010,
+      "endMs": 138025
     },
     {
       "id": "o032",
       "segmentId": "s026",
       "sectionId": "chorus-2",
-      "startMs": 137930,
-      "endMs": 140880,
-      "playStartMs": 138115,
-      "playEndMs": 141060
+      "startMs": 138115,
+      "endMs": 141060
     },
     {
       "id": "o033",
       "segmentId": "s027",
       "sectionId": "chorus-2",
-      "startMs": 141030,
-      "endMs": 143650,
-      "playStartMs": 141260,
-      "playEndMs": 145165,
+      "startMs": 141260,
+      "endMs": 145165,
       "performanceNote": "Chorus-2 release before the long instrumental/bridge; actual end and playback tail are kept separate."
     },
     {
       "id": "o034",
       "segmentId": "s005",
       "sectionId": "reprise",
-      "startMs": 176040,
-      "endMs": 178710,
-      "playStartMs": 175960,
-      "playEndMs": 178850,
+      "startMs": 175960,
+      "endMs": 178850,
       "performanceNote": "Reprise re-entry after the long instrumental; acoustic onset is later than the candidate lyric marker."
     },
     {
       "id": "o035",
       "segmentId": "s006",
       "sectionId": "reprise",
-      "startMs": 178840,
-      "endMs": 181790,
-      "playStartMs": 178815,
-      "playEndMs": 181835
+      "startMs": 178815,
+      "endMs": 181835
     },
     {
       "id": "o036",
       "segmentId": "s007",
       "sectionId": "reprise",
-      "startMs": 181940,
-      "endMs": 184550,
-      "playStartMs": 181995,
-      "playEndMs": 184675
+      "startMs": 181995,
+      "endMs": 184675
     },
     {
       "id": "o037",
       "segmentId": "s008",
       "sectionId": "reprise",
-      "startMs": 184690,
-      "endMs": 187580,
-      "playStartMs": 184740,
-      "playEndMs": 187650,
+      "startMs": 184740,
+      "endMs": 187650,
       "performanceNote": "Reprise-to-final-chorus boundary; release closes before the final return."
     },
     {
       "id": "o038",
       "segmentId": "s009",
       "sectionId": "final-chorus",
-      "startMs": 187710,
-      "endMs": 190800,
-      "playStartMs": 187735,
-      "playEndMs": 190935,
+      "startMs": 187735,
+      "endMs": 190935,
       "performanceNote": "Final chorus begins across the reprise boundary; playback lead is independent from actual onset."
     },
     {
       "id": "o039",
       "segmentId": "s010",
       "sectionId": "final-chorus",
-      "startMs": 190920,
-      "endMs": 193890,
-      "playStartMs": 191215,
-      "playEndMs": 194075
+      "startMs": 191215,
+      "endMs": 194075
     },
     {
       "id": "o040",
       "segmentId": "s011",
       "sectionId": "final-chorus",
-      "startMs": 194030,
-      "endMs": 197030,
-      "playStartMs": 194370,
-      "playEndMs": 197090
+      "startMs": 194370,
+      "endMs": 197090
     },
     {
       "id": "o041",
       "segmentId": "s028",
       "sectionId": "final-chorus",
-      "startMs": 197150,
-      "endMs": 200140,
-      "playStartMs": 197305,
-      "playEndMs": 200265
+      "startMs": 197305,
+      "endMs": 200265
     },
     {
       "id": "o042",
       "segmentId": "s009",
       "sectionId": "final-chorus",
-      "startMs": 200270,
-      "endMs": 203260,
-      "playStartMs": 200510,
-      "playEndMs": 203400
+      "startMs": 200510,
+      "endMs": 203400
     },
     {
       "id": "o043",
       "segmentId": "s029",
       "sectionId": "final-chorus",
-      "startMs": 203380,
-      "endMs": 206370,
-      "playStartMs": 203605,
-      "playEndMs": 206565
+      "startMs": 203605,
+      "endMs": 206565
     },
     {
       "id": "o044",
       "segmentId": "s011",
       "sectionId": "final-chorus",
-      "startMs": 206500,
-      "endMs": 209470,
-      "playStartMs": 206790,
-      "playEndMs": 209580
+      "startMs": 206790,
+      "endMs": 209580
     },
     {
       "id": "o045",
       "segmentId": "s030",
       "sectionId": "final-chorus",
-      "startMs": 209610,
-      "endMs": 213450,
-      "playStartMs": 209690,
-      "playEndMs": 213750,
+      "startMs": 209690,
+      "endMs": 213750,
       "performanceNote": "Final release is followed by an extended instrumental outro; playback tail ends before the outro section."
     }
   ]

@@ -11,7 +11,7 @@ import type {
   LyricsDocument,
   TimelineDocument,
 } from '../library/schema'
-import { createEffectivePracticeTimingProvider } from '../practice/practice-timing-overrides'
+import { createEffectiveOccurrenceTimingProvider } from '../practice/practice-timing-overrides'
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { FullSongWorkspace } from './FullSongWorkspace'
@@ -106,37 +106,29 @@ const model = assembleRuntimeSongEdition({
         id: 'o001',
         segmentId: 's001',
         sectionId: 'verse',
-        startMs: 100,
-        endMs: 500,
-        playStartMs: 50,
-        playEndMs: 550,
+        startMs: 50,
+        endMs: 550,
       },
       {
         id: 'o002',
         segmentId: 's002',
         sectionId: 'verse',
-        startMs: 450,
-        endMs: 900,
-        playStartMs: 400,
-        playEndMs: 950,
+        startMs: 400,
+        endMs: 950,
       },
       {
         id: 'o003',
         segmentId: 's003',
         sectionId: 'verse',
-        startMs: 700,
-        endMs: 1100,
-        playStartMs: 650,
-        playEndMs: 1150,
+        startMs: 650,
+        endMs: 1150,
       },
       {
         id: 'o004',
         segmentId: 's004',
         sectionId: 'chorus',
-        startMs: 1600,
-        endMs: 1900,
-        playStartMs: 1550,
-        playEndMs: 1950,
+        startMs: 1550,
+        endMs: 1950,
       },
     ],
   } satisfies TimelineDocument,
@@ -151,13 +143,13 @@ const model = assembleRuntimeSongEdition({
 
 const modelWithTimingOverride = {
   ...model,
-  timingProvider: createEffectivePracticeTimingProvider(model.timeline, {
-    schemaVersion: 2,
+  timingProvider: createEffectiveOccurrenceTimingProvider(model.timeline, {
+    schemaVersion: 3,
     songId: 'first-light',
     editionContentHash: edition.contentHash,
     audioSourceHash: edition.audio.sourceHash,
     baseTimelineUrl: edition.timelineUrl,
-    occurrences: { o002: { playStartMs: 420, playEndMs: 880 } },
+    occurrences: { o002: { startMs: 420, endMs: 880 } },
   }),
 }
 

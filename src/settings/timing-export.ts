@@ -46,7 +46,7 @@ export function createTimingExportMarkdown(
     '',
     '请在 `MyKr-YSteinsK/red-repeat` 中应用以下 RED:REPEAT 播放切口人工微调。',
     '',
-    '只修改下方列出的 `library/<song-id>/timeline.json` 中对应 Occurrence 的 `playStartMs` / `playEndMs`。除非验证证明必要，不修改 `startMs`、`endMs`、Section、lyrics、audioSourceHash 或其他歌曲。保持 source order。应用后运行 `library:validate`、`library:compile`、相关 timing tests、full test、build、`pwa:inspect`。确认新的 Runtime 已消费 canonical timing 后，提交并 push。',
+    '只修改下方列出的 `library/<song-id>/timeline.json` 中对应 Occurrence 的唯一 `startMs` / `endMs`。不得修改 Section、lyrics、audioSourceHash 或其他歌曲。保持 source order。应用后运行 `library:validate`、`library:compile`、相关 timing tests、full test、build、`pwa:inspect`。确认新的 Runtime 已消费 canonical timing 后，提交并 push。',
     '',
     '## Changes',
     '',
@@ -77,18 +77,18 @@ function createSongExport(
       }
       const segment = segmentsById.get(occurrence.segmentId)
       const section = sectionsById.get(occurrence.sectionId)
-      const effectiveStart = fields.playStartMs ?? occurrence.playStartMs
-      const effectiveEnd = fields.playEndMs ?? occurrence.playEndMs
+      const effectiveStart = fields.startMs ?? occurrence.startMs
+      const effectiveEnd = fields.endMs ?? occurrence.endMs
       return [
         `### ${occurrence.id} · ${segment?.lyrics ?? occurrence.segmentId}`,
         '',
         `- section: ${section?.label ?? occurrence.sectionId}`,
         `- source: \`library/${edition.song.songId}/timeline.json\``,
-        `- canonical playStartMs: ${occurrence.playStartMs}`,
-        `- canonical playEndMs: ${occurrence.playEndMs}`,
-        `- override playStartMs: ${fields.playStartMs === undefined ? '未修改' : fields.playStartMs}`,
-        `- override playEndMs: ${fields.playEndMs === undefined ? '未修改' : fields.playEndMs}`,
-        `- effective delta: playStartMs ${effectiveStart - occurrence.playStartMs >= 0 ? '+' : ''}${effectiveStart - occurrence.playStartMs}ms; playEndMs ${effectiveEnd - occurrence.playEndMs >= 0 ? '+' : ''}${effectiveEnd - occurrence.playEndMs}ms`,
+        `- canonical startMs: ${occurrence.startMs}`,
+        `- canonical endMs: ${occurrence.endMs}`,
+        `- override startMs: ${fields.startMs === undefined ? '未修改' : fields.startMs}`,
+        `- override endMs: ${fields.endMs === undefined ? '未修改' : fields.endMs}`,
+        `- effective delta: startMs ${effectiveStart - occurrence.startMs >= 0 ? '+' : ''}${effectiveStart - occurrence.startMs}ms; endMs ${effectiveEnd - occurrence.endMs >= 0 ? '+' : ''}${effectiveEnd - occurrence.endMs}ms`,
         '',
       ].join('\n')
     })

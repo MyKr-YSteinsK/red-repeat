@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { resolveTimeline } from './resolver'
 import type { TimelineDocument } from '../library/schema'
+import type { OccurrenceTimingProvider } from './occurrence-timing'
 
 const timeline: TimelineDocument = {
   audioSourceHash: 'a'.repeat(64),
@@ -10,11 +11,11 @@ const timeline: TimelineDocument = {
     { id: 'verse-2', label: 'Verse 2', startMs: 2500, endMs: 4000 },
   ],
   occurrences: [
-    occurrence('o001', 200, 400, 0, 450),
-    occurrence('o002', 400, 700, 350, 750),
-    occurrence('o003', 400, 550, 350, 600),
-    occurrence('o004', 800, 900, 750, 950),
-    occurrence('o005', 2700, 3000, 2650, 3050),
+    occurrence('o001', 0, 450),
+    occurrence('o002', 350, 750),
+    occurrence('o003', 350, 600),
+    occurrence('o004', 750, 950),
+    occurrence('o005', 2650, 3050),
   ],
 }
 
@@ -23,9 +24,9 @@ describe('Timeline Resolver', () => {
     const result = resolveTimeline(timeline, 50)
 
     expect(result.currentSection).toBeNull()
-    expect(result.activeOccurrences).toEqual([])
+    expect(result.activeOccurrences.map(({ id }) => id)).toEqual(['o001'])
     expect(result.previousOccurrence).toBeNull()
-    expect(result.nextOccurrence?.id).toBe('o001')
+    expect(result.nextOccurrence?.id).toBe('o002')
   })
 
   it('enters a Section at its exact start and reports zero progress', () => {
@@ -79,7 +80,7 @@ describe('Timeline Resolver', () => {
   })
 
   it('treats an Occurrence end as inactive', () => {
-    const result = resolveTimeline(timeline, 400)
+    const result = resolveTimeline(timeline, 450)
 
     expect(result.activeOccurrences.map(({ id }) => id)).toEqual(['o002', 'o003'])
     expect(result.activeOccurrences.some(({ id }) => id === 'o001')).toBe(false)
@@ -92,6 +93,26 @@ describe('Timeline Resolver', () => {
     expect(result.sectionProgress).toBeLessThan(1)
   })
 
+  it('uses the effective timing provider for active and adjacent semantics', () => {
+    const provider: OccurrenceTimingProvider = {
+      getTiming: (occurrence) =>
+        occurrence.id === 'o001'
+          ? { startMs: 100, endMs: 600 }
+          : { startMs: occurrence.startMs, endMs: occurrence.endMs },
+    }
+
+    const result = resolveTimeline(timeline, 475, provider)
+
+    expect(result.activeOccurrences.map(({ id }) => id)).toEqual([
+      'o001',
+      'o002',
+      'o003',
+    ])
+    expect(result.primaryOccurrence?.id).toBe('o001')
+    expect(result.previousOccurrence).toBeNull()
+    expect(result.nextOccurrence?.id).toBe('o002')
+  })
+
   it('rejects invalid resolver time input', () => {
     expect(() => resolveTimeline(timeline, -1)).toThrow(RangeError)
     expect(() => resolveTimeline(timeline, Number.NaN)).toThrow(RangeError)
@@ -102,8 +123,6 @@ function occurrence(
   id: string,
   startMs: number,
   endMs: number,
-  playStartMs: number,
-  playEndMs: number,
 ) {
   return {
     id,
@@ -111,7 +130,5 @@ function occurrence(
     sectionId: startMs >= 2500 ? 'verse-2' : 'verse-1',
     startMs,
     endMs,
-    playStartMs,
-    playEndMs,
   }
 }

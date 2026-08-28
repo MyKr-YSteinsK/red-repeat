@@ -33,10 +33,8 @@ const validTimeline = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse-1',
-      startMs: 1000,
-      endMs: 2500,
-      playStartMs: 500,
-      playEndMs: 3000,
+      startMs: 500,
+      endMs: 3000,
     },
   ],
 }
@@ -160,14 +158,29 @@ describe('Song Edition source schemas', () => {
     const result = TimelineSchema.safeParse({
       ...validTimeline,
       occurrences: [
-        { ...validTimeline.occurrences[0], playStartMs: 3200, playEndMs: 3000 },
+        { ...validTimeline.occurrences[0], startMs: 3200, endMs: 3000 },
       ],
     })
 
     expect(result.success).toBe(false)
   })
 
-  it('accepts a precise playback window inside the editorial lyric range', () => {
+  it('accepts one precise authoritative timing window', () => {
+    const result = TimelineSchema.safeParse({
+      ...validTimeline,
+      occurrences: [
+        {
+          ...validTimeline.occurrences[0],
+          startMs: 1200,
+          endMs: 2200,
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects the legacy four-field Occurrence contract', () => {
     const result = TimelineSchema.safeParse({
       ...validTimeline,
       occurrences: [
@@ -179,7 +192,7 @@ describe('Song Edition source schemas', () => {
       ],
     })
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(false)
   })
 
   it('requires a lowercase SHA-256 audio source fingerprint', () => {
@@ -205,10 +218,8 @@ describe('Song Edition source schemas', () => {
         {
           ...validTimeline.occurrences[0],
           id: 'o002',
-          startMs: 2000,
-          endMs: 3500,
-          playStartMs: 1500,
-          playEndMs: 4000,
+          startMs: 1500,
+          endMs: 4000,
         },
       ],
     })

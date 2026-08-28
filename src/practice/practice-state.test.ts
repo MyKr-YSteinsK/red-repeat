@@ -279,9 +279,7 @@ function occurrence(id: string, startMs: number, endMs: number) {
     id,
     segmentId: `s${id.slice(1)}`,
     sectionId: 'verse',
-    startMs,
-    endMs,
-    playStartMs: startMs - 50,
-    playEndMs: endMs + 50,
+    startMs: startMs - 50,
+    endMs: endMs + 50,
   }
 }

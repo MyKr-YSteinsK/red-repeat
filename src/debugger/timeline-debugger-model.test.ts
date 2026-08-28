@@ -26,20 +26,18 @@ const timeline: TimelineDocument = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse',
-      startMs: 100,
-      endMs: 400,
-      playStartMs: 50,
-      playEndMs: 450,
+      startMs: 50,
+      endMs: 450,
     },
   ],
 }
 
 describe('Timeline Debugger working-copy model', () => {
   it('applies exact timing deltas without clamping or mutating the source', () => {
-    const changed = updateOccurrenceTiming(timeline, 'o001', 'playStartMs', -100)
+    const changed = updateOccurrenceTiming(timeline, 'o001', 'startMs', -100)
 
-    expect(changed.occurrences[0].playStartMs).toBe(-50)
-    expect(timeline.occurrences[0].playStartMs).toBe(50)
+    expect(changed.occurrences[0].startMs).toBe(-50)
+    expect(timeline.occurrences[0].startMs).toBe(50)
     expect(validateTimelineWorkingCopy(changed)).toMatchObject({
       valid: false,
       errors: expect.arrayContaining([
@@ -50,19 +48,12 @@ describe('Timeline Debugger working-copy model', () => {
     })
   })
 
-  it('reports actual timing outside its Section separately from practice-range rules', () => {
+  it('allows authoritative timing to cross its Section boundary', () => {
     const changed = updateOccurrenceTiming(timeline, 'o001', 'endMs', 250)
     const validation = validateTimelineWorkingCopy(changed)
 
-    expect(validation.valid).toBe(false)
-    expect(validation.errors).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          fieldPath: 'occurrences[o001].endMs',
-          message: expect.stringContaining('within Section verse'),
-        }),
-      ]),
-    )
+    expect(validation.valid).toBe(true)
+    expect(validation.errors).toEqual([])
   })
 
   it('updates instrumental Section timing without moving its Occurrences', () => {
@@ -97,19 +88,13 @@ describe('Timeline Debugger working-copy model', () => {
     )
   })
 
-  it('reports Occurrence containment when a Section is shortened', () => {
+  it('keeps Section timing separate when a Section is shortened', () => {
     const changed = updateSectionTiming(timeline, 'verse', 'endMs', -250)
     const validation = validateTimelineWorkingCopy(changed)
 
     expect(changed.sections[0].endMs).toBe(350)
-    expect(validation.errors).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          fieldPath: 'occurrences[o001].endMs',
-          message: expect.stringContaining('within Section verse'),
-        }),
-      ]),
-    )
+    expect(validation.valid).toBe(true)
+    expect(validation.errors).toEqual([])
   })
 
   it('clones and compares a working copy deterministically', () => {

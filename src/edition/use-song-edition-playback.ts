@@ -5,6 +5,7 @@ import type {
 } from '../audio/audio-engine'
 import { getAudioEngine } from '../audio/audio-engine'
 import { resolveTimeline, type TimelineResolution } from '../timeline/resolver'
+import type { OccurrenceTimingProvider } from '../timeline/occurrence-timing'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
 
@@ -36,14 +37,17 @@ export function useSongEditionPlayback(
   model: AssembledSongEdition,
   runtimeClient: RuntimeClient,
   providedEngine?: AudioEngine,
+  providedTimingProvider?: OccurrenceTimingProvider,
 ): SongEditionPlaybackSnapshot {
   const engine =
     providedEngine ?? (typeof Audio === 'undefined' ? null : getAudioEngine())
+  const timingProvider = providedTimingProvider ?? model.timingProvider
   const sourceUrl = runtimeClient.resolveAsset(model.edition.audio.url)
   const initialDerivedState = derivePlaybackState(
     engine?.getState() ?? IDLE_AUDIO_STATE,
     sourceUrl,
     model.timeline,
+    timingProvider,
   )
   const derivedStateRef = useRef(initialDerivedState)
   const [derivedState, setDerivedState] = useState(initialDerivedState)
@@ -61,6 +65,7 @@ export function useSongEditionPlayback(
         nextAudioState,
         sourceUrl,
         model.timeline,
+        timingProvider,
       )
       const previousState = derivedStateRef.current
       if (!previousState) {
@@ -93,7 +98,7 @@ export function useSongEditionPlayback(
       derivedStateRef.current = nextState
       setDerivedState(nextState)
     })
-  }, [engine, model.timeline, sourceUrl])
+  }, [engine, model.timeline, sourceUrl, timingProvider])
 
   useEffect(() => {
     if (!engine) {
@@ -117,23 +122,22 @@ export function useSongEditionPlayback(
         return
       }
 
-      const timing = model.timingProvider.getTiming(assembledOccurrence.occurrence)
+      const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
       void engine
         .playRange(
-          { startMs: timing.playStartMs, endMs: timing.playEndMs },
+          { startMs: timing.startMs, endMs: timing.endMs },
           assembledOccurrence.occurrence.id,
         )
         .catch(() => {
           // The Engine publishes a recoverable error state for the UI.
         })
     },
-    [engine, model.timingProvider],
+    [engine, timingProvider],
   )
   const playOccurrenceContinuously = useCallback(
     (
       assembledOccurrence: AssembledOccurrence,
-      startMs = model.timingProvider.getTiming(assembledOccurrence.occurrence)
-        .playStartMs,
+      startMs = timingProvider.getTiming(assembledOccurrence.occurrence).startMs,
     ): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
       if (!engine) {
@@ -144,7 +148,7 @@ export function useSongEditionPlayback(
         // The Engine publishes a recoverable error state for the UI.
       })
     },
-    [engine, model.timingProvider],
+    [engine, timingProvider],
   )
 
   return {
@@ -161,6 +165,7 @@ function derivePlaybackState(
   audioState: AudioEngineState,
   sourceUrl: string,
   timeline: AssembledSongEdition['timeline'],
+  timingProvider: OccurrenceTimingProvider,
 ): DerivedPlaybackState {
   const effectiveAudioState =
     audioState.sourceUrl === sourceUrl ? audioState : IDLE_AUDIO_STATE
@@ -170,6 +175,7 @@ function derivePlaybackState(
     resolution: resolveTimeline(
       timeline,
       effectiveAudioState.currentTimeMs,
+      timingProvider,
     ),
   }
 }

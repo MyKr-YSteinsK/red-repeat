@@ -123,7 +123,7 @@ export async function compileAudio(options: {
   sourcePath: string
   destinationDirectory: string
   cacheRoot: string
-  maxPlayEndMs: number
+  maxOccurrenceEndMs: number
 }): Promise<CompiledAudio> {
   const probe = await probeAudio(options.sourcePath)
   const sampleRate: 44100 | 48000 = probe.sampleRate === 44100 ? 44100 : 48000
@@ -142,10 +142,10 @@ export async function compileAudio(options: {
   const metadataPath = path.join(cacheDirectory, `${cacheKey}.json`)
   const cached = readCachedAudio(cachePath, metadataPath, sourceHash, settings)
 
-  if (options.maxPlayEndMs > probe.durationMs + TIMELINE_DURATION_TOLERANCE_MS) {
+  if (options.maxOccurrenceEndMs > probe.durationMs + TIMELINE_DURATION_TOLERANCE_MS) {
     throw new MediaCompileError(
       'TIMELINE_EXCEEDS_AUDIO_DURATION',
-      `timeline playEndMs ${options.maxPlayEndMs}ms exceeds audio duration ${probe.durationMs}ms (tolerance ${TIMELINE_DURATION_TOLERANCE_MS}ms)`,
+      `timeline occurrence endMs ${options.maxOccurrenceEndMs}ms exceeds audio duration ${probe.durationMs}ms (tolerance ${TIMELINE_DURATION_TOLERANCE_MS}ms)`,
     )
   }
 

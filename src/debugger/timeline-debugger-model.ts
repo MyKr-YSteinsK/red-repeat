@@ -4,8 +4,6 @@ import { TimelineSchema } from '../library/schema'
 export type OccurrenceTimingField =
   | 'startMs'
   | 'endMs'
-  | 'playStartMs'
-  | 'playEndMs'
 
 export type SectionTimingField = 'startMs' | 'endMs'
 
@@ -125,24 +123,10 @@ export function validateTimelineWorkingCopy(
     })
 
   timeline.occurrences.forEach((occurrence) => {
-    const section = sectionsById.get(occurrence.sectionId)
-    if (!section) {
+    if (!sectionsById.has(occurrence.sectionId)) {
       errors.push({
         fieldPath: `occurrences[${occurrence.id}].sectionId`,
         message: `Section ${occurrence.sectionId} does not exist.`,
-      })
-      return
-    }
-    if (occurrence.startMs < section.startMs) {
-      errors.push({
-        fieldPath: `occurrences[${occurrence.id}].startMs`,
-        message: `Actual startMs must stay within Section ${section.id}.`,
-      })
-    }
-    if (occurrence.endMs > section.endMs) {
-      errors.push({
-        fieldPath: `occurrences[${occurrence.id}].endMs`,
-        message: `Actual endMs must stay within Section ${section.id}; practice range may cross Sections.`,
       })
     }
   })

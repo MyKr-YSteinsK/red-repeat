@@ -73,583 +73,461 @@
       "id": "o001",
       "segmentId": "s001",
       "sectionId": "opening-verse",
-      "startMs": 1143,
-      "endMs": 5379,
-      "playStartMs": 863,
-      "playEndMs": 5419
+      "startMs": 863,
+      "endMs": 5419
     },
     {
       "id": "o002",
       "segmentId": "s002",
       "sectionId": "opening-verse",
-      "startMs": 5499,
-      "endMs": 10012,
-      "playStartMs": 5459,
-      "playEndMs": 10032
+      "startMs": 5459,
+      "endMs": 10032
     },
     {
       "id": "o003",
       "segmentId": "s003",
       "sectionId": "opening-verse",
-      "startMs": 10132,
-      "endMs": 14493,
-      "playStartMs": 10072,
-      "playEndMs": 14393
+      "startMs": 10072,
+      "endMs": 14393
     },
     {
       "id": "o004",
       "segmentId": "s004",
       "sectionId": "opening-verse",
-      "startMs": 14613,
-      "endMs": 18771,
-      "playStartMs": 14633,
-      "playEndMs": 18691
+      "startMs": 14633,
+      "endMs": 18691
     },
     {
       "id": "o005",
       "segmentId": "s005",
       "sectionId": "verse-1",
-      "startMs": 18891,
-      "endMs": 23163,
-      "playStartMs": 19011,
-      "playEndMs": 23083
+      "startMs": 19011,
+      "endMs": 23083
     },
     {
       "id": "o006",
       "segmentId": "s006",
       "sectionId": "verse-1",
-      "startMs": 23283,
-      "endMs": 27743,
-      "playStartMs": 23323,
-      "playEndMs": 27843
+      "startMs": 23323,
+      "endMs": 27843
     },
     {
       "id": "o007",
       "segmentId": "s007",
       "sectionId": "verse-1",
-      "startMs": 27863,
-      "endMs": 32234,
-      "playStartMs": 27983,
-      "playEndMs": 32254
+      "startMs": 27983,
+      "endMs": 32254
     },
     {
       "id": "o008",
       "segmentId": "s008",
       "sectionId": "verse-1",
-      "startMs": 32354,
-      "endMs": 36573,
-      "playStartMs": 32374,
-      "playEndMs": 36993
+      "startMs": 32374,
+      "endMs": 36993
     },
     {
       "id": "o009",
       "segmentId": "s009",
       "sectionId": "rap-1",
-      "startMs": 36693,
-      "endMs": 39128,
-      "playStartMs": 36813,
-      "playEndMs": 39148,
+      "startMs": 36813,
+      "endMs": 39148,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o010",
       "segmentId": "s010",
       "sectionId": "rap-1",
-      "startMs": 39048,
-      "endMs": 41477,
-      "playStartMs": 39068,
-      "playEndMs": 41397,
+      "startMs": 39068,
+      "endMs": 41397,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o011",
       "segmentId": "s011",
       "sectionId": "rap-1",
-      "startMs": 41397,
-      "endMs": 42633,
-      "playStartMs": 41437,
-      "playEndMs": 42613,
+      "startMs": 41437,
+      "endMs": 42613,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o012",
       "segmentId": "s012",
       "sectionId": "rap-1",
-      "startMs": 42553,
-      "endMs": 43302,
-      "playStartMs": 42273,
-      "playEndMs": 43722,
+      "startMs": 42273,
+      "endMs": 43722,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o013",
       "segmentId": "s013",
       "sectionId": "rap-1",
-      "startMs": 43222,
+      "startMs": 43242,
       "endMs": 44282,
-      "playStartMs": 43242,
-      "playEndMs": 44282,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o014",
       "segmentId": "s014",
       "sectionId": "rap-1",
-      "startMs": 44202,
-      "endMs": 46115,
-      "playStartMs": 44162,
-      "playEndMs": 46035,
+      "startMs": 44162,
+      "endMs": 46035,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o015",
       "segmentId": "s015",
       "sectionId": "rap-1",
-      "startMs": 46035,
-      "endMs": 48143,
-      "playStartMs": 46095,
-      "playEndMs": 47803,
+      "startMs": 46095,
+      "endMs": 47803,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o016",
       "segmentId": "s016",
       "sectionId": "rap-1",
-      "startMs": 48063,
-      "endMs": 50557,
-      "playStartMs": 47983,
-      "playEndMs": 50377,
+      "startMs": 47983,
+      "endMs": 50377,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o017",
       "segmentId": "s017",
       "sectionId": "chorus-1",
-      "startMs": 50637,
-      "endMs": 55366,
-      "playStartMs": 50557,
-      "playEndMs": 54986
+      "startMs": 50557,
+      "endMs": 54986
     },
     {
       "id": "o018",
       "segmentId": "s018",
       "sectionId": "chorus-1",
-      "startMs": 55486,
-      "endMs": 59801,
-      "playStartMs": 55206,
-      "playEndMs": 59681
+      "startMs": 55206,
+      "endMs": 59681
     },
     {
       "id": "o019",
       "segmentId": "s019",
       "sectionId": "chorus-1",
-      "startMs": 59921,
-      "endMs": 64230,
-      "playStartMs": 59681,
-      "playEndMs": 64150
+      "startMs": 59681,
+      "endMs": 64150
     },
     {
       "id": "o020",
       "segmentId": "s020",
       "sectionId": "chorus-1",
-      "startMs": 64350,
-      "endMs": 70529,
-      "playStartMs": 64210,
-      "playEndMs": 70549
+      "startMs": 64210,
+      "endMs": 70549
     },
     {
       "id": "o021",
       "segmentId": "s021",
       "sectionId": "verse-2",
-      "startMs": 70649,
-      "endMs": 75076,
-      "playStartMs": 70669,
-      "playEndMs": 74996
+      "startMs": 70669,
+      "endMs": 74996
     },
     {
       "id": "o022",
       "segmentId": "s022",
       "sectionId": "verse-2",
-      "startMs": 75196,
-      "endMs": 79711,
-      "playStartMs": 75316,
-      "playEndMs": 79531
+      "startMs": 75316,
+      "endMs": 79531
     },
     {
       "id": "o023",
       "segmentId": "s023",
       "sectionId": "verse-2",
-      "startMs": 79831,
-      "endMs": 84175,
-      "playStartMs": 79851,
-      "playEndMs": 84195
+      "startMs": 79851,
+      "endMs": 84195
     },
     {
       "id": "o024",
       "segmentId": "s024",
       "sectionId": "verse-2",
-      "startMs": 84295,
-      "endMs": 88469,
-      "playStartMs": 84515,
-      "playEndMs": 88489
+      "startMs": 84515,
+      "endMs": 88489
     },
     {
       "id": "o025",
       "segmentId": "s025",
       "sectionId": "confession-verse",
-      "startMs": 88589,
-      "endMs": 93001,
-      "playStartMs": 88709,
-      "playEndMs": 92881
+      "startMs": 88709,
+      "endMs": 92881
     },
     {
       "id": "o026",
       "segmentId": "s026",
       "sectionId": "confession-verse",
-      "startMs": 93121,
-      "endMs": 97604,
-      "playStartMs": 92881,
-      "playEndMs": 97624
+      "startMs": 92881,
+      "endMs": 97624
     },
     {
       "id": "o027",
       "segmentId": "s027",
       "sectionId": "confession-verse",
-      "startMs": 97724,
-      "endMs": 101988,
-      "playStartMs": 97644,
-      "playEndMs": 102008
+      "startMs": 97644,
+      "endMs": 102008
     },
     {
       "id": "o028",
       "segmentId": "s028",
       "sectionId": "confession-verse",
-      "startMs": 102108,
-      "endMs": 106324,
-      "playStartMs": 102128,
-      "playEndMs": 106844
+      "startMs": 102128,
+      "endMs": 106844
     },
     {
       "id": "o029",
       "segmentId": "s029",
       "sectionId": "rap-2",
-      "startMs": 106444,
-      "endMs": 108880,
-      "playStartMs": 106364,
-      "playEndMs": 108800,
+      "startMs": 106364,
+      "endMs": 108800,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o030",
       "segmentId": "s030",
       "sectionId": "rap-2",
-      "startMs": 108800,
-      "endMs": 110863,
-      "playStartMs": 108720,
-      "playEndMs": 110883,
+      "startMs": 108720,
+      "endMs": 110883,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o031",
       "segmentId": "s031",
       "sectionId": "rap-2",
-      "startMs": 110783,
-      "endMs": 112860,
-      "playStartMs": 111003,
-      "playEndMs": 112880,
+      "startMs": 111003,
+      "endMs": 112880,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o032",
       "segmentId": "s032",
       "sectionId": "rap-2",
-      "startMs": 112780,
-      "endMs": 115146,
-      "playStartMs": 112900,
-      "playEndMs": 115266,
+      "startMs": 112900,
+      "endMs": 115266,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o033",
       "segmentId": "s033",
       "sectionId": "rap-2",
-      "startMs": 115066,
-      "endMs": 115711,
-      "playStartMs": 114786,
-      "playEndMs": 116131,
+      "startMs": 114786,
+      "endMs": 116131,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o034",
       "segmentId": "s034",
       "sectionId": "rap-2",
-      "startMs": 115631,
-      "endMs": 117061,
-      "playStartMs": 115751,
-      "playEndMs": 117081,
+      "startMs": 115751,
+      "endMs": 117081,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o035",
       "segmentId": "s035",
       "sectionId": "rap-2",
-      "startMs": 116981,
-      "endMs": 119215,
-      "playStartMs": 117201,
-      "playEndMs": 119035,
+      "startMs": 117201,
+      "endMs": 119035,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o036",
       "segmentId": "s036",
       "sectionId": "rap-2",
-      "startMs": 119135,
-      "endMs": 122065,
-      "playStartMs": 119055,
-      "playEndMs": 122185,
+      "startMs": 119055,
+      "endMs": 122185,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o037",
       "segmentId": "s037",
       "sectionId": "rap-2",
-      "startMs": 121985,
-      "endMs": 123296,
-      "playStartMs": 122205,
-      "playEndMs": 123616,
+      "startMs": 122205,
+      "endMs": 123616,
       "performanceNote": "LRC start seed; rapid mixed-language delivery needs Timeline Debugger boundary review."
     },
     {
       "id": "o038",
       "segmentId": "s038",
       "sectionId": "chorus-2",
-      "startMs": 142232,
-      "endMs": 146570,
-      "playStartMs": 142052,
-      "playEndMs": 146790
+      "startMs": 142052,
+      "endMs": 146790
     },
     {
       "id": "o039",
       "segmentId": "s039",
       "sectionId": "chorus-2",
-      "startMs": 146690,
-      "endMs": 151208,
-      "playStartMs": 146710,
-      "playEndMs": 151328
+      "startMs": 146710,
+      "endMs": 151328
     },
     {
       "id": "o040",
       "segmentId": "s040",
       "sectionId": "chorus-2",
-      "startMs": 151328,
-      "endMs": 155565,
-      "playStartMs": 151448,
-      "playEndMs": 155685
+      "startMs": 151448,
+      "endMs": 155685
     },
     {
       "id": "o041",
       "segmentId": "s041",
       "sectionId": "chorus-2",
-      "startMs": 155685,
-      "endMs": 160364,
-      "playStartMs": 155625,
-      "playEndMs": 161684
+      "startMs": 155625,
+      "endMs": 161684
     },
     {
       "id": "o042",
       "segmentId": "s042",
       "sectionId": "counterpoint",
-      "startMs": 160484,
-      "endMs": 162384,
-      "playStartMs": 160704,
-      "playEndMs": 162004,
+      "startMs": 160704,
+      "endMs": 162004,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o043",
       "segmentId": "s043",
       "sectionId": "counterpoint",
-      "startMs": 161768,
-      "endMs": 163668,
-      "playStartMs": 161888,
-      "playEndMs": 163488,
+      "startMs": 161888,
+      "endMs": 163488,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o044",
       "segmentId": "s044",
       "sectionId": "counterpoint",
-      "startMs": 162929,
-      "endMs": 164829,
-      "playStartMs": 162649,
-      "playEndMs": 165249,
+      "startMs": 162649,
+      "endMs": 165249,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o045",
       "segmentId": "s045",
       "sectionId": "counterpoint",
-      "startMs": 163991,
-      "endMs": 165891,
-      "playStartMs": 163711,
-      "playEndMs": 166311,
+      "startMs": 163711,
+      "endMs": 166311,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o046",
       "segmentId": "s046",
       "sectionId": "counterpoint",
-      "startMs": 164993,
-      "endMs": 166893,
-      "playStartMs": 164713,
-      "playEndMs": 167313,
+      "startMs": 164713,
+      "endMs": 167313,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o047",
       "segmentId": "s047",
       "sectionId": "counterpoint",
-      "startMs": 165904,
-      "endMs": 167804,
-      "playStartMs": 165624,
-      "playEndMs": 168224,
+      "startMs": 165624,
+      "endMs": 168224,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o048",
       "segmentId": "s048",
       "sectionId": "counterpoint",
-      "startMs": 167143,
-      "endMs": 169043,
-      "playStartMs": 166863,
-      "playEndMs": 169463,
+      "startMs": 166863,
+      "endMs": 169463,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o049",
       "segmentId": "s049",
       "sectionId": "counterpoint",
-      "startMs": 168350,
-      "endMs": 170250,
-      "playStartMs": 168070,
-      "playEndMs": 170670,
+      "startMs": 168070,
+      "endMs": 170670,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o050",
       "segmentId": "s050",
       "sectionId": "counterpoint",
-      "startMs": 169406,
-      "endMs": 171306,
-      "playStartMs": 169126,
-      "playEndMs": 171726,
+      "startMs": 169126,
+      "endMs": 171726,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o051",
       "segmentId": "s051",
       "sectionId": "counterpoint",
-      "startMs": 170811,
-      "endMs": 172711,
-      "playStartMs": 170531,
-      "playEndMs": 173131,
+      "startMs": 170531,
+      "endMs": 173131,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o052",
       "segmentId": "s052",
       "sectionId": "counterpoint",
-      "startMs": 171776,
-      "endMs": 173676,
-      "playStartMs": 171496,
-      "playEndMs": 174096,
+      "startMs": 171496,
+      "endMs": 174096,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o053",
       "segmentId": "s053",
       "sectionId": "counterpoint",
-      "startMs": 172889,
-      "endMs": 174789,
-      "playStartMs": 172609,
-      "playEndMs": 175209,
+      "startMs": 172609,
+      "endMs": 175209,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o054",
       "segmentId": "s054",
       "sectionId": "counterpoint",
-      "startMs": 173897,
-      "endMs": 175797,
-      "playStartMs": 173617,
-      "playEndMs": 176217,
+      "startMs": 173617,
+      "endMs": 176217,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o055",
       "segmentId": "s055",
       "sectionId": "counterpoint",
-      "startMs": 175040,
-      "endMs": 176940,
-      "playStartMs": 174760,
-      "playEndMs": 177360,
+      "startMs": 174760,
+      "endMs": 177360,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o056",
       "segmentId": "s056",
       "sectionId": "counterpoint",
-      "startMs": 176170,
-      "endMs": 178070,
-      "playStartMs": 175890,
-      "playEndMs": 178490,
+      "startMs": 175890,
+      "endMs": 178490,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o057",
       "segmentId": "s057",
       "sectionId": "counterpoint",
-      "startMs": 177413,
-      "endMs": 180300,
-      "playStartMs": 177333,
-      "playEndMs": 180420,
+      "startMs": 177333,
+      "endMs": 180420,
       "performanceNote": "Counterpoint line; overlap/end are provisional and must be checked by ear."
     },
     {
       "id": "o058",
       "segmentId": "s058",
       "sectionId": "outro",
-      "startMs": 180442,
-      "endMs": 184787,
-      "playStartMs": 180662,
-      "playEndMs": 185007
+      "startMs": 180662,
+      "endMs": 185007
     },
     {
       "id": "o059",
       "segmentId": "s059",
       "sectionId": "outro",
-      "startMs": 184907,
-      "endMs": 189363,
-      "playStartMs": 184627,
-      "playEndMs": 189483
+      "startMs": 184627,
+      "endMs": 189483
     },
     {
       "id": "o060",
       "segmentId": "s060",
       "sectionId": "outro",
-      "startMs": 189483,
-      "endMs": 193948,
-      "playStartMs": 189623,
-      "playEndMs": 193768
+      "startMs": 189623,
+      "endMs": 193768
     },
     {
       "id": "o061",
       "segmentId": "s061",
       "sectionId": "outro",
-      "startMs": 194068,
-      "endMs": 199800,
-      "playStartMs": 194088,
-      "playEndMs": 200220,
+      "startMs": 194088,
+      "endMs": 200220,
       "performanceNote": "Final sustain/tail estimated from source duration; verify the release point."
     }
   ]

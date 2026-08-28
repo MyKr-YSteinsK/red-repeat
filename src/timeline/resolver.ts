@@ -3,6 +3,11 @@ import type {
   Section,
   TimelineDocument,
 } from '../library/schema'
+import {
+  canonicalOccurrenceTiming,
+  type EffectiveOccurrenceTiming,
+  type OccurrenceTimingProvider,
+} from './occurrence-timing'
 
 export interface TimelineResolution {
   currentSection: Section | null
@@ -16,6 +21,7 @@ export interface TimelineResolution {
 interface IndexedOccurrence {
   occurrence: Occurrence
   sourceIndex: number
+  timing: EffectiveOccurrenceTiming
 }
 
 /**
@@ -25,6 +31,7 @@ interface IndexedOccurrence {
 export function resolveTimeline(
   timeline: TimelineDocument,
   currentTimeMs: number,
+  timingProvider: OccurrenceTimingProvider = canonicalOccurrenceTiming,
 ): TimelineResolution {
   if (!Number.isFinite(currentTimeMs) || currentTimeMs < 0) {
     throw new RangeError('currentTimeMs must be a finite non-negative number')
@@ -36,19 +43,20 @@ export function resolveTimeline(
         section.startMs <= currentTimeMs && currentTimeMs < section.endMs,
     ) ?? null
   const orderedOccurrences = timeline.occurrences
-    .map((occurrence, sourceIndex) => ({ occurrence, sourceIndex }))
+    .map((occurrence, sourceIndex) => ({
+      occurrence,
+      sourceIndex,
+      timing: timingProvider.getTiming(occurrence),
+    }))
     .sort(compareIndexedOccurrences)
-  const activeOccurrences = orderedOccurrences
+  const activeEntries = orderedOccurrences
     .filter(
-      ({ occurrence }) =>
-        occurrence.startMs <= currentTimeMs && currentTimeMs < occurrence.endMs,
+      ({ timing }) => timing.startMs <= currentTimeMs && currentTimeMs < timing.endMs,
     )
-    .map(({ occurrence }) => occurrence)
+  const activeOccurrences = activeEntries.map(({ occurrence }) => occurrence)
   const primaryOccurrence = activeOccurrences[0] ?? null
   const primaryIndex = primaryOccurrence
-    ? orderedOccurrences.findIndex(
-        ({ occurrence }) => occurrence === primaryOccurrence,
-      )
+    ? orderedOccurrences.findIndex(({ occurrence }) => occurrence === primaryOccurrence)
     : -1
 
   const previousOccurrence = primaryOccurrence
@@ -77,7 +85,7 @@ function compareIndexedOccurrences(
   left: IndexedOccurrence,
   right: IndexedOccurrence,
 ): number {
-  return left.occurrence.startMs - right.occurrence.startMs ||
+  return left.timing.startMs - right.timing.startMs ||
     left.sourceIndex - right.sourceIndex
 }
 
@@ -87,7 +95,7 @@ function findPreviousOccurrence(
 ): Occurrence | null {
   return (
     orderedOccurrences
-      .filter(({ occurrence }) => occurrence.endMs <= currentTimeMs)
+      .filter(({ timing }) => timing.endMs <= currentTimeMs)
       .at(-1)?.occurrence ?? null
   )
 }
@@ -97,7 +105,7 @@ function findNextOccurrence(
   currentTimeMs: number,
 ): Occurrence | null {
   return (
-    orderedOccurrences.find(({ occurrence }) => occurrence.startMs > currentTimeMs)
+    orderedOccurrences.find(({ timing }) => timing.startMs > currentTimeMs)
       ?.occurrence ?? null
   )
 }

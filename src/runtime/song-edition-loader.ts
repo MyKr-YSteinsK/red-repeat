@@ -16,11 +16,11 @@ import {
 } from './song-edition'
 import {
   clearTimingOverrides,
-  createEffectivePracticeTimingProvider,
+  createEffectiveOccurrenceTimingProvider,
   readTimingOverrides,
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
-import type { PracticeTimingProvider } from '../practice/practice-scope'
+import type { OccurrenceTimingProvider } from '../timeline/occurrence-timing'
 
 export interface RuntimeSongEditionCore {
   catalogEdition: CatalogEdition
@@ -28,7 +28,7 @@ export interface RuntimeSongEditionCore {
   lyrics: LyricsDocument
   timeline: TimelineDocument
   practice: PracticeDocument
-  timingProvider: PracticeTimingProvider
+  timingProvider: OccurrenceTimingProvider
   features: readonly RuntimeFeatureContent[]
   featureErrors: readonly RuntimeFeatureLoadError[]
   assembled: AssembledSongEdition
@@ -77,7 +77,7 @@ export async function loadRuntimeSongEditionCore(
   if (storedTiming.kind !== 'none' && storedTiming.kind !== 'compatible') {
     clearTimingOverrides(timingIdentity)
   }
-  const timingProvider = createEffectivePracticeTimingProvider(
+  const timingProvider = createEffectiveOccurrenceTimingProvider(
     timeline,
     storedTiming.kind === 'compatible' ? storedTiming.document : undefined,
   )

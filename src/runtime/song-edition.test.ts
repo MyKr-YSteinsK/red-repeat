@@ -126,8 +126,8 @@ describe('assembled runtime Song Edition', () => {
       'o004',
       'o002',
     ])
-    expect(model.occurrencesBySectionId.chorus[0].occurrence.endMs).toBe(1050)
-    expect(model.occurrencesBySectionId.chorus[1].occurrence.endMs).toBe(950)
+    expect(model.occurrencesBySectionId.chorus[0].occurrence.endMs).toBe(1100)
+    expect(model.occurrencesBySectionId.chorus[1].occurrence.endMs).toBe(1000)
   })
 
   it('keeps instrumental Sections in source order without fake Occurrences', () => {
@@ -197,18 +197,16 @@ function occurrence(
   id: string,
   segmentId: string,
   sectionId: string,
-  startMs: number,
-  endMs: number,
-  playStartMs: number,
-  playEndMs: number,
+  _editorialStartMs: number,
+  _editorialEndMs: number,
+  effectiveStartMs: number,
+  effectiveEndMs: number,
 ) {
   return {
     id,
     segmentId,
     sectionId,
-    startMs,
-    endMs,
-    playStartMs,
-    playEndMs,
+    startMs: effectiveStartMs,
+    endMs: effectiveEndMs,
   }
 }

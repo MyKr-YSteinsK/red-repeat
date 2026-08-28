@@ -55,9 +55,10 @@ Detailed source, runtime, PWA and release contracts are linked from
 - Segment (reusable lyric/content unit), Occurrence (timed performance),
   Section (musical structure) and Practice Unit (teachable grouping) remain
   distinct.
-- Editorial/display timing and playback timing are independent valid intervals.
-  Personal timing corrections are identity-bound local overrides and invalidate
-  when their Edition/audio/timeline identity is incompatible.
+- Each Occurrence has one authoritative `startMs/endMs` interval used by both
+  display/resolution and playback. Personal timing corrections are sparse,
+  same-field identity-bound local overrides and invalidate when their
+  Edition/audio/timeline identity is incompatible.
 - PWA updates preserve Practice resume, timing overrides and downloaded-song
   state unless an explicitly safe migration says otherwise. Deployed identity
   and installed-client activation are separate questions.

@@ -229,7 +229,7 @@ export function SettingsPage({
             <p className="eyebrow">内容作业</p>
             <h2 id="timing-settings-title">播放切口调试</h2>
           </div>
-          <p>逐句校准 playStartMs / playEndMs。微调只保存在本机，学唱、全曲和讲解会即时共同消费。</p>
+          <p>逐句校准唯一的 startMs / endMs。微调只保存在本机，学唱、全曲和讲解会即时共同消费。</p>
           <a className="settings-primary-link" href={timingDebuggerHref}>打开播放切口调试 →</a>
         </section>
 

@@ -5,7 +5,7 @@ import {
   createTimingDebuggerHref,
 } from '../navigation'
 import {
-  createEffectivePracticeTimingProvider,
+  createEffectiveOccurrenceTimingProvider,
   createTimingOverridesDocument,
   readTimingOverrides,
   saveTimingOverrides,
@@ -145,7 +145,6 @@ function TimingDebuggerReady({
   audioEngine?: AudioEngine
 }) {
   const model = core.assembled
-  const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const debuggerRef = useRef<HTMLElement | null>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const identity = useMemo<TimingOverrideIdentity>(
@@ -172,8 +171,14 @@ function TimingDebuggerReady({
   )
   const [message, setMessage] = useState<string>()
   const timingProvider = useMemo(
-    () => createEffectivePracticeTimingProvider(model.timeline, document),
+    () => createEffectiveOccurrenceTimingProvider(model.timeline, document),
     [document, model.timeline],
+  )
+  const playback = useSongEditionPlayback(
+    model,
+    runtimeClient,
+    audioEngine,
+    timingProvider,
   )
   const chronologicalOccurrences = useMemo(
     () => [...model.timeline.occurrences].sort((left, right) => left.startMs - right.startMs),
@@ -192,7 +197,7 @@ function TimingDebuggerReady({
   }
 
   const updateSelectedTiming = (
-    field: 'playStartMs' | 'playEndMs',
+    field: 'startMs' | 'endMs',
     deltaMs: number,
   ): void => {
     if (!selectedOccurrence) {
@@ -222,7 +227,7 @@ function TimingDebuggerReady({
     const timing = timingProvider.getTiming(selectedOccurrence)
     void playback.engine
       .playRangeUntilComplete(
-        { startMs: timing.playStartMs, endMs: timing.playEndMs },
+        { startMs: timing.startMs, endMs: timing.endMs },
         selectedOccurrence.id,
       )
       .then((completion) => {
@@ -366,14 +371,14 @@ function TimingDebuggerReady({
           {selectedOccurrence ? (
             <>
               <dl className="timing-debugger-values">
-                <div><dt>起点</dt><dd>{timingProvider.getTiming(selectedOccurrence).playStartMs} ms</dd></div>
-                <div><dt>终点</dt><dd>{timingProvider.getTiming(selectedOccurrence).playEndMs} ms</dd></div>
+                <div><dt>起点</dt><dd>{timingProvider.getTiming(selectedOccurrence).startMs} ms</dd></div>
+                <div><dt>终点</dt><dd>{timingProvider.getTiming(selectedOccurrence).endMs} ms</dd></div>
               </dl>
               <div className="timing-debugger-adjustment-group">
                 <span>起点</span>
                 <div>
                   {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('playStartMs', deltaMs)}>
+                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('startMs', deltaMs)}>
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
@@ -383,7 +388,7 @@ function TimingDebuggerReady({
                 <span>终点</span>
                 <div>
                   {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('playEndMs', deltaMs)}>
+                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('endMs', deltaMs)}>
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
@@ -417,7 +422,7 @@ function TimingDebuggerSelector({
         <div>
           <p className="eyebrow">设置 / 播放切口调试</p>
           <h1>选择一首歌</h1>
-          <p className="timing-debugger-lede">选择 Song Edition 后，逐句试听并调整 playStartMs / playEndMs。</p>
+          <p className="timing-debugger-lede">选择 Song Edition 后，逐句试听并调整唯一的 startMs / endMs。</p>
         </div>
         <a className="text-link" href={homeHref}>返回曲库</a>
       </header>

@@ -71,19 +71,15 @@ const timeline: TimelineDocument = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse',
-      startMs: 100,
-      endMs: 300,
-      playStartMs: 50,
-      playEndMs: 350,
+      startMs: 50,
+      endMs: 350,
     },
     {
       id: 'o002',
       segmentId: 's002',
       sectionId: 'verse',
-      startMs: 500,
-      endMs: 700,
-      playStartMs: 450,
-      playEndMs: 750,
+      startMs: 450,
+      endMs: 750,
     },
   ],
 }
@@ -165,10 +161,10 @@ describe('TimingDebuggerPage', () => {
       )
       expect(raw).not.toBeNull()
       expect(JSON.parse(raw ?? '{}')).toMatchObject({
-        schemaVersion: 2,
+        schemaVersion: 3,
         songId: 'first-light',
         editionContentHash: edition.contentHash,
-        occurrences: { o001: { playStartMs: 70 } },
+        occurrences: { o001: { startMs: 70 } },
       })
     })
   })

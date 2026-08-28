@@ -204,7 +204,7 @@ describe('PracticeController', () => {
     const occurrence = createOccurrence()
 
     expect(calculateShadowSilenceMs({ ...occurrence, endMs: 200 })).toBe(2000)
-    expect(calculateShadowSilenceMs({ ...occurrence, endMs: 3100 })).toBe(3450)
+    expect(calculateShadowSilenceMs({ ...occurrence, endMs: 3100 })).toBe(3507)
     expect(calculateShadowSilenceMs({ ...occurrence, endMs: 9100 })).toBe(8000)
   })
 
@@ -422,10 +422,8 @@ function createOccurrence() {
     id: 'o001',
     segmentId: 's001',
     sectionId: 'verse',
-    startMs: 100,
-    endMs: 600,
-    playStartMs: 50,
-    playEndMs: 650,
+    startMs: 50,
+    endMs: 650,
   }
 }
 

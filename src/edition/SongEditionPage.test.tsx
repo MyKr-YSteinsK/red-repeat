@@ -295,19 +295,17 @@ function propsFor(error?: Error, audioEngine?: AudioEngine): SongEditionPageProp
 function occurrence(
   id: string,
   segmentId: string,
-  startMs: number,
-  endMs: number,
-  playStartMs: number,
-  playEndMs: number,
+  _editorialStartMs: number,
+  _editorialEndMs: number,
+  effectiveStartMs: number,
+  effectiveEndMs: number,
 ) {
   return {
     id,
     segmentId,
     sectionId: 'verse',
-    startMs,
-    endMs,
-    playStartMs,
-    playEndMs,
+    startMs: effectiveStartMs,
+    endMs: effectiveEndMs,
   }
 }
 

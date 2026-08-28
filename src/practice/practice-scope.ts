@@ -4,6 +4,10 @@ import type {
   PracticeUnit,
   TimelineDocument,
 } from '../library/schema'
+import {
+  canonicalOccurrenceTiming,
+  type OccurrenceTimingProvider,
+} from '../timeline/occurrence-timing'
 
 export type PracticeScope =
   | { kind: 'currentOccurrence'; occurrenceId: string }
@@ -14,15 +18,6 @@ export type PracticeScope =
     }
   | { kind: 'customRange'; startOccurrenceId: string; endOccurrenceId: string }
   | { kind: 'practiceUnit'; practiceUnitId: string }
-
-export interface EffectivePracticeTiming {
-  playStartMs: number
-  playEndMs: number
-}
-
-export interface PracticeTimingProvider {
-  getTiming(occurrence: Occurrence): EffectivePracticeTiming
-}
 
 export interface ResolvedPracticeRange {
   startMs: number
@@ -39,13 +34,6 @@ export interface PracticeIndex {
   occurrenceIdsByUnitId: ReadonlyMap<string, readonly string[]>
   unitIdByOccurrenceId: ReadonlyMap<string, string>
   chronologicalOccurrenceIds: readonly string[]
-}
-
-export const canonicalPracticeTiming: PracticeTimingProvider = {
-  getTiming: (occurrence) => ({
-    playStartMs: occurrence.playStartMs,
-    playEndMs: occurrence.playEndMs,
-  }),
 }
 
 export function createPracticeIndex(
@@ -125,7 +113,7 @@ export function resolvePracticeRange(
   scope: PracticeScope,
   practice: PracticeDocument,
   timeline: TimelineDocument,
-  timingProvider: PracticeTimingProvider = canonicalPracticeTiming,
+  timingProvider: OccurrenceTimingProvider = canonicalOccurrenceTiming,
 ): ResolvedPracticeRange {
   const index = createPracticeIndex(practice, timeline)
   const occurrenceIds = resolveScopeOccurrenceIds(scope, index)
@@ -139,17 +127,17 @@ export function resolvePracticeRange(
   const lastTiming = timingProvider.getTiming(lastOccurrence)
 
   if (
-    !Number.isFinite(firstTiming.playStartMs) ||
-    !Number.isFinite(lastTiming.playEndMs) ||
-    firstTiming.playStartMs < 0 ||
-    firstTiming.playStartMs >= lastTiming.playEndMs
+    !Number.isFinite(firstTiming.startMs) ||
+    !Number.isFinite(lastTiming.endMs) ||
+    firstTiming.startMs < 0 ||
+    firstTiming.startMs >= lastTiming.endMs
   ) {
     throw new Error('Practice scope produced an invalid continuous playback range')
   }
 
   return {
-    startMs: firstTiming.playStartMs,
-    endMs: lastTiming.playEndMs,
+    startMs: firstTiming.startMs,
+    endMs: lastTiming.endMs,
     occurrenceIds,
   }
 }
@@ -159,7 +147,7 @@ export function resolvePracticeUnitRangeFromOccurrence(
   startOccurrenceId: string,
   practice: PracticeDocument,
   timeline: TimelineDocument,
-  timingProvider: PracticeTimingProvider = canonicalPracticeTiming,
+  timingProvider: OccurrenceTimingProvider = canonicalOccurrenceTiming,
 ): ResolvedPracticeRange {
   const index = createPracticeIndex(practice, timeline)
   const occurrenceIds = getUnitOccurrenceIds(index, practiceUnitId)

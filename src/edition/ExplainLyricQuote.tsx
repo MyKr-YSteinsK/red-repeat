@@ -77,8 +77,8 @@ export function ExplainLyricQuote({
     void audioEngine
       .playRangeUntilComplete(
         {
-          startMs: timing.playStartMs,
-          endMs: timing.playEndMs,
+          startMs: timing.startMs,
+          endMs: timing.endMs,
         },
         selectedOccurrence.occurrence.id,
       )

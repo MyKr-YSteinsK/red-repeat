@@ -8,7 +8,7 @@ export interface PlaybackRange {
 export function toOccurrencePlaybackRange(
   occurrence: Occurrence,
 ): PlaybackRange {
-  return createPlaybackRange(occurrence.playStartMs, occurrence.playEndMs)
+  return createPlaybackRange(occurrence.startMs, occurrence.endMs)
 }
 
 export function toOccurrencesPlaybackRange(
@@ -18,8 +18,8 @@ export function toOccurrencesPlaybackRange(
     return null
   }
 
-  const startMs = Math.min(...occurrences.map(({ playStartMs }) => playStartMs))
-  const endMs = Math.max(...occurrences.map(({ playEndMs }) => playEndMs))
+  const startMs = Math.min(...occurrences.map(({ startMs }) => startMs))
+  const endMs = Math.max(...occurrences.map(({ endMs }) => endMs))
   return createPlaybackRange(startMs, endMs)
 }
 

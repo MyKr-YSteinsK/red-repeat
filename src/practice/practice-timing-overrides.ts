@@ -1,12 +1,15 @@
 import type { Occurrence, TimelineDocument } from '../library/schema'
 import type {
-  EffectivePracticeTiming,
-  PracticeTimingProvider,
-} from './practice-scope'
+  EffectiveOccurrenceTiming,
+  OccurrenceTimingProvider,
+} from '../timeline/occurrence-timing'
 
-export const TIMING_OVERRIDES_SCHEMA_VERSION = 2 as const
-export const TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v2:'
-const LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v1:'
+export const TIMING_OVERRIDES_SCHEMA_VERSION = 3 as const
+export const TIMING_OVERRIDES_STORAGE_PREFIX = 'red-repeat:timing-overrides:v3:'
+const LEGACY_TIMING_OVERRIDES_STORAGE_PREFIXES = [
+  'red-repeat:timing-overrides:v2:',
+  'red-repeat:timing-overrides:v1:',
+] as const
 
 export interface TimingOverrideIdentity {
   songId: string
@@ -16,8 +19,8 @@ export interface TimingOverrideIdentity {
 }
 
 export interface TimingOverrideFields {
-  playStartMs?: number
-  playEndMs?: number
+  startMs?: number
+  endMs?: number
 }
 
 export interface TimingOverridesDocument extends TimingOverrideIdentity {
@@ -92,10 +95,10 @@ export function readTimingOverrides(
   }
   if (raw === null) {
     try {
-      const legacyRaw = storage.getItem(
-        `${LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX}${identity.songId}`,
+      const hasLegacyDocument = LEGACY_TIMING_OVERRIDES_STORAGE_PREFIXES.some(
+        (prefix) => storage.getItem(`${prefix}${identity.songId}`) !== null,
       )
-      if (legacyRaw !== null) {
+      if (hasLegacyDocument) {
         return { kind: 'invalid', reason: 'schema' }
       }
     } catch {
@@ -205,23 +208,23 @@ export function validateTimingOverridesDocument(
     const fieldKeys = Object.keys(rawFields)
     if (
       fieldKeys.length === 0 ||
-      fieldKeys.some((key) => key !== 'playStartMs' && key !== 'playEndMs')
+      fieldKeys.some((key) => key !== 'startMs' && key !== 'endMs')
     ) {
       throw new TimingOverridesParseError('invalid-occurrence')
     }
 
     const fields: TimingOverrideFields = {}
-    if ('playStartMs' in rawFields) {
-      if (!isValidTimingNumber(rawFields.playStartMs)) {
+    if ('startMs' in rawFields) {
+      if (!isValidTimingNumber(rawFields.startMs)) {
         throw new TimingOverridesParseError('invalid-occurrence')
       }
-      fields.playStartMs = rawFields.playStartMs
+      fields.startMs = rawFields.startMs
     }
-    if ('playEndMs' in rawFields) {
-      if (!isValidTimingNumber(rawFields.playEndMs)) {
+    if ('endMs' in rawFields) {
+      if (!isValidTimingNumber(rawFields.endMs)) {
         throw new TimingOverridesParseError('invalid-occurrence')
       }
-      fields.playEndMs = rawFields.playEndMs
+      fields.endMs = rawFields.endMs
     }
 
     const canonical = canonicalById.get(occurrenceId)
@@ -247,17 +250,17 @@ export function validateTimingOverridesDocument(
 export function applyTimingOverride(
   occurrence: Occurrence,
   override?: TimingOverrideFields,
-): EffectivePracticeTiming {
+): EffectiveOccurrenceTiming {
   return {
-    playStartMs: override?.playStartMs ?? occurrence.playStartMs,
-    playEndMs: override?.playEndMs ?? occurrence.playEndMs,
+    startMs: override?.startMs ?? occurrence.startMs,
+    endMs: override?.endMs ?? occurrence.endMs,
   }
 }
 
-export function createEffectivePracticeTimingProvider(
+export function createEffectiveOccurrenceTimingProvider(
   timeline: TimelineDocument,
   document?: TimingOverridesDocument,
-): PracticeTimingProvider {
+): OccurrenceTimingProvider {
   void timeline
   const overrides = document?.occurrences ?? {}
   return {
@@ -336,9 +339,9 @@ export function clearTimingOverrides(
   }
   try {
     resolvedStorage.removeItem(getTimingOverridesStorageKey(identity.songId))
-    resolvedStorage.removeItem(
-      `${LEGACY_TIMING_OVERRIDES_STORAGE_PREFIX}${identity.songId}`,
-    )
+    LEGACY_TIMING_OVERRIDES_STORAGE_PREFIXES.forEach((prefix) => {
+      resolvedStorage.removeItem(`${prefix}${identity.songId}`)
+    })
     return true
   } catch {
     return false
@@ -416,12 +419,12 @@ export class TimingOverridesParseError extends Error {
 }
 
 function isValidEffectiveTiming(
-  timing: EffectivePracticeTiming,
+  timing: EffectiveOccurrenceTiming,
 ): boolean {
   return (
-    isValidTimingNumber(timing.playStartMs) &&
-    isValidTimingNumber(timing.playEndMs) &&
-    timing.playStartMs < timing.playEndMs
+    isValidTimingNumber(timing.startMs) &&
+    isValidTimingNumber(timing.endMs) &&
+    timing.startMs < timing.endMs
   )
 }
 

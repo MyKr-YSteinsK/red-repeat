@@ -106,14 +106,13 @@ being fragmented solely to fit a mobile practice page.
 
 ## D-011｜Editorial timing and playback timing are independent intervals
 
-- Status: Accepted
+- Status: Superseded by D-021
 - Source: `USER_DECISION` + HEAD `c61f977` source/schema change
 
-`startMs/endMs` controls editorial/highlight timing and
-`playStartMs/playEndMs` controls transport/practice timing. Each pair must be a
-valid interval, but playback need not envelope editorial timing. Do not restore
-fixed padding or infer timing from text, punctuation or line spans; human audio
-evidence remains authoritative for perceptual boundaries.
+The former contract kept `startMs/endMs` for editorial/highlight timing and
+`playStartMs/playEndMs` for transport/practice timing. It was replaced by D-021;
+the old field names remain here only as historical decision evidence. Do not
+restore the dual-field model.
 
 ## D-012｜Keep canonical timing and personal overrides separate
 
@@ -121,9 +120,9 @@ evidence remains authoritative for perceptual boundaries.
 - Source: `USER_DECISION` + current implementation
 
 Canonical timing is compiled/distributed source. Personal corrections are sparse
-local overrides bound to song/content/audio/timeline identity. Incompatible
-overrides invalidate rather than mutate canonical source, keeping source changes
-reviewable and preventing stale corrections from silently applying.
+overlays on the same `startMs/endMs` fields, bound to song/content/audio/timeline
+identity. Incompatible overrides invalidate rather than mutate canonical source;
+legacy timing override schemas are cleared when compatibility cannot be proven.
 
 ## D-013｜Treat PWA update as event ordering plus two identity questions
 
@@ -234,21 +233,37 @@ USER CHECK 才作为 `BLOCKING USER CHECK`。这项策略不减少匹配边界�
 
 新 Song Edition 首次进入 Production 时，可以使用 `Provisional Timing`：以已
 验证的 canonical audio identity、LRC/歌词 anchor、轻量音频检查和结构性约束，
-建立足够可用的初始 timing。每个 Occurrence 仍必须有有效的
-`startMs/endMs` 与 `playStartMs/playEndMs`；Provisional Timing 不得包含明显
+建立足够可用的初始 timing。每个 Occurrence 必须有有效的
+`startMs/endMs`；Provisional Timing 不得包含明显
 跨句清晰音节、错误的长 intro/间奏/outro 归属、机械的 fixed padding 或
 `end = next LRC timestamp`。它可以保留几十到几百毫秒级的后续精调空间，但
 不得被描述为 human audible PASS 或最终校准完成。
 
 用户随后通过 Production Timing Debugger 在真实使用中校准 correction package
-所覆盖的 timing 字段（当前 Production export 覆盖 `playStartMs/playEndMs`；
-明确授权的其他 package 也可以覆盖 `startMs/endMs`）。与当前 song、Edition、
+所覆盖的唯一 `startMs/endMs`。与当前 song、Edition、
 audio 和 Timeline identity 匹配的 `Timing Correction Export`，由 Codex 作为
 focused canonical timing correction 合入 source；只修改导出覆盖的 timing
 与必要的 matching notes，经过 validation/build 后发布。未被用户实际校准的
 Occurrence 不得虚构为 `Calibrated Timing` 或 human PASS。
 
-D-011、D-012、D-016 与 D-019 继续有效：Provisional 不降低 audio identity、
+D-012、D-016 与 D-019 继续有效；Provisional 不降低 audio identity、
 gross structure、obvious leakage 或 source validation 门槛；local override
 不能直接突变 canonical source；identity mismatch 的 correction 不得合入；
 自动化和静态证据不能伪装成 audible timing 或真实设备验收。
+
+## D-021｜Occurrence 使用单一 authoritative timing interval｜Single Authoritative Occurrence Timing
+
+- Status: Accepted
+- Source: `USER_DECISION` + `RED-Plan-53`
+
+一个 Occurrence 只拥有唯一的 `startMs/endMs` 区间。该区间同时驱动
+resolver/current/highlight、Practice 单句与连续范围、Full Song、Explain
+试听、Timing Debugger audition/export，以及未来的 canonical timing merge。
+`Section.startMs/endMs` 仍独立表示音乐结构，不是 Occurrence 的机械容器。
+
+迁移双 timing source 时，原 `playStartMs/playEndMs` 是迁移赢家，用于覆盖旧
+`startMs/endMs`；迁移完成后旧字段不再属于 active source/schema/runtime
+contract。local override 只能以 sparse `startMs?` / `endMs?` 表达同一 timing
+的临时覆盖；无法在完整 song/Edition/audio/Timeline identity 下证明兼容的旧
+override 必须 invalidate/clear。Timing Correction Export 只输出单一 pair，
+不得再次形成 playback-only 的第二真值。

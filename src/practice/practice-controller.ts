@@ -123,8 +123,8 @@ export class PracticeController {
     return this.startShadowTarget(
       {
         range: {
-          startMs: occurrence.playStartMs,
-          endMs: occurrence.playEndMs,
+          startMs: occurrence.startMs,
+          endMs: occurrence.endMs,
         },
         activeOccurrenceId: occurrence.id,
       },
@@ -431,12 +431,8 @@ function isValidShadowOccurrence(occurrence: Occurrence): boolean {
   return (
     Number.isFinite(occurrence.startMs) &&
     Number.isFinite(occurrence.endMs) &&
-    Number.isFinite(occurrence.playStartMs) &&
-    Number.isFinite(occurrence.playEndMs) &&
     occurrence.startMs >= 0 &&
-    occurrence.startMs < occurrence.endMs &&
-    occurrence.playStartMs >= 0 &&
-    occurrence.playStartMs < occurrence.playEndMs
+    occurrence.startMs < occurrence.endMs
   )
 }
 

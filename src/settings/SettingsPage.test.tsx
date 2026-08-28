@@ -65,10 +65,8 @@ const timeline: TimelineDocument = {
     id: 'o001',
     segmentId: 's001',
     sectionId: 'verse',
-    startMs: 100,
-    endMs: 300,
-    playStartMs: 50,
-    playEndMs: 350,
+    startMs: 50,
+    endMs: 350,
   }],
 }
 const practice: PracticeDocument = { units: [] }

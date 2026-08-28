@@ -6,7 +6,7 @@ import {
   resolvePracticeRange,
 } from './practice-scope'
 import {
-  createEffectivePracticeTimingProvider,
+  createEffectiveOccurrenceTimingProvider,
   createTimingOverridesDocument,
 } from './practice-timing-overrides'
 
@@ -77,11 +77,11 @@ describe('Practice Scope', () => {
       baseTimelineUrl: '/library-runtime/song/timeline.json',
     })
     overrides.occurrences = {
-      o001: { playStartMs: 80 },
-      o002: { playEndMs: 780 },
-      o003: { playStartMs: 760, playEndMs: 1080 },
+      o001: { startMs: 80 },
+      o002: { endMs: 780 },
+      o003: { startMs: 760, endMs: 1080 },
     }
-    const provider = createEffectivePracticeTimingProvider(timeline, overrides)
+    const provider = createEffectiveOccurrenceTimingProvider(timeline, overrides)
 
     expect(resolvePracticeRange({ kind: 'currentOccurrence', occurrenceId: 'o001' }, practice, timeline, provider)).toEqual({
       startMs: 80,
@@ -103,8 +103,8 @@ describe('Practice Scope', () => {
       endMs: 1550,
       occurrenceIds: ['o002', 'o003', 'o004'],
     })
-    expect(originalFirst.playStartMs).toBe(50)
-    expect(originalLast.playEndMs).toBe(750)
+    expect(originalFirst.startMs).toBe(50)
+    expect(originalLast.endMs).toBe(750)
   })
 
   it('rejects unknown, empty, reverse, and invalid ranges', () => {
@@ -126,18 +126,16 @@ describe('Practice Scope', () => {
 function occurrence(
   id: string,
   sectionId: string,
-  startMs: number,
-  endMs: number,
-  playStartMs: number,
-  playEndMs: number,
+  _editorialStartMs: number,
+  _editorialEndMs: number,
+  effectiveStartMs: number,
+  effectiveEndMs: number,
 ) {
   return {
     id,
     segmentId: `s${id.slice(1)}`,
     sectionId,
-    startMs,
-    endMs,
-    playStartMs,
-    playEndMs,
+    startMs: effectiveStartMs,
+    endMs: effectiveEndMs,
   }
 }

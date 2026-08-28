@@ -188,8 +188,8 @@ async function compileSongPackage(options: {
     (maximum, section) => Math.max(maximum, section.endMs),
     0,
   )
-  const maxPlayEndMs = timeline.occurrences.reduce(
-    (maximum, occurrence) => Math.max(maximum, occurrence.playEndMs),
+  const maxOccurrenceEndMs = timeline.occurrences.reduce(
+    (maximum, occurrence) => Math.max(maximum, occurrence.endMs),
     maxTimelineEndMs,
   )
 
@@ -203,7 +203,7 @@ async function compileSongPackage(options: {
     sourcePath: audioSource,
     destinationDirectory: songOutputRoot,
     cacheRoot: options.cacheRoot,
-    maxPlayEndMs,
+    maxOccurrenceEndMs,
   })
   const coverSmall = await compileArtwork({
     sourcePath: coverSource,

@@ -184,11 +184,13 @@ export const OccurrenceSchema = z
     sectionId: SectionIdSchema,
     startMs: integerMilliseconds,
     endMs: integerMilliseconds,
-    playStartMs: integerMilliseconds,
-    playEndMs: integerMilliseconds,
     performanceNote: nonEmptyText.optional(),
   })
   .strict()
+  .refine((occurrence) => occurrence.startMs < occurrence.endMs, {
+    path: ['endMs'],
+    message: 'occurrence timing must satisfy 0 <= startMs < endMs',
+  })
 
 export const TimelineSchema = z
   .object({
@@ -228,19 +230,11 @@ export const TimelineSchema = z
         occurrenceIds.set(occurrence.id, index)
       }
 
-      const hasValidTiming =
-        0 <= occurrence.playStartMs &&
-        occurrence.playStartMs < occurrence.playEndMs &&
-        0 <= occurrence.startMs &&
-        occurrence.startMs < occurrence.endMs &&
-        0 <= occurrence.endMs
-
-      if (!hasValidTiming) {
+      if (occurrence.startMs < 0 || occurrence.startMs >= occurrence.endMs) {
         context.addIssue({
           code: 'custom',
           path: ['occurrences', index],
-          message:
-            'timing must satisfy 0 <= playStartMs < playEndMs and 0 <= startMs < endMs',
+          message: 'timing must satisfy 0 <= startMs < endMs',
         })
       }
     })

@@ -135,7 +135,7 @@ describe('runtime Song Edition loader', () => {
       audioSourceHash: edition.audio.sourceHash,
       baseTimelineUrl: edition.timelineUrl,
     })
-    firstDocument.occurrences = { o001: { playStartMs: 20 } }
+    firstDocument.occurrences = { o001: { startMs: 20 } }
     expect(saveTimingOverrides(firstDocument)).toBe(true)
 
     const otherDocument = createTimingOverridesDocument({
@@ -144,7 +144,7 @@ describe('runtime Song Edition loader', () => {
       audioSourceHash: 'f'.repeat(64),
       baseTimelineUrl: '/library-runtime/songs/second-signal/timeline.json',
     })
-    otherDocument.occurrences = { o002: { playStartMs: 30 } }
+    otherDocument.occurrences = { o002: { startMs: 30 } }
     expect(saveTimingOverrides(otherDocument)).toBe(true)
 
     await loadRuntimeSongEditionCore(client, catalogEdition)

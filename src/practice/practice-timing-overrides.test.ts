@@ -4,7 +4,7 @@ import {
   acknowledgeTimelineStale,
   applyTimingOverride,
   clearTimingOverrides,
-  createEffectivePracticeTimingProvider,
+  createEffectiveOccurrenceTimingProvider,
   createTimingOverridesDocument,
   getTimingOverridesStorageKey,
   parseTimingOverridesDocument,
@@ -33,29 +33,29 @@ describe('practice timing overrides', () => {
     const withStart = updateTimingOverride(
       document,
       occurrence,
-      'playStartMs',
+      'startMs',
       36_420,
     )
     const withBoth = updateTimingOverride(
       withStart,
       occurrence,
-      'playEndMs',
+      'endMs',
       39_860,
     )
 
     expect(withBoth.occurrences).toEqual({
-      o018: { playStartMs: 36_420, playEndMs: 39_860 },
+      o018: { startMs: 36_420, endMs: 39_860 },
     })
     expect(serializeTimingOverrides(withBoth)).toBe(`{
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "songId": "work-millennium-parade",
   "editionContentHash": "${'b'.repeat(64)}",
   "audioSourceHash": "${'a'.repeat(64)}",
   "baseTimelineUrl": "/library-runtime/work-millennium-parade/timeline.a.json",
   "occurrences": {
     "o018": {
-      "playEndMs": 39860,
-      "playStartMs": 36420
+      "endMs": 39860,
+      "startMs": 36420
     }
   }
 }
@@ -70,14 +70,14 @@ describe('practice timing overrides', () => {
     const document = updateTimingOverride(
       createTimingOverridesDocument(identity),
       occurrence,
-      'playStartMs',
+      'startMs',
       36_420,
     )
     const restored = updateTimingOverride(
       document,
       occurrence,
-      'playStartMs',
-      occurrence.playStartMs,
+      'startMs',
+      occurrence.startMs,
     )
 
     expect(restored.occurrences).toEqual({})
@@ -85,13 +85,13 @@ describe('practice timing overrides', () => {
   })
 
   it('applies a sparse override without mutating the canonical occurrence', () => {
-    const override = { playEndMs: 39_860 }
+    const override = { endMs: 39_860 }
     const timing = applyTimingOverride(occurrence, override)
 
-    expect(timing).toEqual({ playStartMs: 36_500, playEndMs: 39_860 })
-    expect(occurrence.playEndMs).toBe(40_140)
+    expect(timing).toEqual({ startMs: 36_500, endMs: 39_860 })
+    expect(occurrence.endMs).toBe(40_140)
     expect(
-      createEffectivePracticeTimingProvider(
+      createEffectiveOccurrenceTimingProvider(
         {
           audioSourceHash: identity.audioSourceHash,
           sections: [],
@@ -110,7 +110,7 @@ describe('practice timing overrides', () => {
     const document = updateTimingOverride(
       createTimingOverridesDocument(identity),
       occurrence,
-      'playStartMs',
+      'startMs',
       36_420,
     )
     expect(saveTimingOverrides(document, { storage, occurrences: [occurrence] })).toBe(true)
@@ -142,7 +142,7 @@ describe('practice timing overrides', () => {
         baseTimelineUrl: '/library-runtime/work-millennium-parade/timeline.old.json',
       }),
       occurrence,
-      'playStartMs',
+      'startMs',
       36_420,
     )
     expect(acknowledgeTimelineStale(document, identity)).toEqual({
@@ -175,23 +175,23 @@ describe('practice timing overrides', () => {
     expect(() =>
       validateTimingOverridesDocument({
         ...createTimingOverridesDocument(identity),
-        occurrences: { [occurrence.id]: { playStartMs: 36_500.5 } },
+        occurrences: { [occurrence.id]: { startMs: 36_500.5 } },
       }),
     ).toThrow()
     expect(() =>
       validateTimingOverridesDocument({
         ...createTimingOverridesDocument(identity),
-        occurrences: { [occurrence.id]: { playStartMs: Number.NaN } },
+        occurrences: { [occurrence.id]: { startMs: Number.NaN } },
       }),
     ).toThrow()
     expect(() =>
       validateTimingOverridesDocument({
         ...createTimingOverridesDocument(identity),
-        occurrences: { [occurrence.id]: { playStartMs: 40_200 } },
+        occurrences: { [occurrence.id]: { startMs: 40_200 } },
       }, { occurrences: [occurrence] }),
     ).toThrow('invalid timing overrides')
     expect(() =>
-      updateTimingOverride(createTimingOverridesDocument(identity), occurrence, 'playEndMs', 36_400),
+      updateTimingOverride(createTimingOverridesDocument(identity), occurrence, 'endMs', 36_400),
     ).toThrow('起点早于终点')
   })
 
@@ -208,21 +208,38 @@ describe('practice timing overrides', () => {
     expect(saveTimingOverrides(document, { storage: throwingStorage })).toBe(false)
     expect(clearTimingOverrides(identity, throwingStorage)).toBe(false)
   })
+
+  it('invalidates and clears legacy v1/v2 playback-only documents', () => {
+    const storage = new MemoryStorage()
+    storage.setItem(
+      `red-repeat:timing-overrides:v2:${identity.songId}`,
+      JSON.stringify({ schemaVersion: 2 }),
+    )
+    storage.setItem(
+      `red-repeat:timing-overrides:v1:${identity.songId}`,
+      JSON.stringify({ schemaVersion: 1 }),
+    )
+
+    expect(readTimingOverrides(identity, { storage })).toEqual({
+      kind: 'invalid',
+      reason: 'schema',
+    })
+    expect(clearTimingOverrides(identity, storage)).toBe(true)
+    expect(readTimingOverrides(identity, { storage }).kind).toBe('none')
+  })
 })
 
 function createOccurrence(
   id: string,
-  playStartMs: number,
-  playEndMs: number,
+  startMs: number,
+  endMs: number,
 ): Occurrence {
   return {
     id,
     segmentId: `segment-${id}`,
     sectionId: 'section-01',
-    startMs: playStartMs + 80,
-    endMs: playEndMs - 80,
-    playStartMs,
-    playEndMs,
+    startMs,
+    endMs,
   }
 }
 

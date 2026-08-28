@@ -31,10 +31,8 @@ const timeline = {
       id: 'o001',
       segmentId: 's001',
       sectionId: 'verse-1',
-      startMs: 1000,
-      endMs: 2500,
-      playStartMs: 500,
-      playEndMs: 3000,
+      startMs: 500,
+      endMs: 3000,
     },
   ],
 }
@@ -194,10 +192,8 @@ describe('Library Validator', () => {
           ...timeline.occurrences[0],
           id: 'o002',
           sectionId: 'chorus',
-          startMs: 4100,
-          endMs: 4500,
-          playStartMs: 4000,
-          playEndMs: 5000,
+          startMs: 4000,
+          endMs: 5000,
         },
       ],
     })
@@ -242,10 +238,8 @@ describe('Library Validator', () => {
         {
           ...timeline.occurrences[0],
           id: 'o002',
-          startMs: 3000,
-          endMs: 3500,
-          playStartMs: 2500,
-          playEndMs: 3800,
+          startMs: 2500,
+          endMs: 3800,
         },
       ],
     })
@@ -367,10 +361,8 @@ describe('Library Validator', () => {
       occurrences: [
         {
           ...timeline.occurrences[0],
-          startMs: 100,
-          endMs: 700,
-          playStartMs: 0,
-          playEndMs: 1600,
+          startMs: 0,
+          endMs: 1600,
         },
       ],
     })
@@ -399,7 +391,7 @@ describe('Library Validator', () => {
     expectCode(result, 'SECTION_OVERLAP')
   })
 
-  it('rejects an Occurrence whose actual range escapes its Section', () => {
+  it('keeps Occurrence timing independent from Section timing', () => {
     const root = createTemporaryRoot()
     const packageDirectory = createValidPackage(root)
     writeJson(path.join(packageDirectory, 'timeline.json'), {
@@ -407,15 +399,16 @@ describe('Library Validator', () => {
       occurrences: [
         {
           ...timeline.occurrences[0],
-          startMs: 100,
-          endMs: 4500,
-          playStartMs: 0,
-          playEndMs: 5000,
+          startMs: 0,
+          endMs: 5000,
         },
       ],
     })
 
-    expectCode(validateLibrary(root), 'OCCURRENCE_OUTSIDE_SECTION')
+    const result = validateLibrary(root)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toBe(0)
   })
 
   it('accepts a play range crossing Section boundaries', () => {
@@ -430,10 +423,8 @@ describe('Library Validator', () => {
       occurrences: [
         {
           ...timeline.occurrences[0],
-          startMs: 200,
-          endMs: 800,
-          playStartMs: 0,
-          playEndMs: 1200,
+          startMs: 0,
+          endMs: 1200,
         },
       ],
     })

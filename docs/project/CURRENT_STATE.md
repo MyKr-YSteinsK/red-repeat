@@ -218,23 +218,24 @@ uses the separately authorized task-input source package.
 
 - `D-020` is accepted: future new Song Editions use a two-stage timing
   lifecycle, `Provisional Timing` → `Calibrated Timing`.
-- `Provisional Timing` is the default first-import acceptance. It requires
-  verified canonical audio identity, valid independent actual/play intervals,
+- `Provisional Timing` remains the default first-import acceptance. Historically
+  this section described independent actual/play intervals; RED-Plan-53
+  supersedes that source/runtime shape with one authoritative `startMs/endMs`
+  interval. The acceptance still requires verified canonical audio identity,
   LRC or lyric anchors, lightweight sanity checks, correct gross musical
   topology and no obvious neighbor leakage, but it does not claim human audible
   calibration or `PASS` for every Occurrence.
 - `Calibrated Timing` is recorded only for the range covered by a user's actual
   listening and an identity-matched `Timing Correction Export` that Codex has
-  focused-merged into canonical source. Fixed padding and mechanical
-  `end = next LRC timestamp` remain prohibited; D-011, D-012, D-016 and D-019
-  remain in force.
+  focused-merged into canonical source. The current correction contract is the
+  single `startMs/endMs` pair. Fixed padding and mechanical
+  `end = next LRC timestamp` remain prohibited; D-012, D-016 and D-019 remain
+  in force.
 - The current Production Timing Debugger / Settings export is identity-safe for
   its implemented correction scope. It carries `songId`, `editionContentHash`,
   `audioSourceHash`, `baseTimelineUrl`, target source, build identity and
-  per-Occurrence correction data; stale or incompatible local overrides are not
-  exported as compatible corrections. The current public export covers
-  `playStartMs` / `playEndMs`; `startMs` / `endMs` remain canonical editorial
-  fields and were not expanded in this governance Plan.
+  per-Occurrence correction data. RED-Plan-53 now makes the public export and
+  the local override use the single authoritative `startMs` / `endMs` pair.
 - Existing `work-millennium-parade` and `senbonzakura` timing history is not
   downgraded or reclassified by D-020: WORK retains its historical `PASS 40`
   human acceptance, and `senbonzakura` retains the RED-Plan-45 source-audio
@@ -298,10 +299,10 @@ uses the separately authorized task-input source package.
 - `senbonzakura` canonical playback timing is calibrated from the supplied
   identity-matched Timing Correction Export. Product-focused commit `50e7114`
   carries the sole canonical source change; `v1.7.2` targets that commit.
-- `Calibrated Playback Timing`: 45/45 Occurrences user-reviewed, with 82/82
-  playback fields applied (`45` `playStartMs` and `37` `playEndMs`). This
-  statement covers only playback fields; it does not claim human review of
-  `startMs`/`endMs`.
+- Historical Plan49 record: `Calibrated Playback Timing` covered 45/45
+  Occurrences and 82/82 playback fields (`45` `playStartMs` and `37`
+  `playEndMs`). RED-Plan-53 migrated those exact values into the single
+  `startMs`/`endMs` model; this migration is not a new human review claim.
 - `startMs`/`endMs`, Section data, Practice data, Occurrence IDs/order, lyrics,
   audio and `audioSourceHash` are unchanged. The compiler produced the matching
   canonical runtime timeline and no UI, schema, compiler or PWA behavior changed.
@@ -413,6 +414,39 @@ uses the separately authorized task-input source package.
 - `USER CHECK` is `NONE` for this boundary. Any future fact or wording issue
   found during ordinary reading remains a `POST-DEPLOY OBSERVATION`, not an
   active blocking debt.
+
+## RED-Plan-53 implementation and release status
+
+- The pre-mutation timing snapshot covered `106` public Occurrences:
+  `senbonzakura` `45` and `work-millennium-parade` `61`. Every old playback
+  interval was valid, IDs/source order were unique, and the snapshot oracle
+  SHA-256 was `bf69b441576232078bd1cbbb33f849a53506a1c5de073afca88ab72e672022c4`.
+- Every canonical `library/*/timeline.json` Occurrence now has only
+  `startMs/endMs`; each new pair is exactly the pre-migration playback pair.
+  Senbon values include `o001=32580/35550`, `o033=141260/145165` and
+  `o045=209690/213750`; all `45/45` calibrated values are preserved.
+- Section timing, Occurrence IDs/order, Practice grouping, lyrics/ruby,
+  notes/Explain content, canonical audio files and audio identities are
+  unchanged. Audio hashes remain `5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19`
+  for `senbonzakura` and
+  `facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083` for
+  `work-millennium-parade`.
+- Source schema, validator, compiler and generated Runtime now reject/remove
+  the former playback-only fields. Resolver, Practice, Full Song, Explain and
+  both debugger paths consume the same effective `startMs/endMs` provider.
+  Compatible local overrides are sparse same-field overlays; storage is schema
+  `v3`, and old `v1`/`v2` documents are invalidated and cleared rather than
+  applied as a playback-only fallback.
+- Timing Correction Export is now a single-pair package using `startMs/endMs`.
+  D-011 is `Superseded`, D-012 describes same-field sparse overrides, D-020
+  describes the single-pair Provisional → Calibrated lifecycle, and accepted
+  D-021 records the single authoritative Occurrence timing decision.
+- No new audio/listening correction was performed. This Plan changed timing
+  schema and shared semantics, not timing values, lyrics, content, Practice
+  Units, Sections, CSS/UI design or PWA lifecycle. Blocking `USER CHECK` is
+  `NONE`; post-deploy observation remains limited to perceived lyric boundaries
+  and Full Song highlight/play alignment, and is not claimed as human `PASS`.
+- Version classification is `MINOR`: `1.8.2 -> 1.9.0`.
 
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 

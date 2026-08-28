@@ -52,9 +52,10 @@ runtime Skills and should not be duplicated here.
   multi-Theme runtime, body-level Practice map and native View Transition
   workspace mechanism are retired; old Plans cannot reintroduce them.
 - Segment, Occurrence, Section and Practice Unit are distinct concepts.
-  Editorial `startMs/endMs` and playback `playStartMs/playEndMs` are
-  independently valid timing intervals; playback is not required to envelope
-  editorial timing.
+  Each Occurrence has one authoritative `startMs/endMs` interval. The same
+  effective interval drives resolver/highlight and bounded playback; Section
+  timing remains a separate musical-structure interval and does not
+  mechanically contain the Occurrence.
 - Personal timing overrides are sparse local state bound to compatible song,
   content, audio and timeline identity. They do not mutate canonical source.
 - Timing Debugger is an intentional production-public supporting capability;

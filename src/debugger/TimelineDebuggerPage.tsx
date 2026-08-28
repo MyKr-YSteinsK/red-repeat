@@ -340,8 +340,8 @@ function TimelineDebuggerReady({
     runEngineAction(() =>
       playback.engine?.playRange(
         {
-          startMs: selectedOccurrence.playStartMs,
-          endMs: selectedOccurrence.playEndMs,
+          startMs: selectedOccurrence.startMs,
+          endMs: selectedOccurrence.endMs,
         },
         selectedOccurrence.id,
       ),
@@ -656,13 +656,6 @@ function TimelineDebuggerReady({
           </button>
           <button
             type="button"
-            onClick={() => seekTo(selectedOccurrence?.playStartMs)}
-            disabled={!selectedOccurrence || !playback.engine}
-          >
-            Seek playStartMs
-          </button>
-          <button
-            type="button"
             onClick={() => seekTo(selectedOccurrence?.startMs)}
             disabled={!selectedOccurrence || !playback.engine}
           >
@@ -698,41 +691,10 @@ function TimelineDebuggerReady({
           </button>
           <button
             type="button"
-            onClick={() => seekTo(selectedOccurrence?.playEndMs)}
-            disabled={!selectedOccurrence || !playback.engine}
-          >
-            Jump playEndMs
-          </button>
-          <button
-            type="button"
             onClick={replaySelectedOccurrence}
             disabled={!selectedOccurrence || !playback.engine}
           >
             Replay practice range
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (!selectedOccurrence || !playback.engine) {
-                setTransportMessage(
-                  'Audio playback is unavailable in this environment.',
-                )
-                return
-              }
-              setTransportMessage(undefined)
-              runEngineAction(() =>
-                playback.engine?.playRange(
-                  {
-                    startMs: selectedOccurrence.startMs,
-                    endMs: selectedOccurrence.endMs,
-                  },
-                  selectedOccurrence.id,
-                ),
-              )
-            }}
-            disabled={!selectedOccurrence || !playback.engine}
-          >
-            Play actual range
           </button>
           <button
             type="button"
@@ -869,20 +831,12 @@ function TimelineDebuggerReady({
                 <dd>{selectedOccurrence.segmentId}</dd>
               </div>
               <div>
-                <dt>playStartMs</dt>
-                <dd>{selectedOccurrence.playStartMs}</dd>
-              </div>
-              <div>
                 <dt>startMs</dt>
                 <dd>{selectedOccurrence.startMs}</dd>
               </div>
               <div>
                 <dt>endMs</dt>
                 <dd>{selectedOccurrence.endMs}</dd>
-              </div>
-              <div>
-                <dt>playEndMs</dt>
-                <dd>{selectedOccurrence.playEndMs}</dd>
               </div>
               <div className="timeline-debugger-timing-wide">
                 <dt>Original lyric</dt>
@@ -910,7 +864,7 @@ function TimelineDebuggerReady({
                   Reset selected Occurrence
                 </button>
               </div>
-              {(['playStartMs', 'startMs', 'endMs', 'playEndMs'] as const).map(
+              {(['startMs', 'endMs'] as const).map(
                 (field) => (
                   <div className="timeline-debugger-timing-control" key={field}>
                     <div className="timeline-debugger-timing-value">
@@ -1021,8 +975,7 @@ function TimelineDebuggerReady({
                               ) : occurrence.segmentId}
                             </strong>
                             <span>
-                              actual {occurrence.startMs}–{occurrence.endMs} ms · play{' '}
-                              {occurrence.playStartMs}–{occurrence.playEndMs} ms
+                              timing {occurrence.startMs}–{occurrence.endMs} ms
                             </span>
                             <span>
                               chronological {chronologicalPosition === undefined ? '—' : chronologicalPosition + 1}

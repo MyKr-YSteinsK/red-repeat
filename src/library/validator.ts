@@ -366,10 +366,6 @@ function validateTimelineStructure(
     sourceRoot,
     path.join(songPackage.directoryPath, 'timeline.json'),
   )
-  const sectionsById = new Map(
-    timeline.sections.map((section) => [section.id, section]),
-  )
-
   timeline.sections.forEach((section, index) => {
     const previousSection = timeline.sections[index - 1]
 
@@ -407,23 +403,6 @@ function validateTimelineStructure(
     }
   })
 
-  timeline.occurrences.forEach((occurrence, index) => {
-    const section = sectionsById.get(occurrence.sectionId)
-
-    if (
-      section &&
-      (occurrence.startMs < section.startMs || occurrence.endMs > section.endMs)
-    ) {
-      diagnostics.push({
-        severity: 'error',
-        code: 'OCCURRENCE_OUTSIDE_SECTION',
-        songId,
-        sourcePath: timelinePath,
-        fieldPath: `occurrences[${index}]`,
-        message: `Occurrence "${occurrence.id}" actual timing must stay within Section "${section.id}"; play range may cross Section boundaries`,
-      })
-    }
-  })
 }
 
 function validatePracticeReferences(
