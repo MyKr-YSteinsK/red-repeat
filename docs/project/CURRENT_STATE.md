@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.8.0`
+- Current user version: `1.8.1`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.8.0` / `v1.8.0 -> 01cdd64`; existing
+- Latest ledger/tag: `1.8.1` / `v1.8.1 -> 91b703a`; existing
+  `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
   `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
@@ -35,7 +36,7 @@ evidence only.
 
 ## Current product capabilities
 
-- Catalog loading/search, resume-aware “开始学唱 / 继续学唱” and explicit
+- Catalog loading/search, metadata-focused Song Edition cards and explicit
   per-song offline install/removal.
 - Practice as the default Song Edition mode: Practice Unit/Occurrence
   navigation, previous/current/next controls, Segment Picker, line playback,
@@ -343,6 +344,43 @@ uses the separately authorized task-input source package.
 - `USER CHECK` is `NONE` for this boundary. Real target-device/iOS installed-
   PWA perception remains a `POST-DEPLOY OBSERVATION`, not a claimed human PASS.
 
+## RED-Plan-51 implementation and release status
+
+- Catalog cards now keep title, artist, metadata, cover, search, card-open and
+  download behavior while removing `上次…`, `继续学唱` and `开始学唱` UI. The
+  Catalog no longer performs eager resume-summary reads or Edition/lyrics/
+  timeline/practice loading for card enrichment.
+- Persisted Practice resume/rate state remains identity-bound and is restored
+  after entering the Song Edition through the existing Practice owner; this
+  Plan did not remove or rewrite persisted state.
+- Explain article titles and internal Feature Markdown headings now use a
+  smaller hierarchy. Lyric references retain original text, ruby,
+  translation, repeated-occurrence selection and `试听这句`; the Explain-only
+  `学习这一段 →` CTA, callback and Practice index plumbing were removed.
+  Full Song's independent Practice transition remains unchanged.
+- The Song Edition header cover is larger than the former 3.5rem baseline and
+  remains separate from the title/artist flex sizing. Activating it opens a
+  fixed backdrop using `coverLargeUrl`; the backdrop closes on backdrop click
+  or `Escape`, image clicks remain open, focus returns to the trigger, body
+  scrolling is locked, and no route/history or close-button control is added.
+- Canonical timing, audio identity, lyrics, ruby, translation, Explain
+  feature content, notes, schema, compiler, runtime, PWA lifecycle and other
+  release behavior were not changed. No canonical timing correction was made.
+- Focused evidence passed for Catalog, Explain and Song Edition cover behavior
+  (4 test files / 41 tests); full regression passed at 49 test files / 331
+  tests. `npm run typecheck`, `npm run lint` (no errors; two pre-existing
+  warnings), `npm run build`, `npm run pwa:inspect` and `git diff --check`
+  passed. Local browser probes covered desktop and 390×844 layout, overlay
+  geometry, backdrop/Escape behavior and scroll locking; these are not
+  real-device or installed-PWA human PASS evidence.
+- Product-focused commit is `91b703a`; release metadata records `1.8.1` at
+  `PATCH` level (`1.8.0 -> 1.8.1`), and `v1.8.1` targets the product commit.
+  The later release-metadata commit is the independently deployed build
+  identity.
+- `USER CHECK` is `NONE` for this boundary. Cover size/overlay feel, Explain
+  title hierarchy and Catalog simplicity remain `POST-DEPLOY OBSERVATION`,
+  not a claimed real-device PASS or active blocking debt.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50)`: actual target-device/iOS installed-
@@ -359,7 +397,12 @@ uses the separately authorized task-input source package.
   `startMs`/`endMs` were not changed or claimed as human-reviewed. These are not claimed as human PASS
   and are not active blocking debt under `D-019`; users can surface any
   low-cost follow-up during normal Production use.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50 `UNKNOWN` remains open.
+- `POST-DEPLOY OBSERVATION (RED-Plan-51)`: actual target-device/iOS/PWA
+  cover sizing, backdrop feel, Explain hierarchy and simplified Catalog cards
+  should be observed in normal Production use. Local browser evidence does not
+  claim true-device, perceptual or installed-client lifecycle acceptance; this
+  remains residual risk and is not active blocking work.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -405,6 +448,11 @@ uses the separately authorized task-input source package.
   corrected without changing canonical timing or song source data. The
   product commit is `01cdd64`, `v1.8.0` targets it, and residual true-device
   observations remain explicitly non-blocking.
+- `RED-Plan-51` is complete: Catalog resume enrichment was removed, Explain
+  lyric references were kept listening-focused, and Song Edition cover viewing
+  was enlarged and formalized with a fixed high-quality overlay. The product
+  commit is `91b703a`, `v1.8.1` targets it, and remaining real-use observations
+  are explicitly non-blocking.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.8.1',
+    date: '2026-08-28',
+    commit: '91b703a',
+    level: 'patch',
+    title: '曲库、讲解与封面交互整理',
+    summary: '简化曲库和讲解入口，并支持在 Song Edition 中放大查看封面。',
+    changes: [
+      '曲库卡片聚焦歌曲信息，移除学习状态文案并停止目录层 resume summary 读取。',
+      '降低讲解标题层级，保留歌词引用试听和重复出现位置选择，移除“学习这一段”入口。',
+      '放大 Song Edition 顶部封面，并支持使用高质量封面在居中 overlay 中查看。',
+    ],
+  },
+  {
     version: '1.8.0',
     date: '2026-08-28',
     commit: '01cdd64',
