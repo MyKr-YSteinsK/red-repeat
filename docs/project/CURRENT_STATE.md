@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.7.1`
+- Current user version: `1.7.2`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.7.1` / `v1.7.1 -> a98e300`; existing
-  `v1.7.0 -> 325d418` and `v1.6.2 -> c61f977` remain unchanged.
+- Latest ledger/tag: `1.7.2` / `v1.7.2 -> 50e7114`; existing
+  `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and `v1.6.2 -> c61f977` remain unchanged.
 - `a98e30015b7e1ee03e850685f5eaca6f81922681` is the user-visible WORK
   content implementation commit for `1.7.1`; the later release-metadata commit
   on `main` is the independently deployed build identity and is distinct from
@@ -189,7 +189,7 @@ uses the separately authorized task-input source package.
   All Han/Katakana characters in all 30 Segments have position-verified
   Hiragana `ruby` coverage. Four Explain Markdown features use validated
   lyric references.
-- Timing was established against the canonical MP3 using local source-audio
+- At the RED-Plan-45 import boundary, timing was established against the canonical MP3 using local source-audio
   acoustic/spectral evidence, with LRC timestamps used only as search anchors.
   All 45 Occurrences have independently chosen actual timing and playback
   ranges; lead/tail values are variable, with explicit notes for the long
@@ -290,14 +290,34 @@ uses the separately authorized task-input source package.
 - This closeout is `no-version`; no song source, executable product, release or
   deployment behavior is changed.
 
+## RED-Plan-49 implementation and release status
+
+- `senbonzakura` canonical playback timing is calibrated from the supplied
+  identity-matched Timing Correction Export. Product-focused commit `50e7114`
+  carries the sole canonical source change; `v1.7.2` targets that commit.
+- `Calibrated Playback Timing`: 45/45 Occurrences user-reviewed, with 82/82
+  playback fields applied (`45` `playStartMs` and `37` `playEndMs`). This
+  statement covers only playback fields; it does not claim human review of
+  `startMs`/`endMs`.
+- `startMs`/`endMs`, Section data, Practice data, Occurrence IDs/order, lyrics,
+  audio and `audioSourceHash` are unchanged. The compiler produced the matching
+  canonical runtime timeline and no UI, schema, compiler or PWA behavior changed.
+- Release metadata records `1.7.2` at PATCH level (`1.7.1 -> 1.7.2`); the
+  later release-metadata commit remains the independently deployed build
+  identity and is distinct from the implementation tag target.
+- `USER CHECK` is `NONE` for this correction because the values came from the
+  user's real Production Timing Debugger listening. Ordinary Production use
+  remains observation only.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-44/45)`: mobile/iOS/PWA ruby geometry,
   wrapping, touch and perceived readability were not separately executed. The
   three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
   `o049`→`o050`) were also not separately verified by subjective continuous
-  listening; the new `senbonzakura` timing has source-audio evidence but was
-  not a separate human listening claim. These are not claimed as human PASS
+  listening; `senbonzakura` now has identity-matched `Calibrated Playback
+  Timing` for 45/45 Occurrences covering only `playStartMs`/`playEndMs`.
+  `startMs`/`endMs` were not changed or claimed as human-reviewed. These are not claimed as human PASS
   and are not active blocking debt under `D-019`; users can surface any
   low-cost follow-up during normal Production use.
 - No `BLOCKING USER CHECK` or current RED-Plan-44/45 `UNKNOWN` remains open.
@@ -335,11 +355,11 @@ uses the separately authorized task-input source package.
   `.private/research/work-millennium-parade/` were preserved. Historical
   migration archives were not rewritten. RED-Plan-45 imports a new authorized
   public source package and does not revive that private intake.
-- `RED-Plan-45` is complete for this boundary: the second public Song Edition,
+- `RED-Plan-45` is complete for its boundary: the second public Song Edition,
   exact content/ruby contract, source-audio-backed timing, Explain features
-  and Practice grouping are recorded above. The canonical source was not
-  modified after import, and the no-force release boundary uses
-  `1.7.0` / `v1.7.0`.
+  and Practice grouping are recorded above. The canonical source was unchanged
+  within that Plan; RED-Plan-49 later merged a playback-only correction under
+  `1.7.2` / `v1.7.2`.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

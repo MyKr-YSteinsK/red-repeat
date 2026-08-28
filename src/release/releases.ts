@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.7.2',
+    date: '2026-08-28',
+    commit: '50e7114',
+    level: 'patch',
+    title: '《千本桜》人工播放切口校准',
+    summary: '将用户在 Production Timing Debugger 中逐句确认的播放切口合入 canonical source。',
+    changes: [
+      '合入 45 个 Occurrences 的 82 个 playStartMs/playEndMs 校准值。',
+      '保留 startMs/endMs、Occurrence 顺序、歌词、音频与其他歌曲数据不变。',
+    ],
+  },
+  {
     version: '1.7.1',
     date: '2026-08-28',
     commit: 'a98e300',
