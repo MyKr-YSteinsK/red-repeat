@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.12.0',
+    date: '2026-08-30',
+    commit: '650f9dc',
+    level: 'minor',
+    title: 'PWA 后台无感更新与当前会话稳定性',
+    summary: '让新版资源在后台准备并于自然下次启动接管，保持当前页面、播放、阅读、学唱和本地业务状态稳定。',
+    changes: [
+      '移除更新流程对当前会话的强制刷新与主动接管，当前 document 保持启动时的 build identity。',
+      '允许新版 Service Worker 在后台进入 waiting，并在全部旧客户端自然结束后由下一次启动采用新 build。',
+      '将 Settings 保留为版本与更新状态入口，跨 App shell 更新保留 Practice 状态、timing override 与已下载歌曲快照。',
+    ],
+  },
+  {
     version: '1.11.0',
     date: '2026-08-30',
     commit: 'ad64c95',

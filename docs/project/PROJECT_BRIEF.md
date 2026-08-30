@@ -30,8 +30,8 @@ catalog → select/search a Song Edition → Practice (default)
 ```
 
 Supporting loops are Practice ↔ Full Song ↔ Explain, explicit per-song
-local-first offline snapshot download/removal, PWA update checking/application
-and timing calibration/export.
+local-first offline snapshot download/removal, background PWA update preparation
+with natural next-launch adoption and timing calibration/export.
 
 ## Stable architecture boundary
 
@@ -63,8 +63,10 @@ Detailed source, runtime, PWA and release contracts are linked from
   same-field identity-bound local overrides and invalidate when their
   Edition/audio/timeline identity is incompatible.
 - PWA updates preserve Practice resume, timing overrides and downloaded-song
-  state unless an explicitly safe migration says otherwise. Deployed identity
-  and installed-client activation are separate questions.
+  state unless an explicitly safe migration says otherwise. The current document
+  stays pinned to its startup build; a prepared waiting worker is adopted after
+  old clients naturally finish, so deployed identity and installed-client
+  activation remain separate questions.
 - A downloaded Song Edition is one manifest-bound complete snapshot. Foreground
   reads are local-first; an H2 refresh may replace H1 only after complete
   validation and an atomic manifest switch, so partial remote content cannot

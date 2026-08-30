@@ -130,10 +130,12 @@ legacy timing override schemas are cleared when compatibility cannot be proven.
 - Source: `USER_DECISION` + incident/root-cause evidence + current repo
 
 Update logic must model remote discovery, registration, installing/waiting worker,
-activation request, controller takeover and reload with bounded behavior. A
-production probe answers what was deployed; an installed-client check answers
-whether an old client can discover/activate it. A single boolean is not enough,
-and business data must survive updates.
+activation, controller takeover and natural next-launch adoption with bounded
+failure handling. A production probe answers what was deployed; an installed-
+client check answers whether an old client can discover/activate it. A single
+boolean is not enough, and business data must survive updates. An updater-driven
+reload or `SKIP_WAITING` takeover is not a normal current-session step; the
+current document remains pinned to its startup build.
 
 ## D-014｜User version is independent from Plan/commit count
 
@@ -290,3 +292,21 @@ Workbox immutable Runtime 与 audio Range route 可以向共享 snapshot cache �
 属于必须覆盖的 immutable structured Runtime。Catalog 使用本地先行的
 stale-while-refresh 语义。Service Worker activation/reload 生命周期仍由
 D-013 管理，不属于本决定的前台数据 freshness 边界。
+
+## D-023｜PWA 更新保留当前会话并在自然下次启动接管｜PWA Updates Preserve the Current Session and Activate on a Natural Next Launch
+
+- Status: Accepted
+- Source: `USER_DECISION` + `RED-Plan-58` + real built-Service-Worker evidence
+
+PWA 的 remote probe、Service Worker 检查和新版资源安装属于 background
+maintenance。当前 document 始终使用启动时的 build identity；更新流程不得主动
+reload、改变 route、打断播放/阅读/学唱，也不得通过 `SKIP_WAITING` 抢占仍在使用的
+旧 client。新版 worker 可以进入 `waiting`，在全部旧 client 自然结束后按标准
+lifecycle activate，下一次自然启动采用新 build。
+
+Settings 是更新详情与手动检查入口，但手动检查也只触发 probe、background
+install 和状态展示，不提供会强制刷新当前会话的 apply 动作。Practice progress、
+rate、identity-bound timing overrides、Catalog/local snapshot cache 与已下载
+Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 继续有效；
+真实 iOS installed-PWA 的行为仍需作为 `POST-DEPLOY OBSERVATION` 单独观察，不能由
+桌面真实浏览器 integration 冒充证明。

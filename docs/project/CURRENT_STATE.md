@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.11.0`
+- Current user version: `1.12.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.11.0` / `v1.11.0 -> ad64c95`; existing
+- Latest ledger/tag: `1.12.0` / `v1.12.0 -> 650f9dc`; existing
+  `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
   `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
@@ -49,7 +50,9 @@ evidence only.
 - Japanese lyric ruby/furigana rendering for position-verified Han/Katakana
   readings, with canonical original text retained for lyric semantics.
 - Settings/update surface with build/version identity, release history, remote
-  `version.json` probe and PWA apply/dismiss flow.
+  `version.json` probe and passive PWA background-update status. A prepared
+  worker takes effect on a natural next launch; the current document has no
+  updater-driven apply/reload action.
 - Production-public Timeline/Timing Debugger and timing repair/export with
   compatible identity-bound local timing overrides. The public entry is
   Settings → 播放切口调试 → `#timing=debug`; it is a supporting capability, not
@@ -569,6 +572,39 @@ uses the separately authorized task-input source package.
   snapshot cover and distinguish not-downloaded offline, incomplete download
   and Runtime schema/parse failures. Blocking `USER CHECK` is `NONE`.
 
+## RED-Plan-58 PWA update lifecycle status
+
+- The update event graph is now passive: remote `version.json` discovery and
+  `registration.update()` run as background maintenance; an `installing` worker
+  can become `waiting`, Settings reports `ready-next-launch`, and the current
+  document remains pinned to its startup build.
+- The old updater-driven `applyUpdate()`/activation timer/reload path was
+  removed. No normal update path calls `window.location.reload()`, sends
+  `SKIP_WAITING`, resets the route or takes over an active client. The existing
+  `registerType: 'prompt'` and `clientsClaim: true` artifact settings remain
+  compatible with the browser's waiting lifecycle because the app does not
+  request active-session takeover.
+- The global `UpdatePrompt` was removed. Settings remains the visible update
+  surface with current identity, remote version/SHA/release notes, manual
+  background check and the statuses `尚未检查`, `正在后台检查`, `installing`,
+  `ready-next-launch`, `当前已是最新版本` and `检查失败（当前 App 不受影响）`.
+- Real browser integration used two freshly built same-version fixtures with
+  distinct build identities (`plan58-b1` and `plan58-b2`). B1 established a
+  downloaded `Ｗ●ＲＫ` snapshot; after switching the server to B2, two B1
+  clients remained on their original routes and UI, and Settings showed the
+  prepared-next-launch state without a global prompt. Closing client A did not
+  let B2 take over client B; after all B1 clients closed, the next launch
+  reported `plan58-b2` and retained the downloaded `Ｗ●ＲＫ` state. Browser error
+  logs were empty.
+- Focused update-manager, registration-options, Settings and App tests passed;
+  the Plan57 downloaded-snapshot/offline boundary remains unchanged. The
+  real-browser evidence is not an iOS installed-PWA result. D-013 was corrected
+  to remove reload as a normal phase and D-023 records the durable update
+  decision.
+- Real iOS Safari/installed-PWA update timing, standalone activation and
+  long-lived background behavior remain `NOT_TESTED` and are retained as
+  `POST-DEPLOY OBSERVATION`, not a blocking gate or claimed device PASS.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -605,8 +641,14 @@ uses the separately authorized task-input source package.
   startup for all three downloaded songs and long-term Safari Cache Storage
   quota/eviction behavior are `NOT_TESTED`. They remain explicit residual risk,
   not a claimed device PASS or active blocking item. Service Worker
-  activation/reload UX remains the separately scoped RED-Plan-58 boundary.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57 `UNKNOWN` remains open.
+  activation/reload UX is covered by the built-browser evidence in RED-Plan-58;
+  installed-PWA behavior remains separately untested.
+- `POST-DEPLOY OBSERVATION (RED-Plan-58)`: real iOS Safari/installed-PWA
+  background installation, waiting-worker activation and standalone relaunch
+  behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
+  does not substitute for iOS/device evidence; this remains residual risk and
+  is not active blocking work.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -697,8 +739,15 @@ uses the separately authorized task-input source package.
   fallback, transactional H2 refresh, complete removal and Practice/Range route
   coverage. `1.11.0` is a MINOR release and `v1.11.0` targets the product
   commit. Real iOS installed-PWA and quota/eviction observations remain
-  non-blocking residual risk; Service Worker activation/reload UX is deferred
-  to RED-Plan-58.
+  non-blocking residual risk; Service Worker activation/reload UX is closed for
+  the built-browser boundary by RED-Plan-58, with installed-PWA behavior still
+  retained as observation.
+- `RED-Plan-58` is complete for the PWA update-lifecycle boundary: background
+  discovery/install, waiting-worker next-launch adoption, current-session
+  no-reload/no-takeover behavior, Settings semantics, multi-client safety and
+  downloaded-snapshot preservation are covered by the real built-browser
+  evidence above. The user-visible release and tag are recorded at the final
+  release boundary; real iOS installed-PWA behavior remains `NOT_TESTED`.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
