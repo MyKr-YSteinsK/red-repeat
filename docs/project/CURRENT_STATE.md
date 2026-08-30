@@ -658,7 +658,10 @@ uses the separately authorized task-input source package.
 - `library:validate`、`library:compile`、`build --base=/red-repeat/`、Explain
   focused tests（5 files / 45 tests）和本地浏览器 Explain smoke 均通过；
   `390×844` 下 NIGHT DANCER 的移动主题 selector 可用且无横向溢出。生产身份
-  的最终 `pwa:inspect` 在 release metadata 构建后执行。
+  的最终 `pwa:inspect --require-production` 已通过。CI #67 的 quality 与
+  Pages `deploy` 均 succeeded；`release:smoke` 已确认线上 `1.12.2` 与
+  build SHA `013c437eda3d984e2b41cc802e5e10a1d4119a27` 一致，线上 WORK 与
+  NIGHT DANCER Explain smoke 也已通过且无浏览器 error。
 - 本 Plan 没有 blocking `USER CHECK`；普通阅读中可能出现的事实或措辞反馈
   保留为 `POST-DEPLOY OBSERVATION`，不作为当前完成阻塞。
 
