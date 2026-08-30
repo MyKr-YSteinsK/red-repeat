@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createRuntimeClient,
   RuntimeClientError,
@@ -92,6 +92,16 @@ const practice = {
   units: [],
 }
 
+const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+
+afterEach(() => {
+  if (originalCaches) {
+    Object.defineProperty(globalThis, 'caches', originalCaches)
+  } else {
+    delete (globalThis as { caches?: CacheStorage }).caches
+  }
+})
+
 describe('Runtime Client', () => {
   it('loads a catalog through the resolver at the root base', async () => {
     const fetchImpl = vi.fn(async () => jsonResponse(catalog))
@@ -101,6 +111,41 @@ describe('Runtime Client', () => {
     expect(fetchImpl).toHaveBeenCalledWith('/library-runtime/catalog.json', {
       signal: expect.any(AbortSignal),
     })
+  })
+
+  it('returns a valid cached catalog before a delayed background refresh', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await storage.cache.put(
+      '/library-runtime/catalog.json',
+      jsonResponse(catalog),
+    )
+    const fetchImpl = vi.fn(
+      () => new Promise<Response>(() => undefined),
+    )
+    const client = createRuntimeClient({ appBaseUrl: '/', fetchImpl })
+
+    await expect(client.loadCatalog()).resolves.toEqual(catalog)
+    expect(fetchImpl).toHaveBeenCalledWith('/library-runtime/catalog.json', {
+      credentials: 'same-origin',
+    })
+  })
+
+  it('discards a malformed cached catalog and recovers from the network', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await storage.cache.put(
+      '/library-runtime/catalog.json',
+      new Response('{broken'),
+    )
+    const fetchImpl = vi.fn(async () => jsonResponse(catalog))
+    const client = createRuntimeClient({ appBaseUrl: '/', fetchImpl })
+
+    await expect(client.loadCatalog()).resolves.toEqual(catalog)
+    expect(fetchImpl).toHaveBeenCalledOnce()
+    await expect(
+      (await storage.cache.match('/library-runtime/catalog.json'))?.json(),
+    ).resolves.toEqual(catalog)
   })
 
   it('binds native global fetch to globalThis when no implementation is injected', async () => {
@@ -292,4 +337,44 @@ async function expectRuntimeError(
       error.logicalPath === logicalPath
     )
   })
+}
+
+function installCacheStorage(storage: MemoryCacheStorage): void {
+  Object.defineProperty(globalThis, 'caches', {
+    configurable: true,
+    value: storage,
+  })
+}
+
+class MemoryCacheStorage {
+  readonly cache = new MemoryCache()
+
+  async open(): Promise<Cache> {
+    return this.cache as unknown as Cache
+  }
+}
+
+class MemoryCache {
+  private readonly entries = new Map<string, Response>()
+
+  async match(request: RequestInfo | URL): Promise<Response | undefined> {
+    return this.entries.get(cacheKey(request))?.clone()
+  }
+
+  async put(request: RequestInfo | URL, response: Response): Promise<void> {
+    this.entries.set(cacheKey(request), response.clone())
+  }
+
+  async delete(request: RequestInfo | URL): Promise<boolean> {
+    return this.entries.delete(cacheKey(request))
+  }
+}
+
+function cacheKey(request: RequestInfo | URL): string {
+  const raw = typeof request === 'string'
+    ? request
+    : request instanceof URL
+      ? request.toString()
+      : request.url
+  return new URL(raw, window.location.origin).toString()
 }

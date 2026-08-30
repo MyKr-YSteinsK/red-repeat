@@ -13,13 +13,23 @@ import {
   type PracticeDocument,
   type TimelineDocument,
 } from '../library/schema'
-import { fetchWithSongDownloadFallback } from '../pwa/song-download'
+import {
+  fetchWithSongDownloadFallback,
+  SongDownloadFetchError,
+} from '../pwa/song-download'
+import {
+  deleteCatalogCache,
+  readCatalogCache,
+  writeCatalogCache,
+} from '../pwa/catalog-cache'
 import { resolveRuntimeAsset } from './runtime-url'
 
 export const RUNTIME_CATALOG_PATH = '/library-runtime/catalog.json'
 
 export type RuntimeClientErrorKind =
   | 'network'
+  | 'offline-not-downloaded'
+  | 'download-incomplete'
   | 'http'
   | 'json-parse'
   | 'schema'
@@ -75,11 +85,7 @@ export class RuntimeClient {
   }
 
   loadCatalog(options: RuntimeLoadOptions = {}): Promise<Catalog> {
-    return this.loadJson(
-      RUNTIME_CATALOG_PATH,
-      CatalogSchema.parse,
-      options,
-    )
+    return this.loadCatalogLocalFirst(options)
   }
 
   loadEdition(
@@ -137,10 +143,75 @@ export class RuntimeClient {
     this.cancelPending()
   }
 
+  private async loadCatalogLocalFirst(
+    options: RuntimeLoadOptions,
+  ): Promise<Catalog> {
+    const logicalRuntimePath = RUNTIME_CATALOG_PATH
+    const url = this.resolve(logicalRuntimePath)
+    const cachedResponse = await readCatalogCache(url)
+
+    if (cachedResponse) {
+      const context = this.beginRequest(options.signal)
+      try {
+        const catalog = await this.parseJsonResponse(
+          logicalRuntimePath,
+          url,
+          cachedResponse,
+          context,
+          CatalogSchema.parse,
+        )
+        void this.refreshCatalogCache(url, catalog.contentHash)
+        return catalog
+      } catch (error) {
+        if (error instanceof RuntimeClientError && error.kind === 'abort') {
+          throw error
+        }
+        await deleteCatalogCache(url)
+      } finally {
+        context.cleanup()
+      }
+    }
+
+    return this.loadJson(
+      logicalRuntimePath,
+      CatalogSchema.parse,
+      options,
+      async (response) => writeCatalogCache(url, response),
+    )
+  }
+
+  private async refreshCatalogCache(
+    url: string,
+    currentContentHash: string,
+  ): Promise<void> {
+    try {
+      const response = await this.fetchImpl(url, {
+        credentials: 'same-origin',
+      })
+      if (!response.ok) {
+        return
+      }
+
+      const cacheResponse = response.clone()
+      const payload: unknown = await response.json()
+      const parsed = CatalogSchema.safeParse(payload)
+      if (
+        !parsed.success ||
+        parsed.data.contentHash === currentContentHash
+      ) {
+        return
+      }
+      await writeCatalogCache(url, cacheResponse)
+    } catch {
+      // Background freshness must not invalidate the current session catalog.
+    }
+  }
+
   private async loadJson<T>(
     logicalRuntimePath: string,
     parse: (value: unknown) => T,
     options: RuntimeLoadOptions,
+    onValidatedResponse?: (response: Response) => Promise<void>,
   ): Promise<T> {
     const url = this.resolve(logicalRuntimePath)
     const context = this.beginRequest(options.signal)
@@ -151,37 +222,60 @@ export class RuntimeClient {
         url,
         context,
       )
-      this.assertCurrent(logicalRuntimePath, url, context)
-
-      let payload: unknown
-      try {
-        payload = await response.json()
-      } catch (error) {
-        this.assertCurrent(logicalRuntimePath, url, context)
-        throw new RuntimeClientError({
-          kind: 'json-parse',
-          logicalPath: logicalRuntimePath,
-          url,
-          message: `failed to parse runtime JSON: ${logicalRuntimePath}`,
-          cause: error,
-        })
+      const responseForPersistence = onValidatedResponse
+        ? response.clone()
+        : undefined
+      const parsed = await this.parseJsonResponse(
+        logicalRuntimePath,
+        url,
+        response,
+        context,
+        parse,
+      )
+      if (responseForPersistence && onValidatedResponse) {
+        await onValidatedResponse(responseForPersistence)
       }
-
-      this.assertCurrent(logicalRuntimePath, url, context)
-
-      try {
-        return parse(payload)
-      } catch (error) {
-        throw new RuntimeClientError({
-          kind: 'schema',
-          logicalPath: logicalRuntimePath,
-          url,
-          message: `runtime schema validation failed: ${logicalRuntimePath}`,
-          cause: error,
-        })
-      }
+      return parsed
     } finally {
       context.cleanup()
+    }
+  }
+
+  private async parseJsonResponse<T>(
+    logicalRuntimePath: string,
+    url: string,
+    response: Response,
+    context: RequestContext,
+    parse: (value: unknown) => T,
+  ): Promise<T> {
+    this.assertCurrent(logicalRuntimePath, url, context)
+
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch (error) {
+      this.assertCurrent(logicalRuntimePath, url, context)
+      throw new RuntimeClientError({
+        kind: 'json-parse',
+        logicalPath: logicalRuntimePath,
+        url,
+        message: `failed to parse runtime JSON: ${logicalRuntimePath}`,
+        cause: error,
+      })
+    }
+
+    this.assertCurrent(logicalRuntimePath, url, context)
+
+    try {
+      return parse(payload)
+    } catch (error) {
+      throw new RuntimeClientError({
+        kind: 'schema',
+        logicalPath: logicalRuntimePath,
+        url,
+        message: `runtime schema validation failed: ${logicalRuntimePath}`,
+        cause: error,
+      })
     }
   }
 
@@ -252,6 +346,8 @@ export class RuntimeClient {
     url: string,
     context: RequestContext,
   ): Promise<Response> {
+    this.assertCurrent(logicalRuntimePath, url, context)
+
     let response: Response
     try {
       response = await this.fetchImpl(url, { signal: context.controller.signal })
@@ -261,7 +357,9 @@ export class RuntimeClient {
       }
 
       throw new RuntimeClientError({
-        kind: 'network',
+        kind: error instanceof SongDownloadFetchError
+          ? error.kind
+          : 'network',
         logicalPath: logicalRuntimePath,
         url,
         message: `runtime request failed: ${logicalRuntimePath}`,

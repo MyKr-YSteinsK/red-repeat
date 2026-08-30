@@ -11,7 +11,11 @@ import type {
   PracticeDocument,
   TimelineDocument,
 } from '../library/schema'
-import type { RuntimeClient } from '../runtime/runtime-client'
+import {
+  RuntimeClientError,
+  type RuntimeClient,
+  type RuntimeClientErrorKind,
+} from '../runtime/runtime-client'
 import { SongEditionPage, type SongEditionPageProps } from './SongEditionPage'
 
 let activeEngine: AudioEngine | undefined
@@ -267,6 +271,37 @@ describe('SongEditionPage 学唱入口', () => {
       '/red-repeat/',
     )
   })
+
+  it.each([
+    [
+      'offline-not-downloaded',
+      '这首歌的当前版本尚未下载，离线时无法打开。',
+    ],
+    [
+      'download-incomplete',
+      '这首歌的本地下载不完整，请联网后重新下载。',
+    ],
+    [
+      'schema',
+      '歌曲 Runtime 数据格式无效，请联网重试或重新下载。',
+    ],
+  ] satisfies Array<[RuntimeClientErrorKind, string]>)(
+    'distinguishes the %s recovery message',
+    async (kind, message) => {
+      render(
+        <SongEditionPage
+          {...propsFor(new RuntimeClientError({
+            kind,
+            logicalPath: catalogEdition.editionUrl,
+            url: catalogEdition.editionUrl,
+            message: kind,
+          }))}
+        />,
+      )
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    },
+  )
 })
 
 function propsFor(error?: Error, audioEngine?: AudioEngine): SongEditionPageProps {

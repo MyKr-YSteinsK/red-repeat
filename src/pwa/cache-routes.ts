@@ -6,15 +6,21 @@ type RuntimeCaching = NonNullable<
 
 export const RUNTIME_CACHE_NAMES = {
   catalog: 'red-repeat-catalog-v1',
-  runtime: 'red-repeat-runtime-v1',
-  audio: 'red-repeat-audio-v1',
+  snapshot: 'red-repeat-song-download-v1',
+  runtime: 'red-repeat-song-download-v1',
+  audio: 'red-repeat-song-download-v1',
 } as const
+
+export const LEGACY_RUNTIME_CACHE_NAMES = [
+  'red-repeat-runtime-v1',
+  'red-repeat-audio-v1',
+] as const
 
 const catalogPattern = /\/library-runtime\/catalog\.json(?:\?.*)?$/
 const hash = '[a-f0-9]{64}'
 const immutableRuntimePattern = new RegExp(
   `\\/library-runtime\\/songs\\/[^/]+\\/(?:` +
-    `(?:edition|lyrics|timeline)\\.${hash}\\.json` +
+    `(?:edition|lyrics|timeline|practice)\\.${hash}\\.json` +
     `|features\\/[^/]+\\.${hash}\\.md` +
     `|(?:cover-small|cover-large|hero-large)\\.${hash}\\.webp` +
     `)(?:\\?.*)?$`,
@@ -28,10 +34,9 @@ export type RuntimeCacheRouteKind = 'catalog' | 'runtime' | 'audio'
 export const runtimeCaching: RuntimeCaching[] = [
   {
     urlPattern: catalogPattern,
-    handler: 'NetworkFirst',
+    handler: 'StaleWhileRevalidate',
     options: {
       cacheName: RUNTIME_CACHE_NAMES.catalog,
-      networkTimeoutSeconds: 3,
       cacheableResponse: { statuses: [200] },
     },
   },

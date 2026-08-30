@@ -339,21 +339,39 @@ function CatalogLibrary({
       if (!active) {
         return
       }
-      setDownloadBySongId((current) => {
-        const next = { ...current }
-        entries.forEach(([songId, state]) => {
-          if (!next[songId]) {
-            next[songId] = state
-          }
-        })
-        return next
+      setDownloadBySongId(Object.fromEntries(entries))
+
+      entries.forEach(([songId, state]) => {
+        const currentEdition = catalog.editions.find(
+          (edition) => edition.songId === songId,
+        )
+        if (
+          state.status !== 'installed' ||
+          !currentEdition ||
+          state.editionUrl === currentEdition.editionUrl
+        ) {
+          return
+        }
+
+        void downloadSongRuntime(currentEdition, runtimeClient)
+          .then((refreshedState) => {
+            if (active) {
+              setDownloadBySongId((current) => ({
+                ...current,
+                [songId]: refreshedState,
+              }))
+            }
+          })
+          .catch(() => {
+            // A failed background refresh must leave the last complete snapshot active.
+          })
       })
     })
 
     return () => {
       active = false
     }
-  }, [catalog])
+  }, [catalog, runtimeClient])
 
   const handleDownload = async (edition: CatalogEdition): Promise<void> => {
     setDownloadBySongId((current) => ({
@@ -518,6 +536,10 @@ function CatalogEditionCard({
   onSwipeClose: () => void
 }) {
   const isInstalled = download.status === 'installed'
+  const coverUrl =
+    isInstalled && download.snapshotEdition
+      ? download.snapshotEdition.coverUrl
+      : edition.coverUrl
   const swipe = useSwipeReveal({
     enabled: isInstalled,
     open: isSwipeOpen,
@@ -561,7 +583,7 @@ function CatalogEditionCard({
             >
               <img
                 className="catalog-cover"
-                src={runtimeClient.resolveAsset(edition.coverUrl)}
+                src={runtimeClient.resolveAsset(coverUrl)}
                 alt=""
                 loading="lazy"
               />
@@ -749,6 +771,15 @@ function getEditionCount(state: CatalogState): number {
 
 function describeRuntimeError(error: unknown): string {
   if (error instanceof RuntimeClientError) {
+    if (error.kind === 'offline-not-downloaded') {
+      return '这首歌的当前版本尚未下载，离线时无法打开。'
+    }
+    if (error.kind === 'download-incomplete') {
+      return '这首歌的本地下载不完整，请联网后重新下载。'
+    }
+    if (error.kind === 'json-parse' || error.kind === 'schema') {
+      return 'Runtime 数据格式无效，请重新联网后重试。'
+    }
     return `Runtime ${error.kind} while reading ${error.logicalPath}.`
   }
   return 'The runtime catalog returned an unexpected error.'

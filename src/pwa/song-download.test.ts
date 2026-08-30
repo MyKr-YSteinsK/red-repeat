@@ -1,59 +1,32 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { RuntimeClient } from '../runtime/runtime-client'
-import { RUNTIME_CACHE_NAMES } from './cache-routes'
+import { loadRuntimeSongEditionCore } from '../runtime/song-edition-loader'
 import {
   downloadSongRuntime,
   fetchWithSongDownloadFallback,
+  readDownloadedSongSnapshot,
   readSongDownloadState,
   removeSongRuntime,
   SONG_DOWNLOAD_CACHE_NAME,
+  SongDownloadFetchError,
 } from './song-download'
 
-const catalogEdition: CatalogEdition = {
-  songId: 'first-light',
-  title: 'First Light',
-  artist: 'A Composer',
-  coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
-  editionUrl: '/library-runtime/songs/first-light/edition.a.json',
-}
+const HASH_A = 'a'.repeat(64)
+const HASH_B = 'b'.repeat(64)
+const HASH_C = 'c'.repeat(64)
+const HASH_D = 'd'.repeat(64)
+const HASH_E = 'e'.repeat(64)
+const HASH_F = 'f'.repeat(64)
 
-const edition: RuntimeEdition = {
-  contractVersion: 3,
-  contentHash: 'a'.repeat(64),
-  song: {
-    songId: 'first-light',
-    title: 'First Light',
-    artist: 'A Composer',
-  },
-  lyricsUrl: '/library-runtime/songs/first-light/lyrics.b.json',
-  timelineUrl: '/library-runtime/songs/first-light/timeline.b.json',
-  practiceUrl: '/library-runtime/songs/first-light/practice.b.json',
-  features: [
-    { id: 'note', url: '/library-runtime/songs/first-light/features/note.c.md' },
-  ],
-  audio: {
-    url: '/library-runtime/songs/first-light/audio.d.m4a',
-    sourceHash: 'b'.repeat(64),
-    runtimeHash: 'c'.repeat(64),
-    durationMs: 1000,
-    format: {
-      container: 'm4a',
-      codec: 'aac-lc',
-      bitrateKbps: 192,
-      sampleRate: 48000,
-      channels: 2,
-    },
-  },
-  artwork: {
-    coverSmallUrl: catalogEdition.coverUrl,
-    coverLargeUrl: '/library-runtime/songs/first-light/cover-large.e.webp',
-  },
-}
+const snapshotH1 = createSnapshotFixtures('a', HASH_A)
+const snapshotH2 = createSnapshotFixtures('b', HASH_B)
 
 const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
 
 afterEach(() => {
+  vi.restoreAllMocks()
+  window.localStorage.clear()
   if (originalCaches) {
     Object.defineProperty(globalThis, 'caches', originalCaches)
   } else {
@@ -61,23 +34,23 @@ afterEach(() => {
   }
 })
 
-describe('song download cache', () => {
-  it('downloads every runtime resource, restores state, and removes the song', async () => {
+describe('song download snapshot cache', () => {
+  it('commits a complete v2 snapshot, reads locally before network, and removes all owned resources', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
-    const fetchImpl = vi.fn(async (url: RequestInfo | URL) =>
-      new Response(String(url), { status: 200 }),
-    )
-    const runtimeClient = runtimeClientFor()
+    const fetchImpl = fixtureFetch(snapshotH1)
 
     await expect(
-      downloadSongRuntime(catalogEdition, runtimeClient, {
-        fetchImpl,
-        now: () => 123,
-      }),
+      downloadSongRuntime(
+        snapshotH1.catalogEdition,
+        runtimeClientFor(snapshotH1),
+        { fetchImpl, now: () => 123 },
+      ),
     ).resolves.toMatchObject({
       songId: 'first-light',
       status: 'installed',
+      contentHash: HASH_A,
+      editionUrl: snapshotH1.catalogEdition.editionUrl,
       lastUpdatedAt: 123,
     })
 
@@ -85,87 +58,358 @@ describe('song download cache', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(8)
     expect(cache.entries.size).toBe(9)
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
-      songId: 'first-light',
       status: 'installed',
-      lastUpdatedAt: 123,
+      contentHash: HASH_A,
+      snapshotEdition: snapshotH1.catalogEdition,
     })
+
+    const manifest = await readManifest(cache, 'first-light')
+    expect(manifest).toMatchObject({
+      schemaVersion: 2,
+      contentHash: HASH_A,
+      catalogEdition: snapshotH1.catalogEdition,
+    })
+
+    const networkFetch = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() => new Promise<Response>(() => undefined))
+    const practiceUrl = absoluteUrl(snapshotH1.edition.practiceUrl)
+    const localResponse = await fetchWithSongDownloadFallback(practiceUrl)
+    await expect(localResponse.json()).resolves.toEqual({ units: [] })
+    expect(networkFetch).not.toHaveBeenCalled()
 
     await expect(removeSongRuntime('first-light')).resolves.toBeUndefined()
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
-      songId: 'first-light',
       status: 'not-installed',
     })
     expect(cache.entries.size).toBe(0)
   })
 
-  it('falls back to a downloaded resource when the network is offline', async () => {
+  it('migrates a complete v1 manifest in place without deleting the download', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
-    const url = 'https://example.test/red-repeat/library-runtime/songs/first-light/audio.d.m4a'
-    const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
-    await cache.put(url, new Response('cached audio', { status: 200 }))
-    const fetchImpl = vi
-      .spyOn(globalThis, 'fetch')
-      .mockRejectedValue(new TypeError('offline'))
-
-    try {
-      const response = await fetchWithSongDownloadFallback(url)
-      await expect(response.text()).resolves.toBe('cached audio')
-      expect(fetchImpl).toHaveBeenCalledWith(url, undefined)
-    } finally {
-      fetchImpl.mockRestore()
-    }
-  })
-
-  it('copies resources into the download cache when the Service Worker already cached them', async () => {
-    const storage = new MemoryCacheStorage()
-    installCacheStorage(storage)
-    const editionUrl = 'https://example.test/red-repeat/library-runtime/songs/first-light/edition.a.json'
-    await storage.cacheFor(RUNTIME_CACHE_NAMES.runtime).put(
-      editionUrl,
-      new Response('runtime cache', { status: 200 }),
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1), now: () => 456 },
     )
 
-    await expect(
-      downloadSongRuntime(catalogEdition, runtimeClientFor(), {
-        fetchImpl: vi.fn(async (url: RequestInfo | URL) =>
-          new Response(String(url), { status: 200 })),
-        now: () => 456,
+    const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
+    const v2 = await readManifest(cache, 'first-light') as {
+      urls: string[]
+      installedAt: number
+    }
+    await cache.put(
+      manifestUrl('first-light'),
+      jsonResponse({
+        schemaVersion: 1,
+        songId: 'first-light',
+        contentHash: HASH_A,
+        urls: v2.urls,
+        installedAt: v2.installedAt,
       }),
-    ).resolves.toMatchObject({ status: 'installed' })
+    )
 
-    expect(storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME).entries.size).toBe(9)
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
-      songId: 'first-light',
       status: 'installed',
-      lastUpdatedAt: 456,
+      contentHash: HASH_A,
+      editionUrl: snapshotH1.catalogEdition.editionUrl,
+    })
+    await expect(readManifest(cache, 'first-light')).resolves.toMatchObject({
+      schemaVersion: 2,
+      catalogEdition: snapshotH1.catalogEdition,
     })
   })
 
-  it('cleans partial resources and leaves the catalog usable after a failed download', async () => {
+  it('marks a missing required resource incomplete and reports the offline case explicitly', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
-    const fetchImpl = vi
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1) },
+    )
+
+    const practiceUrl = absoluteUrl(snapshotH1.edition.practiceUrl)
+    await storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME).delete(practiceUrl)
+    await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
+      status: 'failed',
+      failureKind: 'incomplete',
+      errorMessage: '本地下载不完整，请联网后重新下载。',
+    })
+
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('offline'))
+    await expect(
+      fetchWithSongDownloadFallback(practiceUrl),
+    ).rejects.toSatisfy((error: unknown) =>
+      error instanceof SongDownloadFetchError &&
+      error.kind === 'download-incomplete',
+    )
+  })
+
+  it('keeps H1 active when H2 staging fails, then switches only after H2 is complete', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1), now: () => 100 },
+    )
+
+    const failedRefreshFetch = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response('ok', { status: 200 }))
-      .mockRejectedValueOnce(new TypeError('offline'))
+      .mockResolvedValueOnce(
+        responseForLogicalPath(
+          snapshotH2.catalogEdition.editionUrl,
+          snapshotH2,
+        ),
+      )
+      .mockRejectedValueOnce(new TypeError('refresh failed'))
 
     await expect(
-      downloadSongRuntime(catalogEdition, runtimeClientFor(), { fetchImpl }),
-    ).rejects.toThrow('offline')
-    expect(storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME).entries.size).toBe(0)
-    await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
-      status: 'not-installed',
+      downloadSongRuntime(
+        snapshotH2.catalogEdition,
+        runtimeClientFor(snapshotH2),
+        { fetchImpl: failedRefreshFetch, now: () => 200 },
+      ),
+    ).rejects.toThrow('refresh failed')
+    await expect(readDownloadedSongSnapshot('first-light')).resolves.toMatchObject({
+      contentHash: HASH_A,
+      catalogEdition: snapshotH1.catalogEdition,
     })
+
+    await expect(
+      downloadSongRuntime(
+        snapshotH2.catalogEdition,
+        runtimeClientFor(snapshotH2),
+        { fetchImpl: fixtureFetch(snapshotH2), now: () => 300 },
+      ),
+    ).resolves.toMatchObject({
+      status: 'installed',
+      contentHash: HASH_B,
+      lastUpdatedAt: 300,
+    })
+    await expect(readDownloadedSongSnapshot('first-light')).resolves.toMatchObject({
+      contentHash: HASH_B,
+      catalogEdition: snapshotH2.catalogEdition,
+    })
+
+    const manifest = await readManifest(
+      storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME),
+      'first-light',
+    ) as { urls: string[] }
+    expect(manifest.urls).toContain(
+      absoluteUrl(snapshotH2.edition.practiceUrl),
+    )
+    expect(manifest.urls).not.toContain(
+      absoluteUrl(snapshotH1.edition.practiceUrl),
+    )
+  })
+
+  it('opens the complete H1 snapshot when the current catalog points to unavailable H2', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1) },
+    )
+    const offlineClient = {
+      loadEdition: vi.fn(async (logicalPath: string) => {
+        expect(logicalPath).toBe(snapshotH1.catalogEdition.editionUrl)
+        return snapshotH1.edition
+      }),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async () => ({
+        audioSourceHash: snapshotH1.edition.audio.sourceHash,
+        sections: [],
+        occurrences: [],
+      })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+      loadFeature: vi.fn(async () => '# Feature\n'),
+      resolveAsset: (logicalPath: string) => absoluteUrl(logicalPath),
+    } as unknown as RuntimeClient
+
+    const core = await loadRuntimeSongEditionCore(
+      offlineClient,
+      snapshotH2.catalogEdition,
+    )
+
+    expect(core.catalogEdition).toEqual(snapshotH1.catalogEdition)
+    expect(core.edition.contentHash).toBe(HASH_A)
+    expect(offlineClient.loadEdition).toHaveBeenCalledWith(
+      snapshotH1.catalogEdition.editionUrl,
+      {},
+    )
+  })
+
+  it('distinguishes an offline song that was never downloaded', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('offline'))
+
+    await expect(
+      fetchWithSongDownloadFallback(
+        absoluteUrl(snapshotH1.catalogEdition.editionUrl),
+      ),
+    ).rejects.toSatisfy((error: unknown) =>
+      error instanceof SongDownloadFetchError &&
+      error.kind === 'offline-not-downloaded',
+    )
   })
 })
 
-function runtimeClientFor(): RuntimeClient {
+interface SnapshotFixtures {
+  catalogEdition: CatalogEdition
+  edition: RuntimeEdition
+}
+
+function createSnapshotFixtures(
+  suffix: string,
+  contentHash: string,
+): SnapshotFixtures {
+  const resourceHash = suffix === 'a'
+    ? {
+        cover: HASH_B,
+        lyrics: HASH_C,
+        timeline: HASH_D,
+        practice: HASH_E,
+        feature: HASH_F,
+        audio: HASH_B,
+      }
+    : {
+        cover: HASH_C,
+        lyrics: HASH_D,
+        timeline: HASH_E,
+        practice: HASH_F,
+        feature: HASH_C,
+        audio: HASH_D,
+      }
+  const base = '/library-runtime/songs/first-light'
+  const catalogEdition: CatalogEdition = {
+    songId: 'first-light',
+    title: `First Light ${suffix.toUpperCase()}`,
+    artist: 'A Composer',
+    coverUrl: `${base}/cover-small.${resourceHash.cover}.webp`,
+    editionUrl: `${base}/edition.${contentHash}.json`,
+  }
+  const edition: RuntimeEdition = {
+    contractVersion: 3,
+    contentHash,
+    song: {
+      songId: 'first-light',
+      title: catalogEdition.title,
+      artist: catalogEdition.artist,
+    },
+    lyricsUrl: `${base}/lyrics.${resourceHash.lyrics}.json`,
+    timelineUrl: `${base}/timeline.${resourceHash.timeline}.json`,
+    practiceUrl: `${base}/practice.${resourceHash.practice}.json`,
+    features: [
+      {
+        id: 'note',
+        url: `${base}/features/note-${suffix}.${resourceHash.feature}.md`,
+      },
+    ],
+    audio: {
+      url: `${base}/audio.${resourceHash.audio}.m4a`,
+      sourceHash: HASH_E,
+      runtimeHash: resourceHash.audio,
+      durationMs: 1000,
+      format: {
+        container: 'm4a',
+        codec: 'aac-lc',
+        bitrateKbps: 192,
+        sampleRate: 48000,
+        channels: 2,
+      },
+    },
+    artwork: {
+      coverSmallUrl: catalogEdition.coverUrl,
+      coverLargeUrl: `${base}/cover-large.${resourceHash.cover}.webp`,
+    },
+  }
+  return { catalogEdition, edition }
+}
+
+function runtimeClientFor(fixtures: SnapshotFixtures): RuntimeClient {
   return {
-    loadEdition: vi.fn(async () => edition),
-    resolveAsset: (logicalPath: string) =>
-      `https://example.test/red-repeat${logicalPath}`,
+    loadEdition: vi.fn(async (logicalPath: string) => {
+      expect(logicalPath).toBe(fixtures.catalogEdition.editionUrl)
+      return fixtures.edition
+    }),
+    resolveAsset: (logicalPath: string) => absoluteUrl(logicalPath),
   } as unknown as RuntimeClient
+}
+
+function fixtureFetch(fixtures: SnapshotFixtures) {
+  return vi.fn<typeof fetch>(async (input) => {
+    const logicalPath = runtimePath(String(input))
+    return responseForLogicalPath(logicalPath, fixtures)
+  })
+}
+
+function responseForLogicalPath(
+  logicalPath: string,
+  fixtures: SnapshotFixtures,
+): Response {
+  const { catalogEdition, edition } = fixtures
+  if (logicalPath === catalogEdition.editionUrl) {
+    return jsonResponse(edition)
+  }
+  if (logicalPath === edition.lyricsUrl) {
+    return jsonResponse({ segments: [] })
+  }
+  if (logicalPath === edition.timelineUrl) {
+    return jsonResponse({
+      audioSourceHash: edition.audio.sourceHash,
+      sections: [],
+      occurrences: [],
+    })
+  }
+  if (logicalPath === edition.practiceUrl) {
+    return jsonResponse({ units: [] })
+  }
+  if (edition.features.some((feature) => feature.url === logicalPath)) {
+    return new Response('# Feature\n', { status: 200 })
+  }
+  if (
+    logicalPath === catalogEdition.coverUrl ||
+    logicalPath === edition.artwork.coverLargeUrl ||
+    logicalPath === edition.audio.url
+  ) {
+    return new Response(new Uint8Array([1, 2, 3]), { status: 200 })
+  }
+  throw new Error(`Unexpected fixture resource: ${logicalPath}`)
+}
+
+function jsonResponse(payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
+}
+
+function runtimePath(url: string): string {
+  const pathname = new URL(url).pathname
+  return pathname.slice(pathname.indexOf('/library-runtime/'))
+}
+
+function absoluteUrl(logicalPath: string): string {
+  return `https://example.test/red-repeat${logicalPath}`
+}
+
+function manifestUrl(songId: string): string {
+  return new URL(
+    `/.red-repeat/song-downloads/${songId}.json`,
+    window.location.origin,
+  ).toString()
+}
+
+async function readManifest(
+  cache: MemoryCache,
+  songId: string,
+): Promise<unknown> {
+  return await (await cache.match(manifestUrl(songId)))?.json()
 }
 
 function installCacheStorage(storage: MemoryCacheStorage): void {
@@ -180,16 +424,6 @@ class MemoryCacheStorage {
 
   async open(name: string): Promise<Cache> {
     return this.cacheFor(name) as unknown as Cache
-  }
-
-  async match(request: RequestInfo | URL): Promise<Response | undefined> {
-    for (const cache of this.caches.values()) {
-      const response = await cache.match(request)
-      if (response) {
-        return response
-      }
-    }
-    return undefined
   }
 
   cacheFor(name: string): MemoryCache {
@@ -207,8 +441,7 @@ class MemoryCache {
   readonly entries = new Map<string, Response>()
 
   async match(request: RequestInfo | URL): Promise<Response | undefined> {
-    const response = this.entries.get(cacheKey(request))
-    return response?.clone()
+    return this.entries.get(cacheKey(request))?.clone()
   }
 
   async put(request: RequestInfo | URL, response: Response): Promise<void> {
@@ -225,9 +458,10 @@ class MemoryCache {
 }
 
 function cacheKey(request: RequestInfo | URL): string {
-  return typeof request === 'string'
+  const raw = typeof request === 'string'
     ? request
     : request instanceof URL
       ? request.toString()
       : request.url
+  return new URL(raw, window.location.origin).toString()
 }

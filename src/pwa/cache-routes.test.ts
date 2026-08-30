@@ -11,22 +11,22 @@ describe('PWA Runtime cache routes', () => {
   it('keeps stable cache names independent from the app build hash', () => {
     expect(RUNTIME_CACHE_NAMES).toEqual({
       catalog: 'red-repeat-catalog-v1',
-      runtime: 'red-repeat-runtime-v1',
-      audio: 'red-repeat-audio-v1',
+      snapshot: 'red-repeat-song-download-v1',
+      runtime: 'red-repeat-song-download-v1',
+      audio: 'red-repeat-song-download-v1',
     })
   })
 
-  it('classifies catalog as Network First', () => {
+  it('serves a cached catalog immediately and revalidates it in the background', () => {
     expect(
       classifyRuntimeRequest(
         `https://example.test/red-repeat/library-runtime/catalog.json`,
       ),
     ).toBe('catalog')
     expect(runtimeCaching[0]).toMatchObject({
-      handler: 'NetworkFirst',
+      handler: 'StaleWhileRevalidate',
       options: {
         cacheName: RUNTIME_CACHE_NAMES.catalog,
-        networkTimeoutSeconds: 3,
       },
     })
   })
@@ -35,6 +35,8 @@ describe('PWA Runtime cache routes', () => {
     const base = 'https://example.test/red-repeat/library-runtime/songs/first-light/'
     expect(classifyRuntimeRequest(`${base}edition.${hash}.json`)).toBe('runtime')
     expect(classifyRuntimeRequest(`${base}lyrics.${hash}.json`)).toBe('runtime')
+    expect(classifyRuntimeRequest(`${base}timeline.${hash}.json`)).toBe('runtime')
+    expect(classifyRuntimeRequest(`${base}practice.${hash}.json`)).toBe('runtime')
     expect(classifyRuntimeRequest(`${base}features/essay.${hash}.md`)).toBe(
       'runtime',
     )
@@ -52,7 +54,7 @@ describe('PWA Runtime cache routes', () => {
     expect(runtimeCaching[1]).toMatchObject({
       handler: 'CacheFirst',
       options: {
-        cacheName: RUNTIME_CACHE_NAMES.audio,
+        cacheName: RUNTIME_CACHE_NAMES.snapshot,
         rangeRequests: true,
       },
     })

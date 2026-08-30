@@ -98,6 +98,29 @@ const runtimeEditionForApp = {
   },
 }
 
+const secondRuntimeEditionForApp = {
+  ...runtimeEditionForApp,
+  contentHash: 'e'.repeat(64),
+  song: {
+    songId: 'second-signal',
+    title: 'Second Signal',
+    artist: 'Another Composer',
+  },
+  lyricsUrl: '/library-runtime/songs/second-signal/lyrics.b.json',
+  timelineUrl: '/library-runtime/songs/second-signal/timeline.b.json',
+  practiceUrl: '/library-runtime/songs/second-signal/practice.b.json',
+  audio: {
+    ...runtimeEditionForApp.audio,
+    url: '/library-runtime/songs/second-signal/audio.b.m4a',
+  },
+  artwork: {
+    coverSmallUrl:
+      '/library-runtime/songs/second-signal/cover-small.b.webp',
+    coverLargeUrl:
+      '/library-runtime/songs/second-signal/cover-large.b.webp',
+  },
+}
+
 const resumeTimelineForApp = {
   audioSourceHash: 'd'.repeat(64),
   sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 }],
@@ -163,6 +186,7 @@ describe('App Library consumer', () => {
     render(<App runtimeClient={client} />)
 
     expect(screen.getByRole('status')).toHaveTextContent('正在加载…')
+    await waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce())
     resolveResponse?.(jsonResponse(emptyCatalog))
     expect(
       await screen.findByRole('heading', { name: '还没有歌曲' }),
@@ -407,21 +431,48 @@ describe('App Library consumer', () => {
       '/.red-repeat/song-downloads/first-light.json',
       window.location.origin,
     ).toString()
-    const resourceUrl = new URL(
-      '/library-runtime/songs/first-light/edition.a.json',
-      window.location.origin,
-    ).toString()
+    const snapshotEdition = populatedCatalog.editions[0]
+    const snapshotLogicalPaths = [
+      snapshotEdition.editionUrl,
+      snapshotEdition.coverUrl,
+      runtimeEditionForApp.lyricsUrl,
+      runtimeEditionForApp.timelineUrl,
+      runtimeEditionForApp.practiceUrl,
+      runtimeEditionForApp.artwork.coverLargeUrl,
+      runtimeEditionForApp.audio.url,
+    ]
+    const resourceUrls = snapshotLogicalPaths.map((logicalPath) =>
+      new URL(logicalPath, window.location.origin).toString(),
+    )
     cacheEntries.set(
       manifestUrl,
       new Response(JSON.stringify({
-        schemaVersion: 1,
+        schemaVersion: 2,
         songId: 'first-light',
         contentHash: 'c'.repeat(64),
-        urls: [resourceUrl],
+        catalogEdition: snapshotEdition,
+        urls: resourceUrls,
         installedAt: 100,
       })),
     )
-    cacheEntries.set(resourceUrl, new Response('installed resource'))
+    resourceUrls.forEach((resourceUrl, index) => {
+      const logicalPath = snapshotLogicalPaths[index]
+      const response =
+        logicalPath === snapshotEdition.editionUrl
+          ? jsonResponse(runtimeEditionForApp)
+          : logicalPath === runtimeEditionForApp.lyricsUrl
+            ? jsonResponse({ segments: [] })
+            : logicalPath === runtimeEditionForApp.timelineUrl
+              ? jsonResponse({
+                  audioSourceHash: runtimeEditionForApp.audio.sourceHash,
+                  sections: [],
+                  occurrences: [],
+                })
+              : logicalPath === runtimeEditionForApp.practiceUrl
+                ? jsonResponse({ units: [] })
+                : new Response(new Uint8Array([1, 2, 3]))
+      cacheEntries.set(resourceUrl, response)
+    })
 
     Object.defineProperty(globalThis, 'caches', {
       configurable: true,
@@ -656,8 +707,11 @@ function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populate
   if (url.endsWith('/catalog.json')) {
     return jsonResponse(catalog)
   }
-  if (url.endsWith('/edition.a.json') || url.endsWith('/edition.b.json')) {
+  if (url.endsWith('/edition.a.json')) {
     return jsonResponse(runtimeEditionForApp)
+  }
+  if (url.endsWith('/edition.b.json')) {
+    return jsonResponse(secondRuntimeEditionForApp)
   }
   if (url.endsWith('/lyrics.a.json')) {
     return jsonResponse({ segments: [] })
@@ -680,8 +734,11 @@ function responseForResumeUrl(input: RequestInfo | URL): Response {
   if (url.endsWith('/catalog.json')) {
     return jsonResponse(populatedCatalog)
   }
-  if (url.endsWith('/edition.a.json') || url.endsWith('/edition.b.json')) {
+  if (url.endsWith('/edition.a.json')) {
     return jsonResponse(runtimeEditionForApp)
+  }
+  if (url.endsWith('/edition.b.json')) {
+    return jsonResponse(secondRuntimeEditionForApp)
   }
   if (url.endsWith('/timeline.a.json')) {
     return jsonResponse(resumeTimelineForApp)

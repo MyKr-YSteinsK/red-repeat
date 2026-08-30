@@ -127,10 +127,9 @@ assert(
   `bundled registration must target ${serviceWorkerUrl}`,
 )
 assert(serviceWorker.includes('red-repeat-catalog-v1'), 'catalog cache route missing')
-assert(serviceWorker.includes('red-repeat-runtime-v1'), 'runtime cache route missing')
-assert(serviceWorker.includes('red-repeat-audio-v1'), 'audio cache route missing')
+assert(serviceWorker.includes('red-repeat-song-download-v1'), 'song snapshot cache route missing')
 assert(serviceWorker.includes('RangeRequestsPlugin'), 'audio range route missing')
-assert(serviceWorker.includes('NetworkFirst'), 'catalog Network First route missing')
+assert(serviceWorker.includes('StaleWhileRevalidate'), 'catalog stale-while-revalidate route missing')
 assert(serviceWorker.includes('CacheFirst'), 'Cache First route missing')
 
 const precacheSection = serviceWorker.slice(

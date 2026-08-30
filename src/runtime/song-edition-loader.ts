@@ -21,6 +21,7 @@ import {
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
 import type { OccurrenceTimingProvider } from '../timeline/occurrence-timing'
+import { readDownloadedSongSnapshot } from '../pwa/song-download'
 
 export interface RuntimeSongEditionCore {
   catalogEdition: CatalogEdition
@@ -44,7 +45,15 @@ export async function loadRuntimeSongEditionCore(
   catalogEdition: CatalogEdition,
   options: RuntimeLoadOptions = {},
 ): Promise<RuntimeSongEditionCore> {
-  const edition = await client.loadEdition(catalogEdition.editionUrl, options)
+  const downloadedSnapshot = await readDownloadedSongSnapshot(
+    catalogEdition.songId,
+  )
+  const effectiveCatalogEdition =
+    downloadedSnapshot?.catalogEdition ?? catalogEdition
+  const edition = await client.loadEdition(
+    effectiveCatalogEdition.editionUrl,
+    options,
+  )
   const [lyrics, timeline, practice] = await Promise.all([
     client.loadLyrics(edition.lyricsUrl, options),
     client.loadTimeline(edition.timelineUrl, options),
@@ -83,7 +92,7 @@ export async function loadRuntimeSongEditionCore(
   )
 
   const core = {
-    catalogEdition,
+    catalogEdition: effectiveCatalogEdition,
     edition,
     lyrics,
     timeline,

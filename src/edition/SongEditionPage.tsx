@@ -242,6 +242,15 @@ function SongEditionStatus({
 
 function describeEditionError(error: unknown): string {
   if (error instanceof RuntimeClientError) {
+    if (error.kind === 'offline-not-downloaded') {
+      return '这首歌的当前版本尚未下载，离线时无法打开。'
+    }
+    if (error.kind === 'download-incomplete') {
+      return '这首歌的本地下载不完整，请联网后重新下载。'
+    }
+    if (error.kind === 'json-parse' || error.kind === 'schema') {
+      return '歌曲 Runtime 数据格式无效，请联网重试或重新下载。'
+    }
     return `Runtime ${error.kind} while reading ${error.logicalPath}.`
   }
   return 'The edition resources returned an unexpected error.'
