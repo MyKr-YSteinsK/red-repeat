@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.12.2',
+    date: '2026-08-30',
+    commit: '97efe45',
+    level: 'patch',
+    title: '动画关联歌曲的 ACGN 知识规范与 Explain 内容增强',
+    summary: '补充动画关联歌曲的研究与写作边界，并为 WORK 与 NIGHT DANCER 增加有证据边界的作品语境讲解。',
+    changes: [
+      '在歌曲内容生成规范中加入 ACGN tie-in 研究、commissioned 与 retrospective adoption 区分，以及 official / creator / media / editorial evidence 边界。',
+      'WORK Explain 从 6 篇扩展为 8 篇，补充《地狱乐》的两极主题、画眉丸与佐切关系及死罪人任务的 WORK 读法。',
+      'NIGHT DANCER Explain 从 6 篇扩展为 8 篇，明确 2022 既有歌曲到 2026 ABEMA 先行 ED 的采用时间线，并区分电视版《Fiction》。',
+    ],
+  },
+  {
     version: '1.12.1',
     date: '2026-08-30',
     commit: 'a5951d6',

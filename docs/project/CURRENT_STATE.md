@@ -10,9 +10,9 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.12.1`
+- Current user version: `1.12.2`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.12.1` / `v1.12.1 -> a5951d6`; existing
+- Latest ledger/tag: `1.12.2` / `v1.12.2 -> 97efe45`; existing
   `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
@@ -63,13 +63,13 @@ evidence only.
 The tracked public source contains three Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
-one JPG cover and six Explain Markdown features; and
+one JPG cover and eight Explain Markdown features; and
 `library/senbonzakura/` (`千本桜`, 黒うさP × 初音未来) with 30 unique
 Segments, 45 Occurrences, 6 Practice Units, 10 Sections, one canonical MP3,
 one JPG cover, six Explain Markdown features and 9 reviewed note targets.
 `library/night-dancer-imase/` (`NIGHT DANCER`, imase) adds 34 unique Segments,
 49 Occurrences, 11 Practice Units, 11 Sections, one canonical MP3, one JPG
-cover, six Explain Markdown features and 8 reviewed note targets.
+cover, eight Explain Markdown features and 8 reviewed note targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
 text and existing `layers` remain separate source contracts. Both public
@@ -638,6 +638,30 @@ uses the separately authorized task-input source package.
   perception remains `NOT_TESTED` as `POST-DEPLOY OBSERVATION`, not a claimed
   device PASS.
 
+## RED-Plan-60 动画关联歌曲的 ACGN 知识规范与现有内容增强状态
+
+- Handoff manifest 的 8 个 entry 均已按大小与 SHA-256 核验；research
+  provenance 仅用于验证，没有复制进仓库。
+- `docs/歌曲内容生成规范.md` 已加入 ACGN/tie-in 研究规则，明确区分
+  `commissioned / written-for-work`、`retrospective adoption / licensing` 与
+  `unofficial promotion / fan use`，并要求分开记录 official fact、creator
+  statement、media analysis 与 `RED:REPEAT 编辑观察`。该规则不增加 schema，
+  也不规定固定 Feature 数量。
+- WORK Explain 从 6 篇扩展为 8 篇，新增的两篇均已通过 61 个真实 Segment
+  的引用校验，补充《地狱乐》的画眉丸/佐切两极主题和死罪人任务的 WORK 读法。
+- NIGHT DANCER Explain 从 6 篇扩展为 8 篇，新增的两篇均已通过 34 个真实
+  Segment 的引用校验；明确 `2022 existing song -> 2026 ABEMA advance/pre-release
+  anime ED`，并与为电视版动画创作的《Fiction》分开，未倒推原曲的创作意图。
+- WORK、NIGHT DANCER 与 `senbonzakura` 的 lyrics、translation、ruby、Romaji、
+  notes、Practice、Section、Occurrence、canonical audio、timeline 与 timing
+  均未修改；没有改动 schema/compiler/runtime、UI/PWA 或其他 release topology。
+- `library:validate`、`library:compile`、`build --base=/red-repeat/`、Explain
+  focused tests（5 files / 45 tests）和本地浏览器 Explain smoke 均通过；
+  `390×844` 下 NIGHT DANCER 的移动主题 selector 可用且无横向溢出。生产身份
+  的最终 `pwa:inspect` 在 release metadata 构建后执行。
+- 本 Plan 没有 blocking `USER CHECK`；普通阅读中可能出现的事实或措辞反馈
+  保留为 `POST-DEPLOY OBSERVATION`，不作为当前完成阻塞。
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -662,6 +686,10 @@ uses the separately authorized task-input source package.
 - `POST-DEPLOY OBSERVATION (RED-Plan-52)`: ordinary reading may still surface
   a fact or wording issue in the new Explain Features or lyric notes. No
   additional human gate was required for this content-only integration.
+- `POST-DEPLOY OBSERVATION (RED-Plan-60)`: ordinary reading may still surface
+  a fact or wording issue in the new ACGN-linked Explain Features. The supplied
+  evidence classes and commissioned/adoption boundary are recorded; no
+  additional human gate was required for this content-only integration.
 - `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
@@ -681,7 +709,7 @@ uses the separately authorized task-input source package.
   behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
   does not substitute for iOS/device evidence; this remains residual risk and
   is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -790,6 +818,13 @@ uses the separately authorized task-input source package.
   product commit; the following metadata commit is the deployed build
   identity. Real-device visual observation remains `NOT_TESTED` and
   non-blocking.
+- `RED-Plan-60` is complete: the ACGN/tie-in Explain authoring rule is recorded,
+  WORK and NIGHT DANCER each have 8 validated Explain Features, and the
+  commissioned-versus-retrospective-adoption boundary is explicit. Product
+  commit `97efe45` carries the content, `1.12.2` is `PATCH`, and `v1.12.2`
+  targets that product commit; the following release-metadata commit is the
+  independently deployed build identity. No lyric, timing, source-data,
+  schema, compiler, runtime, UI or PWA behavior changed.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
