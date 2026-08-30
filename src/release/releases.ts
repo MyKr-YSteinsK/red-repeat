@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.12.1',
+    date: '2026-08-30',
+    commit: 'a5951d6',
+    level: 'patch',
+    title: '播放控制台稳定性与移动端底栏一致性调整',
+    summary: '稳定 Full Song 播放控制台高度，统一 Practice 移动端底栏贴边行为，并微调控制文字与共享玻璃层清晰度。',
+    changes: [
+      '移除 Full Song 控制台中随当前 Occurrence 变化的动态当前句显示，保留当前段、进度、速度和播放控制。',
+      '将 Practice 移动端控制 dock 调整为 edge-to-edge bottom sheet，以内部 safe-area padding 保持末行歌词可达。',
+      '小幅放大 Practice / Full Song 控制字段并提高共享 glass panel/control alpha，同时保留 Timing Debugger 的同一 visual family。',
+    ],
+  },
+  {
     version: '1.12.0',
     date: '2026-08-30',
     commit: '650f9dc',

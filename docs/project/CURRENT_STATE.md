@@ -10,10 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.12.0`
+- Current user version: `1.12.1`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.12.0` / `v1.12.0 -> 650f9dc`; existing
-  `v1.11.0 -> ad64c95`,
+- Latest ledger/tag: `1.12.1` / `v1.12.1 -> a5951d6`; existing
+  `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
   `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
@@ -605,6 +605,39 @@ uses the separately authorized task-input source package.
   long-lived background behavior remain `NOT_TESTED` and are retained as
   `POST-DEPLOY OBSERVATION`, not a blocking gate or claimed device PASS.
 
+## RED-Plan-59 播放控制台稳定性与移动端底栏一致性状态
+
+- Full Song fixed player no longer renders the dynamic `当前句` lyric subtree
+  or its `lineSegment` plumbing. It retains current Section, current/total
+  time, progress, speed, play/pause, scroll-to-top and reset controls;正文
+  active/highlight/follow behavior is unchanged.
+- Practice mobile dock is an edge-to-edge bottom sheet at the mobile
+  breakpoint with `left/right/bottom: 0`, `width: 100%`, top-only sheet radius,
+  and safe-area insets inside its padding. Plan54's measured
+  `--practice-dock-reachability-reserve` remains the final-row boundary.
+- Shared glass tokens moved from `30%/38%` to `38%/46%` for panel/control,
+  with matching CSS fallbacks and the existing `blur(2px) saturate(108%)`.
+  Practice, Full Song and Timing Debugger remain one visual family; no
+  Timing Debugger DOM or timing behavior was changed.
+- Browser evidence passed at `390×844`, `390×1000`, `768×1024` and
+  `1280×900`: Practice has no layout horizontal overflow; mobile dock edge
+  gaps are `0px` against the layout viewport; Full Song player height stayed
+  `184.225px` across short/long ruby/Romaji, section and instrumental switches
+  at `390×844`; the final-row gap was `16.074px` with a `95px` measured reserve.
+  Computed panel/control backgrounds are `38%/46%`, and screenshots retain
+  lyric contours beneath the translucent player surface.
+- Focused Practice/Full Song/layout evidence passed at 32 tests, the shared
+  Timing Debugger regression passed at 7 tests, and the full suite passed at
+  48 files / 338 tests. Product commit `a5951d6` carries the UI correction;
+  release metadata records `1.12.1` at `PATCH` level (`1.12.0 -> 1.12.1`),
+  and `v1.12.1` targets the product commit. The following release-metadata
+  commit is the independently deployed build identity.
+- No canonical timing, lyrics, Practice/Section source, audio, schema,
+  compiler, runtime, PWA lifecycle or release topology behavior changed.
+  Blocking `USER CHECK` is `NONE`; real iPhone/Safari/installed-PWA visual
+  perception remains `NOT_TESTED` as `POST-DEPLOY OBSERVATION`, not a claimed
+  device PASS.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -748,6 +781,15 @@ uses the separately authorized task-input source package.
   downloaded-snapshot preservation are covered by the real built-browser
   evidence above. The user-visible release and tag are recorded at the final
   release boundary; real iOS installed-PWA behavior remains `NOT_TESTED`.
+- `RED-Plan-59` is complete: Full Song's dynamic current-lyric player subtree
+  was removed to stabilize fixed-player geometry; Practice's mobile dock is
+  now edge-to-edge with internal safe-area padding; controller typography and
+  shared glass alpha were raised slightly while Plan54 reserve and Timing
+  Debugger visual-family contracts remained intact. Product commit `a5951d6`
+  carries the correction, `1.12.1` is `PATCH`, and `v1.12.1` targets the
+  product commit; the following metadata commit is the deployed build
+  identity. Real-device visual observation remains `NOT_TESTED` and
+  non-blocking.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
