@@ -564,8 +564,10 @@ uses the separately authorized task-input source package.
   cached Catalog rendered in 278ms and server logs showed only background
   Catalog/H2 freshness requests, with no H1 foreground resource request.
 - No canonical song source, timing, Practice grouping, Explain content, audio,
-  artwork, schema/compiler contract, UI/CSS or Service Worker activation/reload
-  behavior changed. Blocking `USER CHECK` is `NONE`.
+  artwork, schema/compiler contract, CSS/layout or Service Worker
+  activation/reload behavior changed. Existing UI surfaces now use the active
+  snapshot cover and distinguish not-downloaded offline, incomplete download
+  and Runtime schema/parse failures. Blocking `USER CHECK` is `NONE`.
 
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
