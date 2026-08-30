@@ -26,8 +26,8 @@
   --control-sheet-border: color-mix(in srgb, var(--color-ink) 14%, transparent);
   --control-sheet-shadow: 0 -0.7rem 2.2rem color-mix(in srgb, var(--color-ink) 13%, transparent);
   --control-sheet-blur: blur(22px) saturate(118%);
-  --player-glass-bg: color-mix(in srgb, var(--color-surface) 30%, transparent);
-  --player-glass-control-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);
+  --player-glass-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);
+  --player-glass-control-bg: color-mix(in srgb, var(--color-surface) 46%, transparent);
   --player-glass-border: color-mix(in srgb, var(--color-ink) 14%, transparent);
   --player-glass-blur: blur(2px) saturate(108%);
   --z-player: 20;

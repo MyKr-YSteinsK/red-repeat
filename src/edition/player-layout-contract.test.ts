@@ -40,10 +40,10 @@ describe('mobile player layout contracts', () => {
 
   it('shares a translucent player glass material with explicit backdrop filters', () => {
     expect(indexCss).toContain(
-      '--player-glass-bg: color-mix(in srgb, var(--color-surface) 30%, transparent);',
+      '--player-glass-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);',
     )
     expect(indexCss).toContain(
-      '--player-glass-control-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);',
+      '--player-glass-control-bg: color-mix(in srgb, var(--color-surface) 46%, transparent);',
     )
     expect(appCss).toMatch(
       /\.practice-controls\.practice-dock\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
@@ -56,6 +56,20 @@ describe('mobile player layout contracts', () => {
     )
     expect(appCss).not.toContain(
       'background: color-mix(in srgb, var(--color-surface) 92%, transparent);',
+    )
+  })
+
+  it('keeps the Practice mobile dock edge-to-edge with safe-area padding inside', () => {
+    expect(practiceMobileCss).toMatch(
+      /\.practice-controls\.practice-dock\s*\{[^}]*left: 0;[^}]*right: 0;[^}]*bottom: 0;[^}]*width: 100%;/s,
+    )
+    expect(practiceMobileCss).toContain('margin: 0;')
+    expect(practiceMobileCss).toContain(
+      'calc(0.65rem + env(safe-area-inset-bottom))',
+    )
+    expect(practiceMobileCss).toContain('border-inline: 0;')
+    expect(practiceMobileCss).toContain(
+      'border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;',
     )
   })
 

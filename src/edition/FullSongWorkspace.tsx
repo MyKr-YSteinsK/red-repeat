@@ -242,11 +242,6 @@ export function FullSongWorkspace({
           model={model}
           engine={playback.engine}
           sectionLabel={playback.resolution.currentSection?.label ?? '间奏 / 空白'}
-          lineSegment={
-            primaryOccurrenceId
-              ? model.occurrencesById[primaryOccurrenceId]?.segment
-              : undefined
-          }
           onScrollToTop={scrollToTop}
           onReset={resetPlayback}
         />
@@ -486,14 +481,12 @@ function FullSongPlayer({
   model,
   engine,
   sectionLabel,
-  lineSegment,
   onScrollToTop,
   onReset,
 }: {
   model: AssembledSongEdition
   engine: AudioEngine | null
   sectionLabel: string
-  lineSegment?: AssembledOccurrence['segment']
   onScrollToTop: () => void
   onReset: () => void
 }) {
@@ -566,12 +559,8 @@ function FullSongPlayer({
         disabled={!engine || durationMs <= 0}
         onChange={(event) => seek(Number(event.currentTarget.value))}
       />
-      <div className="full-song-player-context" aria-live="polite">
+      <div className="full-song-player-context">
         <span>当前段：{sectionLabel}</span>
-        <span>
-          当前句：
-          {lineSegment ? <LyricText segment={lineSegment} /> : '无歌词'}
-        </span>
       </div>
       <div className="full-song-player-speed" aria-label="播放速度">
         {PRACTICE_PLAYBACK_RATES.map((rate) => (
