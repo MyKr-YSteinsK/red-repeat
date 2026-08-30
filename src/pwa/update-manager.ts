@@ -6,31 +6,27 @@ import { fetchVersionProbe, type RemoteBuildInfo } from './version-probe'
 
 export type UpdateStatus =
   | 'checking'
+  | 'installing'
+  | 'ready-next-launch'
   | 'up-to-date'
-  | 'update-available'
-  | 'updating'
   | 'error'
 
 export interface UpdateSnapshot {
   status: UpdateStatus
   remote?: RemoteBuildInfo
   error?: string
-  dismissed: boolean
   checkedAt?: number
 }
 
-export type UpdateServiceWorker = (reloadPage?: boolean) => Promise<void>
 export type RegisterServiceWorker = (
   options?: RegisterSWOptions,
-) => UpdateServiceWorker
+) => unknown
 
 export interface UpdateManager {
   getSnapshot(): UpdateSnapshot
   subscribe(listener: () => void): () => void
   register(registerSW: RegisterServiceWorker): void
   checkForUpdate(options?: { manual?: boolean }): Promise<UpdateSnapshot>
-  applyUpdate(): Promise<void>
-  dismissUpdate(): void
 }
 
 export interface UpdateManagerOptions {
@@ -38,7 +34,6 @@ export interface UpdateManagerOptions {
   now?: () => number
   checkIntervalMs?: number
   locationHref?: () => string
-  reload?: () => void
   onVisibilityChange?: (listener: () => void) => () => void
 }
 
@@ -53,29 +48,27 @@ export function createUpdateManager(
 
 export function describeUpdateStatus(snapshot: UpdateSnapshot): string {
   if (snapshot.status === 'checking') {
-    return '正在检查…'
+    return '正在后台检查…'
   }
-  if (snapshot.status === 'updating') {
-    return '正在更新…'
+  if (snapshot.status === 'installing') {
+    return snapshot.remote?.version
+      ? `发现新版本 ${snapshot.remote.version}，正在后台准备…`
+      : '发现新版本，正在后台准备…'
+  }
+  if (snapshot.status === 'ready-next-launch') {
+    return snapshot.remote?.version
+      ? `新版本 ${snapshot.remote.version} 已准备，下次重新打开后生效`
+      : '新版本已准备，下次重新打开后生效'
   }
   if (snapshot.status === 'error') {
-    return '检查失败，请稍后重试'
+    return '检查失败（当前 App 不受影响）'
   }
-  if (snapshot.status === 'update-available') {
-    if (snapshot.remote?.version === buildInfo.version) {
-      return `发现新的构建 ${snapshot.remote.version}`
-    }
-    return snapshot.remote?.version
-      ? `发现新版本 ${snapshot.remote.version}`
-      : '发现新版本'
-  }
-  return snapshot.checkedAt !== undefined ? '已是最新版本' : '尚未检查'
+  return snapshot.checkedAt !== undefined ? '当前已是最新版本' : '尚未检查'
 }
 
 class UpdateManagerImpl implements UpdateManager {
   private snapshot: UpdateSnapshot = {
     status: 'up-to-date',
-    dismissed: false,
   }
 
   private readonly listeners = new Set<() => void>()
@@ -83,10 +76,8 @@ class UpdateManagerImpl implements UpdateManager {
   private readonly now: () => number
   private readonly checkIntervalMs: number
   private readonly locationHref: () => string
-  private readonly reload: () => void
   private readonly onVisibilityChange: (listener: () => void) => () => void
   private registration: ServiceWorkerRegistration | undefined
-  private updateServiceWorker: UpdateServiceWorker | undefined
   private registered = false
   private waitingWorker = false
   private installingWorker: ServiceWorker | undefined
@@ -94,23 +85,13 @@ class UpdateManagerImpl implements UpdateManager {
   private lastAutomaticCheckAt = Number.NEGATIVE_INFINITY
   private checkPromise: Promise<UpdateSnapshot> | undefined
   private probeSequence = 0
-  private updatePromise: Promise<void> | undefined
-  private resolveUpdate: (() => void) | undefined
-  private reloadTriggered = false
-  private activationRequested = false
-  private activationStarted = false
-  private updateAttemptTimer: ReturnType<typeof setTimeout> | undefined
-  private waitingWorkerActivationTimer: ReturnType<typeof setTimeout> | undefined
-  private observedWaitingWorker: ServiceWorker | undefined
-  private waitingWorkerStateChange: (() => void) | undefined
-  private dismissedRemoteIdentity: string | undefined
+  private updateRequestSequence = 0
 
   constructor(options: UpdateManagerOptions) {
     this.fetchImpl = options.fetchImpl ?? ((input, init) => globalThis.fetch(input, init))
     this.now = options.now ?? (() => Date.now())
     this.checkIntervalMs = options.checkIntervalMs ?? DEFAULT_CHECK_INTERVAL_MS
     this.locationHref = options.locationHref ?? (() => getDefaultLocationHref())
-    this.reload = options.reload ?? (() => window.location.reload())
     this.onVisibilityChange = options.onVisibilityChange ?? defaultVisibilitySubscription
   }
 
@@ -132,16 +113,15 @@ class UpdateManagerImpl implements UpdateManager {
     })
 
     try {
-      this.updateServiceWorker = registerSW(
+      registerSW(
         createServiceWorkerRegistrationOptions({
           onNeedRefresh: () => this.handleWaitingWorker(),
+          // A controller change is diagnostic only. The manager never reloads or
+          // asks a waiting worker to take over the active document.
           onNeedReload: () => this.handleControllerChange(),
           onRegisteredSW: (_scriptUrl, registration) => {
             this.registration = registration
             this.syncRegistrationState()
-            if (this.updatePromise && this.activationRequested) {
-              this.requestUpdateActivation()
-            }
             void this.checkForUpdate()
           },
           onRegisterError: (error) => this.handleError(error),
@@ -165,13 +145,12 @@ class UpdateManagerImpl implements UpdateManager {
       return this.checkPromise
     }
 
-    if (manual) {
-      this.dismissedRemoteIdentity = undefined
-      this.publish({ dismissed: false, error: undefined })
-    } else {
+    if (!manual) {
       this.lastAutomaticCheckAt = currentTime
     }
-    this.publish({ status: 'checking', error: undefined })
+    if (!this.waitingWorker && !this.installingWorker) {
+      this.publish({ status: 'checking', error: undefined })
+    }
 
     const promise = this.performCheck().finally(() => {
       this.checkPromise = undefined
@@ -180,126 +159,63 @@ class UpdateManagerImpl implements UpdateManager {
     return promise
   }
 
-  applyUpdate(): Promise<void> {
-    if (this.updatePromise) {
-      return this.updatePromise
-    }
-    if (!this.updateServiceWorker) {
-      this.handleError(new Error('Service Worker update is unavailable'))
-      return Promise.resolve()
-    }
-
-    this.reloadTriggered = false
-    this.activationRequested = true
-    this.activationStarted = false
-    this.publish({ status: 'updating', dismissed: false, error: undefined })
-    this.updatePromise = new Promise<void>((resolve) => {
-      this.resolveUpdate = resolve
-    })
-    this.startUpdateAttemptTimer()
-    this.requestUpdateActivation()
-    return this.updatePromise
-  }
-
-  dismissUpdate(): void {
-    if (this.snapshot.status === 'update-available') {
-      const remoteIdentity = getRemoteIdentity(this.snapshot.remote)
-      if (remoteIdentity) {
-        this.dismissedRemoteIdentity = remoteIdentity
-      }
-      this.publish({ dismissed: true })
-    }
-  }
-
   private async performCheck(): Promise<UpdateSnapshot> {
+    this.requestBackgroundUpdate()
     const probePromise = fetchVersionProbe({
       fetchImpl: this.fetchImpl,
       locationHref: this.locationHref(),
       cacheBust: `${this.now()}-${++this.probeSequence}`,
     })
-    void this.registration?.update?.().catch(() => undefined)
     const [probeResult] = await Promise.allSettled([probePromise])
 
     if (probeResult.status === 'rejected') {
-      if (this.waitingWorker) {
-        this.publish({
-          status: 'update-available',
-          remote: undefined,
-          checkedAt: this.now(),
-        })
-      } else {
-        this.publish({
-          status: 'error',
-          error: describeError(probeResult.reason),
-          remote: undefined,
-          checkedAt: this.now(),
-        })
-      }
+      this.publish({
+        status: 'error',
+        error: describeError(probeResult.reason),
+        checkedAt: this.now(),
+      })
+      return this.snapshot
+    }
+
+    if (this.snapshot.status === 'error') {
       return this.snapshot
     }
 
     const remote = probeResult.value
     const hasUpdate = this.waitingWorker || isRemoteUpdate(remote)
     this.publish({
-      status: hasUpdate ? 'update-available' : 'up-to-date',
+      status: this.waitingWorker
+        ? 'ready-next-launch'
+        : hasUpdate
+          ? 'installing'
+          : 'up-to-date',
       remote,
       checkedAt: this.now(),
-      dismissed: hasUpdate && this.isRemoteDismissed(remote),
       error: undefined,
     })
     return this.snapshot
   }
 
-  private requestUpdateActivation(): void {
-    if (!this.updatePromise || !this.activationRequested || this.activationStarted) {
-      return
-    }
-
+  private requestBackgroundUpdate(): void {
     const registration = this.registration
-    if (!registration && !this.waitingWorker) {
+    if (!registration || registration.waiting) {
       return
     }
 
-    this.activationStarted = true
-    if (this.waitingWorker) {
-      this.scheduleWaitingWorkerActivation()
-      return
-    }
-
-    if (!registration) {
-      return
-    }
-
-    this.syncRegistrationState()
-
-    try {
-      const updatePromise = registration.update()
-      void Promise.resolve(updatePromise).then(
-        () => {
-          this.syncRegistrationState()
-          if (this.waitingWorker) {
-            this.scheduleWaitingWorkerActivation()
-          }
-        },
-        (error: unknown) => this.finishUpdateWithError(error),
-      )
-    } catch (error) {
-      this.finishUpdateWithError(error)
-    }
+    const requestSequence = ++this.updateRequestSequence
+    const updatePromise = Promise.resolve().then(() => registration.update())
+    void withTimeout(updatePromise, SERVICE_WORKER_UPDATE_TIMEOUT_MS).catch((error) => {
+      if (requestSequence !== this.updateRequestSequence || this.waitingWorker) {
+        return
+      }
+      this.handleError(error)
+    })
   }
 
   private handleWaitingWorker(): void {
     this.waitingWorker = true
-    if (this.updatePromise) {
-      if (this.activationRequested) {
-        this.scheduleWaitingWorkerActivation()
-      }
-      return
-    }
-
     this.publish({
-      status: 'update-available',
-      dismissed: this.snapshot.dismissed,
+      status: 'ready-next-launch',
       error: undefined,
     })
   }
@@ -325,6 +241,9 @@ class UpdateManagerImpl implements UpdateManager {
 
     this.stopObservingInstallingWorker()
     this.installingWorker = worker
+    if (!this.waitingWorker) {
+      this.publish({ status: 'installing', error: undefined })
+    }
     const onStateChange = (): void => {
       if (
         worker.state === 'installed' && this.registration?.waiting === worker
@@ -348,119 +267,13 @@ class UpdateManagerImpl implements UpdateManager {
     this.installingWorkerStateChange = undefined
   }
 
-  private async activateWaitingWorker(): Promise<void> {
-    if (!this.updatePromise || !this.activationRequested || !this.updateServiceWorker) {
-      return
-    }
-
-    const waitingWorker = this.registration?.waiting
-    if (this.registration && !waitingWorker) {
-      this.scheduleWaitingWorkerActivation()
-      return
-    }
-
-    this.activationRequested = false
-    try {
-      if (waitingWorker) {
-        this.observeWaitingWorkerActivation(waitingWorker)
-        this.sendSkipWaitingMessage(waitingWorker)
-      }
-      await this.updateServiceWorker(false)
-    } catch (error) {
-      this.finishUpdateWithError(error)
-    }
-  }
-
-  private scheduleWaitingWorkerActivation(): void {
-    if (!this.updatePromise || !this.activationRequested) {
-      return
-    }
-    if (this.registration && !this.registration.waiting) {
-      if (!this.waitingWorkerActivationTimer) {
-        this.waitingWorkerActivationTimer = setTimeout(() => {
-          this.waitingWorkerActivationTimer = undefined
-          this.scheduleWaitingWorkerActivation()
-        }, 25)
-      }
-      return
-    }
-    void this.activateWaitingWorker()
-  }
-
-  private sendSkipWaitingMessage(worker: ServiceWorker): void {
-    worker.postMessage({ type: 'SKIP_WAITING' })
-  }
-
-  private observeWaitingWorkerActivation(worker: ServiceWorker): void {
-    this.stopObservingWaitingWorker()
-    const onStateChange = (): void => {
-      if (worker.state === 'activated') {
-        this.stopObservingWaitingWorker()
-        this.handleControllerChange()
-      } else if (worker.state === 'redundant') {
-        this.stopObservingWaitingWorker()
-        this.finishUpdateWithError(new Error('Service Worker 激活失败'))
-      }
-    }
-    this.waitingWorkerStateChange = onStateChange
-    this.observedWaitingWorker = worker
-    worker.addEventListener('statechange', onStateChange)
-    onStateChange()
-  }
-
-  private stopObservingWaitingWorker(): void {
-    if (this.observedWaitingWorker && this.waitingWorkerStateChange) {
-      this.observedWaitingWorker.removeEventListener(
-        'statechange',
-        this.waitingWorkerStateChange,
-      )
-    }
-    this.observedWaitingWorker = undefined
-    this.waitingWorkerStateChange = undefined
-  }
-
   private handleControllerChange(): void {
-    if (this.snapshot.status !== 'updating') {
-      return
-    }
-    if (this.reloadTriggered) {
-      return
-    }
-
-    this.reloadTriggered = true
-    this.clearUpdateAttempt()
-    try {
-      this.reload()
-    } finally {
-      this.activationRequested = false
-      this.resolveUpdate?.()
-      this.resolveUpdate = undefined
-      this.updatePromise = undefined
-    }
-  }
-
-  private finishUpdateWithError(error: unknown): void {
-    if (this.snapshot.status !== 'updating') {
-      return
-    }
-    this.publish({
-      status: 'error',
-      error: describeError(error),
-      remote: undefined,
-      checkedAt: this.now(),
-    })
-    this.clearUpdateAttempt()
-    this.activationRequested = false
-    this.resolveUpdate?.()
-    this.resolveUpdate = undefined
-    this.updatePromise = undefined
+    // The current document stays pinned to its startup build. A normal waiting
+    // worker activates after all old clients finish; a controllerchange event
+    // must therefore never become an updater-driven navigation or reload.
   }
 
   private handleError(error: unknown): void {
-    if (this.updatePromise) {
-      this.finishUpdateWithError(error)
-      return
-    }
     this.publish({
       status: 'error',
       error: describeError(error),
@@ -472,32 +285,6 @@ class UpdateManagerImpl implements UpdateManager {
     this.snapshot = Object.freeze({ ...this.snapshot, ...patch })
     this.listeners.forEach((listener) => listener())
   }
-
-  private startUpdateAttemptTimer(): void {
-    this.clearUpdateAttempt()
-    this.updateAttemptTimer = setTimeout(() => {
-      this.finishUpdateWithError(new Error('等待 Service Worker 更新超时'))
-    }, SERVICE_WORKER_UPDATE_TIMEOUT_MS)
-  }
-
-  private clearUpdateAttempt(): void {
-    if (this.updateAttemptTimer) {
-      clearTimeout(this.updateAttemptTimer)
-      this.updateAttemptTimer = undefined
-    }
-    if (this.waitingWorkerActivationTimer) {
-      clearTimeout(this.waitingWorkerActivationTimer)
-      this.waitingWorkerActivationTimer = undefined
-    }
-    this.stopObservingWaitingWorker()
-    this.stopObservingInstallingWorker()
-    this.activationStarted = false
-  }
-
-  private isRemoteDismissed(remote: RemoteBuildInfo): boolean {
-    return this.dismissedRemoteIdentity === getRemoteIdentity(remote)
-  }
-
 }
 
 function isRemoteUpdate(remote: RemoteBuildInfo): boolean {
@@ -505,10 +292,6 @@ function isRemoteUpdate(remote: RemoteBuildInfo): boolean {
   return versionComparison > 0 || (
     versionComparison === 0 && remote.commit !== buildInfo.commit
   )
-}
-
-function getRemoteIdentity(remote: RemoteBuildInfo | undefined): string | undefined {
-  return remote ? `${remote.version}:${remote.commit}` : undefined
 }
 
 function describeError(error: unknown): string {
@@ -534,6 +317,24 @@ function defaultVisibilitySubscription(listener: () => void): () => void {
   }
   document.addEventListener('visibilitychange', handleVisibilityChange)
   return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          reject(new Error('等待 Service Worker 后台检查超时'))
+        }, timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+  }
 }
 
 export const updateManager = createUpdateManager()

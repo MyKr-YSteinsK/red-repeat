@@ -1,7 +1,6 @@
 import {
   lazy,
   Suspense,
-  useSyncExternalStore,
   useEffect,
   useState,
   type MouseEvent as ReactMouseEvent,
@@ -26,7 +25,6 @@ import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { useSwipeReveal } from './library/use-swipe-reveal'
 import { SettingsPage } from './settings/SettingsPage'
 import { warmCatalogRuntime } from './pwa/runtime-cache'
-import { UpdatePrompt } from './pwa/UpdatePrompt'
 import {
   getUpdateManager,
   type UpdateManager,
@@ -66,11 +64,6 @@ function App({
   updateManager: providedUpdateManager,
 }: AppProps) {
   const currentUpdateManager = providedUpdateManager ?? getUpdateManager()
-  const updateSnapshot = useSyncExternalStore(
-    currentUpdateManager.subscribe,
-    currentUpdateManager.getSnapshot,
-    currentUpdateManager.getSnapshot,
-  )
   const [route, setRoute] = useState<AppRoute>(() =>
     parseAppRoute(window.location),
   )
@@ -129,10 +122,6 @@ function App({
 
   const homeHref = createLibraryHref(window.location)
   const settingsHref = createSettingsHref(window.location)
-  const updateSettingsHref = createSettingsHref(
-    window.location,
-    updateSnapshot.remote?.version,
-  )
   const retryCatalog = (): void => {
     setCatalogState({ status: 'loading' })
     setRetryKey((value) => value + 1)
@@ -141,12 +130,6 @@ function App({
   return (
     <div className="app-shell">
       <SiteHeader homeHref={homeHref} settingsHref={settingsHref} />
-      <UpdatePrompt
-        snapshot={updateSnapshot}
-        settingsHref={updateSettingsHref}
-        onApplyUpdate={() => void currentUpdateManager.applyUpdate()}
-        onDismiss={currentUpdateManager.dismissUpdate}
-      />
       {route.kind === 'library' ? (
         <LibraryRoute
           state={catalogState}

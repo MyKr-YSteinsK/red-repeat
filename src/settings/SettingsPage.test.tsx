@@ -138,7 +138,7 @@ describe('SettingsPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('manually checks for a newer build and exposes the immediate update action', async () => {
+  it('manually checks for a newer build without offering an immediate reload action', async () => {
     const updateManager = createUpdateManager({
       fetchImpl: vi.fn(async () => new Response(JSON.stringify({
         version: newerVersion,
@@ -147,8 +147,6 @@ describe('SettingsPage', () => {
       }), { status: 200 })),
       locationHref: () => 'https://example.test/red-repeat/#settings',
     })
-    const applyUpdate = vi.spyOn(updateManager, 'applyUpdate')
-
     render(
       <SettingsPage
         catalogState={{ status: 'ready', catalog }}
@@ -163,17 +161,14 @@ describe('SettingsPage', () => {
     expect(checkButton).toHaveClass('control-button', 'control-button--quiet')
     fireEvent.click(checkButton)
 
-    expect(await screen.findByText(`发现新版本 ${newerVersion}`)).toBeInTheDocument()
+    expect(await screen.findByText(`发现新版本 ${newerVersion}，正在后台准备…`)).toBeInTheDocument()
     expect(screen.getByText('线上版本')).toBeInTheDocument()
     expect(screen.getByText('线上 Build SHA')).toBeInTheDocument()
     expect(screen.getByText('abcdef123456')).toBeInTheDocument()
     expect(screen.getByText('2026-08-24T00:00:00.000Z')).toBeInTheDocument()
     expect(screen.getByText('最近检查')).toBeInTheDocument()
     expect(screen.getByText('发现新版本，但暂时无法读取更新说明。')).toBeInTheDocument()
-    const updateButton = screen.getByRole('button', { name: '立即更新' })
-    expect(updateButton).toHaveClass('control-button', 'control-button--primary')
-    fireEvent.click(updateButton)
-    expect(applyUpdate).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('button', { name: '立即更新' })).not.toBeInTheDocument()
   })
 
   it('shows remote release notes without replacing the local changelog', async () => {
@@ -231,7 +226,7 @@ describe('SettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '检查更新' }))
 
-    expect(await screen.findByText('检查失败，请稍后重试')).toBeInTheDocument()
+    expect(await screen.findByText('检查失败（当前 App 不受影响）')).toBeInTheDocument()
     expect(screen.queryByText('已是最新版本')).not.toBeInTheDocument()
     expect(screen.queryByText('线上版本')).not.toBeInTheDocument()
   })

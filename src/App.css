@@ -88,85 +88,6 @@
   color: var(--color-red);
 }
 
-.update-prompt {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--color-red);
-  background: color-mix(in srgb, var(--color-red) 6%, var(--color-paper));
-}
-
-.update-prompt-copy h2 {
-  margin: 0.5rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.3rem, 3vw, 1.8rem);
-  letter-spacing: -0.05em;
-  line-height: 1;
-}
-
-.update-prompt-copy > p:not(.eyebrow) {
-  max-width: 36rem;
-  margin: 0.65rem 0 0;
-  color: var(--color-muted);
-  line-height: 1.5;
-}
-
-.update-prompt-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.55rem;
-  flex-wrap: wrap;
-}
-
-.update-prompt-link,
-.update-prompt-actions button {
-  display: inline-flex;
-  min-height: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--color-line);
-  border-radius: 0;
-  color: var(--color-ink);
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.update-prompt-link:hover,
-.update-prompt-link:focus-visible,
-.update-prompt-actions button:hover,
-.update-prompt-actions button:focus-visible {
-  border-color: var(--color-red);
-  color: var(--color-red);
-}
-
-.update-prompt-primary {
-  border-color: var(--color-red) !important;
-  color: var(--color-paper) !important;
-  background: var(--color-red) !important;
-}
-
-.update-prompt-primary:hover,
-.update-prompt-primary:focus-visible {
-  border-color: var(--color-ink) !important;
-  background: var(--color-ink) !important;
-}
-
-.update-prompt-actions button:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
 .library {
   flex: 1;
   display: flex;
@@ -590,19 +511,6 @@
 .settings-update-actions button:disabled {
   cursor: wait;
   opacity: 0.6;
-}
-
-.settings-update-actions .settings-update-primary {
-  border-color: var(--color-red);
-  background: var(--color-red);
-  color: var(--color-paper);
-}
-
-.settings-update-actions .settings-update-primary:hover,
-.settings-update-actions .settings-update-primary:focus-visible {
-  border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-paper);
 }
 
 .settings-update-status {
@@ -3669,15 +3577,6 @@
 
   .settings-header .text-link {
     margin-top: 0;
-  }
-
-  .update-prompt {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-
-  .update-prompt-actions {
-    justify-content: flex-start;
   }
 
   .settings-changelog-heading {

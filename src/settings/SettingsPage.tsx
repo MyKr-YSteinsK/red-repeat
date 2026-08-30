@@ -77,11 +77,15 @@ export function SettingsPage({
     : undefined
   const remote = updateSnapshot.remote
   const remoteVersion = remote?.version
-  const remoteHasNewerVersion = Boolean(
-    remoteVersion && compareSemVer(remoteVersion, buildInfo.version) > 0,
+  const remoteHasUpdate = Boolean(
+    remote && (
+      compareSemVer(remote.version, buildInfo.version) > 0 ||
+      (compareSemVer(remote.version, buildInfo.version) === 0 &&
+        remote.commit !== buildInfo.commit)
+    ),
   )
   const candidateRemoteRelease = remote?.release
-  const remoteRelease = remoteHasNewerVersion &&
+  const remoteRelease = remoteHasUpdate &&
     candidateRemoteRelease?.version === remoteVersion
     ? candidateRemoteRelease
     : undefined
@@ -175,20 +179,10 @@ export function SettingsPage({
                 className="control-button control-button--quiet"
                 type="button"
                 onClick={() => void currentUpdateManager.checkForUpdate({ manual: true })}
-                disabled={updateSnapshot.status === 'checking' || updateSnapshot.status === 'updating'}
+                disabled={updateSnapshot.status === 'checking'}
               >
                 {updateSnapshot.status === 'checking' ? '检查中…' : '检查更新'}
               </button>
-              {updateSnapshot.status === 'update-available' || updateSnapshot.status === 'updating' ? (
-                <button
-                  type="button"
-                  className="control-button control-button--primary settings-update-primary"
-                  onClick={() => void currentUpdateManager.applyUpdate()}
-                  disabled={updateSnapshot.status === 'updating'}
-                >
-                  {updateSnapshot.status === 'updating' ? '更新中…' : '立即更新'}
-                </button>
-              ) : null}
             </div>
             <p className="settings-update-status" role="status" aria-live="polite">
               {describeUpdateStatus(updateSnapshot)}
@@ -208,7 +202,7 @@ export function SettingsPage({
                 <div><dt>最近检查</dt><dd>{formatTimestamp(updateSnapshot.checkedAt)}</dd></div>
               </dl>
             ) : null}
-            {remoteHasNewerVersion ? (
+            {remoteHasUpdate ? (
               remoteRelease ? (
                 <section className="settings-remote-release" data-remote-release aria-labelledby="remote-release-title">
                   <p className="eyebrow">待更新版本 {remoteRelease.version}</p>
