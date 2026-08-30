@@ -267,3 +267,26 @@ contract。local override 只能以 sparse `startMs?` / `endMs?` 表达同一 ti
 的临时覆盖；无法在完整 song/Edition/audio/Timeline identity 下证明兼容的旧
 override 必须 invalidate/clear。Timing Correction Export 只输出单一 pair，
 不得再次形成 playback-only 的第二真值。
+
+## D-022｜已下载歌曲使用 identity-coherent 本地快照｜Downloaded Songs Use Identity-coherent Local Snapshots
+
+- Status: Accepted
+- Source: `USER_DECISION` + `RED-Plan-57`
+
+“已下载”只在一个 Song Edition 的完整本地快照通过身份与资源完整性验证后
+成立。active snapshot 以 `songId`、`contentHash`、精确
+`CatalogEdition` 和 exact resource set 绑定；前台 Catalog 与已下载歌曲读取
+优先使用本地可用数据，网络 freshness 只在后台进行，不得进入已下载内容的
+交互关键路径。
+
+内容从 H1 更新到 H2 时，H1 必须保持 active，直到 H2 全部资源成功、schema/
+identity 验证通过并以 manifest-last 方式原子切换。失败的 H2 staging 只清理
+本轮新增资源，不删除最后一个完整 H1；Catalog 已指向 H2 但 H2 不完整或离线
+时，仍使用 manifest 内保存的 H1 `CatalogEdition` 打开完整 H1。v1 download
+manifest 在完整且可验证时原地迁移到 v2，不无理由删除用户下载。
+
+Workbox immutable Runtime 与 audio Range route 可以向共享 snapshot cache 写入
+资源，但只有有效 manifest 定义 active installed snapshot；`practice.<hash>.json`
+属于必须覆盖的 immutable structured Runtime。Catalog 使用本地先行的
+stale-while-refresh 语义。Service Worker activation/reload 生命周期仍由
+D-013 管理，不属于本决定的前台数据 freshness 边界。

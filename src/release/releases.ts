@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.11.0',
+    date: '2026-08-30',
+    commit: 'ad64c95',
+    level: 'minor',
+    title: '本地优先离线运行与已下载歌曲可靠性重构',
+    summary: '让已下载 Song Edition 与本地 Catalog 优先从完整本地快照启动，并以 identity-coherent 事务更新保持最后一个完整版本始终可用。',
+    changes: [
+      '将 download manifest 升级为可安全迁移的 v2，绑定 songId、contentHash、CatalogEdition 与 exact resource set；H2 只有完整验证后才原子替换 H1。',
+      '将 Catalog 改为本地先行、后台刷新，并让 Practice、Full Song、Explain、封面和 audio Range 从 active downloaded snapshot 直接读取。',
+      '补齐 practice.<hash>.json Workbox route，区分未下载离线、下载不完整和 Runtime schema 错误，同时保持 canonical song content 与 Service Worker activation UX 不变。',
+    ],
+  },
+  {
     version: '1.10.0',
     date: '2026-08-28',
     commit: '426069c',

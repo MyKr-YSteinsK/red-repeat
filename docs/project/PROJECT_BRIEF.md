@@ -29,8 +29,9 @@ catalog → select/search a Song Edition → Practice (default)
 → persist local progress/rate → return through “继续学唱”
 ```
 
-Supporting loops are Practice ↔ Full Song ↔ Explain, explicit per-song offline
-download/removal, PWA update checking/application and timing calibration/export.
+Supporting loops are Practice ↔ Full Song ↔ Explain, explicit per-song
+local-first offline snapshot download/removal, PWA update checking/application
+and timing calibration/export.
 
 ## Stable architecture boundary
 
@@ -41,7 +42,9 @@ download/removal, PWA update checking/application and timing calibration/export.
 - Runtime content is same-origin static data validated again by runtime schemas
   and compatibility checks.
 - Resume/rate/timing override state lives in browser persistence; explicit
-  offline songs use Cache Storage. There is no server-side persistence.
+  offline songs use identity-coherent Cache Storage snapshots, and a valid
+  cached Catalog renders before background freshness work. There is no
+  server-side persistence.
 - GitHub Actions and GitHub Pages under `/red-repeat/` are the current delivery
   systems. The single workflow has a quality job and a dependent Pages deploy.
 
@@ -62,6 +65,10 @@ Detailed source, runtime, PWA and release contracts are linked from
 - PWA updates preserve Practice resume, timing overrides and downloaded-song
   state unless an explicitly safe migration says otherwise. Deployed identity
   and installed-client activation are separate questions.
+- A downloaded Song Edition is one manifest-bound complete snapshot. Foreground
+  reads are local-first; an H2 refresh may replace H1 only after complete
+  validation and an atomic manifest switch, so partial remote content cannot
+  create a mixed or unusable local Edition.
 - Audio timing, browser-native behavior and perceived mobile/PWA correctness
   use matching human/device oracles; jsdom and static artifact checks cannot
   substitute for them.

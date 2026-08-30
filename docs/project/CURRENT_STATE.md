@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.10.0`
+- Current user version: `1.11.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.10.0` / `v1.10.0 -> 426069c`; existing
+- Latest ledger/tag: `1.11.0` / `v1.11.0 -> ad64c95`; existing
+  `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
   `v1.9.0 -> a006304`, `v1.8.2 -> cbb3bd0`, `v1.8.1 -> 91b703a`, `v1.8.0 -> 01cdd64`,
   `v1.7.2 -> 50e7114`, `v1.7.1 -> a98e300`, `v1.7.0 -> 325d418` and
@@ -37,8 +38,8 @@ evidence only.
 
 ## Current product capabilities
 
-- Catalog loading/search, metadata-focused Song Edition cards and explicit
-  per-song offline install/removal.
+- Local-first Catalog loading/search, metadata-focused Song Edition cards and
+  explicit per-song identity-coherent offline snapshot install/removal.
 - Practice as the default Song Edition mode: Practice Unit/Occurrence
   navigation, previous/current/next controls, Segment Picker, line playback,
   rate, continuous playback, repeat/ramp behavior and persisted progress/rate.
@@ -81,8 +82,9 @@ uses the separately authorized task-input source package.
   validation → hash/media compiler → ignored `public/library-runtime/` → Vite
   artifact → runtime schema/client compatibility assembly.
 - `localStorage` owns Practice resume/rate and identity-bound timing overrides;
-  Cache Storage/Workbox owns explicit downloads and runtime caches; no server
-  persistence exists. Runtime contract version is 3.
+  Cache Storage/Workbox owns local-first Catalog and manifest-bound Song
+  Edition snapshots, including audio Range responses; no server persistence
+  exists. Runtime contract version is 3.
 - The strict source schema validates ruby spans against canonical lyric
   positions and carries them through the compiler into Runtime. User-facing
   lyric surfaces use the shared semantic ruby renderer; pure English lines may
@@ -525,6 +527,46 @@ uses the separately authorized task-input source package.
   import completion; post-deploy timing listening/calibration remains an
   explicit user follow-up and is not a reason to mark this Plan partial.
 
+## RED-Plan-57 implementation and release status
+
+- Product commit `ad64c95` changes downloaded-song semantics from
+  network-first fallback to local-first complete snapshots. Release metadata
+  records `1.11.0` at `MINOR` level (`1.10.0 -> 1.11.0`), and `v1.11.0`
+  targets the product commit; the following metadata commit is the independently
+  deployed build identity.
+- Download manifest schema v2 binds `songId`, `contentHash`, exact
+  `CatalogEdition`, exact resource URLs and `installedAt`. Complete v1 manifests
+  migrate in place after cached Runtime Edition and resource-set validation;
+  malformed or incomplete state is not reported as installed.
+- Foreground Runtime reads resolve the active complete snapshot before network.
+  Catalog uses a valid local entry immediately and refreshes in the background;
+  malformed cached Catalog data is discarded and recovered online. Version
+  probes, runtime warmup and song refresh remain non-blocking.
+- H1 remains the active, coherent fallback when the current Catalog points to
+  unavailable/partial H2. H2 staging validates every required resource before
+  a manifest-last switch; failed staging removes only newly added song resources
+  and preserves the complete H1. Explicit removal clears the manifest and all
+  current/inactive resources for that song without deleting other songs or the
+  app shell.
+- Workbox now covers `practice.<hash>.json` alongside Edition, Lyrics, Timeline,
+  Feature and artwork resources. Immutable Runtime and audio use the snapshot
+  cache owner; audio retains `CacheFirst` plus Range Requests. Catalog changes
+  from `NetworkFirst` with a 3-second timeout to `StaleWhileRevalidate`.
+- Focused verification passed for 8 files / 95 tests; the full suite passed for
+  49 files / 342 tests. `npm run lint` has 0 errors and only the two pre-existing
+  Fast Refresh warnings. `npm run build -- --base=/red-repeat/`,
+  `npm run pwa:inspect -- /red-repeat/` and `git diff --check` passed.
+- Browser evidence used fresh origins and a real compiled public WORK Edition:
+  first online load and download succeeded; with the server stopped, cached
+  Catalog, Practice (including all Units), Full Song, Explain, cover and audio
+  playback all remained usable. A fake newer H2 Catalog plus failed H2 refresh
+  still opened coherent H1 offline. Under a controlled 3-second Runtime delay,
+  cached Catalog rendered in 278ms and server logs showed only background
+  Catalog/H2 freshness requests, with no H1 foreground resource request.
+- No canonical song source, timing, Practice grouping, Explain content, audio,
+  artwork, schema/compiler contract, UI/CSS or Service Worker activation/reload
+  behavior changed. Blocking `USER CHECK` is `NONE`.
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -557,7 +599,12 @@ uses the separately authorized task-input source package.
   intentionally `Provisional Timing`; users may listen and calibrate them later
   in the Production Timing Debugger. This is the normal post-import lifecycle,
   not an import blocker or human timing PASS.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56 `UNKNOWN` remains open.
+- `POST-DEPLOY OBSERVATION (RED-Plan-57)`: real iOS installed-PWA flying-mode
+  startup for all three downloaded songs and long-term Safari Cache Storage
+  quota/eviction behavior are `NOT_TESTED`. They remain explicit residual risk,
+  not a claimed device PASS or active blocking item. Service Worker
+  activation/reload UX remains the separately scoped RED-Plan-58 boundary.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -643,6 +690,13 @@ uses the separately authorized task-input source package.
   the following metadata commit is the independently deployed build identity.
   Future audible timing calibration remains a separate focused correction
   boundary.
+- `RED-Plan-57` is complete: product commit `ad64c95` implements local-first
+  Catalog and downloaded-song snapshots, manifest v2 migration, coherent H1
+  fallback, transactional H2 refresh, complete removal and Practice/Range route
+  coverage. `1.11.0` is a MINOR release and `v1.11.0` targets the product
+  commit. Real iOS installed-PWA and quota/eviction observations remain
+  non-blocking residual risk; Service Worker activation/reload UX is deferred
+  to RED-Plan-58.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
