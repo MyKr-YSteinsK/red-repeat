@@ -10,9 +10,9 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.12.2`
+- Current user version: `1.13.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.12.2` / `v1.12.2 -> 97efe45`; existing
+- Latest ledger/tag: `1.13.0` / `v1.13.0 -> e102189`; existing
   `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
@@ -36,6 +36,9 @@ evidence only.
 - RED-Plan-45 release finalization updates package/lock version metadata, the
   release ledger, build-version fallback and this Project State after the
   product commit; the private Handoff archive remains ignored.
+- RED-Plan-61 adds the authorized public `shinkai-shoujo` Song Edition in a
+  separate product-focused commit; its release metadata follows the same
+  product-then-metadata boundary.
 
 ## Current product capabilities
 
@@ -60,7 +63,7 @@ evidence only.
 
 ## Current public content
 
-The tracked public source contains three Song Editions:
+The tracked public source contains four Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
 one JPG cover and eight Explain Markdown features; and
@@ -70,9 +73,12 @@ one JPG cover, six Explain Markdown features and 9 reviewed note targets.
 `library/night-dancer-imase/` (`NIGHT DANCER`, imase) adds 34 unique Segments,
 49 Occurrences, 11 Practice Units, 11 Sections, one canonical MP3, one JPG
 cover, eight Explain Markdown features and 8 reviewed note targets.
+`library/shinkai-shoujo/` (`深海少女`, `ゆうゆ × 初音未来`) adds 43 unique
+Segments/Occurrences, 12 Practice Units, 12 Sections, one canonical MP3,
+one JPG cover, eight Explain Markdown features and 8 reviewed note targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
-text and existing `layers` remain separate source contracts. Both public
+text and existing `layers` remain separate source contracts. All four public
 editions retain their canonical source layers; `senbonzakura` now has one
 non-empty `Romaji` layer on each of its 30 Segments. The legacy
 migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
@@ -665,6 +671,39 @@ uses the separately authorized task-input source package.
 - 本 Plan 没有 blocking `USER CHECK`；普通阅读中可能出现的事实或措辞反馈
   保留为 `POST-DEPLOY OBSERVATION`，不作为当前完成阻塞。
 
+## RED-Plan-61 《深海少女》新曲正式导入状态
+
+- Handoff manifest 的 20 个 entry 均已按 size 与 SHA-256 核验；候选 source
+  package 的 12 个文件与 4 个用户资产均与 Handoff 原始字节一致。research、
+  raw LRC/translation、README、Plan 与 ZIP 未复制进产品 source。
+- `library/shinkai-shoujo/` 已作为第四个公开 Song Edition 导入，身份为
+  `songId=shinkai-shoujo`、`深海少女`、`ゆうゆ × 初音未来`、`2010`。
+  Exact audio SHA-256 为
+  `41c513556401f1b75f2accfd44cb955ed44a845b3e7dbab18a13e72d0fd308d7`；
+  cover SHA-256 为
+  `663d583a182e44da5534883ef35065eaea59b1265e02f8860576a63c39789b47`。
+- Source contract 包含 43 个 canonical Segment、43 个 Occurrence、12 个
+  Section、12 个 Practice Unit、8 个 Explain Feature 与 8 个 reviewed
+  lyric note target；43/43 Segment 有 Romaji，ruby 覆盖完整且位置核验通过。
+  12 个 Practice Unit 覆盖全部 43 个 Occurrence；`intro`、两个
+  `interlude` 与 `outro` 保持为无歌词 Section。
+- 重复副歌保留为两个独立 Segment identity：第一次译为“因为发现了那个令人
+  心动的对象”，第二次译为“因为终于寻见了那个令人倾心的对象”；43/43
+  用户翻译与 raw translation 逐条一致，canonical Japanese 与受保护标点/读法
+  未被改写。
+- 新曲 Occurrence 仅采用 single-pair `startMs/endMs` `Provisional Timing`；
+  四个空白/器乐 LRC anchor 已保留。该 timing 尚未获得人类听感 `PASS`，
+  后续校准仍通过 Production Timing Debugger 的 identity-bound 流程进行。
+- `npm run library:audio-hash -- shinkai-shoujo`、`npm run library:validate`、
+  `npm run library:compile` 与 9 个 focused test files / 79 个 tests 均通过。
+  本地浏览器 smoke 已验证第四首曲目、封面预览、12 个 Practice Unit、Full
+  Song 器乐段与歌词、ruby/Romaji/translation、8 个 Explain 主题和 8 个代表性
+  引用试听；browser error/warn 日志为空。没有改动既有三首歌曲或
+  schema/compiler/runtime/UI/PWA/release topology。
+- 本 Plan 没有 blocking `USER CHECK`；真实设备/installed-PWA geometry、触控、
+  standalone 生命周期与 43 个 timing 的人类听感验收未执行，按
+  `POST-DEPLOY OBSERVATION` 与后续正常使用保留，不写成目标设备或听感 PASS。
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -693,6 +732,11 @@ uses the separately authorized task-input source package.
   a fact or wording issue in the new ACGN-linked Explain Features. The supplied
   evidence classes and commissioned/adoption boundary are recorded; no
   additional human gate was required for this content-only integration.
+- `POST-DEPLOY OBSERVATION (RED-Plan-61)`: the 43 `shinkai-shoujo` intervals are
+  intentionally `Provisional Timing`; users may listen and calibrate them later
+  in the Production Timing Debugger. Real-device/installed-PWA geometry, touch,
+  standalone lifecycle and subjective audible timing were not executed. These
+  remain residual risk and do not block this first public import.
 - `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
@@ -712,7 +756,7 @@ uses the separately authorized task-input source package.
   behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
   does not substitute for iOS/device evidence; this remains residual risk and
   is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -828,6 +872,14 @@ uses the separately authorized task-input source package.
   targets that product commit; the following release-metadata commit is the
   independently deployed build identity. No lyric, timing, source-data,
   schema, compiler, runtime, UI or PWA behavior changed.
+- `RED-Plan-61` is complete: `library/shinkai-shoujo/` is the fourth public Song
+  Edition with exact user audio/cover, 43 canonical Segments and Occurrences,
+  12 Sections, 12 Practice Units, 8 Explain Features, 8 reviewed note targets,
+  complete ruby and 43/43 Romaji. Product commit `e102189` is tagged as
+  `v1.13.0` at `MINOR` level; the following release-metadata commit is the
+  independently deployed build identity. New timing remains explicitly
+  `Provisional Timing`; no human audible PASS or real-device PASS is claimed,
+  and no schema/compiler/runtime/UI/PWA behavior changed.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

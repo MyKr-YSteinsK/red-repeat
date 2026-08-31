@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.13.0',
+    date: '2026-08-31',
+    commit: 'e102189',
+    level: 'minor',
+    title: '《深海少女》Song Edition 正式导入',
+    summary: '将ゆうゆ × 初音未来的《深海少女》作为第四首公开 Song Edition 导入 Production，保留用户歌词/翻译并使用 exact audio/cover 与 Provisional Timing。',
+    changes: [
+      '新增 43 个 canonical Segment、43 个 Occurrence、12 个 Section、12 个 Practice Unit、8 篇 Explain Feature 与 8 个 reviewed lyric note target。',
+      '保留 43/43 用户翻译和重复副歌的两个独立 Segment identity，补齐 43/43 Romaji 与位置核验 ruby。',
+      '以 exact MP3/cover 与单一 startMs/endMs Provisional Timing 导入，不改变 schema、compiler、runtime、UI 或 PWA 生命周期。',
+    ],
+  },
+  {
     version: '1.12.2',
     date: '2026-08-30',
     commit: '97efe45',
