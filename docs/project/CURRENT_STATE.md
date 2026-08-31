@@ -696,10 +696,21 @@ uses the separately authorized task-input source package.
   后续校准仍通过 Production Timing Debugger 的 identity-bound 流程进行。
 - `npm run library:audio-hash -- shinkai-shoujo`、`npm run library:validate`、
   `npm run library:compile` 与 9 个 focused test files / 79 个 tests 均通过。
+  最终 `npm run build -- --base=/red-repeat/`、`npm run pwa:inspect --
+  /red-repeat/ --require-production` 与 `npm run release:verify --
+  --require-tags` 也均通过。
   本地浏览器 smoke 已验证第四首曲目、封面预览、12 个 Practice Unit、Full
   Song 器乐段与歌词、ruby/Romaji/translation、8 个 Explain 主题和 8 个代表性
   引用试听；browser error/warn 日志为空。没有改动既有三首歌曲或
   schema/compiler/runtime/UI/PWA/release topology。
+- Product commit 为 `e102189`，`1.13.0` 为 `MINOR`，annotated tag
+  `v1.13.0` 已指向该 product commit；release metadata/build identity
+  commit 为 `3002ee9`。CI #69 的 `quality` 与依赖的 `deploy` 均
+  `completed successfully`，Pages 已发布；`release:smoke` 已确认线上
+  `1.13.0` 与 `3002ee9ead2685f32ab1c7294e27bf8b7795c412` 一致。线上自然
+  reload 后的浏览器 smoke 已确认 4 首歌曲、《深海少女》Practice、43 条
+  Full Song 歌词入口、4 个器乐段、8 个 Explain 主题与引用试听，且
+  browser error/warn 日志为空。
 - 本 Plan 没有 blocking `USER CHECK`；真实设备/installed-PWA geometry、触控、
   standalone 生命周期与 43 个 timing 的人类听感验收未执行，按
   `POST-DEPLOY OBSERVATION` 与后续正常使用保留，不写成目标设备或听感 PASS。
