@@ -737,11 +737,15 @@ uses the separately authorized task-input source package.
   `error/warn` 日志为空。该证据不替代真实 iPhone/Safari/installed-PWA 验收。
 - Product commit 为 `9bfd6ab`，`1.13.1` 为 `PATCH`；本 Plan 不修改 canonical
   timing、歌词/练习/source data、schema/compiler/runtime、PWA 或 layout。
-  Release metadata 与 Project State 随后的 commit 是独立的 deployment
-  identity，tag `v1.13.1` 应指向该 product commit。
+  annotated tag `v1.13.1` 已指向该 product commit；release metadata/build
+  identity commit 为 `6ccce167372567ee28f7c489a6f5f51b50d8c53e`，与产品提交
+  保持独立。
 - 本 Plan 没有 blocking `USER CHECK`。真实 iPhone/Safari/installed-PWA 的
   audible perception、geometry 与 touch behavior 未执行，保留为
   `POST-DEPLOY OBSERVATION`，不写成设备 PASS。
+- release metadata commit 已通过 CI #71：`quality` 与依赖的 `deploy` 均
+  `completed successfully`；`release:smoke` 已确认线上 `1.13.1` 与
+  `6ccce1673725` 一致，`builtAt=2026-08-31T13:50:52.214Z`。
 
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
