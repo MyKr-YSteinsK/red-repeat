@@ -1,0 +1,1380 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "悲しみの海に沈んだ私",
+      "translation": "悲伤之海中沉没着的我",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "悲しみ",
+          "reading": "かなしみ"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "海",
+          "reading": "うみ"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "沈んだ",
+          "reading": "しずんだ"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "私",
+          "reading": "わたし"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kanashimi no umi ni shizunda watashi"
+        }
+      ]
+    },
+    {
+      "id": "s002",
+      "lyrics": "目を開けるのも億劫",
+      "translation": "连睁开双眼都像经历万般劫难",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "目",
+          "reading": "め"
+        },
+        {
+          "start": 2,
+          "end": 5,
+          "base": "開ける",
+          "reading": "あける"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "億劫",
+          "reading": "おっくう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "me o akeru no mo okkuu"
+        }
+      ],
+      "notes": [
+        {
+          "title": "億劫（おっくう）",
+          "body": "何かをするのが面倒で、気が進まないこと。「目を開ける」ほど基本的な動作さえ億劫だという言い方で、冒頭の沈み込みが身体感覚まで届いている。"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "このままどこまでも堕ちて行き",
+      "translation": "从这一刻起我将坠向何方",
+      "ruby": [
+        {
+          "start": 9,
+          "end": 12,
+          "base": "堕ちて",
+          "reading": "おちて"
+        },
+        {
+          "start": 12,
+          "end": 14,
+          "base": "行き",
+          "reading": "ゆき"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kono mama doko made mo ochite yuki"
+        }
+      ]
+    },
+    {
+      "id": "s004",
+      "lyrics": "誰にも見つけられないのかな",
+      "translation": "无论是谁也都找不到吗",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "誰",
+          "reading": "だれ"
+        },
+        {
+          "start": 3,
+          "end": 10,
+          "base": "見つけられない",
+          "reading": "みつけられない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dare ni mo mitsukerarenai no kana"
+        }
+      ]
+    },
+    {
+      "id": "s005",
+      "lyrics": "どこへ向かい、何をすれば",
+      "translation": "向着什么方向 又将做些什么",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 6,
+          "base": "向かい",
+          "reading": "むかい"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "何",
+          "reading": "なに"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "doko e mukai nani o sureba"
+        }
+      ]
+    },
+    {
+      "id": "s006",
+      "lyrics": "ふと射し込む一筋の光",
+      "translation": "在那瞬间突然射入一丝亮光",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 6,
+          "base": "射し込む",
+          "reading": "さしこむ"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "一筋",
+          "reading": "ひとすじ"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "光",
+          "reading": "ひかり"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "futo sashikomu hitosuji no hikari"
+        }
+      ]
+    },
+    {
+      "id": "s007",
+      "lyrics": "手を伸ばせば届きそうだけど",
+      "translation": "仿佛伸手便可触及",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "手",
+          "reading": "て"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "伸ばせば",
+          "reading": "のばせば"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "届きそう",
+          "reading": "とどきそう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "te o nobaseba todokisou dakedo"
+        }
+      ]
+    },
+    {
+      "id": "s008",
+      "lyrics": "波に拐われて見失った",
+      "translation": "我却突然被暗流裹挟迷失方向",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "波",
+          "reading": "なみ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "拐われて",
+          "reading": "さらわれて"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "見失った",
+          "reading": "みうしなった"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nami ni sarawarete miushinatta"
+        }
+      ],
+      "notes": [
+        {
+          "title": "拐われて（さらわれて）",
+          "body": "ここでは波に「さらわれる」、つまり波や流れに持っていかれること。人が誘拐される意味だけに限定せず、自然の力に連れ去られる語感で読む。"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "あれは一体なんだったのかな",
+      "translation": "那些到底是怎样的存在",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 5,
+          "base": "一体",
+          "reading": "いったい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "are wa ittai nan datta no kana"
+        }
+      ]
+    },
+    {
+      "id": "s010",
+      "lyrics": "あたたかくて眩しかったの",
+      "translation": "如此温暖又是如此令人目盲",
+      "ruby": [
+        {
+          "start": 6,
+          "end": 11,
+          "base": "眩しかった",
+          "reading": "まぶしかった"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "atatakakute mabushikatta no"
+        }
+      ]
+    },
+    {
+      "id": "s011",
+      "lyrics": "無意識のカウンターイルミネーション",
+      "translation": "却无意识地用自我防御隐藏自己",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "無意識",
+          "reading": "むいしき"
+        },
+        {
+          "start": 4,
+          "end": 17,
+          "base": "カウンターイルミネーション",
+          "reading": "かうんたーいるみねーしょん"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "muishiki no kauntaa irumineeshon"
+        }
+      ],
+      "notes": [
+        {
+          "title": "カウンターイルミネーション",
+          "body": "実在する海洋生物の擬態方法。体の下側などを発光させ、上から来る弱い光に明るさを合わせることで、下から見た輪郭を消しやすくする。歌詞でこれを「無意識」と結び付けるため、自分を隠す心理的な擬態として読む余地が生まれるが、後半は RED:REPEAT の編集観察。"
+        }
+      ]
+    },
+    {
+      "id": "s012",
+      "lyrics": "嘘つきは誰？",
+      "translation": "究竟是谁在说谎？",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "嘘つき",
+          "reading": "うそつき"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "誰",
+          "reading": "だれ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "usotsuki wa dare"
+        }
+      ]
+    },
+    {
+      "id": "s013",
+      "lyrics": "深海少女 まだまだ沈む",
+      "translation": "深海少女 依然持续在沉降",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "沈む",
+          "reading": "しずむ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo mada mada shizumu"
+        }
+      ]
+    },
+    {
+      "id": "s014",
+      "lyrics": "暗闇の彼方へ閉じこもる",
+      "translation": "沉入那闭锁着的阴暗彼方",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "暗闇",
+          "reading": "くらやみ"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "彼方",
+          "reading": "かなた"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "閉じこもる",
+          "reading": "とじこもる"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kurayami no kanata e tojikomoru"
+        }
+      ]
+    },
+    {
+      "id": "s015",
+      "lyrics": "深海少女 だけど知りたい",
+      "translation": "深海少女 但却还是有所盼望",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 8,
+          "end": 12,
+          "base": "知りたい",
+          "reading": "しりたい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo dakedo shiritai"
+        }
+      ]
+    },
+    {
+      "id": "s016",
+      "lyrics": "心惹かれるあの人を見つけたから",
+      "translation": "因为发现了那个令人心动的对象",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "心",
+          "reading": "こころ"
+        },
+        {
+          "start": 1,
+          "end": 5,
+          "base": "惹かれる",
+          "reading": "ひかれる"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "人",
+          "reading": "ひと"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "見つけた",
+          "reading": "みつけた"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kokoro hikareru ano hito o mitsuketa kara"
+        }
+      ]
+    },
+    {
+      "id": "s017",
+      "lyrics": "昼も夜も無かったこの場所",
+      "translation": "在这个无法定义昼夜的世界里",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "昼",
+          "reading": "ひる"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "夜",
+          "reading": "よる"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "無かった",
+          "reading": "なかった"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "場所",
+          "reading": "ばしょ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hiru mo yoru mo nakatta kono basho"
+        }
+      ]
+    },
+    {
+      "id": "s018",
+      "lyrics": "なのに眠れない夜は続く",
+      "translation": "为何无法入眠的黑暗永无尽头",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 7,
+          "base": "眠れない",
+          "reading": "ねむれない"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "夜",
+          "reading": "よる"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "続く",
+          "reading": "つづく"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nano ni nemurenai yoru wa tsuzuku"
+        }
+      ]
+    },
+    {
+      "id": "s019",
+      "lyrics": "自由の羽大きく広げて",
+      "translation": "尽情伸展着自由的羽翼",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "自由",
+          "reading": "じゆう"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "羽",
+          "reading": "はね"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "base": "大きく",
+          "reading": "おおきく"
+        },
+        {
+          "start": 7,
+          "end": 10,
+          "base": "広げて",
+          "reading": "ひろげて"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "jiyuu no hane ookiku hirogete"
+        }
+      ]
+    },
+    {
+      "id": "s020",
+      "lyrics": "泳ぐあなたは綺麗でした",
+      "translation": "悠游着的你看起来是如此美丽",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "泳ぐ",
+          "reading": "およぐ"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "綺麗",
+          "reading": "きれい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "oyogu anata wa kirei deshita"
+        }
+      ]
+    },
+    {
+      "id": "s021",
+      "lyrics": "そしてまた光は降りそそぐ",
+      "translation": "然后光芒再次突然降下",
+      "ruby": [
+        {
+          "start": 5,
+          "end": 6,
+          "base": "光",
+          "reading": "ひかり"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "base": "降りそそぐ",
+          "reading": "ふりそそぐ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "soshite mata hikari wa furisosogu"
+        }
+      ]
+    },
+    {
+      "id": "s022",
+      "lyrics": "見とれていたら目が合った",
+      "translation": "看得心醉时突然四目交汇",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "見とれて",
+          "reading": "みとれて"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "目",
+          "reading": "め"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "合った",
+          "reading": "あった"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mitorete itara me ga atta"
+        }
+      ]
+    },
+    {
+      "id": "s023",
+      "lyrics": "気付いてこっちを振り返るあなたに",
+      "translation": "注意到这一切的你回身望向这里",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "気付いて",
+          "reading": "きづいて"
+        },
+        {
+          "start": 8,
+          "end": 12,
+          "base": "振り返る",
+          "reading": "ふりかえる"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kidzuite kocchi o furikaeru anata ni"
+        }
+      ]
+    },
+    {
+      "id": "s024",
+      "lyrics": "嘘つきな私…",
+      "translation": "说谎的我却……",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "嘘つき",
+          "reading": "うそつき"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "私",
+          "reading": "わたし"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "usotsuki na watashi"
+        }
+      ]
+    },
+    {
+      "id": "s025",
+      "lyrics": "深海少女 わざわざ沈む",
+      "translation": "深海少女 放任自我在沉降",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "沈む",
+          "reading": "しずむ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo wazawaza shizumu"
+        }
+      ]
+    },
+    {
+      "id": "s026",
+      "lyrics": "暗闇のさなかに赤い頬",
+      "translation": "黑暗之中 任由红晕染遍双颊",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "暗闇",
+          "reading": "くらやみ"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "赤い",
+          "reading": "あかい"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "頬",
+          "reading": "ほほ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kurayami no sanaka ni akai hoho"
+        }
+      ]
+    },
+    {
+      "id": "s027",
+      "lyrics": "深海少女 ハダカの心を見せる勇気",
+      "translation": "深海少女 单纯的心展露的勇气",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "ハダカ",
+          "reading": "はだか"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "心",
+          "reading": "こころ"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "見せる",
+          "reading": "みせる"
+        },
+        {
+          "start": 14,
+          "end": 16,
+          "base": "勇気",
+          "reading": "ゆうき"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo hadaka no kokoro o miseru yuuki"
+        }
+      ],
+      "notes": [
+        {
+          "title": "ハダカの心",
+          "body": "通常なら「裸」と書ける語をカタカナの「ハダカ」で置く表記。意味は飾りや防御のない心、隠していない内面。文字の視覚的な強調まで含めて、ここは“見せる勇気”の転換点になっている。"
+        }
+      ]
+    },
+    {
+      "id": "s028",
+      "lyrics": "黒い海がまだ許さない",
+      "translation": "却还没被漆黑的海域所认同",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "黒い",
+          "reading": "くろい"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "海",
+          "reading": "うみ"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "許さない",
+          "reading": "ゆるさない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kuroi umi ga mada yurusanai"
+        }
+      ]
+    },
+    {
+      "id": "s029",
+      "lyrics": "こんなに服は汚れてしまった",
+      "translation": "衣服是这般的肮脏",
+      "ruby": [
+        {
+          "start": 4,
+          "end": 5,
+          "base": "服",
+          "reading": "ふく"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "汚れて",
+          "reading": "よごれて"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "konna ni fuku wa yogorete shimatta"
+        }
+      ]
+    },
+    {
+      "id": "s030",
+      "lyrics": "笑顔も醜くゆがんでいった",
+      "translation": "连笑容也开始丑陋扭曲了模样",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "笑顔",
+          "reading": "えがお"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "醜く",
+          "reading": "みにくく"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "egao mo minikuku yugande itta"
+        }
+      ]
+    },
+    {
+      "id": "s031",
+      "lyrics": "誰にも合わせる顔なんて無いの",
+      "translation": "已经没有脸去面对任何人",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "誰",
+          "reading": "だれ"
+        },
+        {
+          "start": 3,
+          "end": 7,
+          "base": "合わせる",
+          "reading": "あわせる"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "顔",
+          "reading": "かお"
+        },
+        {
+          "start": 11,
+          "end": 13,
+          "base": "無い",
+          "reading": "ない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dare ni mo awaseru kao nante nai no"
+        }
+      ]
+    },
+    {
+      "id": "s032",
+      "lyrics": "もう放っておいてよ",
+      "translation": "不要再来管我了呀",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 5,
+          "base": "放って",
+          "reading": "ほうって"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mou houtte oite yo"
+        }
+      ]
+    },
+    {
+      "id": "s033",
+      "lyrics": "声にならない気持ちが溢れてとけた",
+      "translation": "无法用言语表达的心意渐渐满溢消解",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "声",
+          "reading": "こえ"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "気持ち",
+          "reading": "きもち"
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "base": "溢れて",
+          "reading": "あふれて"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "koe ni naranai kimochi ga afurete toketa"
+        }
+      ]
+    },
+    {
+      "id": "s034",
+      "lyrics": "次の瞬間、君が突然姿を消した",
+      "translation": "在下一个瞬间 你的身影如泡沫般突然消散",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "次",
+          "reading": "つぎ"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "瞬間",
+          "reading": "しゅんかん"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "突然",
+          "reading": "とつぜん"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "姿",
+          "reading": "すがた"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "消した",
+          "reading": "けした"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tsugi no shunkan kimi ga totsuzen sugata o keshita"
+        }
+      ]
+    },
+    {
+      "id": "s035",
+      "lyrics": "心配性の彼女は焦る",
+      "translation": "习惯了担心 那个少女是如此的慌张",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "心配性",
+          "reading": "しんぱいしょう"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "彼女",
+          "reading": "かのじょ"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "焦る",
+          "reading": "あせる"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinpaishou no kanojo wa aseru"
+        }
+      ]
+    },
+    {
+      "id": "s036",
+      "lyrics": "闇が彼を隠しひとりきり",
+      "translation": "黑暗只将他一人隐藏",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "闇",
+          "reading": "やみ"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "彼",
+          "reading": "かれ"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "隠し",
+          "reading": "かくし"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yami ga kare o kakushi hitorikiri"
+        }
+      ]
+    },
+    {
+      "id": "s037",
+      "lyrics": "限界少女 その手を伸ばす",
+      "translation": "界限中的少女 终于伸出自己的手",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "限界少女",
+          "reading": "げんかいしょうじょ"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "手",
+          "reading": "て"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "伸ばす",
+          "reading": "のばす"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "genkai shoujo sono te o nobasu"
+        }
+      ],
+      "notes": [
+        {
+          "title": "限界少女",
+          "body": "それまで繰り返された「深海少女」を、ここだけ「限界少女」に言い換える。一般的な固定語ではなく、相手が消えた瞬間に沈むだけだった少女が限界まで追い込まれ、初めて自分から手を伸ばす転換として機能する。"
+        }
+      ]
+    },
+    {
+      "id": "s038",
+      "lyrics": "ほらね、君も素敵な色を隠してた",
+      "translation": "“看呐，其实你也隐藏了美好的色彩啊”",
+      "ruby": [
+        {
+          "start": 4,
+          "end": 5,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "素敵",
+          "reading": "すてき"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "色",
+          "reading": "いろ"
+        },
+        {
+          "start": 11,
+          "end": 15,
+          "base": "隠してた",
+          "reading": "かくしてた"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hora ne kimi mo suteki na iro o kakushiteta"
+        }
+      ],
+      "notes": [
+        {
+          "title": "素敵な色を隠してた",
+          "body": "「色」は文字通りの色でもあり、その人が隠していた魅力・個性としても読める。深海の暗さや擬態の語彙とつながるため、“隠していたものを相手に見つけてもらう”という全曲の流れを一行にまとめる。後者は RED:REPEAT 編集観察。"
+        }
+      ]
+    },
+    {
+      "id": "s039",
+      "lyrics": "深海少女 腕を引かれる",
+      "translation": "深海少女 被谁牵住了手腕",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "腕",
+          "reading": "うで"
+        },
+        {
+          "start": 7,
+          "end": 11,
+          "base": "引かれる",
+          "reading": "ひかれる"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo ude o hikareru"
+        }
+      ]
+    },
+    {
+      "id": "s040",
+      "lyrics": "歌う祝福のマリンスノー",
+      "translation": "在充满祝福的海之雪中放声歌唱",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "歌う",
+          "reading": "うたう"
+        },
+        {
+          "start": 2,
+          "end": 4,
+          "base": "祝福",
+          "reading": "しゅくふく"
+        },
+        {
+          "start": 5,
+          "end": 11,
+          "base": "マリンスノー",
+          "reading": "まりんすのー"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "utau shukufuku no marin sunoo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "マリンスノー",
+          "body": "海の上層から深海へゆっくり沈んでいく有機物などの粒子を「marine snow」と呼ぶ。現実には深海生態系の重要な栄養源でもある。歌詞ではその降下する白い粒を「祝福」として反転させ、沈むイメージを幸福な景色へ変えている。"
+        }
+      ]
+    },
+    {
+      "id": "s041",
+      "lyrics": "深海少女 もっと知りたい",
+      "translation": "深海少女 变得更加有所盼望",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "深海少女",
+          "reading": "しんかいしょうじょ"
+        },
+        {
+          "start": 8,
+          "end": 12,
+          "base": "知りたい",
+          "reading": "しりたい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shinkai shoujo motto shiritai"
+        }
+      ]
+    },
+    {
+      "id": "s042",
+      "lyrics": "心惹かれるあの人を見つけたから",
+      "translation": "因为终于寻见了那个令人倾心的对象",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "心",
+          "reading": "こころ"
+        },
+        {
+          "start": 1,
+          "end": 5,
+          "base": "惹かれる",
+          "reading": "ひかれる"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "人",
+          "reading": "ひと"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "見つけた",
+          "reading": "みつけた"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kokoro hikareru ano hito o mitsuketa kara"
+        }
+      ]
+    },
+    {
+      "id": "s043",
+      "lyrics": "この海を出て 今飛び立つの",
+      "translation": "从这片海域脱身而出 现在就展翅飞翔",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 3,
+          "base": "海",
+          "reading": "うみ"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "出て",
+          "reading": "でて"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "今",
+          "reading": "いま"
+        },
+        {
+          "start": 8,
+          "end": 12,
+          "base": "飛び立つ",
+          "reading": "とびたつ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kono umi o dete ima tobitatsu no"
+        }
+      ],
+      "notes": [
+        {
+          "title": "海を出て／飛び立つ",
+          "body": "物理的には海から空へ「飛び立つ」という大きな飛躍を置く結末。冒頭の「沈む」と正反対の動詞で終わるため、全曲の縦方向の物語が、下降から上昇へ完全に反転する。これは歌詞構造上の RED:REPEAT 編集観察。"
+        }
+      ]
+    }
+  ]
+}

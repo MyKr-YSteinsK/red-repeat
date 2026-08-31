@@ -1,0 +1,131 @@
+{
+  "units": [
+    {
+      "id": "p001",
+      "sectionId": "verse-1",
+      "label": "下沉 · 悲伤之海",
+      "occurrenceIds": [
+        "o001",
+        "o002",
+        "o003",
+        "o004"
+      ]
+    },
+    {
+      "id": "p002",
+      "sectionId": "verse-1",
+      "label": "光 · 伸手与迷失",
+      "occurrenceIds": [
+        "o005",
+        "o006",
+        "o007",
+        "o008"
+      ]
+    },
+    {
+      "id": "p003",
+      "sectionId": "verse-1",
+      "label": "反光 · 嘘つきは誰",
+      "occurrenceIds": [
+        "o009",
+        "o010",
+        "o011",
+        "o012"
+      ]
+    },
+    {
+      "id": "p004",
+      "sectionId": "chorus-1",
+      "label": "深海少女 · 第一次抬头",
+      "occurrenceIds": [
+        "o013",
+        "o014",
+        "o015",
+        "o016"
+      ]
+    },
+    {
+      "id": "p005",
+      "sectionId": "verse-2",
+      "label": "没有昼夜的海底",
+      "occurrenceIds": [
+        "o017",
+        "o018",
+        "o019",
+        "o020"
+      ]
+    },
+    {
+      "id": "p006",
+      "sectionId": "verse-2",
+      "label": "再次降下的光",
+      "occurrenceIds": [
+        "o021",
+        "o022",
+        "o023",
+        "o024"
+      ]
+    },
+    {
+      "id": "p007",
+      "sectionId": "chorus-2",
+      "label": "红晕与赤裸的心",
+      "occurrenceIds": [
+        "o025",
+        "o026",
+        "o027",
+        "o028"
+      ]
+    },
+    {
+      "id": "p008",
+      "sectionId": "breakdown",
+      "label": "污损与退缩",
+      "occurrenceIds": [
+        "o029",
+        "o030",
+        "o031",
+        "o032"
+      ]
+    },
+    {
+      "id": "p009",
+      "sectionId": "bridge",
+      "label": "无法说出口 / 君消失",
+      "occurrenceIds": [
+        "o033",
+        "o034"
+      ]
+    },
+    {
+      "id": "p010",
+      "sectionId": "bridge",
+      "label": "限界少女 · 终于伸手",
+      "occurrenceIds": [
+        "o035",
+        "o036",
+        "o037",
+        "o038"
+      ]
+    },
+    {
+      "id": "p011",
+      "sectionId": "final-chorus",
+      "label": "祝福的 Marine Snow",
+      "occurrenceIds": [
+        "o039",
+        "o040",
+        "o041",
+        "o042"
+      ]
+    },
+    {
+      "id": "p012",
+      "sectionId": "finale",
+      "label": "离开这片海",
+      "occurrenceIds": [
+        "o043"
+      ]
+    }
+  ]
+}
