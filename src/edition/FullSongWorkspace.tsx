@@ -42,7 +42,8 @@ export function FullSongWorkspace({
   const [message, setMessage] = useState<string>()
   const [skipAutoFollowOccurrenceId, setSkipAutoFollowOccurrenceId] =
     useState<string>()
-  const pendingFollowOccurrenceId = useRef<string | undefined>(undefined)
+  const [pendingPlaybackStartOccurrenceId, setPendingPlaybackStartOccurrenceId] =
+    useState<string>()
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
@@ -52,7 +53,7 @@ export function FullSongWorkspace({
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
       setSelectedSectionId(undefined)
       setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
-      pendingFollowOccurrenceId.current = assembledOccurrence.occurrence.id
+      setPendingPlaybackStartOccurrenceId(assembledOccurrence.occurrence.id)
       setFollowLyrics(true)
       setMessage(undefined)
       playback.playOccurrenceContinuously?.(assembledOccurrence)
@@ -61,26 +62,14 @@ export function FullSongWorkspace({
   )
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
-  useEffect(() => {
-    if (!followLyrics || !primaryOccurrenceId) {
-      return
-    }
-
-    const pendingOccurrenceId = pendingFollowOccurrenceId.current
-    if (pendingOccurrenceId) {
-      pendingFollowOccurrenceId.current = undefined
-      return
-    }
-
-    setSelectedOccurrenceId(primaryOccurrenceId)
-  }, [followLyrics, primaryOccurrenceId])
+  const isPlaying = playback.audioState.status === 'playing'
 
   const handleSelectSection = useCallback(
     (section: Section): void => {
       setSelectedSectionId(section.id)
       setSelectedOccurrenceId(undefined)
       setSkipAutoFollowOccurrenceId(undefined)
-      pendingFollowOccurrenceId.current = undefined
+      setPendingPlaybackStartOccurrenceId(undefined)
       setFollowLyrics(true)
       setMessage(undefined)
       if (!playback.engine) {
@@ -102,7 +91,7 @@ export function FullSongWorkspace({
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
       setSelectedSectionId(undefined)
       setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
-      pendingFollowOccurrenceId.current = assembledOccurrence.occurrence.id
+      setPendingPlaybackStartOccurrenceId(assembledOccurrence.occurrence.id)
       setFollowLyrics(true)
       if (!playback.engine) {
         setMessage('当前环境无法播放音频。')
@@ -145,16 +134,39 @@ export function FullSongWorkspace({
     [playback.resolution.activeOccurrences],
   )
 
-  const isPlaying = playback.audioState.status === 'playing'
-  const isWaitingForClickedPrimary =
+  const currentSectionId = playback.resolution.currentSection?.id
+  const currentSectionHasLyrics = Boolean(
+    currentSectionId && model.occurrencesBySectionId[currentSectionId]?.length,
+  )
+  // Manual selection is intentionally not the playback fallback. A lyric is
+  // bridged only when Resolver identifies an adjacent pair in this lyric Section.
+  const playbackGapOccurrenceId =
     isPlaying &&
-    Boolean(primaryOccurrenceId) &&
-    Boolean(skipAutoFollowOccurrenceId) &&
-    selectedOccurrenceId === skipAutoFollowOccurrenceId &&
-    primaryOccurrenceId !== skipAutoFollowOccurrenceId
+    followLyrics &&
+    !primaryOccurrenceId &&
+    currentSectionHasLyrics &&
+    playback.resolution.previousOccurrence &&
+    playback.resolution.previousOccurrence.sectionId === currentSectionId &&
+    playback.resolution.nextOccurrence?.sectionId === currentSectionId
+      ? playback.resolution.previousOccurrence.id
+      : undefined
+  // Keep overlap click-start behavior separate from the follow cursor. This
+  // applies only while the clicked occurrence is still active.
+  const overlappingClickedOccurrenceId =
+    isPlaying &&
+    followLyrics &&
+    primaryOccurrenceId &&
+    pendingPlaybackStartOccurrenceId &&
+    selectedOccurrenceId === pendingPlaybackStartOccurrenceId &&
+    primaryOccurrenceId !== pendingPlaybackStartOccurrenceId &&
+    activeOccurrenceIds.has(pendingPlaybackStartOccurrenceId)
+      ? pendingPlaybackStartOccurrenceId
+      : undefined
   const visibleSelectedOccurrenceId =
-    isPlaying && primaryOccurrenceId && !isWaitingForClickedPrimary
-      ? primaryOccurrenceId
+    isPlaying && followLyrics
+      ? overlappingClickedOccurrenceId ??
+        primaryOccurrenceId ??
+        playbackGapOccurrenceId
       : selectedOccurrenceId
   const visibleSelectedSectionId =
     isPlaying && !primaryOccurrenceId
@@ -172,7 +184,7 @@ export function FullSongWorkspace({
     setSelectedOccurrenceId(undefined)
     setSelectedSectionId(undefined)
     setSkipAutoFollowOccurrenceId(undefined)
-    pendingFollowOccurrenceId.current = undefined
+    setPendingPlaybackStartOccurrenceId(undefined)
     setFollowLyrics(true)
     setMessage(undefined)
     if (playback.engine) {
@@ -201,8 +213,8 @@ export function FullSongWorkspace({
             className="full-song-return-current"
             type="button"
             onClick={() => {
-              pendingFollowOccurrenceId.current = undefined
               setSkipAutoFollowOccurrenceId(undefined)
+              setPendingPlaybackStartOccurrenceId(undefined)
               setFollowLyrics(true)
             }}
           >
@@ -225,8 +237,8 @@ export function FullSongWorkspace({
           }
           followLyrics={followLyrics}
           onManualBrowse={() => {
-            pendingFollowOccurrenceId.current = undefined
             setSkipAutoFollowOccurrenceId(undefined)
+            setPendingPlaybackStartOccurrenceId(undefined)
             setFollowLyrics(false)
           }}
           suppressAutoFollowOccurrenceId={skipAutoFollowOccurrenceId}

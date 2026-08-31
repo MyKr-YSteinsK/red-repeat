@@ -84,6 +84,9 @@ export function PracticeWorkspace({
     ? model.occurrencesById[learningState.currentOccurrenceId] ??
       model.occurrencesById[currentUnit.occurrenceIds[0]]
     : undefined
+  const followsPlayback =
+    (continuousPlayback || rampPractice) && playback.audioState.status === 'playing'
+  const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
 
   const cancelPlayback = useCallback((): void => {
     operationRef.current += 1
@@ -354,17 +357,31 @@ export function PracticeWorkspace({
   const currentUnitOccurrences = currentUnit.occurrenceIds
     .map((occurrenceId) => model.occurrencesById[occurrenceId])
     .filter((occurrence): occurrence is AssembledOccurrence => Boolean(occurrence))
-  const followsPlayback =
-    (continuousPlayback || rampPractice) && playback.audioState.status === 'playing'
-  const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
   const audibleCurrentOccurrenceId =
     followsPlayback &&
     primaryOccurrenceId &&
     currentUnit.occurrenceIds.includes(primaryOccurrenceId)
       ? primaryOccurrenceId
       : undefined
+  // Learning State remains the manual selection. During a playback gap, only
+  // a resolver-adjacent pair inside this Unit may keep the previous lyric visible.
+  const playbackGapOccurrenceId =
+    followsPlayback &&
+    !primaryOccurrenceId &&
+    playback.resolution.previousOccurrence &&
+    currentUnit.occurrenceIds.includes(
+      playback.resolution.previousOccurrence.id,
+    ) &&
+    playback.resolution.nextOccurrence &&
+    currentUnit.occurrenceIds.includes(
+      playback.resolution.nextOccurrence.id,
+    )
+      ? playback.resolution.previousOccurrence.id
+      : undefined
   const visibleCurrentOccurrenceId =
-    audibleCurrentOccurrenceId ?? currentOccurrence.occurrence.id
+    followsPlayback
+      ? audibleCurrentOccurrenceId ?? playbackGapOccurrenceId
+      : currentOccurrence.occurrence.id
   const currentOccurrenceIndex = currentUnitOccurrences.findIndex(
     ({ occurrence }) => occurrence.id === currentOccurrence.occurrence.id,
   )

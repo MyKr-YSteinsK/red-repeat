@@ -153,6 +153,46 @@ const modelWithTimingOverride = {
   }),
 }
 
+const gappedModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics: {
+    segments: [
+      { id: 'g001', lyrics: 'Gap line 1', translation: '间隔句一' },
+      { id: 'g002', lyrics: 'Gap line 2', translation: '间隔句二' },
+      { id: 'g003', lyrics: 'Gap line 3', translation: '间隔句三' },
+      { id: 'g004', lyrics: 'Gap line 4', translation: '间隔句四' },
+      { id: 'g005', lyrics: 'Gap line 5', translation: '间隔句五' },
+    ],
+  } satisfies LyricsDocument,
+  timeline: {
+    audioSourceHash: 'a'.repeat(64),
+    sections: [
+      { id: 'gap-verse', label: 'Gap Verse', startMs: 0, endMs: 1600 },
+      { id: 'gap-instrumental', label: 'Gap Instrumental', startMs: 1600, endMs: 1800 },
+      { id: 'gap-chorus', label: 'Gap Chorus', startMs: 1800, endMs: 2600 },
+    ],
+    occurrences: [
+      { id: 'go001', segmentId: 'g001', sectionId: 'gap-verse', startMs: 100, endMs: 250 },
+      { id: 'go002', segmentId: 'g002', sectionId: 'gap-verse', startMs: 400, endMs: 550 },
+      { id: 'go003', segmentId: 'g003', sectionId: 'gap-verse', startMs: 700, endMs: 850 },
+      { id: 'go004', segmentId: 'g004', sectionId: 'gap-verse', startMs: 1000, endMs: 1150 },
+      { id: 'go005', segmentId: 'g005', sectionId: 'gap-chorus', startMs: 1900, endMs: 2050 },
+    ],
+  } satisfies TimelineDocument,
+  practice: {
+    units: [
+      {
+        id: 'gap-unit',
+        sectionId: 'gap-verse',
+        label: 'Gap Verse',
+        occurrenceIds: ['go001', 'go002', 'go003', 'go004'],
+      },
+    ],
+  },
+  features: [],
+})
+
 describe('FullSongWorkspace', () => {
   it('renders the complete lyric stream with readable translation and reading layers', async () => {
     const { engine } = renderWorkspace()
@@ -255,6 +295,93 @@ describe('FullSongWorkspace', () => {
       currentTimeMs: 1100,
     })
     expect(engine.getState().activeRange).toBeUndefined()
+  })
+
+  it('keeps playback-follow selection stable across lyric gaps from a middle-line start', async () => {
+    const { engine, frames } = renderWorkspace({ model: gappedModel })
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Gap line 2' }))
+    await waitFor(() => {
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        intent: 'continuous',
+        currentTimeMs: 400,
+      })
+    })
+
+    const workspace = screen.getByRole('region', { name: '全曲歌词' })
+    const observed: Array<{ timeMs: number; primary?: string; visible?: string }> = []
+    const updateAndCapture = async (
+      timeMs: number,
+      expectedPrimary: string | undefined,
+      expectedVisible: string | undefined,
+    ): Promise<void> => {
+      await act(async () => {
+        mediaFor(engine).currentTime = timeMs / 1000
+        frames.flush()
+      })
+      await waitFor(() => {
+        expect(
+          document.querySelector<HTMLElement>('.is-primary-active')?.dataset
+            .occurrenceId,
+        ).toBe(expectedPrimary)
+        expect(workspace.getAttribute('data-selected-occurrence-id') ?? undefined).toBe(
+          expectedVisible,
+        )
+      })
+      observed.push({
+        timeMs,
+        primary: document.querySelector<HTMLElement>('.is-primary-active')?.dataset
+          .occurrenceId,
+        visible: workspace.getAttribute('data-selected-occurrence-id') ?? undefined,
+      })
+    }
+
+    await updateAndCapture(750, 'go003', 'go003')
+    await updateAndCapture(900, undefined, 'go003')
+    await updateAndCapture(1050, 'go004', 'go004')
+    await updateAndCapture(1200, undefined, undefined)
+
+    expect(observed).toEqual([
+      { timeMs: 750, primary: 'go003', visible: 'go003' },
+      { timeMs: 900, primary: undefined, visible: 'go003' },
+      { timeMs: 1050, primary: 'go004', visible: 'go004' },
+      { timeMs: 1200, primary: undefined, visible: undefined },
+    ])
+  })
+
+  it('does not carry a lyric cursor through a real instrumental section', async () => {
+    const { engine, frames } = renderWorkspace({ model: gappedModel })
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Gap line 2' }))
+    await waitFor(() => expect(engine.getState().status).toBe('playing'))
+
+    const workspace = screen.getByRole('region', { name: '全曲歌词' })
+    await act(async () => {
+      mediaFor(engine).currentTime = 1.7
+      frames.flush()
+    })
+    await waitFor(() => {
+      expect(workspace).not.toHaveAttribute('data-selected-occurrence-id')
+      expect(
+        document.querySelector('[data-section-id="gap-instrumental"]'),
+      ).toHaveClass('is-section-playing')
+    })
+    expect(document.querySelector('.is-primary-active')).toBeNull()
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 1.95
+      frames.flush()
+    })
+    await waitFor(() => {
+      expect(workspace).toHaveAttribute('data-selected-occurrence-id', 'go005')
+      expect(document.querySelector('[data-occurrence-id="go005"]')).toHaveClass(
+        'is-primary-active',
+        'is-selected',
+      )
+    })
   })
 
   it('keeps same-source position when the workspace is replaced', async () => {

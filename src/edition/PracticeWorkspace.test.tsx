@@ -117,6 +117,40 @@ const variableLengthModel = assembleRuntimeSongEdition({
   features: [],
 })
 
+const gappedModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics: {
+    segments: [
+      { id: 'g001', lyrics: 'Gap line 1', translation: '间隔句一' },
+      { id: 'g002', lyrics: 'Gap line 2', translation: '间隔句二' },
+      { id: 'g003', lyrics: 'Gap line 3', translation: '间隔句三' },
+      { id: 'g004', lyrics: 'Gap line 4', translation: '间隔句四' },
+    ],
+  },
+  timeline: {
+    audioSourceHash: 'b'.repeat(64),
+    sections: [{ id: 'gap-verse', label: 'Gap Verse', startMs: 0, endMs: 2000 }],
+    occurrences: [
+      { id: 'go001', segmentId: 'g001', sectionId: 'gap-verse', startMs: 100, endMs: 250 },
+      { id: 'go002', segmentId: 'g002', sectionId: 'gap-verse', startMs: 400, endMs: 550 },
+      { id: 'go003', segmentId: 'g003', sectionId: 'gap-verse', startMs: 700, endMs: 850 },
+      { id: 'go004', segmentId: 'g004', sectionId: 'gap-verse', startMs: 1000, endMs: 1150 },
+    ],
+  },
+  practice: {
+    units: [
+      {
+        id: 'gap-unit',
+        sectionId: 'gap-verse',
+        label: 'Gap Verse',
+        occurrenceIds: ['go001', 'go002', 'go003', 'go004'],
+      },
+    ],
+  },
+  features: [],
+})
+
 afterEach(() => {
   cleanup()
   window.localStorage.clear()
@@ -285,6 +319,50 @@ describe('PracticeWorkspace 1.0', () => {
         'o001',
       )
     })
+  })
+
+  it('bridges same-unit lyric gaps when continuous playback starts in the middle', async () => {
+    const engine = createFakeEngine()
+    const { container } = renderWorkspace(engine, { model: gappedModel })
+
+    fireEvent.click(screen.getByRole('button', { name: '连续播放' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
+    await waitFor(() => expect(engine.playRangeUntilComplete).toHaveBeenCalledOnce())
+
+    const workspace = container.querySelector<HTMLElement>('.practice-workspace')
+    if (!workspace) {
+      throw new Error('expected Practice workspace')
+    }
+
+    const observed: Array<{ timeMs: number; audible?: string; visible?: string }> = []
+    const updateAndCapture = async (
+      timeMs: number,
+      expectedAudible: string | undefined,
+      expectedVisible: string | undefined,
+    ): Promise<void> => {
+      engine.update({ status: 'playing', currentTimeMs: timeMs })
+      await waitFor(() => {
+        expect(workspace.dataset.audibleOccurrenceId).toBe(expectedAudible)
+        expect(workspace.dataset.currentOccurrenceId).toBe(expectedVisible)
+      })
+      observed.push({
+        timeMs,
+        audible: workspace.dataset.audibleOccurrenceId,
+        visible: workspace.dataset.currentOccurrenceId,
+      })
+    }
+
+    await updateAndCapture(750, 'go003', 'go003')
+    await updateAndCapture(900, undefined, 'go003')
+    await updateAndCapture(1050, 'go004', 'go004')
+    await updateAndCapture(1200, undefined, undefined)
+
+    expect(observed).toEqual([
+      { timeMs: 750, audible: 'go003', visible: 'go003' },
+      { timeMs: 900, audible: undefined, visible: 'go003' },
+      { timeMs: 1050, audible: 'go004', visible: 'go004' },
+      { timeMs: 1200, audible: undefined, visible: undefined },
+    ])
   })
 
   it('keeps one, two, and four-line units on the same measured dock reserve', () => {
