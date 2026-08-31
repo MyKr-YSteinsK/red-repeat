@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.13.0`
+- Current user version: `1.13.1`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.13.0` / `v1.13.0 -> e102189`; existing
+- Latest ledger/tag: `1.13.1` / `v1.13.1 -> 9bfd6ab`; existing
+  `v1.13.0 -> e102189`,
   `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
   `v1.9.2 -> 449e3ce`, `v1.9.1 -> 3cd207e`,
@@ -715,6 +716,33 @@ uses the separately authorized task-input source package.
   standalone 生命周期与 43 个 timing 的人类听感验收未执行，按
   `POST-DEPLOY OBSERVATION` 与后续正常使用保留，不写成目标设备或听感 PASS。
 
+## RED-Plan-62 连续播放歌词高亮切句闪回修复状态
+
+- 已确认根因在 playback-follow visual projection：Practice 在 resolver 合法
+  歌词间隔中回退到 Learning State 的手动选择，Full Song 则把旧的
+  `selectedOccurrenceId` 暴露为播放高亮；没有证据表明 `AudioEngine.currentTimeMs`
+  发生回跳，也没有修改 `startMs/endMs` 或 resolver 的 timing 语义。
+- Practice 现在仅在同一 `Practice Unit` 内、且 Resolver 给出前后相邻
+  Occurrence 时保留上一句高亮；Full Song 仅在同一有歌词 `Section` 内桥接合法
+  间隔。零 Occurrence 器乐 Section 不会继承歌词高亮；手动浏览、暂停、overlap
+  起播和 Section 播放行为保持分离且不被覆盖。
+- automated regression evidence 已通过：focused workspace/resolver/audio tests
+  为 4 个 test files / 77 个 tests，完整 `npm test` 为 48 个 test files / 341
+  个 tests；`typecheck`、`lint`、`build -- --base=/red-repeat/` 与后续
+  `pwa:inspect --require-production` 均通过。
+- `390×844` 本地浏览器 evidence 使用真实 Production Song Edition
+  `shinkai-shoujo`：Practice 观察到 `o002 -> gap (audible primary 消失、
+  visible/current 保持 o002) -> o003 -> o004`；Full Song 观察到
+  `o002 -> primary=null/selected=o002 -> o003 -> o004`，browser
+  `error/warn` 日志为空。该证据不替代真实 iPhone/Safari/installed-PWA 验收。
+- Product commit 为 `9bfd6ab`，`1.13.1` 为 `PATCH`；本 Plan 不修改 canonical
+  timing、歌词/练习/source data、schema/compiler/runtime、PWA 或 layout。
+  Release metadata 与 Project State 随后的 commit 是独立的 deployment
+  identity，tag `v1.13.1` 应指向该 product commit。
+- 本 Plan 没有 blocking `USER CHECK`。真实 iPhone/Safari/installed-PWA 的
+  audible perception、geometry 与 touch behavior 未执行，保留为
+  `POST-DEPLOY OBSERVATION`，不写成设备 PASS。
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -748,6 +776,10 @@ uses the separately authorized task-input source package.
   in the Production Timing Debugger. Real-device/installed-PWA geometry, touch,
   standalone lifecycle and subjective audible timing were not executed. These
   remain residual risk and do not block this first public import.
+- `POST-DEPLOY OBSERVATION (RED-Plan-62)`: real iPhone/Safari/installed-PWA
+  audible perception and geometry/touch behavior were not executed. Automated
+  tests and `390×844` browser transition evidence passed; this does not claim
+  real-device evidence and remains non-blocking.
 - `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
@@ -767,7 +799,7 @@ uses the separately authorized task-input source package.
   behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
   does not substitute for iOS/device evidence; this remains residual risk and
   is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61/62 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -891,6 +923,11 @@ uses the separately authorized task-input source package.
   independently deployed build identity. New timing remains explicitly
   `Provisional Timing`; no human audible PASS or real-device PASS is claimed,
   and no schema/compiler/runtime/UI/PWA behavior changed.
+- `RED-Plan-62` is complete: Practice and Full Song no longer expose the old
+  manual/selected lyric during a resolver-adjacent playback gap. Product commit
+  `9bfd6ab` is recorded as `1.13.1` `PATCH` and is tagged by `v1.13.1`; the
+  following release-metadata commit is the independently deployed build
+  identity. Canonical timing and all song source data remain unchanged.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing

@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.13.1',
+    date: '2026-08-31',
+    commit: '9bfd6ab',
+    level: 'patch',
+    title: '连续播放歌词高亮切句稳定性修复',
+    summary: '修复 Practice 与 Full Song 连续播放在合法歌词间隔中短暂回到播放起点或旧手动选择的问题，让高亮稳定保持上一句并直接切换到下一句。',
+    changes: [
+      'Practice 连续播放在同一 Practice Unit 的歌词间隔中保持上一句高亮，并在下一句开始时直接切换。',
+      'Full Song 连续播放分离手动选择与 playback-follow visual cursor，保留合法 overlap 与器乐 Section 行为。',
+      '没有修改 canonical timing、歌词/练习内容或播放器的 timing semantics。',
+    ],
+  },
+  {
     version: '1.13.0',
     date: '2026-08-31',
     commit: 'e102189',
