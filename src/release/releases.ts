@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.14.0',
+    date: '2026-09-01',
+    commit: '123ad02',
+    level: 'minor',
+    title: '《妄想感傷代償連盟》Song Edition 正式导入与翻译质量审查',
+    summary: '将 DECO*27 × 初音未来的《妄想感傷代償連盟》作为第五首公开 Song Edition 导入 Production，并固化用户参考译文经过 Architect review 后再集成的翻译质量边界。',
+    changes: [
+      '新增 exact audio/cover、46 个 canonical Segment、57 个 Occurrence、16 个 Section、16 个 Practice Unit、8 篇 Explain Feature 与 14 个 reviewed lyric-note target。',
+      '完成 46/46 Romaji 与 current-contract Ruby；保留 Provisional Timing、o026/o057 hook uncertainty，并不凭处理后音频制造额外 Occurrence。',
+      '修正帰ってね、叶えた先、スタッフロール、位相、対人ローション与嘘を覚えて仕舞う等翻译语义问题，并将 translation review rule 写入歌曲内容生成规范。',
+    ],
+  },
+  {
     version: '1.13.1',
     date: '2026-08-31',
     commit: '9bfd6ab',
