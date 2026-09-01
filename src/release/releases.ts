@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.15.0',
+    date: '2026-09-01',
+    commit: '19e45d1',
+    level: 'minor',
+    title: '《どうして》Song Edition 正式导入',
+    summary: '将高瀬統也 × 野田愛実的《どうして》作为第六首公开 Song Edition 导入 Production，保留 reviewed translation、完整 Ruby/Romaji 与 Provisional Timing。',
+    changes: [
+      '新增 exact audio/cover、26 个 canonical Segment、33 个 Occurrence、9 个 Section、9 个 Practice Unit、8 篇 Explain Feature 与 11 个 reviewed lyric-note target。',
+      '完成 26/26 Romaji 与 current-contract Ruby；保留 71.800s / 147.520s blank-anchor topology、o012/o026/o033 uncertainty 与 Provisional Timing。',
+      '整合 reviewed translation，保留 話せない/話さない/話してない、過ごせる/過ごせた/過ごせて及君よりもっと…/君以上…等语义区分；无 schema/compiler/runtime/UI/PWA 改动。',
+    ],
+  },
+  {
     version: '1.14.0',
     date: '2026-09-01',
     commit: '123ad02',
