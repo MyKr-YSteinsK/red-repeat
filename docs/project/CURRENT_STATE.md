@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.13.1`
+- Current user version: `1.14.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.13.1` / `v1.13.1 -> 9bfd6ab`; existing
+- Latest ledger/tag: `1.14.0` / `v1.14.0 -> 123ad02`; existing
+  `v1.13.1 -> 9bfd6ab`,
   `v1.13.0 -> e102189`,
   `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
   `v1.10.0 -> 426069c`,
@@ -40,6 +41,14 @@ evidence only.
 - RED-Plan-61 adds the authorized public `shinkai-shoujo` Song Edition in a
   separate product-focused commit; its release metadata follows the same
   product-then-metadata boundary.
+- RED-Plan-63 adds the authorized public `mousou-kanshou-daishou-renmei` Song
+  Edition in a separate product-focused commit; release metadata records the
+  `1.14.0` `MINOR` boundary, and the following Project State closeout remains
+  documentation-only.
+- The translation authoring rule now treats user translation as primary
+  reference/evidence that must pass semantic and naturalness review before
+  integration; Architect-reviewed corrections are integrated without changing
+  the schema or translation provenance contract.
 
 ## Current product capabilities
 
@@ -64,7 +73,7 @@ evidence only.
 
 ## Current public content
 
-The tracked public source contains four Song Editions:
+The tracked public source contains five Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
 one JPG cover and eight Explain Markdown features; and
@@ -77,9 +86,13 @@ cover, eight Explain Markdown features and 8 reviewed note targets.
 `library/shinkai-shoujo/` (`深海少女`, `ゆうゆ × 初音未来`) adds 43 unique
 Segments/Occurrences, 12 Practice Units, 12 Sections, one canonical MP3,
 one JPG cover, eight Explain Markdown features and 8 reviewed note targets.
+`library/mousou-kanshou-daishou-renmei/` (`妄想感傷代償連盟`, `DECO*27 × 初音未来`)
+adds 46 unique Segments, 57 Occurrences, 16 Sections, 16 Practice Units, one
+canonical MP3, one JPG cover, eight Explain Markdown features and 14 reviewed
+note targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
-text and existing `layers` remain separate source contracts. All four public
+text and existing `layers` remain separate source contracts. All five public
 editions retain their canonical source layers; `senbonzakura` now has one
 non-empty `Romaji` layer on each of its 30 Segments. The legacy
 migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
@@ -747,6 +760,62 @@ uses the separately authorized task-input source package.
   `completed successfully`；`release:smoke` 已确认线上 `1.13.1` 与
   `6ccce1673725` 一致，`builtAt=2026-08-31T13:50:52.214Z`。
 
+## RED-Plan-63 《妄想感傷代償連盟》新曲正式导入与翻译质量审查状态
+
+- Handoff manifest 的 23 个 entry 均已按 size 与 SHA-256 核验；候选 source
+  package、research、raw LRC/translation、README、Plan 与 ZIP 未复制进
+  产品 source。canonical audio、cover 与 LRC 的 exact SHA-256 分别为
+  `419ab1b13e38781c7fb534c365de117d17cf821d8644a578e3e0203c9bf56358`、
+  `5449a9e1b1a97fc14e6371b53398e96e42f8dc40734f490ee886a7f943d14b58` 与
+  `fc8cd9e8b8dacd41827a3e01f77bdfbff5afaddfcb725e30ad99636e3fc175ec`。
+  MP3 probe 为 `44.1 kHz`、stereo、`320 kbps`、约 `270.028 s`。
+- `library/mousou-kanshou-daishou-renmei/` 已作为第五个公开 Song Edition
+  导入，manifest identity 为 `songId=mousou-kanshou-daishou-renmei`、
+  `妄想感傷代償連盟`、`DECO*27 × 初音未来`、`GHOST`、`2016`。Source
+  contract 包含 46 个 canonical Segment、57 个 Occurrence、16 个
+  Section、16 个 Practice Unit、8 个 Explain Feature 与 14 个 reviewed
+  note target；46/46 Segment 有完整 Romaji 与位置核验通过的 ruby。16 个
+  Practice Unit 覆盖全部 57 个 Occurrence。
+- canonical normalization audit 已确认：`鬱雜い` → `鬱雑い`；嵌入式
+  `掲（かか）げよう` → `掲げよう` 并保留 ruby reading；`•` → `・`；`随に`
+  → `隨に`；`愛や厭...` → `愛や厭`；`怒ってる？…怒ってない` →
+  `怒ってる？　…怒ってない。`。Japanese canonical lyrics、受保护标点、
+  Segment/Occurrence identity 与 source structure 未被候选材料以外的内容
+  改写。
+- translation review audit 已整合 Architect-reviewed candidate，并确认
+  `帰ってね` 为“对不起，你回去吧”、`叶えた先` 为“愿望实现之后...” 、
+  `スタッフロール` 为“片尾字幕”、`位相` 保留“相位”、
+  `対人ローション` 保留人际间的“润滑剂”语义、`嘘を覚えて仕舞う` 为
+  “学会了这种谎言”。这些是审查后的正式 translation，不是 Codex 独立
+  重译；翻译审查边界已同步写入 `docs/歌曲内容生成规范.md`。
+- 57 个 Occurrence 均使用唯一权威 `startMs/endMs` 的 `Provisional
+  Timing`。timing 以 LRC onset anchor 配合 canonical MP3 的局部 RMS/
+  release minima 选择；未使用 `end=next LRC` 或整曲固定 padding。重复钩子
+  `愛や厭` 仅保留 `o026` 与 `o057` 两个 primary Occurrence，并保留
+  `performanceNote`，没有虚构额外重复/处理后的 hook Occurrence。该 timing
+  尚未获得人类听感 `PASS`，后续校准仍须通过 identity-bound Timing
+  Debugger 流程。
+- `npm run library:audio-hash -- mousou-kanshou-daishou-renmei`、
+  `npm run library:validate`、`npm run library:compile`、custom content
+  audit、媒体 probe、focused tests、最终 `npm run build --
+  --base=/red-repeat/` 与 `npm run pwa:inspect -- /red-repeat/
+  --require-production` 均通过。Validator 保留 5 个既有/新曲可选
+  `NO_HERO_ARTWORK` warnings；没有 validation error。
+- focused regression 为 9 个 test files / 70 个 tests，均通过。390×844 本地
+  browser smoke 验证了第五首曲目、16 个 Practice Unit、57 个 Full Song
+  Occurrence/16 个 Section、8 个 Explain Feature 与引用试听；browser
+  error/warn 日志为空。该浏览器证据不替代真实 iPhone/Safari、installed
+  PWA、主观听感或真实设备 geometry/touch 检查。
+- 既有四个公开 Song Edition 的 source diff 均为空；本 Plan 未修改
+  `schema/compiler/runtime`、UI/PWA 行为或既有歌曲 source。Product commit
+  为 `123ad023b30c3a4bfcf7b2f5dd117a06e09682fb`，`1.14.0` 为 `MINOR`，
+  annotated tag `v1.14.0` 指向该 product commit；release metadata/build
+  identity commit 为 `9b467d23ac25aac367b9a5f64d847c0c03de2d3c`。
+- 本 Plan 没有 blocking `USER CHECK`；新曲 57 个 timing 仍明确是
+  `Provisional Timing`。真实设备/installed-PWA geometry、touch、standalone
+  lifecycle 与主观听感未执行，按 `POST-DEPLOY OBSERVATION` 保留，不写成
+  目标设备或 timing 人类 PASS。
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -784,6 +853,11 @@ uses the separately authorized task-input source package.
   audible perception and geometry/touch behavior were not executed. Automated
   tests and `390×844` browser transition evidence passed; this does not claim
   real-device evidence and remains non-blocking.
+- `POST-DEPLOY OBSERVATION (RED-Plan-63)`: the 57 `mousou-kanshou-daishou-renmei`
+  intervals are intentionally `Provisional Timing`; real-device/iOS/installed-
+  PWA geometry, touch, standalone lifecycle and subjective audible timing were
+  not executed. These remain residual risk and do not block this first public
+  import.
 - `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
@@ -803,7 +877,7 @@ uses the separately authorized task-input source package.
   behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
   does not substitute for iOS/device evidence; this remains residual risk and
   is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61/62 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61/62/63 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -932,6 +1006,14 @@ uses the separately authorized task-input source package.
   `9bfd6ab` is recorded as `1.13.1` `PATCH` and is tagged by `v1.13.1`; the
   following release-metadata commit is the independently deployed build
   identity. Canonical timing and all song source data remain unchanged.
+- `RED-Plan-63` is complete: `library/mousou-kanshou-daishou-renmei/` is the
+  fifth public Song Edition with exact user audio/cover identity, validated
+  source structure, complete ruby/Romaji coverage, reviewed translation
+  corrections and eight Explain Features. Product commit `123ad02` is tagged
+  as `v1.14.0` at `MINOR` level; release metadata/build identity is
+  `9b467d2`. New timing remains explicitly `Provisional Timing`; no human
+  audible PASS or real-device PASS is claimed, and no existing Song Edition was
+  changed.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
