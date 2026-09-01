@@ -10,9 +10,10 @@ evidence only.
 - Root: `D:\CS\red-repeat`
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.14.0`
+- Current user version: `1.15.0`
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.14.0` / `v1.14.0 -> 123ad02`; existing
+- Latest ledger/tag: `1.15.0` / `v1.15.0 -> 19e45d1`; existing
+  `v1.14.0 -> 123ad02`,
   `v1.13.1 -> 9bfd6ab`,
   `v1.13.0 -> e102189`,
   `v1.12.0 -> 650f9dc`, `v1.11.0 -> ad64c95`,
@@ -49,6 +50,10 @@ evidence only.
   reference/evidence that must pass semantic and naturalness review before
   integration; Architect-reviewed corrections are integrated without changing
   the schema or translation provenance contract.
+- RED-Plan-64 adds the authorized public `doushite-takase-toya` Song Edition in
+  a separate product-focused commit; release metadata records the `1.15.0`
+  `MINOR` boundary, and the following Project State closeout remains
+  documentation-only.
 
 ## Current product capabilities
 
@@ -73,7 +78,7 @@ evidence only.
 
 ## Current public content
 
-The tracked public source contains five Song Editions:
+The tracked public source contains six Song Editions:
 `library/work-millennium-parade/` (`Ｗ●ＲＫ`, 椎名林檎 × 常田大希) with
 61 Segments/Occurrences, 10 Practice Units, 11 Sections, one canonical MP3,
 one JPG cover and eight Explain Markdown features; and
@@ -90,9 +95,13 @@ one JPG cover, eight Explain Markdown features and 8 reviewed note targets.
 adds 46 unique Segments, 57 Occurrences, 16 Sections, 16 Practice Units, one
 canonical MP3, one JPG cover, eight Explain Markdown features and 14 reviewed
 note targets.
+`library/doushite-takase-toya/` (`どうして`, `高瀬統也 × 野田愛実`) adds 26
+unique Segments, 33 Occurrences, 9 Sections, 9 Practice Units, one canonical
+MP3, one JPG cover, eight Explain Markdown features and 11 reviewed note
+targets.
 Japanese lyrics may carry
 position-verifiable `ruby` spans for Hiragana furigana; canonical `lyrics`
-text and existing `layers` remain separate source contracts. All five public
+text and existing `layers` remain separate source contracts. All six public
 editions retain their canonical source layers; `senbonzakura` now has one
 non-empty `Romaji` layer on each of its 30 Segments. The legacy
 migration-era private `senbonzakura` intake was not reclassified; RED-Plan-45
@@ -816,6 +825,63 @@ uses the separately authorized task-input source package.
   lifecycle 与主观听感未执行，按 `POST-DEPLOY OBSERVATION` 保留，不写成
   目标设备或 timing 人类 PASS。
 
+## RED-Plan-64 《どうして》新曲正式导入状态
+
+- Handoff manifest 的 23 个 entry 均已按 size 与 SHA-256 核验；raw audio、
+  LRC、cover 与 translation-reference 的 exact SHA-256 分别为
+  `4188d8d45621169cae7f3be03b63ed7e26ed423194f06e55bcbaf8a3b077cfdb`、
+  `0aa1ce6772cadffa088011bd681f3c3e68dc9b6c06e4911db4a5ce3f907616f2`、
+  `ee22ad277f7e796a7b45abeef062b827697679ef039e0c017947e14ca560714a` 与
+  `c4d49ee5df252e57c4bd440a65432a506cad484b8a9093c5f319d2ca9929e8b9`。MP3
+  probe 为 `48 kHz`、stereo、`320 kbps`、`181.128 s`；audio 与 cover
+  均按原字节复制。
+- `library/doushite-takase-toya/` 已作为第六个公开 Song Edition 导入，
+  manifest identity 为 `songId=doushite-takase-toya`、`どうして`、
+  `高瀬統也 × 野田愛実`、`13月1日`、`2022`。Source contract 包含 26 个
+  canonical Segment、33 个 Occurrence、9 个 Section、9 个 Practice Unit、
+  8 个 Explain Feature 与 11 个 reviewed lyric-note target；26/26 Segment
+  有完整 Romaji 与位置核验通过的 ruby，9 个 Practice Unit 覆盖全部 33 个
+  Occurrence。
+- canonical lyric normalization 仅将 LRC 的 `会いたいな しか出ない` 统一
+  为官方标点形式 `「会いたいな」しか出ない`；没有为风格原因改写其他
+  Japanese lyric wording。`話せない` / `話さない` / `話してない`、
+  `過ごせる` / `過ごせた` / `過ごせて` 与 `君よりもっと…` / `君以上…`
+  的差异均保留。
+- reviewed translation 已整合 Architect-authored candidate，没有机械采用
+  raw user translation，也没有独立重译。审查保留了 `諦めきれない`、
+  `うまい話`、`戯言` 等语义边界，以及三轮语法推进和两行比较结构；重复
+  Segment 使用同一 reviewed translation。
+- 33 个 Occurrence 使用 Handoff 提供的单一权威 `startMs/endMs`
+  `Provisional Timing`；`timeline.json.audioSourceHash` 与 canonical MP3
+  hash 一致。未转换为 `end=next LRC timestamp`，未加入全局 lead/tail
+  padding；`71.800s` 与 `147.520s` blank anchors 保留，`o012`、`o026`、
+  `o033` uncertainty notes 保留。没有声称人类听感 `PASS`。
+- 8 个 Explain drafts 已原样整合，并保留 confirmed fact、creator statement
+  与 RED:REPEAT editorial observation 的边界；研究未发现可靠的 ACGN
+  tie-in，因此没有新增 ACGN feature。所有 19 个 `[[segment:...]]` 引用
+  均可解析。
+- `npm run library:audio-hash -- doushite-takase-toya`、
+  `npm run library:validate`、`npm run library:compile`、custom source/
+  timing/content audit、focused tests、`npm run build --
+  --base=/red-repeat/` 与 `npm run pwa:inspect -- /red-repeat/
+  --require-production` 均通过。Validator 保留 6 个可选
+  `NO_HERO_ARTWORK` warnings，无 validation error；编译输出为 6 editions、
+  89 runtime files。
+- 390×844 本地 browser smoke 已验证 Catalog 第六首、9 个 Practice Unit、
+  33 个 Full Song Occurrence / 9 个 Section、8 个 Explain 主题和 lyric-
+  reference playback；browser error/warn 日志为空。该证据不替代真实
+  iPhone/Safari、installed PWA、主观翻译偏好或真实设备 geometry/touch 检查。
+- 既有五个公开 Song Edition 的 source diff 均为空；本 Plan 未修改 schema、
+  compiler、runtime、audio engine、Practice/Full Song UI、offline/PWA 或
+  shared CSS。Product commit 为 `19e45d1c8cdee93b1e1895674637d93479cb55e4`，
+  `1.15.0` 为 `MINOR`，annotated tag `v1.15.0` 指向该 product commit；
+  release metadata/build identity commit 为
+  `3ef0171f1d726b2a0042ddd1250a6c860683c0d3`。
+- 本 Plan 没有 blocking `USER CHECK`；33 个新曲 timing 仍为
+  `Provisional Timing`。真实设备/installed-PWA geometry、touch、standalone
+  lifecycle 与 33 个 timing 的人类听感验收未执行，按
+  `POST-DEPLOY OBSERVATION` 保留，不写成目标设备或 timing 人类 PASS。
+
 ## Remaining USER CHECK / UNKNOWN / POST-DEPLOY OBSERVATION
 
 - `POST-DEPLOY OBSERVATION (RED-Plan-50/54)`: actual target-device/iOS
@@ -858,6 +924,11 @@ uses the separately authorized task-input source package.
   PWA geometry, touch, standalone lifecycle and subjective audible timing were
   not executed. These remain residual risk and do not block this first public
   import.
+- `POST-DEPLOY OBSERVATION (RED-Plan-64)`: the 33 `doushite-takase-toya`
+  intervals are intentionally `Provisional Timing`; real-device/iOS/installed-
+  PWA geometry, touch, standalone lifecycle, subjective translation preference
+  and audible timing were not executed. These remain residual risk and do not
+  block this first public import.
 - `POST-DEPLOY OBSERVATION (RED-Plan-55)`: ordinary learning use may still
   surface a preferred Romaji segmentation or spelling convention. The 30
   source layers are complete and validated; this is residual observation, not
@@ -877,7 +948,7 @@ uses the separately authorized task-input source package.
   behavior are `NOT_TESTED`. The desktop real-browser lifecycle passed, but it
   does not substitute for iOS/device evidence; this remains residual risk and
   is not active blocking work.
-- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61/62/63 `UNKNOWN` remains open.
+- No `BLOCKING USER CHECK` or current RED-Plan-44/45/50/51/52/54/55/56/57/58/60/61/62/63/64 `UNKNOWN` remains open.
   This
   does not promote automated regression evidence to a real-device, perceptual,
   audible-timing or installed-client lifecycle PASS.
@@ -1014,6 +1085,13 @@ uses the separately authorized task-input source package.
   `9b467d2`. New timing remains explicitly `Provisional Timing`; no human
   audible PASS or real-device PASS is claimed, and no existing Song Edition was
   changed.
+- `RED-Plan-64` is complete: `library/doushite-takase-toya/` is the sixth public
+  Song Edition with exact user audio/cover identity, validated source
+  structure, complete ruby/Romaji coverage, reviewed translation and eight
+  Explain Features. Product commit `19e45d1` is tagged as `v1.15.0` at `MINOR`
+  level; release metadata/build identity is `3ef0171`. New timing remains
+  explicitly `Provisional Timing`; no human audible PASS or real-device PASS is
+  claimed, and no existing Song Edition was changed.
 - `RED-Plan-40` is complete: D-017 formalizes the production-public Timing
   Debugger capability, the existing Settings entry and `#timing=debug` route
   were verified, and the public-intent UNKNOWN was closed without changing
