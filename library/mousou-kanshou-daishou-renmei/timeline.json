@@ -1,0 +1,504 @@
+{
+  "audioSourceHash": "419ab1b13e38781c7fb534c365de117d17cf821d8644a578e3e0203c9bf56358",
+  "sections": [
+    {
+      "id": "intro",
+      "label": "Intro",
+      "startMs": 0,
+      "endMs": 7640
+    },
+    {
+      "id": "verse-1a",
+      "label": "Verse 1A",
+      "startMs": 7640,
+      "endMs": 25670
+    },
+    {
+      "id": "interlude-1",
+      "label": "Interlude 1",
+      "startMs": 25670,
+      "endMs": 33860
+    },
+    {
+      "id": "verse-1b",
+      "label": "Verse 1B",
+      "startMs": 33860,
+      "endMs": 51730
+    },
+    {
+      "id": "prechorus-1",
+      "label": "Pre-Chorus 1",
+      "startMs": 51960,
+      "endMs": 57650
+    },
+    {
+      "id": "chorus-1",
+      "label": "Chorus 1",
+      "startMs": 57890,
+      "endMs": 76000
+    },
+    {
+      "id": "post-chorus-1",
+      "label": "Post-Chorus 1",
+      "startMs": 76240,
+      "endMs": 93410
+    },
+    {
+      "id": "interlude-long",
+      "label": "Long Interlude",
+      "startMs": 93410,
+      "endMs": 110230
+    },
+    {
+      "id": "verse-2",
+      "label": "Verse 2",
+      "startMs": 110230,
+      "endMs": 128060
+    },
+    {
+      "id": "prechorus-2",
+      "label": "Pre-Chorus 2",
+      "startMs": 128330,
+      "endMs": 134000
+    },
+    {
+      "id": "chorus-2",
+      "label": "Chorus 2",
+      "startMs": 134230,
+      "endMs": 151870
+    },
+    {
+      "id": "interlude-2",
+      "label": "Interlude 2",
+      "startMs": 151870,
+      "endMs": 169670
+    },
+    {
+      "id": "pre-final",
+      "label": "Pre-Final",
+      "startMs": 169670,
+      "endMs": 176450
+    },
+    {
+      "id": "final-chorus",
+      "label": "Final Chorus",
+      "startMs": 177810,
+      "endMs": 213380
+    },
+    {
+      "id": "post-chorus-final",
+      "label": "Final Post-Chorus",
+      "startMs": 213590,
+      "endMs": 263800
+    },
+    {
+      "id": "outro",
+      "label": "Outro",
+      "startMs": 263800,
+      "endMs": 270028
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "o001",
+      "segmentId": "s001",
+      "sectionId": "verse-1a",
+      "startMs": 7640,
+      "endMs": 8316
+    },
+    {
+      "id": "o002",
+      "segmentId": "s002",
+      "sectionId": "verse-1a",
+      "startMs": 8490,
+      "endMs": 10011
+    },
+    {
+      "id": "o003",
+      "segmentId": "s003",
+      "sectionId": "verse-1a",
+      "startMs": 10420,
+      "endMs": 12159
+    },
+    {
+      "id": "o004",
+      "segmentId": "s004",
+      "sectionId": "verse-1a",
+      "startMs": 12680,
+      "endMs": 14226
+    },
+    {
+      "id": "o005",
+      "segmentId": "s005",
+      "sectionId": "verse-1a",
+      "startMs": 14780,
+      "endMs": 16420
+    },
+    {
+      "id": "o006",
+      "segmentId": "s006",
+      "sectionId": "verse-1a",
+      "startMs": 17220,
+      "endMs": 18730
+    },
+    {
+      "id": "o007",
+      "segmentId": "s007",
+      "sectionId": "verse-1a",
+      "startMs": 19220,
+      "endMs": 21319
+    },
+    {
+      "id": "o008",
+      "segmentId": "s008",
+      "sectionId": "verse-1a",
+      "startMs": 21390,
+      "endMs": 23374
+    },
+    {
+      "id": "o009",
+      "segmentId": "s009",
+      "sectionId": "verse-1a",
+      "startMs": 23540,
+      "endMs": 25557
+    },
+    {
+      "id": "o010",
+      "segmentId": "s010",
+      "sectionId": "verse-1b",
+      "startMs": 33860,
+      "endMs": 34462
+    },
+    {
+      "id": "o011",
+      "segmentId": "s011",
+      "sectionId": "verse-1b",
+      "startMs": 34660,
+      "endMs": 36192
+    },
+    {
+      "id": "o012",
+      "segmentId": "s012",
+      "sectionId": "verse-1b",
+      "startMs": 36600,
+      "endMs": 38351
+    },
+    {
+      "id": "o013",
+      "segmentId": "s013",
+      "sectionId": "verse-1b",
+      "startMs": 38750,
+      "endMs": 40418
+    },
+    {
+      "id": "o014",
+      "segmentId": "s014",
+      "sectionId": "verse-1b",
+      "startMs": 40970,
+      "endMs": 42728
+    },
+    {
+      "id": "o015",
+      "segmentId": "s015",
+      "sectionId": "verse-1b",
+      "startMs": 43380,
+      "endMs": 45440
+    },
+    {
+      "id": "o016",
+      "segmentId": "s016",
+      "sectionId": "verse-1b",
+      "startMs": 45460,
+      "endMs": 47105
+    },
+    {
+      "id": "o017",
+      "segmentId": "s017",
+      "sectionId": "verse-1b",
+      "startMs": 47580,
+      "endMs": 49276
+    },
+    {
+      "id": "o018",
+      "segmentId": "s018",
+      "sectionId": "verse-1b",
+      "startMs": 49730,
+      "endMs": 51459
+    },
+    {
+      "id": "o019",
+      "segmentId": "s019",
+      "sectionId": "prechorus-1",
+      "startMs": 51960,
+      "endMs": 57194
+    },
+    {
+      "id": "o020",
+      "segmentId": "s020",
+      "sectionId": "chorus-1",
+      "startMs": 57890,
+      "endMs": 60190
+    },
+    {
+      "id": "o021",
+      "segmentId": "s021",
+      "sectionId": "chorus-1",
+      "startMs": 60780,
+      "endMs": 62918
+    },
+    {
+      "id": "o022",
+      "segmentId": "s022",
+      "sectionId": "chorus-1",
+      "startMs": 63380,
+      "endMs": 66738
+    },
+    {
+      "id": "o023",
+      "segmentId": "s023",
+      "sectionId": "chorus-1",
+      "startMs": 67050,
+      "endMs": 69454
+    },
+    {
+      "id": "o024",
+      "segmentId": "s024",
+      "sectionId": "chorus-1",
+      "startMs": 69500,
+      "endMs": 71649
+    },
+    {
+      "id": "o025",
+      "segmentId": "s025",
+      "sectionId": "chorus-1",
+      "startMs": 71860,
+      "endMs": 75980
+    },
+    {
+      "id": "o026",
+      "segmentId": "s026",
+      "sectionId": "post-chorus-1",
+      "startMs": 76240,
+      "endMs": 80368,
+      "performanceNote": "LRC collapses a repeated/processed 「愛や厭」 hook into one lyric anchor; this Provisional candidate models only the primary anchored phrase and leaves the trailing hook texture unexpanded pending real-use review."
+    },
+    {
+      "id": "o027",
+      "segmentId": "s027",
+      "sectionId": "verse-2",
+      "startMs": 110230,
+      "endMs": 111010
+    },
+    {
+      "id": "o028",
+      "segmentId": "s028",
+      "sectionId": "verse-2",
+      "startMs": 111030,
+      "endMs": 112551
+    },
+    {
+      "id": "o029",
+      "segmentId": "s029",
+      "sectionId": "verse-2",
+      "startMs": 113050,
+      "endMs": 114617
+    },
+    {
+      "id": "o030",
+      "segmentId": "s030",
+      "sectionId": "verse-2",
+      "startMs": 115210,
+      "endMs": 116916
+    },
+    {
+      "id": "o031",
+      "segmentId": "s031",
+      "sectionId": "verse-2",
+      "startMs": 117340,
+      "endMs": 118832
+    },
+    {
+      "id": "o032",
+      "segmentId": "s032",
+      "sectionId": "verse-2",
+      "startMs": 119760,
+      "endMs": 121281
+    },
+    {
+      "id": "o033",
+      "segmentId": "s033",
+      "sectionId": "verse-2",
+      "startMs": 121780,
+      "endMs": 123464
+    },
+    {
+      "id": "o034",
+      "segmentId": "s034",
+      "sectionId": "verse-2",
+      "startMs": 123960,
+      "endMs": 125647
+    },
+    {
+      "id": "o035",
+      "segmentId": "s035",
+      "sectionId": "verse-2",
+      "startMs": 126080,
+      "endMs": 127690
+    },
+    {
+      "id": "o036",
+      "segmentId": "s036",
+      "sectionId": "prechorus-2",
+      "startMs": 128330,
+      "endMs": 133820
+    },
+    {
+      "id": "o037",
+      "segmentId": "s037",
+      "sectionId": "chorus-2",
+      "startMs": 134230,
+      "endMs": 136560
+    },
+    {
+      "id": "o038",
+      "segmentId": "s038",
+      "sectionId": "chorus-2",
+      "startMs": 137070,
+      "endMs": 139277
+    },
+    {
+      "id": "o039",
+      "segmentId": "s039",
+      "sectionId": "chorus-2",
+      "startMs": 139540,
+      "endMs": 142806
+    },
+    {
+      "id": "o040",
+      "segmentId": "s040",
+      "sectionId": "chorus-2",
+      "startMs": 143300,
+      "endMs": 145279
+    },
+    {
+      "id": "o041",
+      "segmentId": "s041",
+      "sectionId": "chorus-2",
+      "startMs": 145770,
+      "endMs": 147741
+    },
+    {
+      "id": "o042",
+      "segmentId": "s042",
+      "sectionId": "chorus-2",
+      "startMs": 148330,
+      "endMs": 151827
+    },
+    {
+      "id": "o043",
+      "segmentId": "s043",
+      "sectionId": "pre-final",
+      "startMs": 169670,
+      "endMs": 175581
+    },
+    {
+      "id": "o044",
+      "segmentId": "s044",
+      "sectionId": "pre-final",
+      "startMs": 175690,
+      "endMs": 176371
+    },
+    {
+      "id": "o045",
+      "segmentId": "s020",
+      "sectionId": "final-chorus",
+      "startMs": 177810,
+      "endMs": 180190
+    },
+    {
+      "id": "o046",
+      "segmentId": "s021",
+      "sectionId": "final-chorus",
+      "startMs": 180730,
+      "endMs": 182919
+    },
+    {
+      "id": "o047",
+      "segmentId": "s022",
+      "sectionId": "final-chorus",
+      "startMs": 183230,
+      "endMs": 186460
+    },
+    {
+      "id": "o048",
+      "segmentId": "s023",
+      "sectionId": "final-chorus",
+      "startMs": 187050,
+      "endMs": 189455
+    },
+    {
+      "id": "o049",
+      "segmentId": "s024",
+      "sectionId": "final-chorus",
+      "startMs": 189520,
+      "endMs": 191638
+    },
+    {
+      "id": "o050",
+      "segmentId": "s025",
+      "sectionId": "final-chorus",
+      "startMs": 191910,
+      "endMs": 195887
+    },
+    {
+      "id": "o051",
+      "segmentId": "s045",
+      "sectionId": "final-chorus",
+      "startMs": 196240,
+      "endMs": 197652
+    },
+    {
+      "id": "o052",
+      "segmentId": "s038",
+      "sectionId": "final-chorus",
+      "startMs": 198120,
+      "endMs": 200369
+    },
+    {
+      "id": "o053",
+      "segmentId": "s039",
+      "sectionId": "final-chorus",
+      "startMs": 200600,
+      "endMs": 203886
+    },
+    {
+      "id": "o054",
+      "segmentId": "s040",
+      "sectionId": "final-chorus",
+      "startMs": 204440,
+      "endMs": 206371
+    },
+    {
+      "id": "o055",
+      "segmentId": "s041",
+      "sectionId": "final-chorus",
+      "startMs": 206880,
+      "endMs": 209360
+    },
+    {
+      "id": "o056",
+      "segmentId": "s046",
+      "sectionId": "final-chorus",
+      "startMs": 209380,
+      "endMs": 212919
+    },
+    {
+      "id": "o057",
+      "segmentId": "s026",
+      "sectionId": "post-chorus-final",
+      "startMs": 213590,
+      "endMs": 217830,
+      "performanceNote": "LRC collapses a repeated/processed 「愛や厭」 hook into one lyric anchor; this Provisional candidate models only the primary anchored phrase and leaves the trailing hook texture unexpanded pending real-use review."
+    }
+  ]
+}

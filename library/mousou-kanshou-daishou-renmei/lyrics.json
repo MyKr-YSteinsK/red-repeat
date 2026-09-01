@@ -1,0 +1,1439 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "言っちゃった",
+      "translation": "说出口了",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "言",
+          "reading": "い"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "icchatta"
+        }
+      ]
+    },
+    {
+      "id": "s002",
+      "lyrics": "もう一時だけ隣りに居たい",
+      "translation": "还想再在你身边待一小会儿",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 4,
+          "base": "一時",
+          "reading": "ちょっと"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "隣り",
+          "reading": "となり"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "居たい",
+          "reading": "いたい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mou chotto dake tonari ni itai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "一時（ちょっと）",
+          "body": "这里的「一時」不是按通常的「いちじ／ひととき」来唱，而是读作「ちょっと」。字面把“再一小会儿”的请求写得更重，实际唱法却很口语。"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "いやいやまさか　延長は鬱雑い",
+      "translation": "不不，还是算了，再拖下去只会惹人烦",
+      "ruby": [
+        {
+          "start": 8,
+          "end": 10,
+          "base": "延長",
+          "reading": "えんちょう"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "鬱雑い",
+          "reading": "うざい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "iya iya masaka enchou wa uzai"
+        }
+      ],
+      "notes": [
+        {
+          "title": "鬱雑い（うざい）",
+          "body": "DECO*27 的特殊表记。唱法是「うざい」，意思接近“烦人、麻烦”；把本来常写成假名的口语硬塞进「鬱雑」两个汉字，视觉上反而显得更沉重。"
+        }
+      ]
+    },
+    {
+      "id": "s004",
+      "lyrics": "御免なさい　帰ってね",
+      "translation": "对不起，你回去吧",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "御免",
+          "reading": "ごめん"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "帰って",
+          "reading": "かえって"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "gomennasai kaette ne"
+        }
+      ]
+    },
+    {
+      "id": "s005",
+      "lyrics": "二酸化の炭素　きみの濃度",
+      "translation": "二氧化碳——你的浓度",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "二酸化",
+          "reading": "にさんか"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "炭素",
+          "reading": "たんそ"
+        },
+        {
+          "start": 10,
+          "end": 12,
+          "base": "濃度",
+          "reading": "のうど"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nisanka no tanso kimi no noudo"
+        }
+      ],
+      "notes": [
+        {
+          "title": "二酸化の炭素",
+          "body": "把通常的「二酸化炭素」故意拆成「二酸化の炭素」，再接「きみの濃度」。句子像化学指标一样测量“你的浓度”，让亲密关系带上窒息、残留和空气占比的感觉；后半属于歌词意象，不是严格化学表达。"
+        }
+      ]
+    },
+    {
+      "id": "s006",
+      "lyrics": "浸ってたいよ　泥沼の夢に",
+      "translation": "我想一直沉浸在泥沼般的梦里",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "浸って",
+          "reading": "ひたって"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "泥沼",
+          "reading": "どろぬま"
+        },
+        {
+          "start": 10,
+          "end": 11,
+          "base": "夢",
+          "reading": "ゆめ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hitattetai yo doronuma no yume ni"
+        }
+      ]
+    },
+    {
+      "id": "s007",
+      "lyrics": "身勝手だって言われてもペロリ",
+      "translation": "就算被说任性，我也只吐吐舌头",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "身勝手",
+          "reading": "みがって"
+        },
+        {
+          "start": 6,
+          "end": 10,
+          "base": "言われて",
+          "reading": "いわれて"
+        },
+        {
+          "start": 11,
+          "end": 14,
+          "base": "ペロリ",
+          "reading": "ぺろり"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "migatte datte iwarete mo perori"
+        }
+      ]
+    },
+    {
+      "id": "s008",
+      "lyrics": "不安じゃない　未来はない",
+      "translation": "我并不不安，只是没有未来",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "不安",
+          "reading": "ふあん"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "未来",
+          "reading": "みらい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "fuan ja nai mirai wa nai"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "その顔に生まれ変わりたいな",
+      "translation": "真想来世变成你那副模样",
+      "ruby": [
+        {
+          "start": 2,
+          "end": 3,
+          "base": "顔",
+          "reading": "かお"
+        },
+        {
+          "start": 4,
+          "end": 12,
+          "base": "生まれ変わりたい",
+          "reading": "うまれかわりたい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sono kao ni umarekawaritai na"
+        }
+      ]
+    },
+    {
+      "id": "s010",
+      "lyrics": "知っちゃった",
+      "translation": "我发现了",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 6,
+          "base": "知っちゃった",
+          "reading": "しっちゃった"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "shicchatta"
+        }
+      ]
+    },
+    {
+      "id": "s011",
+      "lyrics": "大嫌いを裏返したとて",
+      "translation": "就算把“最讨厌”翻到反面",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "大嫌い",
+          "reading": "だいきらい"
+        },
+        {
+          "start": 4,
+          "end": 8,
+          "base": "裏返した",
+          "reading": "うらがえした"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "daikirai o uragaeshita tote"
+        }
+      ]
+    },
+    {
+      "id": "s012",
+      "lyrics": "そこに大好きは隠れてないと",
+      "translation": "那里也并没有藏着“最喜欢”",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 6,
+          "base": "大好き",
+          "reading": "だいすき"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "base": "隠れてない",
+          "reading": "かくれてない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "soko ni daisuki wa kakurete nai to"
+        }
+      ]
+    },
+    {
+      "id": "s013",
+      "lyrics": "叶えたい　この想い",
+      "translation": "想让这份心意成真",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "叶えたい",
+          "reading": "かなえたい"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "想い",
+          "reading": "おもい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kanaetai kono omoi"
+        }
+      ]
+    },
+    {
+      "id": "s014",
+      "lyrics": "甘え過ぎ太る心回り",
+      "translation": "依赖得太过，连“心围”都胖了",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "甘え過ぎ",
+          "reading": "あまえすぎ"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "太る",
+          "reading": "ふとる"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "心回り",
+          "reading": "こころまわり"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "amae sugi futoru kokoro mawari"
+        }
+      ],
+      "notes": [
+        {
+          "title": "心回り / ファット想い",
+          "body": "「太る」「ファット→スリム」连续把感情写成会发胖、需要瘦身的东西。「心回り」还模仿了腰围、身围一类尺寸词，让依赖过度变成可以量化的“情感围度”。"
+        }
+      ]
+    },
+    {
+      "id": "s015",
+      "lyrics": "“ファット想い→スリム”を掲げよう",
+      "translation": "就举起“肥胖心意→瘦身”的口号吧",
+      "ruby": [
+        {
+          "start": 1,
+          "end": 5,
+          "base": "ファット",
+          "reading": "ふぁっと"
+        },
+        {
+          "start": 5,
+          "end": 7,
+          "base": "想い",
+          "reading": "おもい"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "スリム",
+          "reading": "すりむ"
+        },
+        {
+          "start": 13,
+          "end": 17,
+          "base": "掲げよう",
+          "reading": "かかげよう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "“fatto omoi→surimu” o kakageyou"
+        }
+      ]
+    },
+    {
+      "id": "s016",
+      "lyrics": "出逢った頃と同じ様に成ろう",
+      "translation": "回到刚相遇时那般模样吧",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "出逢った",
+          "reading": "であった"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "頃",
+          "reading": "ころ"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "同じ",
+          "reading": "おなじ"
+        },
+        {
+          "start": 8,
+          "end": 9,
+          "base": "様",
+          "reading": "よう"
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "base": "成ろう",
+          "reading": "なろう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "deatta koro to onaji you ni narou"
+        }
+      ]
+    },
+    {
+      "id": "s017",
+      "lyrics": "思い笑描く理想狂",
+      "translation": "在心中描绘着“理想乡”",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "思い笑描く",
+          "reading": "おもいえがく"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "理想狂",
+          "reading": "りそうきょう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "omoi egaku risoukyou"
+        }
+      ],
+      "notes": [
+        {
+          "title": "思い笑描く理想狂（おもいえがく・りそうきょう）",
+          "body": "唱法对应普通表达「思い描く理想郷」，但写成了「笑描」「理想狂」。声音仍指向“在心里描绘理想乡”，视觉却把“笑”和“疯狂”塞进理想本身，是这首歌最典型的同音异字机关之一。"
+        }
+      ]
+    },
+    {
+      "id": "s018",
+      "lyrics": "血走る願いはやがて安堵",
+      "translation": "躁动到充血的愿望，终会归于安心",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "血走る",
+          "reading": "ちばしる"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "願い",
+          "reading": "ねがい"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "安堵",
+          "reading": "あんど"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "chibashiru negai wa yagate ando"
+        }
+      ]
+    },
+    {
+      "id": "s019",
+      "lyrics": "だけど「大丈夫」なんて恋はどこにもないの",
+      "translation": "可是，世上根本没有所谓“没问题”的恋爱",
+      "ruby": [
+        {
+          "start": 4,
+          "end": 7,
+          "base": "大丈夫",
+          "reading": "だいじょうぶ"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "恋",
+          "reading": "こい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakedo “daijoubu” nante koi wa doko ni mo nai no"
+        }
+      ]
+    },
+    {
+      "id": "s020",
+      "lyrics": "だから妄想感傷代償連盟",
+      "translation": "所以，这就是妄想感伤代偿联盟",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 11,
+          "base": "妄想感傷代償連盟",
+          "reading": "もうそうかんしょうだいしょうれんめい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakara mousou kanshou daishou renmei"
+        }
+      ]
+    },
+    {
+      "id": "s021",
+      "lyrics": "愛を懐いて理想を号んだ",
+      "translation": "怀抱着爱，高喊着理想",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 2,
+          "end": 5,
+          "base": "懐いて",
+          "reading": "いだいて"
+        },
+        {
+          "start": 5,
+          "end": 7,
+          "base": "理想",
+          "reading": "りそう"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "号んだ",
+          "reading": "さけんだ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ai o idaite risou o sakenda"
+        }
+      ],
+      "notes": [
+        {
+          "title": "懐いて / 号んだ",
+          "body": "「懐いて」这里唱作「いだいて」，是“怀抱着”；「号んだ」唱作「さけんだ」，在听觉上等同“叫喊理想”，但用更异常的汉字把情绪写得像口号或号令。"
+        }
+      ]
+    },
+    {
+      "id": "s022",
+      "lyrics": "行き場のない愚者のメロディー",
+      "translation": "无处可去的愚者旋律",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "行き場",
+          "reading": "いきば"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "愚者",
+          "reading": "ぐしゃ"
+        },
+        {
+          "start": 9,
+          "end": 14,
+          "base": "メロディー",
+          "reading": "めろでぃー"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ikiba no nai gusha no merodii"
+        }
+      ]
+    },
+    {
+      "id": "s023",
+      "lyrics": "再挑戦・転生・テレポーテーション",
+      "translation": "再挑战、转生、瞬间移动",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "再挑戦",
+          "reading": "さいちょうせん"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "転生",
+          "reading": "てんせい"
+        },
+        {
+          "start": 7,
+          "end": 16,
+          "base": "テレポーテーション",
+          "reading": "てれぽーてーしょん"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "saichousen tensei terepooteeshon"
+        }
+      ]
+    },
+    {
+      "id": "s024",
+      "lyrics": "何回だって　重ねて逝くんだ",
+      "translation": "无论多少次，都这样反复着“逝去”",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "何回",
+          "reading": "なんかい"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "重ねて",
+          "reading": "かさねて"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "逝くんだ",
+          "reading": "いくんだ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nankai datte kasanete iku n da"
+        }
+      ]
+    },
+    {
+      "id": "s025",
+      "lyrics": "終わりなき愛の隨に　さあ",
+      "translation": "任凭无尽的爱摆布——来吧",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "終わり",
+          "reading": "おわり"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "隨に",
+          "reading": "まにまに"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "owari naki ai no manimani saa"
+        }
+      ],
+      "notes": [
+        {
+          "title": "隨に（まにまに）",
+          "body": "「〜のまにまに」表示任凭、随着……而动。这里不是简单的“伴随着爱”，更接近“任由无尽的爱摆布／听凭它把人带走”。"
+        }
+      ]
+    },
+    {
+      "id": "s026",
+      "lyrics": "愛や厭",
+      "translation": "爱呀，厌呀",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 2,
+          "end": 3,
+          "base": "厭",
+          "reading": "いや"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ai ya iya"
+        }
+      ],
+      "notes": [
+        {
+          "title": "愛や厭",
+          "body": "「愛（あい）」与「厭（いや）」被压成「愛や厭」。唱起来是「ai ya iya」，既像“爱呀、厌呀”的摇摆，也会和前文反复出现的「いやいや」产生听觉回声。"
+        }
+      ]
+    },
+    {
+      "id": "s027",
+      "lyrics": "頑張った",
+      "translation": "我努力过了",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "頑張った",
+          "reading": "がんばった"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ganbatta"
+        }
+      ]
+    },
+    {
+      "id": "s028",
+      "lyrics": "どうしようもないその我儘",
+      "translation": "那份任性，已经无可奈何",
+      "ruby": [
+        {
+          "start": 10,
+          "end": 12,
+          "base": "我儘",
+          "reading": "わがまま"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dou shiyou mo nai sono wagamama"
+        }
+      ]
+    },
+    {
+      "id": "s029",
+      "lyrics": "叶えた先にある謎自恋魔",
+      "translation": "愿望实现之后，却还有谜一般的两难困境",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "叶えた",
+          "reading": "かなえた"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "先",
+          "reading": "さき"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "謎",
+          "reading": "なぞ"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "自恋魔",
+          "reading": "じれんま"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kanaeta saki ni aru nazo jirenma"
+        }
+      ],
+      "notes": [
+        {
+          "title": "自恋魔（じれんま）",
+          "body": "「自恋魔」并不是通常词汇，而是给外来语「ジレンマ（dilemma，两难困境）」套上的当て字。愿望即使实现，后面仍等着新的 dilemma；因此原翻译里“还没实现”会把时态和逻辑倒置。"
+        }
+      ]
+    },
+    {
+      "id": "s030",
+      "lyrics": "怒ってる？　…怒ってない。",
+      "translation": "“生气了吗？”……“没生气。”",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "怒ってる",
+          "reading": "おこってる"
+        },
+        {
+          "start": 7,
+          "end": 12,
+          "base": "怒ってない",
+          "reading": "おこってない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "okotteru? …okottenai."
+        }
+      ]
+    },
+    {
+      "id": "s031",
+      "lyrics": "阿吽の呼吸でズレるビート",
+      "translation": "明明默契十足，节拍却还是错开",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "阿吽",
+          "reading": "あうん"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "呼吸",
+          "reading": "こきゅう"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "ズレる",
+          "reading": "ずれる"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "ビート",
+          "reading": "びーと"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "aun no kokyuu de zureru biito"
+        }
+      ],
+      "notes": [
+        {
+          "title": "阿吽の呼吸",
+          "body": "「阿吽の呼吸」指无需说明也能配合得天衣无缝。歌词却紧接「ズレるビート（错开的节拍）」，把“默契”与“不同步”放在同一句里，正好对应关系中表面合拍、内部错位的状态。"
+        }
+      ]
+    },
+    {
+      "id": "s032",
+      "lyrics": "これがもし映画やドラマなら",
+      "translation": "如果这是一部电影或电视剧",
+      "ruby": [
+        {
+          "start": 5,
+          "end": 7,
+          "base": "映画",
+          "reading": "えいが"
+        },
+        {
+          "start": 8,
+          "end": 11,
+          "base": "ドラマ",
+          "reading": "どらま"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kore ga moshi eiga ya dorama nara"
+        }
+      ]
+    },
+    {
+      "id": "s033",
+      "lyrics": "スタッフロールまでは乗り切れど",
+      "translation": "就算能硬撑到片尾字幕",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 7,
+          "base": "スタッフロール",
+          "reading": "すたっふろーる"
+        },
+        {
+          "start": 10,
+          "end": 15,
+          "base": "乗り切れど",
+          "reading": "のりきれど"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "sutaffu rooru made wa norikiredo"
+        }
+      ]
+    },
+    {
+      "id": "s034",
+      "lyrics": "二度とは観たくない",
+      "translation": "也绝不想再看第二遍",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "二度",
+          "reading": "にど"
+        },
+        {
+          "start": 4,
+          "end": 9,
+          "base": "観たくない",
+          "reading": "みたくない"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nido to wa mitakunai"
+        }
+      ]
+    },
+    {
+      "id": "s035",
+      "lyrics": "酷すぎる起承　転も結も",
+      "translation": "起与承太残酷，转和结也一样",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 4,
+          "base": "酷すぎる",
+          "reading": "ひどすぎる"
+        },
+        {
+          "start": 4,
+          "end": 6,
+          "base": "起承",
+          "reading": "きしょう"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "転",
+          "reading": "てん"
+        },
+        {
+          "start": 9,
+          "end": 10,
+          "base": "結",
+          "reading": "けつ"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "hido sugiru kishou ten mo ketsu mo"
+        }
+      ]
+    },
+    {
+      "id": "s036",
+      "lyrics": "だけど「大丈夫」なんて恋を信じて仕舞うよ",
+      "translation": "可我还是会相信那种“没问题”的恋爱",
+      "ruby": [
+        {
+          "start": 4,
+          "end": 7,
+          "base": "大丈夫",
+          "reading": "だいじょうぶ"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "恋",
+          "reading": "こい"
+        },
+        {
+          "start": 13,
+          "end": 16,
+          "base": "信じて",
+          "reading": "しんじて"
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "base": "仕舞う",
+          "reading": "しまう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakedo “daijoubu” nante koi o shinjite shimau yo"
+        }
+      ]
+    },
+    {
+      "id": "s037",
+      "lyrics": "だから通称：愛情対象年齢",
+      "translation": "所以，通称：爱情适用年龄",
+      "ruby": [
+        {
+          "start": 3,
+          "end": 5,
+          "base": "通称",
+          "reading": "つうしょう"
+        },
+        {
+          "start": 6,
+          "end": 12,
+          "base": "愛情対象年齢",
+          "reading": "あいじょうたいしょうねんれい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakara tsuushou: aijou taishou nenrei"
+        }
+      ],
+      "notes": [
+        {
+          "title": "愛情対象年齢",
+          "body": "「対象年齢」通常用于商品、作品或设施的“适用年龄”。在前面加上「愛情」，就像给恋爱贴了一张年龄标签；这里比直译成“爱情对象年龄”更接近这个制度化、标签化的玩笑。"
+        }
+      ]
+    },
+    {
+      "id": "s038",
+      "lyrics": "愛を悪んで守った位相が",
+      "translation": "憎着爱、又守下来的那一“相位”",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 2,
+          "end": 5,
+          "base": "悪んで",
+          "reading": "にくんで"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "守った",
+          "reading": "まもった"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "位相",
+          "reading": "いそう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ai o nikunde mamotta isou ga"
+        }
+      ],
+      "notes": [
+        {
+          "title": "悪んで（にくんで） / 位相",
+          "body": "「悪んで」唱作「にくんで」，通常会写成「憎んで」；把“憎”换成“恶”，让“憎爱”在字面上也变质。「位相」可指 phase / 状态位置等技术概念，这里更重要的是它把关系写成一个会偏移、扭曲的位置状态。"
+        }
+      ]
+    },
+    {
+      "id": "s039",
+      "lyrics": "正しく歪み始めるの",
+      "translation": "开始“正确地”扭曲起来",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "正しく",
+          "reading": "ただしく"
+        },
+        {
+          "start": 3,
+          "end": 5,
+          "base": "歪み",
+          "reading": "ゆがみ"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "始める",
+          "reading": "はじめる"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tadashiku yugami hajimeru no"
+        }
+      ]
+    },
+    {
+      "id": "s040",
+      "lyrics": "最低じゃん　どうせ対人ローション",
+      "translation": "糟透了，反正不过是人际间的“润滑剂”",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "最低",
+          "reading": "さいてい"
+        },
+        {
+          "start": 9,
+          "end": 11,
+          "base": "対人",
+          "reading": "たいじん"
+        },
+        {
+          "start": 11,
+          "end": 16,
+          "base": "ローション",
+          "reading": "ろーしょん"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "saitei jan douse taijin rooshon"
+        }
+      ],
+      "notes": [
+        {
+          "title": "対人ローション",
+          "body": "这是造语。常见解读把 lotion 的“润滑”联想到人际关系里的润滑剂：为了让人与人之间勉强顺滑而涂上的东西。它不是 DECO*27 已公开定义的术语，因此应当作为歌词机关／编辑解读来理解。"
+        }
+      ]
+    },
+    {
+      "id": "s041",
+      "lyrics": "何回だって　傷付け合うんだ",
+      "translation": "无论多少次，还是会彼此伤害",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "何回",
+          "reading": "なんかい"
+        },
+        {
+          "start": 6,
+          "end": 11,
+          "base": "傷付け合う",
+          "reading": "きずつけあう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "nankai datte kizutsuke au n da"
+        }
+      ]
+    },
+    {
+      "id": "s042",
+      "lyrics": "混ざり合う愛のフィロソフィー",
+      "translation": "彼此交融的爱的哲学",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "混ざり合う",
+          "reading": "まざりあう"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 7,
+          "end": 14,
+          "base": "フィロソフィー",
+          "reading": "ふぃろそふぃー"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mazari au ai no firosofii"
+        }
+      ]
+    },
+    {
+      "id": "s043",
+      "lyrics": "だけど「大丈夫」なんて嘘を覚えて仕舞うの",
+      "translation": "可最后还是学会了“没问题”这种谎言",
+      "ruby": [
+        {
+          "start": 4,
+          "end": 7,
+          "base": "大丈夫",
+          "reading": "だいじょうぶ"
+        },
+        {
+          "start": 11,
+          "end": 12,
+          "base": "嘘",
+          "reading": "うそ"
+        },
+        {
+          "start": 13,
+          "end": 16,
+          "base": "覚えて",
+          "reading": "おぼえて"
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "base": "仕舞う",
+          "reading": "しまう"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakedo “daijoubu” nante uso o oboete shimau no"
+        }
+      ]
+    },
+    {
+      "id": "s044",
+      "lyrics": "だから",
+      "translation": "所以",
+      "ruby": [],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dakara"
+        }
+      ]
+    },
+    {
+      "id": "s045",
+      "lyrics": "通称：愛情対象年齢",
+      "translation": "通称：爱情适用年龄",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "通称",
+          "reading": "つうしょう"
+        },
+        {
+          "start": 3,
+          "end": 9,
+          "base": "愛情対象年齢",
+          "reading": "あいじょうたいしょうねんれい"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "tsuushou: aijou taishou nenrei"
+        }
+      ],
+      "notes": [
+        {
+          "title": "愛情対象年齢",
+          "body": "「対象年齢」通常用于商品、作品或设施的“适用年龄”。在前面加上「愛情」，就像给恋爱贴了一张年龄标签；这里比直译成“爱情对象年龄”更接近这个制度化、标签化的玩笑。"
+        }
+      ]
+    },
+    {
+      "id": "s046",
+      "lyrics": "混ざり合う愛のフィロソフィー　さあ",
+      "translation": "彼此交融的爱的哲学——来吧",
+      "ruby": [
+        {
+          "start": 0,
+          "end": 5,
+          "base": "混ざり合う",
+          "reading": "まざりあう"
+        },
+        {
+          "start": 5,
+          "end": 6,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 7,
+          "end": 14,
+          "base": "フィロソフィー",
+          "reading": "ふぃろそふぃー"
+        }
+      ],
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mazari au ai no firosofii saa"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "units": [
+    {
+      "id": "p001",
+      "sectionId": "verse-1a",
+      "label": "说出口 · 想再靠近",
+      "occurrenceIds": [
+        "o001",
+        "o002",
+        "o003",
+        "o004",
+        "o005"
+      ]
+    },
+    {
+      "id": "p002",
+      "sectionId": "verse-1a",
+      "label": "泥沼 · 没有未来",
+      "occurrenceIds": [
+        "o006",
+        "o007",
+        "o008",
+        "o009"
+      ]
+    },
+    {
+      "id": "p003",
+      "sectionId": "verse-1b",
+      "label": "知道了 · 喜欢不在反面",
+      "occurrenceIds": [
+        "o010",
+        "o011",
+        "o012",
+        "o013",
+        "o014"
+      ]
+    },
+    {
+      "id": "p004",
+      "sectionId": "verse-1b",
+      "label": "理想狂 · 血走る愿望",
+      "occurrenceIds": [
+        "o015",
+        "o016",
+        "o017",
+        "o018"
+      ]
+    },
+    {
+      "id": "p005",
+      "sectionId": "prechorus-1",
+      "label": "不存在的「大丈夫」",
+      "occurrenceIds": [
+        "o019"
+      ]
+    },
+    {
+      "id": "p006",
+      "sectionId": "chorus-1",
+      "label": "妄想感伤代偿联盟",
+      "occurrenceIds": [
+        "o020",
+        "o021",
+        "o022",
+        "o023",
+        "o024",
+        "o025"
+      ]
+    },
+    {
+      "id": "p007",
+      "sectionId": "post-chorus-1",
+      "label": "愛や厭 · Post Hook",
+      "occurrenceIds": [
+        "o026"
+      ]
+    },
+    {
+      "id": "p008",
+      "sectionId": "verse-2",
+      "label": "努力过 · 错开的节拍",
+      "occurrenceIds": [
+        "o027",
+        "o028",
+        "o029",
+        "o030",
+        "o031"
+      ]
+    },
+    {
+      "id": "p009",
+      "sectionId": "verse-2",
+      "label": "电影般残酷的起承转结",
+      "occurrenceIds": [
+        "o032",
+        "o033",
+        "o034",
+        "o035"
+      ]
+    },
+    {
+      "id": "p010",
+      "sectionId": "prechorus-2",
+      "label": "又相信了「大丈夫」",
+      "occurrenceIds": [
+        "o036"
+      ]
+    },
+    {
+      "id": "p011",
+      "sectionId": "chorus-2",
+      "label": "爱情适龄 · 正确地扭曲",
+      "occurrenceIds": [
+        "o037",
+        "o038",
+        "o039"
+      ]
+    },
+    {
+      "id": "p012",
+      "sectionId": "chorus-2",
+      "label": "人际润滑剂 · 爱的哲学",
+      "occurrenceIds": [
+        "o040",
+        "o041",
+        "o042"
+      ]
+    },
+    {
+      "id": "p013",
+      "sectionId": "pre-final",
+      "label": "学会「大丈夫」的谎言",
+      "occurrenceIds": [
+        "o043",
+        "o044"
+      ]
+    },
+    {
+      "id": "p014",
+      "sectionId": "final-chorus",
+      "label": "Final Chorus · 妄想感伤",
+      "occurrenceIds": [
+        "o045",
+        "o046",
+        "o047",
+        "o048",
+        "o049",
+        "o050"
+      ]
+    },
+    {
+      "id": "p015",
+      "sectionId": "final-chorus",
+      "label": "Final Chorus · 爱情适龄",
+      "occurrenceIds": [
+        "o051",
+        "o052",
+        "o053",
+        "o054",
+        "o055",
+        "o056"
+      ]
+    },
+    {
+      "id": "p016",
+      "sectionId": "post-chorus-final",
+      "label": "愛や厭 · Final Hook",
+      "occurrenceIds": [
+        "o057"
+      ]
+    }
+  ]
+}
