@@ -1,0 +1,100 @@
+{
+  "units": [
+    {
+      "id": "p001",
+      "sectionId": "verse-1",
+      "label": "主歌 1",
+      "occurrenceIds": [
+        "o001",
+        "o002",
+        "o003",
+        "o004",
+        "o005"
+      ]
+    },
+    {
+      "id": "p002",
+      "sectionId": "refrain-1",
+      "label": "副歌 1-A",
+      "occurrenceIds": [
+        "o006",
+        "o007",
+        "o008",
+        "o009"
+      ]
+    },
+    {
+      "id": "p003",
+      "sectionId": "refrain-1",
+      "label": "副歌 1-B",
+      "occurrenceIds": [
+        "o010",
+        "o011",
+        "o012"
+      ]
+    },
+    {
+      "id": "p004",
+      "sectionId": "verse-2",
+      "label": "主歌 2",
+      "occurrenceIds": [
+        "o013",
+        "o014",
+        "o015",
+        "o016",
+        "o017"
+      ]
+    },
+    {
+      "id": "p005",
+      "sectionId": "refrain-2",
+      "label": "副歌 2-A",
+      "occurrenceIds": [
+        "o018",
+        "o019",
+        "o020",
+        "o021"
+      ]
+    },
+    {
+      "id": "p006",
+      "sectionId": "refrain-2",
+      "label": "副歌 2-B",
+      "occurrenceIds": [
+        "o022",
+        "o023",
+        "o024"
+      ]
+    },
+    {
+      "id": "p007",
+      "sectionId": "bridge",
+      "label": "桥段",
+      "occurrenceIds": [
+        "o025",
+        "o026"
+      ]
+    },
+    {
+      "id": "p008",
+      "sectionId": "final-refrain",
+      "label": "终副歌 A",
+      "occurrenceIds": [
+        "o027",
+        "o028",
+        "o029",
+        "o030"
+      ]
+    },
+    {
+      "id": "p009",
+      "sectionId": "final-refrain",
+      "label": "终副歌 B",
+      "occurrenceIds": [
+        "o031",
+        "o032",
+        "o033"
+      ]
+    }
+  ]
+}

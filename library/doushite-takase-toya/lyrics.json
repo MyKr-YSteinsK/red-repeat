@@ -1,0 +1,764 @@
+{
+  "segments": [
+    {
+      "id": "s001",
+      "lyrics": "どうして 君のこと",
+      "translation": "为什么，我总会想起你",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "doushite kimi no koto"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 5,
+          "end": 6,
+          "base": "君",
+          "reading": "きみ"
+        }
+      ]
+    },
+    {
+      "id": "s002",
+      "lyrics": "切ない夜に 想ってしまうの",
+      "translation": "偏偏是在令人难过的夜里呢",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "setsunai yoru ni omotte shimau no"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 3,
+          "base": "切ない",
+          "reading": "せつない"
+        },
+        {
+          "start": 3,
+          "end": 4,
+          "base": "夜",
+          "reading": "よる"
+        },
+        {
+          "start": 6,
+          "end": 9,
+          "base": "想って",
+          "reading": "おもって"
+        }
+      ]
+    },
+    {
+      "id": "s003",
+      "lyrics": "がむしゃらに好きだった",
+      "translation": "曾经一门心思地喜欢着你",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "gamushara ni suki datta"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 6,
+          "end": 8,
+          "base": "好き",
+          "reading": "すき"
+        }
+      ],
+      "notes": [
+        {
+          "title": "がむしゃら",
+          "body": "不顾周围、只朝一个方向猛冲的状态。这里比普通的「很喜欢」更带有失去分寸、顾不上后果的感觉。"
+        }
+      ]
+    },
+    {
+      "id": "s004",
+      "lyrics": "好きすぎたから 愛せなかったんだ",
+      "translation": "正因为喜欢得太过头，反而没能好好爱你",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "suki sugita kara aisenakatta nda"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "好き",
+          "reading": "すき"
+        },
+        {
+          "start": 8,
+          "end": 14,
+          "base": "愛せなかった",
+          "reading": "あいせなかった"
+        }
+      ],
+      "notes": [
+        {
+          "title": "好きすぎたから、愛せなかった",
+          "body": "「好き」强调强烈的喜欢与欲望，「愛せなかった」则把结果写成“没能好好去爱”。这句故意把感情强度和关系能力拆开：越喜欢，反而越没能把关系维持成一种可持续的爱。"
+        }
+      ]
+    },
+    {
+      "id": "s005",
+      "lyrics": "U&I",
+      "translation": "U&I",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "U&I"
+        }
+      ],
+      "notes": [
+        {
+          "title": "U&I → もういない",
+          "body": "U&I 可直接读作 “you and I”。紧接着出现「もういない（已经不在）」形成明显的声音与意义落差；把它理解为编排上的对照是 RED:REPEAT 的编辑观察，不等同于创作者公开确认的双关。"
+        }
+      ]
+    },
+    {
+      "id": "s006",
+      "lyrics": "もういない Tonight Tonight",
+      "translation": "你已经不在了，Tonight Tonight",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mou inai Tonight Tonight"
+        }
+      ]
+    },
+    {
+      "id": "s007",
+      "lyrics": "誰にもまだ話せない",
+      "translation": "这件事，我还无法对任何人说",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dare ni mo mada hanasenai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "誰",
+          "reading": "だれ"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "話せない",
+          "reading": "はなせない"
+        }
+      ],
+      "notes": [
+        {
+          "title": "話せない",
+          "body": "「話せない」是“不能/无法说”，重点在能力、心理阻力或条件限制。后两轮会依次改成「話さない」与「話してない」，语法选择本身就在推进叙述状态。"
+        }
+      ]
+    },
+    {
+      "id": "s008",
+      "lyrics": "諦めたくても 諦めきれないや",
+      "translation": "就算想放下，也怎么都放不彻底啊",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "akirametakute mo akiramekirenai ya"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 6,
+          "base": "諦めたくても",
+          "reading": "あきらめたくても"
+        },
+        {
+          "start": 7,
+          "end": 13,
+          "base": "諦めきれない",
+          "reading": "あきらめきれない"
+        }
+      ],
+      "notes": [
+        {
+          "title": "諦めきれない",
+          "body": "动词连用形 +「きる」有“彻底做完”的意味；否定「きれない」因此不是单纯“不想放弃”，而是“怎么都没法彻底放下”。"
+        }
+      ]
+    },
+    {
+      "id": "s009",
+      "lyrics": "「会いたいな」しか出ない",
+      "translation": "说出口的只剩一句「好想见你」",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "\"aitai na\" shika denai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 1,
+          "end": 5,
+          "base": "会いたい",
+          "reading": "あいたい"
+        },
+        {
+          "start": 9,
+          "end": 12,
+          "base": "出ない",
+          "reading": "でない"
+        }
+      ],
+      "notes": [
+        {
+          "title": "しか～ない",
+          "body": "「しか」与否定式搭配，表示“只有……”。这里不是有很多话却挑了一句，而是到了嘴边只剩「会いたいな」这一种表达。"
+        }
+      ]
+    },
+    {
+      "id": "s010",
+      "lyrics": "今更 うまい話はない もう夜明け",
+      "translation": "事到如今，哪还有那么称心的事；天已经亮了",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "imasara umai hanashi wa nai mou yoake"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "今更",
+          "reading": "いまさら"
+        },
+        {
+          "start": 6,
+          "end": 7,
+          "base": "話",
+          "reading": "はなし"
+        },
+        {
+          "start": 13,
+          "end": 16,
+          "base": "夜明け",
+          "reading": "よあけ"
+        }
+      ],
+      "notes": [
+        {
+          "title": "うまい話",
+          "body": "惯用语「うまい話」可以指过于顺利、称心甚至好得可疑的“好事”。放在失恋语境里，比单纯翻成“事情不会好转”更接近“事到如今哪还有那么称心的转机”。"
+        }
+      ]
+    },
+    {
+      "id": "s011",
+      "lyrics": "君と過ごせる今日が良かった",
+      "translation": "能和你一起度过的今天，真好",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi to sugoseru kyou ga yokatta"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "過ごせる",
+          "reading": "すごせる"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "良かった",
+          "reading": "よかった"
+        }
+      ]
+    },
+    {
+      "id": "s012",
+      "lyrics": "でもこのままじゃきっと同じなんだ",
+      "translation": "可要是继续这样下去，结果一定还是一样",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "demo kono mama ja kitto onaji nanda"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 11,
+          "end": 13,
+          "base": "同じ",
+          "reading": "おなじ"
+        }
+      ]
+    },
+    {
+      "id": "s013",
+      "lyrics": "こんな夜に思い出してしまうの？",
+      "translation": "偏偏又是在这样的夜里呢？",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "konna yoru ni omoidashite shimau no?"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 3,
+          "end": 4,
+          "base": "夜",
+          "reading": "よる"
+        },
+        {
+          "start": 5,
+          "end": 10,
+          "base": "思い出して",
+          "reading": "おもいだして"
+        }
+      ]
+    },
+    {
+      "id": "s014",
+      "lyrics": "部屋に散らばる愛も",
+      "translation": "就连散落在房间里的那些爱",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "heya ni chirabaru ai mo"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 2,
+          "base": "部屋",
+          "reading": "へや"
+        },
+        {
+          "start": 3,
+          "end": 7,
+          "base": "散らばる",
+          "reading": "ちらばる"
+        },
+        {
+          "start": 7,
+          "end": 8,
+          "base": "愛",
+          "reading": "あい"
+        }
+      ]
+    },
+    {
+      "id": "s015",
+      "lyrics": "今は散らかる愛の戯言",
+      "translation": "如今也不过成了凌乱散落的爱的空话",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "ima wa chirakaru ai no tawagoto"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "今",
+          "reading": "いま"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "散らかる",
+          "reading": "ちらかる"
+        },
+        {
+          "start": 6,
+          "end": 7,
+          "base": "愛",
+          "reading": "あい"
+        },
+        {
+          "start": 8,
+          "end": 10,
+          "base": "戯言",
+          "reading": "たわごと"
+        }
+      ],
+      "notes": [
+        {
+          "title": "散らばる／散らかる／戯言",
+          "body": "上一句的「散らばる」是“散落各处”，这一句的「散らかる」是“变得凌乱”；两个近形动词把房间里的残留物与关系本身叠在一起。「戯言（たわごと）」则是空话、胡话，并非“花言巧语”的固定同义词。"
+        }
+      ]
+    },
+    {
+      "id": "s016",
+      "lyrics": "誰にもまだ話さない",
+      "translation": "这件事，我还没打算告诉任何人",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dare ni mo mada hanasanai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "誰",
+          "reading": "だれ"
+        },
+        {
+          "start": 5,
+          "end": 9,
+          "base": "話さない",
+          "reading": "はなさない"
+        }
+      ]
+    },
+    {
+      "id": "s017",
+      "lyrics": "諦めたくても 諦めきれないな",
+      "translation": "就算想放下，也还是放不彻底啊",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "akirametakute mo akiramekirenai na"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 6,
+          "base": "諦めたくても",
+          "reading": "あきらめたくても"
+        },
+        {
+          "start": 7,
+          "end": 13,
+          "base": "諦めきれない",
+          "reading": "あきらめきれない"
+        }
+      ]
+    },
+    {
+      "id": "s018",
+      "lyrics": "君と過ごせた今日が良かった",
+      "translation": "曾能和你一起度过的今天，真好",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi to sugoseta kyou ga yokatta"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "過ごせた",
+          "reading": "すごせた"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "良かった",
+          "reading": "よかった"
+        }
+      ]
+    },
+    {
+      "id": "s019",
+      "lyrics": "まだこのままじゃきっと同じなんだ",
+      "translation": "可如果还是这样下去，结果一定不会变",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "mada kono mama ja kitto onaji nanda"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 11,
+          "end": 13,
+          "base": "同じ",
+          "reading": "おなじ"
+        }
+      ]
+    },
+    {
+      "id": "s020",
+      "lyrics": "君よりもっと 素敵なひとも",
+      "translation": "即使有比你更出色的人",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi yori motto suteki na hito mo"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "素敵",
+          "reading": "すてき"
+        }
+      ]
+    },
+    {
+      "id": "s021",
+      "lyrics": "君以上の人にはなれないからさ",
+      "translation": "也没办法成为胜过你的人啊",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi ijou no hito ni wa narenai kara sa"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 1,
+          "end": 3,
+          "base": "以上",
+          "reading": "いじょう"
+        },
+        {
+          "start": 4,
+          "end": 5,
+          "base": "人",
+          "reading": "ひと"
+        }
+      ],
+      "notes": [
+        {
+          "title": "君よりもっと…君以上…",
+          "body": "两句连起来才完整：即使出现“比你更出色的人”，在叙述者心里也无法成为“超过你的人”。原句并不是在断言“世上没有比你优秀的人”。"
+        }
+      ]
+    },
+    {
+      "id": "s022",
+      "lyrics": "でもいない Tonight Tonight",
+      "translation": "可你还是不在，Tonight Tonight",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "demo inai Tonight Tonight"
+        }
+      ]
+    },
+    {
+      "id": "s023",
+      "lyrics": "誰にもまだ話してない",
+      "translation": "这件事，我到现在还没告诉任何人",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "dare ni mo mada hanashitenai"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "誰",
+          "reading": "だれ"
+        },
+        {
+          "start": 5,
+          "end": 8,
+          "base": "話して",
+          "reading": "はなして"
+        }
+      ]
+    },
+    {
+      "id": "s024",
+      "lyrics": "諦めたくても 諦めきれないんだ",
+      "translation": "就算想放下，我终究还是放不下",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "akirametakute mo akiramekirenai nda"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 6,
+          "base": "諦めたくても",
+          "reading": "あきらめたくても"
+        },
+        {
+          "start": 7,
+          "end": 13,
+          "base": "諦めきれない",
+          "reading": "あきらめきれない"
+        }
+      ]
+    },
+    {
+      "id": "s025",
+      "lyrics": "君と過ごせて今日も良かった",
+      "translation": "今天也能和你一起度过，真好",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "kimi to sugosete kyou mo yokatta"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "君",
+          "reading": "きみ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "過ごせて",
+          "reading": "すごせて"
+        },
+        {
+          "start": 6,
+          "end": 8,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 9,
+          "end": 13,
+          "base": "良かった",
+          "reading": "よかった"
+        }
+      ],
+      "notes": [
+        {
+          "title": "過ごせる → 過ごせた → 過ごせて",
+          "body": "同一核心动词在三轮结尾依次变化：能一起度过（可能/愿望）、曾能一起度过（过去可能）、能够一起度过而……（て形连接评价）。这种微调把“今天”从愿望推向回忆，再推到最后的梦境反转。"
+        }
+      ]
+    },
+    {
+      "id": "s026",
+      "lyrics": "夢が覚めたら 今日が終わっていた",
+      "translation": "梦醒之后，今天早已结束了",
+      "layers": [
+        {
+          "id": "romaji",
+          "label": "Romaji",
+          "text": "yume ga sametara kyou ga owatte ita"
+        }
+      ],
+      "ruby": [
+        {
+          "start": 0,
+          "end": 1,
+          "base": "夢",
+          "reading": "ゆめ"
+        },
+        {
+          "start": 2,
+          "end": 6,
+          "base": "覚めたら",
+          "reading": "さめたら"
+        },
+        {
+          "start": 7,
+          "end": 9,
+          "base": "今日",
+          "reading": "きょう"
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "base": "終わって",
+          "reading": "おわって"
+        }
+      ],
+      "notes": [
+        {
+          "title": "夢が覚めたら",
+          "body": "常见说法更容易想到「夢から覚める」，歌词却写「夢が覚めたら」，让“梦”本身像一个会醒来的主体。中文采用自然的“梦醒之后”，不额外把这种诗性表记解释成固定语法规则。"
+        }
+      ]
+    }
+  ]
+}
