@@ -12,7 +12,7 @@ node_modules
 dist
 dist-ssr
 public/library-runtime/
-.cache/library-compiler/
+.cache/
 *.local
 
 # Local environment and secrets
