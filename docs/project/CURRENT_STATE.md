@@ -7,7 +7,8 @@ evidence only.
 ## Repository identity and worktree
 
 - Repository/package: `red-repeat`
-- Root: `D:\CS\red-repeat`
+- Root: current local checkout; the filesystem path is machine-specific and is
+  not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
 - Current user version: `1.15.0`

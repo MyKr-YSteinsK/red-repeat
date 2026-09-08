@@ -6,10 +6,11 @@ Project context and canonical ownership: [docs/project/README.md](docs/project/R
 
 ## Local development
 
-Requires Node.js 24 LTS and npm.
+Requires Git, Node.js 24 LTS and npm. The repository has no runtime backend,
+database or required checked-out environment file.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -60,6 +61,70 @@ run the verification commands above, then commit the source package. Do not
 commit generated `public/library-runtime/` or `dist/` output.
 
 For deterministic CI installs, use `npm ci`.
+
+## Fresh machine and computer switching
+
+The clone is the source of truth for the project. A new computer can restore
+the development environment with:
+
+```bash
+git clone https://github.com/MyKr-YSteinsK/red-repeat.git
+cd red-repeat
+npm ci
+npm run library:validate
+npm test
+npm run build -- --base=/red-repeat/
+```
+
+The tracked recovery boundary is:
+
+- `library/`, `src/`, tracked static assets under `public/`, docs, scripts,
+  `.github/`, `package.json` and `package-lock.json` are committed
+  source/configuration.
+- `node_modules/`, `public/library-runtime/`, `dist/` and `.cache/` are
+  ignored and reproducible. Regenerate them with `npm ci` and the relevant
+  validation/build commands; do not copy or commit them.
+- `.private/` contains private research/provenance and pending intake. It is
+  deliberately not part of a public clone. External Plan/Handoff files and
+  local untracked archives (for example `docs/archive/retrospectives/`) are
+  also not synchronized by Git; preserve them through a separate private
+  backup or attach the required task input again, and never commit sensitive
+  or rights-unclear material.
+- There is no server-side database or account data. Practice resume/rate,
+  timing overrides and downloaded Song Edition snapshots live in browser
+  `localStorage`/`Cache Storage`; they do not migrate through Git. On a new
+  computer, reinstall the PWA if desired, re-download offline songs and
+  re-establish any personal local calibration/state.
+
+Before leaving a computer, finish or explicitly preserve owned work, review
+the paths, then commit and push the intended source changes:
+
+```bash
+git status --short
+git add <intended-files>
+git commit -m "<focused message>"
+git push
+git status --short --branch
+```
+
+On the next computer, use one writer at a time and fast-forward the checkout
+before continuing:
+
+```bash
+git fetch origin
+git switch main
+git pull --ff-only
+npm ci  # run when package.json or package-lock.json changed, or dependencies are absent
+```
+
+For the next development boundary such as `RED-Plan-65`, first synchronize
+`main`, run the setup/verification above, and then provide the Plan or
+Structured Song Handoff input package separately. Plan attachments and browser
+state are not supplied by a Git clone, even when the Codex conversation is
+available on the new computer. Codex should preflight `AGENTS.md`,
+`docs/project/README.md`, `docs/project/PROJECT_BRIEF.md`,
+`docs/project/DECISIONS.md` and `docs/project/CURRENT_STATE.md` against the
+actual checkout before changing anything.
 
 Production hosting uses GitHub Pages:
 
