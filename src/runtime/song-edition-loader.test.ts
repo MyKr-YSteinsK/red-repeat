@@ -7,7 +7,6 @@ import {
 } from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from './runtime-client'
 import {
-  getCachedRuntimeSongEditionCore,
   loadRuntimeSongEditionCore,
 } from './song-edition-loader'
 
@@ -111,7 +110,7 @@ describe('runtime Song Edition loader', () => {
     expect(client.loadFeature).not.toHaveBeenCalled()
   })
 
-  it('reuses a previously validated core for the same effective edition URL', async () => {
+  it('reuses a previously validated core after confirming the effective edition URL', async () => {
     const client = {
       loadEdition: vi.fn(async () => edition),
       loadLyrics: vi.fn(async () => ({ segments: [] })),
@@ -124,10 +123,9 @@ describe('runtime Song Edition loader', () => {
     } as unknown as RuntimeClient
 
     const first = await loadRuntimeSongEditionCore(client, catalogEdition)
-    const cached = getCachedRuntimeSongEditionCore(client, catalogEdition)
     const second = await loadRuntimeSongEditionCore(client, catalogEdition)
 
-    expect(cached?.edition.contentHash).toBe(edition.contentHash)
+    expect(second.edition.contentHash).toBe(edition.contentHash)
     expect(second.assembled).not.toBe(first.assembled)
     expect(client.loadEdition).toHaveBeenCalledOnce()
     expect(client.loadLyrics).toHaveBeenCalledOnce()
@@ -172,13 +170,8 @@ describe('runtime Song Edition loader', () => {
 
     override.occurrences = { o001: { startMs: 180 } }
     expect(saveTimingOverrides(override)).toBe(true)
-    const cached = getCachedRuntimeSongEditionCore(client, catalogEdition)
     const reopened = await loadRuntimeSongEditionCore(client, catalogEdition)
 
-    expect(cached?.timingProvider.getTiming(occurrence)).toEqual({
-      startMs: 180,
-      endMs: 300,
-    })
     expect(reopened.timingProvider.getTiming(occurrence)).toEqual({
       startMs: 180,
       endMs: 300,
@@ -189,13 +182,22 @@ describe('runtime Song Edition loader', () => {
 
   it('retains same-edition timing overrides and clears only the changed edition', async () => {
     let currentEdition = edition
+    const occurrence = {
+      id: 'o001',
+      segmentId: 's001',
+      sectionId: 'verse',
+      startMs: 10,
+      endMs: 300,
+    }
     const client = {
       loadEdition: vi.fn(async () => currentEdition),
-      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadLyrics: vi.fn(async () => ({
+        segments: [{ id: 's001', lyrics: 'First line' }],
+      })),
       loadTimeline: vi.fn(async () => ({
-        audioSourceHash: 'a'.repeat(64),
-        sections: [],
-        occurrences: [],
+        audioSourceHash: edition.audio.sourceHash,
+        sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 }],
+        occurrences: [occurrence],
       })),
       loadPractice: vi.fn(async () => ({ units: [] })),
     } as unknown as RuntimeClient
@@ -217,7 +219,11 @@ describe('runtime Song Edition loader', () => {
     otherDocument.occurrences = { o002: { startMs: 30 } }
     expect(saveTimingOverrides(otherDocument)).toBe(true)
 
-    await loadRuntimeSongEditionCore(client, catalogEdition)
+    const firstCore = await loadRuntimeSongEditionCore(client, catalogEdition)
+    expect(firstCore.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 20,
+      endMs: 300,
+    })
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).not.toBeNull()
 
     currentEdition = {
@@ -228,8 +234,12 @@ describe('runtime Song Edition loader', () => {
       ...catalogEdition,
       editionUrl: `/library-runtime/songs/first-light/edition.${'d'.repeat(64)}.json`,
     }
-    await loadRuntimeSongEditionCore(client, currentCatalogEdition)
+    const changedCore = await loadRuntimeSongEditionCore(client, currentCatalogEdition)
 
+    expect(changedCore.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 10,
+      endMs: 300,
+    })
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('second-signal'))).not.toBeNull()
   })

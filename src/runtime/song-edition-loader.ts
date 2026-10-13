@@ -34,37 +34,13 @@ const cachedSongEditionsByClient = new WeakMap<
   Map<string, RuntimeSongEditionCore>
 >()
 
-export function getCachedRuntimeSongEditionCore(
-  client: RuntimeClient,
-  catalogEdition: CatalogEdition,
-): RuntimeSongEditionCore | undefined {
-  const cache = cachedSongEditionsByClient.get(client)
-  const key = getSongEditionCacheKey(
-    catalogEdition.songId,
-    catalogEdition.editionUrl,
-  )
-  const core = cache?.get(key)
-  if (
-    !core ||
-    !cache ||
-    !hasMatchingEditionContentUrl(
-      core.catalogEdition.editionUrl,
-      core.edition.contentHash,
-    )
-  ) {
-    return undefined
-  }
-
-  cache.delete(key)
-  cache.set(key, core)
-  return refreshCoreTimingProvider(core, false)
-}
-
 export async function loadRuntimeSongEditionCore(
   client: RuntimeClient,
   catalogEdition: CatalogEdition,
   options: RuntimeLoadOptions = {},
 ): Promise<RuntimeSongEditionCore> {
+  // The downloaded manifest selects the effective edition; consult it before
+  // reusing a core so a warm Catalog cache cannot outrank an active H1 snapshot.
   const downloadedSnapshot = await readDownloadedSongSnapshot(
     catalogEdition.songId,
   )
@@ -75,7 +51,7 @@ export async function loadRuntimeSongEditionCore(
     effectiveCatalogEdition,
   )
   if (cachedCore) {
-    return refreshCoreTimingProvider(cachedCore, true)
+    return refreshCoreTimingProvider(cachedCore)
   }
 
   const edition = await client.loadEdition(
@@ -131,13 +107,28 @@ function getCachedSongEditionCore(
   catalogEdition: CatalogEdition,
 ): RuntimeSongEditionCore | undefined {
   const cache = cachedSongEditionsByClient.get(client)
-  const core = cache?.get(
-    getSongEditionCacheKey(catalogEdition.songId, catalogEdition.editionUrl),
+  if (!cache) {
+    return undefined
+  }
+
+  const key = getSongEditionCacheKey(
+    catalogEdition.songId,
+    catalogEdition.editionUrl,
   )
-  return core &&
-    hasMatchingEditionContentUrl(core.catalogEdition.editionUrl, core.edition.contentHash)
-    ? core
-    : undefined
+  const core = cache.get(key)
+  if (
+    !core ||
+    !hasMatchingEditionContentUrl(
+      core.catalogEdition.editionUrl,
+      core.edition.contentHash,
+    )
+  ) {
+    return undefined
+  }
+
+  cache.delete(key)
+  cache.set(key, core)
+  return core
 }
 
 function cacheSongEditionCore(
@@ -182,7 +173,6 @@ function hasMatchingEditionContentUrl(
 
 function refreshCoreTimingProvider(
   core: RuntimeSongEditionCore,
-  clearIncompatible: boolean,
 ): RuntimeSongEditionCore {
   const identity: TimingOverrideIdentity = {
     songId: core.edition.song.songId,
@@ -193,11 +183,7 @@ function refreshCoreTimingProvider(
   const storedTiming = readTimingOverrides(identity, {
     occurrences: core.timeline.occurrences,
   })
-  if (
-    clearIncompatible &&
-    storedTiming.kind !== 'none' &&
-    storedTiming.kind !== 'compatible'
-  ) {
+  if (storedTiming.kind !== 'none' && storedTiming.kind !== 'compatible') {
     clearTimingOverrides(identity)
   }
   const timingProvider = createEffectiveOccurrenceTimingProvider(

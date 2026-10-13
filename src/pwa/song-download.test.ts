@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { renderHook, waitFor } from '@testing-library/react'
 import type { CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
+import { useSongEditionCore } from '../edition/use-song-edition-core'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { loadRuntimeSongEditionCore } from '../runtime/song-edition-loader'
 import {
@@ -241,6 +243,72 @@ describe('song download snapshot cache', () => {
       snapshotH1.catalogEdition.editionUrl,
       {},
     )
+  })
+
+  it('never renders a cached Catalog edition before selecting the active downloaded snapshot', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+
+    const cachedClient = {
+      loadEdition: vi.fn(async (logicalPath: string) =>
+        logicalPath === snapshotH2.catalogEdition.editionUrl
+          ? snapshotH2.edition
+          : snapshotH1.edition,
+      ),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async (logicalPath: string) => ({
+        audioSourceHash:
+          logicalPath === snapshotH2.edition.timelineUrl
+            ? snapshotH2.edition.audio.sourceHash
+            : snapshotH1.edition.audio.sourceHash,
+        sections: [],
+        occurrences: [],
+      })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+      resolveAsset: (logicalPath: string) => absoluteUrl(logicalPath),
+    } as unknown as RuntimeClient
+
+    // Model a document that already parsed H2, while another tab completes an
+    // H1 download and switches the shared manifest before this route is opened.
+    await loadRuntimeSongEditionCore(cachedClient, snapshotH2.catalogEdition)
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1) },
+    )
+
+    const renderedCoreHashes: string[] = []
+    const { result, unmount } = renderHook(() => {
+      const state = useSongEditionCore(
+        cachedClient,
+        snapshotH2.catalogEdition,
+        0,
+      )
+      if (state.status === 'ready') {
+        renderedCoreHashes.push(state.core.edition.contentHash)
+      }
+      return state
+    })
+
+    try {
+      await waitFor(() => {
+        expect(result.current).toMatchObject({
+          status: 'ready',
+          core: { edition: { contentHash: HASH_A } },
+        })
+      })
+      expect(renderedCoreHashes).toContain(HASH_A)
+      expect(renderedCoreHashes).not.toContain(HASH_B)
+
+      const reopened = await loadRuntimeSongEditionCore(
+        cachedClient,
+        snapshotH2.catalogEdition,
+      )
+      expect(reopened.edition.contentHash).toBe(HASH_A)
+      expect(cachedClient.loadEdition).toHaveBeenCalledTimes(2)
+    } finally {
+      unmount()
+    }
   })
 
   it('distinguishes an offline song that was never downloaded', async () => {
