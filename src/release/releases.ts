@@ -15,6 +15,20 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.16.0',
+    date: '2026-10-13',
+    commit: 'a863d57',
+    level: 'minor',
+    title: '歌曲入口加载与导航体验升级',
+    summary: '学唱入口更快就绪，讲解按需加载，返回曲库后保留搜索与阅读位置，再次打开歌曲时保持平稳且正确的离线版本选择。',
+    changes: [
+      'Practice 核心内容不再等待可选讲解文章；Explain 文章按需读取，并可独立重试。',
+      '同页面返回曲库保留搜索和滚动上下文；再次入歌先确认有效下载快照，再平稳切入，避免整页加载闪屏。',
+      '复用已校验的歌曲核心与 Runtime 内容，停止曲库入口的整库音频和文章预热，同时保留完整下载与失败回退。',
+      '中等屏幕宽度下三主模式导航保持可用；返回曲库暂停音频并保留兼容的恢复位置。',
+    ],
+  },
+  {
     version: '1.15.0',
     date: '2026-09-01',
     commit: '19e45d1',

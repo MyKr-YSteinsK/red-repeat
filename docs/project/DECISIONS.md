@@ -359,3 +359,15 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 
 这些行为是已批准的目标。`RED-Plan-65` 仅完成并验证了 Catalog-return F1；
 Explain-preview F2 尚未实现。本决定不规定实现接口或状态机。
+
+## D-027｜默认在 main 开发｜Default Development on Main
+
+- Status: Accepted
+- Source: `USER_DECISION` (2026-10-13), adopted by `RED-Plan-65` R2
+- Implementation: Effective after the Plan-65 branch integration.
+
+后续普通工程任务默认使用 `main`，不因正式 Plan 编号机械创建功能分支或 PR。
+任务明确要求隔离分支/PR 或现场工作树、安全条件需要隔离时，仍按实际合同处理。
+本决定不扩大任何任务的 commit/push/version/tag 权限；未归属修改、远端分歧、
+必要 Gate、正常推送和禁止 force 的现有保护继续有效。成功推送 main 仍会进入
+既有 CI quality → Pages deploy 边界，Push、CI、Deploy 和生产身份分别核验。

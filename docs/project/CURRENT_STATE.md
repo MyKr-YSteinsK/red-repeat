@@ -11,9 +11,13 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current user version: `1.15.0`
+- Current package/ledger user version: `1.16.0`. This metadata prepares the
+  authorized release; remote CI/Pages and production identity are verified at
+  delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/tag: `1.15.0` / `v1.15.0 -> 19e45d1`; existing
+- Latest ledger/prepared tag: `1.16.0` / `v1.16.0 -> a863d57` (product commit
+  date `2026-10-13`); the following release-metadata commit is the independent
+  build identity. Existing `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
   `v1.13.1 -> 9bfd6ab`,
   `v1.13.0 -> e102189`,
@@ -60,6 +64,10 @@ evidence only.
 
 - Local-first Catalog loading/search, metadata-focused Song Edition cards and
   explicit per-song identity-coherent offline snapshot install/removal.
+- Practice-ready Core is independent of optional Explain articles. Warm Catalog
+  navigation retains the mounted Catalog until the active manifest/core is
+  confirmed, then hands that entry's result to the Song Edition page; cached
+  Catalog H2 never outranks a complete active H1 snapshot.
 - Practice as the default Song Edition mode: Practice Unit/Occurrence
   navigation, previous/current/next controls, Segment Picker, line playback,
   rate, continuous playback, repeat/ramp behavior and persisted progress/rate.
@@ -962,32 +970,43 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- `RED-Plan-65` R1 work package A1–A5 is implemented and its local acceptance
-  gates are complete on `codex/red-plan-65-experience-a`, based on
-  `634a65b71fa37aac8cc3ed0e55ef9a06b8261d37`. The current `package.json` and
-  release-ledger versions remain `1.15.0`; `RED-Plan-64` remains the latest
-  product release. Plan-65 creates no version, tag, merge or deployment.
+- `RED-Plan-65` R2 completes A1–A5 and the warm-reopen acceptance supplement.
+  Product implementation `a863d577086d69e3bb3588850db13971db555f5a` is integrated
+  into local `main` by fast-forward from `634a65b`. This metadata prepares the
+  authorized `1.16.0` MINOR release and annotated `v1.16.0` at that product
+  commit. Final push/CI/Pages/smoke evidence belongs to the delivery receipt;
+  this source update does not pre-claim a successful deployment.
 - The implementation separates core Song Edition readiness from optional
   Explain article loading, preserves Catalog query/anchor across same-document
   navigation, reuses validated immutable runtime resources and compatible
   Edition cores, removes automatic whole-library warmup from Catalog, and
   restores reachable Full Song navigation at intermediate widths.
-- Local evidence: `npm test` passed (48 files / 349 tests), `npm run typecheck`
-  passed, `npm run lint` passed with two existing Fast Refresh warnings,
-  production and `/red-repeat/` subpath builds passed, and
-  `npm run pwa:inspect -- /red-repeat/` passed. Browser checks covered Catalog
-  return/query/anchor and mode-button hit targets at `390×844`, `768×1024` and
-  `1365×900`; this is not real-device or installed-PWA evidence. Existing
-  automated download tests cover complete snapshots, H1 fallback, H2 staging
-  failure and manifest switching. No installed-PWA or human listening check
-  was run; those observations remain non-blocking under the current contract.
+- Product-candidate evidence: `npm test` passed (48 files / 354 tests),
+  typecheck passed, and lint passed with two existing Fast Refresh warnings.
+  The `/red-repeat/` build passed in the existing main checkout; exact-SHA PR
+  quality for `a863d57` passed both builds and PWA artifact checks. The original
+  isolated worktree's `public/library-runtime.tmp-24684/` remains untracked and
+  excluded; its earlier EPERM cleanup rejection was not bypassed.
+- R2 browser evidence used Edge `155.0.4283.45`, a production subpath build and
+  isolated profiles with SW blocked to test loader/CacheStorage behavior.
+  Before the fix, warm reopen painted one whole-page loading frame. After the
+  fix, 20 warm/conflict entries painted zero such frames, including undownloaded,
+  downloaded/offline, history forward and cached H2 / active H1 cases. Catalog
+  query/scroll stayed stable, no wrong H2 was committed, and entry never started
+  audio. Real browser F1 paused on Catalog return and preserved the pause/position
+  on reopening. Mode-button hit targets passed at `390×844`, `768×1024` and
+  `1365×900`. This is desktop-browser evidence, not iOS, human listening or
+  installed-PWA update evidence. Download tests retain complete snapshots,
+  H1 fallback, failed H2 staging, manifest-last switching and v1 compatibility.
 - `D-024` remains Accepted with implementation Pending; Plan-65 does not add
   cross-mode continuous playback. `D-025` is partially implemented (A complete;
   B–E pending). `D-026` is partially implemented (Catalog-return F1 validated;
   Explain-preview F2 pending). F3 mastery/automatic proficiency evaluation
   remains explicitly excluded.
-- Next: review and integrate the Plan-65 branch through its authorized PR
-  boundary. Any later B–E or F2 implementation must stay within the approved
+- Under D-027, subsequent ordinary development defaults to `main`; a Plan does
+  not automatically require a new branch or PR. Release delivery still requires
+  the authorized version/tag boundary and matching CI/production verification.
+- Next product work: any later B–E or F2 implementation must stay within the approved
   product goals and receive its own execution scope; no new architecture or
   behavior is implied by this status entry.
 

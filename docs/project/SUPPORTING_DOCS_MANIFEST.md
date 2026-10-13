@@ -19,7 +19,7 @@ are evidence and never active execution instructions.
 | `.gitignore`, `scripts/verify-gitignore.ts` | Private/generated/tool-output boundary | Active repository boundary owner |
 | `library/<song-id>/` | Approved public Song Edition source | Tracked canonical content; current public packages are `work-millennium-parade`, `senbonzakura`, `night-dancer-imase`, `shinkai-shoujo`, `mousou-kanshou-daishou-renmei` and `doushite-takase-toya` |
 | `.private/research/<song>/...` and `.private/library-pending/...` | Private provenance, research and pending intake | Human-only/private; do not expose or import wholesale |
-| `src/App.tsx`, `src/navigation.ts`, `src/edition/SongEditionPage.tsx` | Catalog route, route parsing/hrefs, Song Edition mode selection and current UI dispatch | Active navigation and UI shell owners |
+| `src/App.tsx`, `src/navigation.ts`, `src/edition/SongEditionPage.tsx` | Catalog route, route parsing/hrefs, manifest-confirmed warm-entry handoff, Song Edition mode selection and current UI dispatch | Active navigation and UI shell owners; the loader remains the snapshot identity authority |
 | `src/runtime/runtime-client.ts`, `src/pwa/catalog-cache.ts` | Catalog local-first loading/cache plus Runtime fetch, parsed-document validation and compatibility handling | Active data-loading owners |
 | `src/edition/PracticeWorkspace.tsx`, `src/edition/use-song-edition-playback.ts` | Current Practice controls and workspace playback integration with the shared engine | Active Practice UI/playback path; current rate ramp is implemented in `PracticeWorkspace.tsx` |
 | `src/practice/practice-state.ts`, `src/practice/practice-rate.ts` | Practice resume/progress and playback-rate normalization/local persistence | Active Practice persistence owners |
