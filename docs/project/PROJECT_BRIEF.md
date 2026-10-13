@@ -12,13 +12,20 @@ API.
 Lifecycle stage: `Production`.
 
 The repository has mature core capabilities and stable delivery machinery.
-Release identity is reconciled, timing acceptance is complete, and the Timing
-Debugger is production-public. Current-use device and installed-client update
-evidence has closed the previous active acceptance debt for this baseline; this
-does not claim exhaustive device-matrix coverage. No current `USER CHECK` /
-`UNKNOWN` blocks the baseline. `Production` means the established product
-boundary can be used, deployed and maintained while future behavior changes
-still require matching regression, device, human or production evidence.
+Release identity is reconciled. Historical timing acceptance is complete only
+for the scopes recorded in `CURRENT_STATE.md`; this does not mean every Song
+Edition has human-calibrated timing. Later-added editions may use D-020
+`Provisional Timing`, a usable but explicitly uncalibrated state. When D-020's
+audio-identity, gross-structure and obvious-leakage checks pass, Provisional
+Timing alone does not block first Production use. Source validation, automated
+timing checks and the D-021 field migration do not constitute a new human
+audible `PASS`. The Timing Debugger is production-public. Current-use device and
+installed-client update evidence has closed the previous active acceptance debt
+for this baseline; this does not claim exhaustive device-matrix coverage. No
+current `USER CHECK` / `UNKNOWN` blocks the baseline. `Production` means the
+established product boundary can be used, deployed and maintained while future
+behavior changes still require matching regression, device, human or production
+evidence.
 
 ## Core loop
 
@@ -26,12 +33,14 @@ still require matching regression, device, human or production evidence.
 catalog → select/search a Song Edition → Practice (default)
 → choose a Practice Unit or lyric Occurrence
 → play/repeat at a controlled rate
-→ persist local progress/rate → return through “继续学唱”
+→ save Practice position/progress and rate locally
+→ restore compatible Practice state on later use
 ```
 
-Supporting loops are Practice ↔ Full Song ↔ Explain, explicit per-song
-local-first offline snapshot download/removal, background PWA update preparation
-with natural next-launch adoption and timing calibration/export.
+Supporting capabilities include Practice, Full Song and Explain mode navigation,
+explicit per-song local-first offline snapshot download/removal, background PWA
+update preparation with natural next-launch adoption, and timing
+calibration/export.
 
 ## Stable architecture boundary
 

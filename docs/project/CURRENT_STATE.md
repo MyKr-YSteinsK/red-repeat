@@ -894,11 +894,14 @@ uses the separately authorized task-input source package.
   wrapping, touch and perceived readability were not separately executed. The
   three former Practice merge boundaries (`o012`→`o013`, `o033`→`o034` and
   `o049`→`o050`) were also not separately verified by subjective continuous
-  listening; `senbonzakura` now has identity-matched `Calibrated Playback
-  Timing` for 45/45 Occurrences covering only `playStartMs`/`playEndMs`.
-  `startMs`/`endMs` were not changed or claimed as human-reviewed. These are not claimed as human PASS
-  and are not active blocking debt under `D-019`; users can surface any
-  low-cost follow-up during normal Production use.
+  listening. Historical RED-Plan-49 identity-matched playback calibration for
+  `senbonzakura` covered 45/45 Occurrences and 82/82 migration-era fields
+  (45 `playStartMs`, 37 `playEndMs`). RED-Plan-53 migrated those values into
+  the current single canonical `startMs`/`endMs` interval; the migration was
+  not a new listening review and does not expand the historical calibrated
+  evidence scope. Real-device and subjective-listening limits remain
+  `POST-DEPLOY OBSERVATION`, not an active blocking gate under `D-019`; users
+  can surface low-cost follow-up during normal Production use.
 - `POST-DEPLOY OBSERVATION (RED-Plan-51)`: actual target-device/iOS/PWA
   cover sizing, backdrop feel, Explain hierarchy and simplified Catalog cards
   should be observed in normal Production use. Local browser evidence does not
@@ -957,7 +960,28 @@ uses the separately authorized task-input source package.
   material and candidate ruby/Romaji evidence. Existing future PWA/device risks
   remain governed by D-013/D-016 and are not reopened by this content change.
 
-## Active work and next lifecycle action
+## Current work / Next action
+
+- No formal RED-Plan is active; the most recently completed Plan is
+  `RED-Plan-64`. The current `package.json` and release-ledger versions are
+  `1.15.0`.
+- The current non-formal Production engineering documentation-governance task
+  is complete across the repository contract, project brief/decisions/state,
+  supporting owner manifest, song-content authoring and release-reference docs;
+  it made no product implementation change.
+- `D-024` is Accepted with implementation Pending. Cross-mode playback
+  continuity is a target behavior, not a current capability. The experience
+  review's A–E work packages are not collectively approved, and implementation
+  has not started.
+- Before experience-upgrade implementation, obtain separate approval for the
+  remaining A–E proposal scope and split only approved work into development
+  tasks. `D-024` remains its own accepted, pending implementation target.
+
+## Historical completion record (RED-Plan-37–64)
+
+The following closeout records retain their original evidence and semantics;
+versions, commits, test counts and acceptance statements describe the time of
+each historical task and do not replace the current repository identity above.
 
 - `RED-Plan-37` / `PLAN-001` is complete; there is no active timing acceptance
   work for `work-millennium-parade`.
@@ -968,9 +992,9 @@ uses the separately authorized task-input source package.
   made in this closeout. The remaining by-ear timing acceptance debt is closed;
   any future timing change still requires a separate evidence-backed correction
   boundary.
-- `RED-Plan-38` release identity is complete: package/latest ledger are
-  `1.6.2`, `v1.6.2` points to `c61f977`, and its later release-metadata
-  `main` build carried live version `1.6.2`.
+- At `RED-Plan-38` closeout, the package/release ledger recorded historical
+  version `1.6.2`; `v1.6.2` points to `c61f977`, and its later
+  release-metadata `main` build carried live version `1.6.2`.
   The tag target and deployed build SHA are intentionally distinct identities.
 - `RED-Plan-39` is complete for this boundary with target-device checks
   explicitly closed from active debt by current-use evidence; the formal

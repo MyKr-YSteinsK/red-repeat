@@ -188,7 +188,7 @@ The capability covers timing inspection, audio audition, calibration through
 identity-bound local timing overrides and export. Future routing cleanup,
 production hardening or debug-code pruning must not hide or remove it merely
 because its implementation is named `debugger`; that requires a new explicit
-user decision. D-011 and D-016 remain in force: public access does not bypass
+user decision. D-021 and D-016 remain in force: public access does not bypass
 source validation, audio/timeline/Edition identity checks, canonical-source
 review, or the required human/audio evidence.
 
@@ -310,3 +310,25 @@ rate、identity-bound timing overrides、Catalog/local snapshot cache 与已下�
 Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 继续有效；
 真实 iOS installed-PWA 的行为仍需作为 `POST-DEPLOY OBSERVATION` 单独观察，不能由
 桌面真实浏览器 integration 冒充证明。
+
+## D-024｜同曲跨模式切换保留播放上下文｜Preserve Playback Context Across Modes Within One Song Edition
+
+- Status: Accepted
+- Source: `USER_DECISION` (2026-10-13)
+- Implementation: Pending
+
+以下是已批准的目标行为，尚未由当前实现提供：
+
+- 同一 Song Edition 的 Full Song 正在连续播放时切换到 Explain，默认继续播放。
+- 切换到 Practice 仅查看内容时，保留现有播放上下文；查看本身不暂停音频，
+  也不启动 bounded Practice intent。
+- 用户明确选择“练这一句”或“练这一段”时，才切换到对应的 bounded Practice
+  intent。
+- 切换到另一首歌曲时，明确结束旧歌曲的播放操作并切换 audio source。
+- 返回先前模式时，恢复该模式的选择、控制偏好和阅读上下文。页面或 workspace
+  卸载本身不应无条件销毁同曲会话。
+
+本决定批准的是产品行为，不指定 `PlaybackSession` 接口、状态机、缓存或其他
+实现架构。它不决定返回 Catalog 后是否继续播放或显示 mini-player，也不决定
+Explain 临时试听结束后是否自动恢复原音频及位置。体验升级提案 A–E 中的其他
+待审批方向仍需单独决定。

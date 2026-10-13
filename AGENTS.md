@@ -16,6 +16,13 @@ runtime Skills and should not be duplicated here.
 - Treat the current repository, executable configuration and Git state as the
   implementation facts. `docs/project/` records durable product intent and
   state; historical material under `docs/archive/` is evidence, not authority.
+- Research recommendations, target architectures, work packages and performance
+  budgets in `docs/reviews/` are proposals, not implementation authority or
+  permission. User approval authorizes the stated direction, not a claim that it
+  is implemented: keep approved goals separate from current behavior, and do not
+  install a target architecture through documentation maintenance. For example,
+  approved cross-mode playback continuity remains future behavior until
+  implemented and recorded through the applicable decision process.
 - Keep migration/documentation work separate from product behavior. Do not use
   a documentation task to change product code, content, schema, PWA lifecycle,
   release behavior or deployment topology.
@@ -39,6 +46,25 @@ runtime Skills and should not be duplicated here.
   source contract and generated runtime behavior.
 - `src/library/runtime-schema.ts` and `src/runtime/*` own the runtime contract,
   URL/fetch and compatibility behavior.
+- Current loading is orchestrated by `src/edition/use-song-edition-core.ts` and
+  `src/runtime/song-edition-loader.ts`; `src/runtime/runtime-client.ts` owns
+  runtime fetching and parsed document validation. Current route and Catalog
+  behavior is split between `src/navigation.ts` and `src/App.tsx`.
+- `src/audio/audio-engine.ts` owns the shared media instance; the active
+  workspace playback integration is `src/edition/use-song-edition-playback.ts`
+  with timeline semantics in `src/timeline/*`. Practice UI commands live in
+  `src/edition/PracticeWorkspace.tsx`, with persisted Practice state in
+  `src/practice/practice-state.ts`. The retained
+  `src/practice/practice-controller.ts`,
+  `src/practice/practice-playback-session.ts` and
+  `src/edition/use-practice-controller.ts` are not the current Practice UI main
+  path and do not define its behavior. Proposed `SongRepository`,
+  `PlaybackSession` and `ResourceScheduler` owners are not current components.
+- `src/pwa/song-download.ts` owns complete downloaded-song transactions and
+  their manifests; `src/pwa/runtime-cache.ts` and `src/pwa/cache-routes.ts` own
+  runtime cache/warmup paths. `src/pwa/update-manager.ts`,
+  `src/pwa/register-service-worker-options.ts` and `vite.config.ts` own update
+  preparation and registration behavior.
 - `docs/版本发布规范.md` owns release-reference prose; `src/release/*` and
   release verification scripts own the executable ledger and identity checks;
   `.github/workflows/ci.yml` owns delivery ordering.
@@ -69,6 +95,15 @@ runtime Skills and should not be duplicated here.
 - Song workspaces use one coherent audio lifecycle owner. PWA update logic must
   preserve local business data and distinguish deployed build identity from an
   installed client's asynchronous worker activation state.
+- Under D-022, a downloaded Song Edition is a complete, identity-coherent,
+  manifest-bound snapshot. H1 stays active while H2 resources and identity are
+  validated; switch the manifest last, and preserve the last complete H1 if
+  preparation fails.
+- Under D-023, a new PWA build is prepared in the background. Keep the current
+  document on its startup build; do not actively reload it or use `SKIP_WAITING`
+  to take over an active client. Adopt the prepared build on a natural next
+  launch while preserving Practice progress/rate, compatible timing overrides
+  and complete downloaded snapshots.
 - Full Song's player-specific mobile baseline is protected from broad shared
   control styling. iOS/PWA geometry, scrolling, compositing, touch and audible
   timing require matching browser/device or human evidence when relevant.
@@ -89,24 +124,27 @@ runtime Skills and should not be duplicated here.
 
 ## USER CHECK classification
 
-- A `BLOCKING USER CHECK` remains required when the current Plan explicitly
-  requires a human gate, the work is high-risk or destructive for data,
-  persistence, identity or release state, audio identity is uncertain,
-  `Calibrated Timing` or final audible timing is being claimed without credible
-  audio evidence, the PWA update-manager or installed-client lifecycle itself
-  changed with explicit lifecycle acceptance, or the issue cannot be safely
-  discovered and corrected after deployment.
-- A `POST-DEPLOY OBSERVATION` covers ordinary mobile visual behavior, ruby
-  geometry or wrapping, general touch feel, low-risk content display, Practice
-  grouping comfort and other low-cost follow-up observations. It is recorded
-  honestly and does not itself block completion or normal delivery.
+- Matching automated/local verification remains required for every changed
+  boundary. Static checks, CI or desktop browser evidence do not prove real
+  device geometry, touch, perception, audible timing or installed-PWA behavior.
+- Under D-019 and D-023, ordinary visual/touch behavior, low-risk content and
+  real-use observations of the existing PWA lifecycle default to
+  `POST-DEPLOY OBSERVATION`; do not require a full device matrix for every
+  low-risk task.
+- A `BLOCKING USER CHECK` remains required when the current task explicitly
+  requires a matching human/real-client gate; the change is high-risk for data,
+  persistence, identity or release state; the PWA update/activation lifecycle
+  itself is materially changed; audio identity is uncertain; `Calibrated Timing`
+  or final audible timing is claimed without credible audio evidence; or the
+  issue cannot be safely discovered and corrected after deployment. A gate
+  should match the affected risk and client; it does not imply a full device
+  matrix for unrelated low-risk work.
 - Under D-020, `Provisional Timing` is not itself a blocking human gate when
   canonical audio identity, gross structure and obvious leakage checks pass;
   its state must remain explicitly uncalibrated.
-- This classification changes the default delivery gate, not the evidence
-  boundary: D-016 remains in force. Automated or static evidence must not be
-  described as proof of real-device geometry, compositing, touch, audible
-  timing, perception or installed-client lifecycle behavior.
+- This classification follows D-016: observations and gates must be reported
+  honestly; automated or static evidence never stands in for the matching real
+  evidence.
 
 ## Version and delivery model
 
@@ -131,6 +169,8 @@ runtime Skills and should not be duplicated here.
   `no push`, and no explicit `BLOCKING USER CHECK` remains, Codex must mark it
   COMPLETE, commit the authorized changes and normally push the current branch
   to its tracking remote without waiting for a separate push confirmation.
+- Non-formal small tasks follow their explicit task permissions for delivery;
+  they do not inherit the formal Plan COMPLETE/commit/push default.
 - This default auto-push rule is not blanket authorization for release/tag or
   other external operations. Do not auto-push when the Plan says `no push`, the
   Plan is PARTIAL or an explicit `BLOCKING USER CHECK` is incomplete, the
