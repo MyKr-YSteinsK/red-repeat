@@ -15,7 +15,8 @@ const location = {
 
 describe('static-safe navigation', () => {
   it('uses the current nested path for the Library home', () => {
-    expect(createLibraryHref(location)).toBe('/red-repeat/?view=archive')
+    expect(createLibraryHref(location)).toBe('/red-repeat/?view=archive#library')
+    expect(parseAppRoute({ hash: '#library' })).toEqual({ kind: 'library' })
   })
 
   it('encodes an edition route without requiring a server rewrite', () => {

@@ -192,8 +192,6 @@ export function SongEditionPage({
         <ExplainWorkspace
           model={core.assembled}
           runtimeClient={runtimeClient}
-          features={core.features}
-          featureErrors={core.featureErrors}
           audioEngine={audioEngine}
         />
       )}

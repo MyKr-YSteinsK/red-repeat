@@ -329,6 +329,33 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
   卸载本身不应无条件销毁同曲会话。
 
 本决定批准的是产品行为，不指定 `PlaybackSession` 接口、状态机、缓存或其他
-实现架构。它不决定返回 Catalog 后是否继续播放或显示 mini-player，也不决定
-Explain 临时试听结束后是否自动恢复原音频及位置。体验升级提案 A–E 中的其他
-待审批方向仍需单独决定。
+实现架构。Catalog 返回与 Explain 临时试听分别由 D-026 规定；体验升级 A–E
+方向及 F3 排除按 D-025 记录。
+
+## D-025｜体验升级方向与学习评价排除项｜Experience Upgrade Direction and Learning-Assessment Exclusions
+
+- Status: Accepted
+- Source: `USER_DECISION` (2026-10-13)
+- Implementation: Partial — A1–A5 completed under `RED-Plan-65`; B–E remain pending.
+
+用户已批准按 A–E 工作包推进体验升级方向；这项批准定义产品方向，不代表所有
+工作包的实现已经启动，也不自动批准未在具体任务中授权的实现范围或技术架构。
+
+明确排除自动学习评价机制：不新增人工“已掌握”标记、自动熟练度判断，或根据
+听过、播放完成、练习次数等行为生成掌握结论；不为这些结论新增学习事件统计、
+评分或隐藏状态。现有 Practice progress/rate 继续按原合同维护。
+
+## D-026｜返回曲库与 Explain 临时试听行为｜Catalog Return and Explain Preview Behavior
+
+- Status: Accepted
+- Source: `USER_DECISION` (2026-10-13)
+- Implementation: Partial — F1 validated under `RED-Plan-65`; F2 remains pending.
+
+- 从任一 Song Edition 模式返回 Catalog 时暂停当前音频，保留兼容的恢复位置；不
+  提供全局 mini-player。
+- Explain 临时试听开始前暂存原音频位置与播放意图。试听自然结束时，若原音频之
+  前正在播放，则从暂存位置恢复播放；若之前暂停，则保持暂停。
+- 用户明确取消试听或切换歌曲时，新操作优先，不自动恢复旧歌曲音频。
+
+这些行为是已批准的目标。`RED-Plan-65` 仅完成并验证了 Catalog-return F1；
+Explain-preview F2 尚未实现。本决定不规定实现接口或状态机。

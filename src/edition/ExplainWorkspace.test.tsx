@@ -25,44 +25,50 @@ afterEach(() => {
 })
 
 describe('ExplainWorkspace', () => {
-  it('shows one article at a time and switches between available topics', () => {
+  it('loads only the selected article and switches between topics', async () => {
     render(
       <ExplainWorkspace
         model={model}
         runtimeClient={runtimeClientFor()}
-        features={features}
-        featureErrors={[]}
       />,
     )
 
     expect(screen.getByRole('region', { name: '讲解工作台' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Context' })).toBeInTheDocument()
-    expect(screen.getByText('First body.')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Context' })).toBeInTheDocument()
+    expect(await screen.findByText('First body.')).toBeInTheDocument()
     expect(screen.queryByText('Second body.')).not.toBeInTheDocument()
     expect(screen.getAllByRole('heading', { name: 'Context' })).toHaveLength(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'History' }))
 
-    expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
-    expect(screen.getByText('Second body.')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'History' })).toBeInTheDocument()
+    expect(await screen.findByText('Second body.')).toBeInTheDocument()
     expect(screen.queryByText('First body.')).not.toBeInTheDocument()
   })
 
-  it('keeps Feature failures local and marks an unavailable topic in Chinese', () => {
+  it('keeps Feature failures local and offers retry for the selected topic', async () => {
+    const loadFeature = vi.fn()
+      .mockResolvedValueOnce('# Context\n\nFirst body.')
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce('# History\n\nSecond body.')
+    const runtimeClient = runtimeClientFor(
+      loadFeature as RuntimeClient['loadFeature'],
+    )
     render(
       <ExplainWorkspace
         model={model}
-        runtimeClient={runtimeClientFor()}
-        features={[features[0]]}
-        featureErrors={[{ descriptor: secondDescriptor, error: new Error('offline') }]}
+        runtimeClient={runtimeClient}
       />,
     )
 
-    expect(screen.getByText('First body.')).toBeInTheDocument()
-    expect(screen.getByText('暂不可用')).toBeInTheDocument()
-    expect(
-      screen.getByRole('option', { name: /history（暂不可用）/i }),
-    ).toBeDisabled()
+    expect(await screen.findByText('First body.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'History' }))
+    expect(await screen.findByText('这篇讲解暂时不可用，歌词练习仍然可以使用。')).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: /history（暂不可用）/i })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: '重试加载' }))
+    expect(await screen.findByText('Second body.')).toBeInTheDocument()
+    expect(loadFeature).toHaveBeenCalledTimes(3)
   })
 
   it('shows an explicit Chinese empty workspace when no Features exist', () => {
@@ -76,8 +82,6 @@ describe('ExplainWorkspace', () => {
       <ExplainWorkspace
         model={emptyModel}
         runtimeClient={runtimeClientFor()}
-        features={[]}
-        featureErrors={[]}
       />,
     )
 
@@ -86,17 +90,15 @@ describe('ExplainWorkspace', () => {
     )
   })
 
-  it('keeps lyric quotes available for listening without a Practice CTA', () => {
+  it('keeps lyric quotes available for listening without a Practice CTA', async () => {
     render(
       <ExplainWorkspace
         model={model}
         runtimeClient={runtimeClientFor()}
-        features={features}
-        featureErrors={[]}
       />,
     )
 
-    expect(screen.getByRole('button', { name: '试听这句' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '试听这句' })).toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: '学习这一段 →' }),
     ).not.toBeInTheDocument()
@@ -109,12 +111,11 @@ describe('ExplainWorkspace', () => {
     engine.loadSource('/app/library-runtime/audio.m4a')
     media.currentTime = 0.62
     const loadCount = media.load.mock.calls.length
+    const runtimeClient = runtimeClientFor()
     const { rerender } = render(
       <ExplainWorkspace
         model={model}
-        runtimeClient={runtimeClientFor()}
-        features={features}
-        featureErrors={[]}
+        runtimeClient={runtimeClient}
         audioEngine={engine}
       />,
     )
@@ -122,9 +123,7 @@ describe('ExplainWorkspace', () => {
     rerender(
       <ExplainWorkspace
         model={model}
-        runtimeClient={runtimeClientFor()}
-        features={features}
-        featureErrors={[]}
+        runtimeClient={runtimeClient}
         audioEngine={engine}
       />,
     )
@@ -134,7 +133,7 @@ describe('ExplainWorkspace', () => {
     expect(media.play).not.toHaveBeenCalled()
   })
 
-  it('returns to the top without changing the selected topic', () => {
+  it('returns to the top without changing the selected topic', async () => {
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 
     try {
@@ -142,11 +141,10 @@ describe('ExplainWorkspace', () => {
         <ExplainWorkspace
           model={model}
           runtimeClient={runtimeClientFor()}
-          features={features}
-          featureErrors={[]}
         />,
       )
 
+      await screen.findByRole('heading', { name: 'Context' })
       fireEvent.click(screen.getByRole('button', { name: '回到顶部' }))
 
       expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
@@ -156,7 +154,7 @@ describe('ExplainWorkspace', () => {
     }
   })
 
-  it('keeps directory changes anchored and reveals pager changes at a stable offset', () => {
+  it('keeps directory changes anchored and reveals pager changes at a stable offset', async () => {
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
     const rect = vi
       .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
@@ -172,11 +170,10 @@ describe('ExplainWorkspace', () => {
         <ExplainWorkspace
           model={model}
           runtimeClient={runtimeClientFor()}
-          features={features}
-          featureErrors={[]}
         />,
       )
 
+      await screen.findByRole('heading', { name: 'Context' })
       fireEvent.click(screen.getByRole('button', { name: 'History' }))
       expect(scrollTo).not.toHaveBeenCalled()
 
@@ -189,16 +186,15 @@ describe('ExplainWorkspace', () => {
     }
   })
 
-  it('keeps previous, top, and next actions in a symmetric footer order', () => {
+  it('keeps previous, top, and next actions in a symmetric footer order', async () => {
     render(
       <ExplainWorkspace
         model={model}
         runtimeClient={runtimeClientFor()}
-        features={features}
-        featureErrors={[]}
       />,
     )
 
+    await screen.findByRole('heading', { name: 'Context' })
     const pager = screen.getByRole('navigation', { name: '讲解主题翻页' })
     const buttons = [...pager.querySelectorAll('button')]
     expect(buttons.map((button) => button.textContent?.trim())).toEqual([
@@ -213,9 +209,9 @@ describe('ExplainWorkspace', () => {
     expect(screen.getByRole('button', { name: 'Context' })).not.toHaveClass('control-button')
 
     fireEvent.click(screen.getByRole('button', { name: '下一篇 →' }))
-    expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'History' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '← 上一篇' }))
-    expect(screen.getByRole('heading', { name: 'Context' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Context' })).toBeInTheDocument()
   })
 })
 
@@ -292,9 +288,17 @@ const modelInput = {
 
 const model = assembleRuntimeSongEdition(modelInput)
 
-function runtimeClientFor(): RuntimeClient {
+function runtimeClientFor(
+  loadFeature: RuntimeClient['loadFeature'] = async (feature) => {
+    const url = typeof feature === 'string' ? feature : feature.url
+    return url === firstDescriptor.url
+      ? features[0].content
+      : features[1].content
+  },
+): RuntimeClient {
   return {
     resolveAsset: (logicalPath: string) => `/app${logicalPath}`,
+    loadFeature,
   } as unknown as RuntimeClient
 }
 

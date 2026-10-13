@@ -174,7 +174,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(screen.queryByText('Loop')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '讲解' }))
     expect(screen.queryByRole('region', { name: '学唱工作台' })).not.toBeInTheDocument()
-    expect(screen.getByText('A small note.')).toBeInTheDocument()
+    expect(await screen.findByText('A small note.')).toBeInTheDocument()
   })
 
   it('hands a selected Full Song line to the first occurrence of its Practice Unit', async () => {
@@ -221,6 +221,30 @@ describe('SongEditionPage 学唱入口', () => {
     expect(media.load).toHaveBeenCalledTimes(loadCount)
     expect(media.currentTime).toBe(0.62)
     expect(media.play).toHaveBeenCalledTimes(playCount)
+  })
+
+  it('pauses audio and retains its position when the song page returns to Catalog', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const view = render(<SongEditionPage {...propsFor(undefined, engine)} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
+    media.currentTime = 0.62
+    const pauseCount = media.pause.mock.calls.length
+
+    view.unmount()
+
+    expect(media.pause).toHaveBeenCalledTimes(pauseCount + 1)
+    expect(engine.getState()).toMatchObject({
+      status: 'paused',
+      currentTimeMs: 620,
+      sourceUrl: '/app/library-runtime/audio.m4a',
+    })
+    expect(media.currentTime).toBe(0.62)
   })
 
   it('keeps Full Song structure stable while switching tabs', async () => {

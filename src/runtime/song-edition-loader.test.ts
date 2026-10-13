@@ -6,15 +6,17 @@ import {
   saveTimingOverrides,
 } from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from './runtime-client'
-import { RuntimeClientError } from './runtime-client'
-import { loadRuntimeSongEditionCore } from './song-edition-loader'
+import {
+  getCachedRuntimeSongEditionCore,
+  loadRuntimeSongEditionCore,
+} from './song-edition-loader'
 
 const catalogEdition: CatalogEdition = {
   songId: 'first-light',
   title: 'First Light',
   artist: 'A Composer',
   coverUrl: '/library-runtime/songs/first-light/cover-small.a.webp',
-  editionUrl: '/library-runtime/songs/first-light/edition.a.json',
+  editionUrl: `/library-runtime/songs/first-light/edition.${'a'.repeat(64)}.json`,
 }
 
 const edition = {
@@ -61,6 +63,7 @@ describe('runtime Song Edition loader', () => {
         occurrences: [],
       })),
       loadPractice: vi.fn(async () => ({ units: [] })),
+      loadFeature: vi.fn(),
     } as unknown as RuntimeClient
 
     const result = await loadRuntimeSongEditionCore(client, catalogEdition)
@@ -74,9 +77,11 @@ describe('runtime Song Edition loader', () => {
     expect(client.loadLyrics).toHaveBeenCalledWith(edition.lyricsUrl, {})
     expect(client.loadTimeline).toHaveBeenCalledWith(edition.timelineUrl, {})
     expect(client.loadPractice).toHaveBeenCalledWith(edition.practiceUrl, {})
+    expect(client.loadFeature).not.toHaveBeenCalled()
+    expect(result.assembled.features).toEqual([])
   })
 
-  it('keeps an individual Feature failure local to the assembled core', async () => {
+  it('does not wait for optional Feature content before the core is ready', async () => {
     const featureEdition = {
       ...edition,
       features: [
@@ -95,26 +100,91 @@ describe('runtime Song Edition loader', () => {
         occurrences: [],
       })),
       loadPractice: vi.fn(async () => ({ units: [] })),
-      loadFeature: vi.fn(async () => {
-        throw new RuntimeClientError({
-          kind: 'network',
-          logicalPath: featureEdition.features[0].url,
-          url: featureEdition.features[0].url,
-          message: 'offline',
-        })
-      }),
+      loadFeature: vi.fn(
+        () => new Promise<string>(() => undefined),
+      ),
     } as unknown as RuntimeClient
 
     const result = await loadRuntimeSongEditionCore(client, catalogEdition)
 
-    expect(result.features).toEqual([])
-    expect(result.featureErrors).toHaveLength(1)
-    expect(result.featureErrors[0].descriptor.id).toBe('liner-note')
     expect(result.assembled.features).toEqual([])
-    expect(client.loadFeature).toHaveBeenCalledWith(
-      featureEdition.features[0],
-      {},
-    )
+    expect(client.loadFeature).not.toHaveBeenCalled()
+  })
+
+  it('reuses a previously validated core for the same effective edition URL', async () => {
+    const client = {
+      loadEdition: vi.fn(async () => edition),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async () => ({
+        audioSourceHash: 'a'.repeat(64),
+        sections: [],
+        occurrences: [],
+      })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+    } as unknown as RuntimeClient
+
+    const first = await loadRuntimeSongEditionCore(client, catalogEdition)
+    const cached = getCachedRuntimeSongEditionCore(client, catalogEdition)
+    const second = await loadRuntimeSongEditionCore(client, catalogEdition)
+
+    expect(cached?.edition.contentHash).toBe(edition.contentHash)
+    expect(second.assembled).not.toBe(first.assembled)
+    expect(client.loadEdition).toHaveBeenCalledOnce()
+    expect(client.loadLyrics).toHaveBeenCalledOnce()
+    expect(client.loadTimeline).toHaveBeenCalledOnce()
+    expect(client.loadPractice).toHaveBeenCalledOnce()
+  })
+
+  it('rebuilds effective timing from the latest compatible local override', async () => {
+    const occurrence = {
+      id: 'o001',
+      segmentId: 's001',
+      sectionId: 'verse',
+      startMs: 100,
+      endMs: 300,
+    }
+    const client = {
+      loadEdition: vi.fn(async () => edition),
+      loadLyrics: vi.fn(async () => ({
+        segments: [{ id: 's001', lyrics: 'First line' }],
+      })),
+      loadTimeline: vi.fn(async () => ({
+        audioSourceHash: edition.audio.sourceHash,
+        sections: [{ id: 'verse', label: 'Verse', startMs: 0, endMs: 1000 }],
+        occurrences: [occurrence],
+      })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+    } as unknown as RuntimeClient
+    const override = createTimingOverridesDocument({
+      songId: edition.song.songId,
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: edition.timelineUrl,
+    })
+    override.occurrences = { o001: { startMs: 120 } }
+    expect(saveTimingOverrides(override)).toBe(true)
+
+    const first = await loadRuntimeSongEditionCore(client, catalogEdition)
+    expect(first.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 120,
+      endMs: 300,
+    })
+
+    override.occurrences = { o001: { startMs: 180 } }
+    expect(saveTimingOverrides(override)).toBe(true)
+    const cached = getCachedRuntimeSongEditionCore(client, catalogEdition)
+    const reopened = await loadRuntimeSongEditionCore(client, catalogEdition)
+
+    expect(cached?.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 180,
+      endMs: 300,
+    })
+    expect(reopened.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 180,
+      endMs: 300,
+    })
+    expect(client.loadEdition).toHaveBeenCalledOnce()
+    expect(client.loadTimeline).toHaveBeenCalledOnce()
   })
 
   it('retains same-edition timing overrides and clears only the changed edition', async () => {
@@ -154,7 +224,11 @@ describe('runtime Song Edition loader', () => {
       ...edition,
       contentHash: 'd'.repeat(64),
     }
-    await loadRuntimeSongEditionCore(client, catalogEdition)
+    const currentCatalogEdition = {
+      ...catalogEdition,
+      editionUrl: `/library-runtime/songs/first-light/edition.${'d'.repeat(64)}.json`,
+    }
+    await loadRuntimeSongEditionCore(client, currentCatalogEdition)
 
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('second-signal'))).not.toBeNull()

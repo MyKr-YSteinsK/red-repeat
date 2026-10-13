@@ -73,10 +73,24 @@ interface RequestContext {
   cleanup: () => void
 }
 
+interface PendingRuntimeResource {
+  controller: AbortController
+  promise: Promise<unknown>
+  subscribers: number
+  settled: boolean
+}
+
+const MAX_CACHED_RUNTIME_RESOURCES = 64
+
 export class RuntimeClient {
   private readonly appBaseUrl: string
   private readonly fetchImpl: typeof fetch
   private readonly activeControllers = new Set<AbortController>()
+  private readonly runtimeResourceCache = new Map<string, unknown>()
+  private readonly pendingRuntimeResources = new Map<
+    string,
+    PendingRuntimeResource
+  >()
   private requestGeneration = 0
 
   constructor(options: RuntimeClientOptions = {}) {
@@ -96,6 +110,8 @@ export class RuntimeClient {
       logicalRuntimePath,
       RuntimeEditionSchema.parse,
       options,
+      undefined,
+      'edition',
     )
   }
 
@@ -103,21 +119,39 @@ export class RuntimeClient {
     logicalRuntimePath: string,
     options: RuntimeLoadOptions = {},
   ): Promise<LyricsDocument> {
-    return this.loadJson(logicalRuntimePath, LyricsSchema.parse, options)
+    return this.loadJson(
+      logicalRuntimePath,
+      LyricsSchema.parse,
+      options,
+      undefined,
+      'lyrics',
+    )
   }
 
   loadTimeline(
     logicalRuntimePath: string,
     options: RuntimeLoadOptions = {},
   ): Promise<TimelineDocument> {
-    return this.loadJson(logicalRuntimePath, TimelineSchema.parse, options)
+    return this.loadJson(
+      logicalRuntimePath,
+      TimelineSchema.parse,
+      options,
+      undefined,
+      'timeline',
+    )
   }
 
   loadPractice(
     logicalRuntimePath: string,
     options: RuntimeLoadOptions = {},
   ): Promise<PracticeDocument> {
-    return this.loadJson(logicalRuntimePath, PracticeSchema.parse, options)
+    return this.loadJson(
+      logicalRuntimePath,
+      PracticeSchema.parse,
+      options,
+      undefined,
+      'practice',
+    )
   }
 
   loadFeature(
@@ -126,7 +160,7 @@ export class RuntimeClient {
   ): Promise<string> {
     const logicalRuntimePath =
       typeof feature === 'string' ? feature : feature.url
-    return this.loadText(logicalRuntimePath, options)
+    return this.loadText(logicalRuntimePath, options, 'feature')
   }
 
   resolveAsset(logicalRuntimePath: string): string {
@@ -137,10 +171,13 @@ export class RuntimeClient {
     this.requestGeneration += 1
     this.activeControllers.forEach((controller) => controller.abort())
     this.activeControllers.clear()
+    this.pendingRuntimeResources.forEach(({ controller }) => controller.abort())
+    this.pendingRuntimeResources.clear()
   }
 
   invalidate(): void {
     this.cancelPending()
+    this.runtimeResourceCache.clear()
   }
 
   private async loadCatalogLocalFirst(
@@ -212,6 +249,38 @@ export class RuntimeClient {
     parse: (value: unknown) => T,
     options: RuntimeLoadOptions,
     onValidatedResponse?: (response: Response) => Promise<void>,
+    cacheKind?: string,
+  ): Promise<T> {
+    const url = this.resolve(logicalRuntimePath)
+    if (cacheKind && isContentAddressedRuntimePath(logicalRuntimePath)) {
+      return this.loadCachedRuntimeResource(
+        `json:${cacheKind}:${url}`,
+        logicalRuntimePath,
+        url,
+        options.signal,
+        (signal) =>
+          this.loadJsonUncached(
+            logicalRuntimePath,
+            parse,
+            { signal },
+            onValidatedResponse,
+          ),
+      )
+    }
+
+    return this.loadJsonUncached(
+      logicalRuntimePath,
+      parse,
+      options,
+      onValidatedResponse,
+    )
+  }
+
+  private async loadJsonUncached<T>(
+    logicalRuntimePath: string,
+    parse: (value: unknown) => T,
+    options: RuntimeLoadOptions,
+    onValidatedResponse?: (response: Response) => Promise<void>,
   ): Promise<T> {
     const url = this.resolve(logicalRuntimePath)
     const context = this.beginRequest(options.signal)
@@ -279,7 +348,26 @@ export class RuntimeClient {
     }
   }
 
-  private async loadText(
+  private loadText(
+    logicalRuntimePath: string,
+    options: RuntimeLoadOptions,
+    cacheKind?: string,
+  ): Promise<string> {
+    const url = this.resolve(logicalRuntimePath)
+    if (cacheKind && isContentAddressedRuntimePath(logicalRuntimePath)) {
+      return this.loadCachedRuntimeResource(
+        `text:${cacheKind}:${url}`,
+        logicalRuntimePath,
+        url,
+        options.signal,
+        (signal) => this.loadTextUncached(logicalRuntimePath, { signal }),
+      )
+    }
+
+    return this.loadTextUncached(logicalRuntimePath, options)
+  }
+
+  private async loadTextUncached(
     logicalRuntimePath: string,
     options: RuntimeLoadOptions,
   ): Promise<string> {
@@ -309,6 +397,140 @@ export class RuntimeClient {
       }
     } finally {
       context.cleanup()
+    }
+  }
+
+  private loadCachedRuntimeResource<T>(
+    cacheKey: string,
+    logicalRuntimePath: string,
+    url: string,
+    signal: AbortSignal | undefined,
+    load: (signal: AbortSignal) => Promise<T>,
+  ): Promise<T> {
+    if (signal?.aborted) {
+      return Promise.reject(this.createAbortError(logicalRuntimePath, url))
+    }
+
+    const cachedValue = this.getCachedRuntimeResource(cacheKey)
+    if (cachedValue !== undefined) {
+      return Promise.resolve(cachedValue as T)
+    }
+
+    let pending = this.pendingRuntimeResources.get(cacheKey)
+    if (pending?.settled || pending?.controller.signal.aborted) {
+      if (this.pendingRuntimeResources.get(cacheKey) === pending) {
+        this.pendingRuntimeResources.delete(cacheKey)
+      }
+      pending = undefined
+    }
+    if (!pending) {
+      const controller = new AbortController()
+      const generation = this.requestGeneration
+      const pendingResource: PendingRuntimeResource = {
+        controller,
+        promise: Promise.resolve(undefined),
+        subscribers: 0,
+        settled: false,
+      }
+      pendingResource.promise = Promise.resolve()
+        .then(() => load(controller.signal))
+        .then((value) => {
+          if (
+            controller.signal.aborted ||
+            generation !== this.requestGeneration
+          ) {
+            throw this.createAbortError(logicalRuntimePath, url)
+          }
+          this.setCachedRuntimeResource(cacheKey, value)
+          return value
+        })
+        .finally(() => {
+          pendingResource.settled = true
+          if (this.pendingRuntimeResources.get(cacheKey) === pendingResource) {
+            this.pendingRuntimeResources.delete(cacheKey)
+          }
+        })
+      this.pendingRuntimeResources.set(cacheKey, pendingResource)
+      pending = pendingResource
+    }
+
+    return this.subscribeToRuntimeResource<T>(
+      pending,
+      logicalRuntimePath,
+      url,
+      signal,
+    )
+  }
+
+  private subscribeToRuntimeResource<T>(
+    pending: PendingRuntimeResource,
+    logicalRuntimePath: string,
+    url: string,
+    signal?: AbortSignal,
+  ): Promise<T> {
+    if (signal?.aborted) {
+      return Promise.reject(this.createAbortError(logicalRuntimePath, url))
+    }
+
+    pending.subscribers += 1
+    return new Promise<T>((resolve, reject) => {
+      let complete = false
+      const finish = (): boolean => {
+        if (complete) {
+          return false
+        }
+        complete = true
+        signal?.removeEventListener('abort', abortSubscriber)
+        pending.subscribers = Math.max(0, pending.subscribers - 1)
+        return true
+      }
+      const abortSubscriber = (): void => {
+        if (!finish()) {
+          return
+        }
+        reject(this.createAbortError(logicalRuntimePath, url))
+        void Promise.resolve().then(() => {
+          if (pending.subscribers === 0 && !pending.settled) {
+            pending.controller.abort()
+          }
+        })
+      }
+
+      signal?.addEventListener('abort', abortSubscriber, { once: true })
+      pending.promise.then(
+        (value) => {
+          if (finish()) {
+            resolve(value as T)
+          }
+        },
+        (error: unknown) => {
+          if (finish()) {
+            reject(error)
+          }
+        },
+      )
+    })
+  }
+
+  private getCachedRuntimeResource(cacheKey: string): unknown {
+    if (!this.runtimeResourceCache.has(cacheKey)) {
+      return undefined
+    }
+    const value = this.runtimeResourceCache.get(cacheKey)
+    this.runtimeResourceCache.delete(cacheKey)
+    this.runtimeResourceCache.set(cacheKey, value)
+    return value
+  }
+
+  private setCachedRuntimeResource(cacheKey: string, value: unknown): void {
+    this.runtimeResourceCache.delete(cacheKey)
+    this.runtimeResourceCache.set(cacheKey, value)
+    while (this.runtimeResourceCache.size > MAX_CACHED_RUNTIME_RESOURCES) {
+      const oldestKey = this.runtimeResourceCache.keys().next().value
+      if (oldestKey === undefined) {
+        return
+      }
+      this.runtimeResourceCache.delete(oldestKey)
     }
   }
 
@@ -418,4 +640,9 @@ export function createRuntimeClient(
   options: RuntimeClientOptions = {},
 ): RuntimeClient {
   return new RuntimeClient(options)
+}
+
+function isContentAddressedRuntimePath(logicalRuntimePath: string): boolean {
+  const path = logicalRuntimePath.split(/[?#]/, 1)[0] ?? logicalRuntimePath
+  return /\.[a-f0-9]{64}\.(?:json|md)$/.test(path)
 }

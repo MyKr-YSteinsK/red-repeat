@@ -1,11 +1,7 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { RuntimeFeatureDescriptor } from '../library/runtime-schema'
-import type { RuntimeFeatureLoadError } from '../runtime/song-edition-loader'
-import type {
-  AssembledSongEdition,
-  RuntimeFeatureContent,
-} from '../runtime/song-edition'
+import type { AssembledSongEdition } from '../runtime/song-edition'
 import {
   ExplainArticleBody,
   parseFeatureArticle,
@@ -13,7 +9,10 @@ import {
 } from './FeatureMarkdown'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 import { useSongEditionPlayback } from './use-song-edition-playback'
-import type { RuntimeClient } from '../runtime/runtime-client'
+import {
+  RuntimeClientError,
+  type RuntimeClient,
+} from '../runtime/runtime-client'
 import {
   captureScrollAnchor,
   prefersReducedMotion,
@@ -24,8 +23,6 @@ import {
 export interface ExplainWorkspaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
-  features: readonly RuntimeFeatureContent[]
-  featureErrors: readonly RuntimeFeatureLoadError[]
   audioEngine?: AudioEngine
 }
 
@@ -33,35 +30,109 @@ interface ExplainTopicEntry {
   id: string
   descriptor: RuntimeFeatureDescriptor
   article?: ExplainArticle
-  unavailable: boolean
+  status: ExplainFeatureStatus
 }
+
+type ExplainFeatureStatus = 'idle' | 'loading' | 'ready' | 'error'
+
+type ExplainFeatureLoadState =
+  | { status: 'idle' | 'loading' }
+  | { status: 'ready'; article: ExplainArticle }
+  | { status: 'error'; error: unknown }
 
 type ExplainNavigationSource = 'directory' | 'select' | 'previous' | 'next'
 
 export function ExplainWorkspace({
   model,
   runtimeClient,
-  features,
-  featureErrors,
   audioEngine,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [selectedTopicId, setSelectedTopicId] = useState(
-    features[0]?.descriptor.id,
+    model.edition.features[0]?.id,
+  )
+  const [featureStates, setFeatureStates] = useState<
+    Readonly<Record<string, ExplainFeatureLoadState>>
+  >({})
+  const [retryByUrl, setRetryByUrl] = useState<Readonly<Record<string, number>>>({})
+  const startedRequestsRef = useRef(new Set<string>())
+  const featureStatesRef = useRef(featureStates)
+  const updateFeatureState = useCallback(
+    (url: string, state: ExplainFeatureLoadState): void => {
+      const next = { ...featureStatesRef.current, [url]: state }
+      featureStatesRef.current = next
+      setFeatureStates(next)
+    },
+    [],
   )
   const topics = useMemo(
-    () => createTopicEntries(model, features, featureErrors),
-    [featureErrors, features, model],
+    () => createTopicEntries(model.edition.features, featureStates),
+    [featureStates, model.edition.features],
   )
-  const availableTopics = topics.filter((topic) => topic.article)
-  const selectedTopic =
-    availableTopics.find(({ id }) => id === selectedTopicId) ??
-    availableTopics[0]
+  const selectedTopic = topics.find(({ id }) => id === selectedTopicId) ?? topics[0]
+  const selectedDescriptor = selectedTopic?.descriptor
+  const selectedFeatureUrl = selectedTopic?.descriptor.url
+  const selectedRetry = selectedFeatureUrl
+    ? retryByUrl[selectedFeatureUrl] ?? 0
+    : 0
   const topicHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const pendingTopicNavigationRef = useRef<{
     anchor: ReturnType<typeof captureScrollAnchor>
     policy: TransitionPolicy
   } | undefined>(undefined)
+
+  useEffect(() => {
+    const descriptor = selectedDescriptor
+    if (!descriptor) {
+      return
+    }
+    const currentState = featureStatesRef.current[descriptor.url]
+    if (currentState?.status === 'ready') {
+      return
+    }
+
+    const requestKey = `${descriptor.url}\u0000${selectedRetry}`
+    if (startedRequestsRef.current.has(requestKey)) {
+      return
+    }
+    startedRequestsRef.current.add(requestKey)
+    const startedRequests = startedRequestsRef.current
+
+    let active = true
+    const controller = new AbortController()
+    updateFeatureState(descriptor.url, { status: 'loading' })
+    void runtimeClient
+      .loadFeature(descriptor, { signal: controller.signal })
+      .then((content) => {
+        if (active) {
+          updateFeatureState(descriptor.url, {
+            status: 'ready',
+            article: parseFeatureArticle({ descriptor, content }),
+          })
+        }
+      })
+      .catch((error: unknown) => {
+        if (!active) {
+          return
+        }
+        if (error instanceof RuntimeClientError && error.kind === 'abort') {
+          updateFeatureState(descriptor.url, { status: 'idle' })
+          return
+        }
+        updateFeatureState(descriptor.url, { status: 'error', error })
+      })
+
+    return () => {
+      active = false
+      controller.abort()
+      startedRequests.delete(requestKey)
+    }
+  }, [
+    runtimeClient,
+    selectedDescriptor,
+    selectedRetry,
+    updateFeatureState,
+  ])
 
   const navigateExplainTopic = (
     nextTopicId: string,
@@ -107,13 +178,13 @@ export function ExplainWorkspace({
   }
 
   const selectedTopicIndex = selectedTopic
-    ? availableTopics.findIndex(({ id }) => id === selectedTopic.id)
+    ? topics.findIndex(({ id }) => id === selectedTopic.id)
     : -1
   const previousTopic =
-    selectedTopicIndex > 0 ? availableTopics[selectedTopicIndex - 1] : undefined
+    selectedTopicIndex > 0 ? topics[selectedTopicIndex - 1] : undefined
   const nextTopic =
-    selectedTopicIndex >= 0 && selectedTopicIndex < availableTopics.length - 1
-      ? availableTopics[selectedTopicIndex + 1]
+    selectedTopicIndex >= 0 && selectedTopicIndex < topics.length - 1
+      ? topics[selectedTopicIndex + 1]
       : undefined
 
   return (
@@ -135,15 +206,16 @@ export function ExplainWorkspace({
               value={selectedTopic?.id ?? ''}
               onChange={(event) => {
                 const nextTopicId = event.currentTarget.value
-                if (availableTopics.some(({ id }) => id === nextTopicId)) {
+                if (topics.some(({ id }) => id === nextTopicId)) {
                   navigateExplainTopic(nextTopicId, 'select')
                 }
               }}
             >
               {topics.map((topic) => (
-                <option key={topic.id} value={topic.id} disabled={topic.unavailable}>
+                <option key={topic.id} value={topic.id}>
                   {topic.article?.title ?? descriptorTitle(topic.descriptor.id)}
-                  {topic.unavailable ? '（暂不可用）' : ''}
+                  {topic.status === 'loading' ? '（加载中）' : ''}
+                  {topic.status === 'error' ? '（暂不可用）' : ''}
                 </option>
               ))}
             </select>
@@ -159,17 +231,13 @@ export function ExplainWorkspace({
               topic={topic}
               index={index}
               active={topic.id === selectedTopic?.id}
-              onSelect={() => {
-                if (topic.article) {
-                  navigateExplainTopic(topic.id, 'directory')
-                }
-              }}
+              onSelect={() => navigateExplainTopic(topic.id, 'directory')}
             />
           ))}
         </nav>
 
         <div className="explain-current-topic">
-          {selectedTopic?.article ? (
+          {selectedTopic?.status === 'ready' && selectedTopic.article ? (
             <article className="explain-article">
               <p className="feature-label">主题 {String(selectedTopicIndex + 1).padStart(2, '0')}</p>
               <h3 ref={topicHeadingRef}>{selectedTopic.article.title}</h3>
@@ -186,9 +254,26 @@ export function ExplainWorkspace({
                 )}
               />
             </article>
-          ) : (
+          ) : selectedTopic?.status === 'error' ? (
             <div className="explain-topic-unavailable" role="status">
               这篇讲解暂时不可用，歌词练习仍然可以使用。
+              <button
+                className="text-button"
+                type="button"
+                onClick={() => {
+                  const url = selectedTopic.descriptor.url
+                  setRetryByUrl((current) => ({
+                    ...current,
+                    [url]: (current[url] ?? 0) + 1,
+                  }))
+                }}
+              >
+                重试加载
+              </button>
+            </div>
+          ) : (
+            <div className="explain-topic-loading" role="status">
+              正在加载这篇讲解…
             </div>
           )}
 
@@ -237,56 +322,43 @@ function TopicDirectoryItem({
   active: boolean
   onSelect: () => void
 }) {
-  if (topic.unavailable) {
-    return (
-      <div className="explain-topic-directory-item is-unavailable" aria-disabled="true">
-        <span className="explain-topic-index">{String(index + 1).padStart(2, '0')}</span>
-        <span>
-          <strong>{descriptorTitle(topic.descriptor.id)}</strong>
-          <small>暂不可用</small>
-        </span>
-      </div>
-    )
-  }
-
   return (
     <button
       className={`explain-topic-directory-item${active ? ' is-active' : ''}`}
       type="button"
-      aria-label={topic.article?.title}
+      aria-label={topic.article?.title ?? descriptorTitle(topic.descriptor.id)}
       aria-current={active ? 'page' : undefined}
       onClick={onSelect}
     >
       <span className="explain-topic-index">{String(index + 1).padStart(2, '0')}</span>
-      <strong>{topic.article?.title}</strong>
+      <span>
+        <strong>{topic.article?.title ?? descriptorTitle(topic.descriptor.id)}</strong>
+        {topic.status === 'loading' ? <small>加载中</small> : null}
+        {topic.status === 'error' ? <small>暂不可用</small> : null}
+      </span>
     </button>
   )
 }
 
 function createTopicEntries(
-  model: AssembledSongEdition,
-  features: readonly RuntimeFeatureContent[],
-  featureErrors: readonly RuntimeFeatureLoadError[],
+  descriptors: readonly RuntimeFeatureDescriptor[],
+  featureStates: Readonly<Record<string, ExplainFeatureLoadState>>,
 ): ExplainTopicEntry[] {
-  const articlesById = new Map(
-    features.map((feature) => [feature.descriptor.id, parseFeatureArticle(feature)]),
-  )
-  const errorsById = new Set(featureErrors.map(({ descriptor }) => descriptor.id))
-  const descriptors = model.edition.features.length > 0
-    ? model.edition.features
-    : features.map(({ descriptor }) => descriptor)
-
-  return descriptors.map((descriptor) => ({
-    id: descriptor.id,
-    descriptor,
-    article: articlesById.get(descriptor.id),
-    unavailable: errorsById.has(descriptor.id) || !articlesById.has(descriptor.id),
-  }))
+  return descriptors.map((descriptor) => {
+    const state = featureStates[descriptor.url] ?? { status: 'idle' }
+    return {
+      id: descriptor.id,
+      descriptor,
+      ...(state.status === 'ready' ? { article: state.article } : {}),
+      status: state.status,
+    }
+  })
 }
 
 function descriptorTitle(id: string): string {
-  return id
+  const title = id
     .replace(/^\s*\d+(?:[-_.\s]+)+/, '')
     .replace(/[-_]+/g, ' ')
     .trim()
+  return title ? `${title[0].toLocaleUpperCase()}${title.slice(1)}` : id
 }

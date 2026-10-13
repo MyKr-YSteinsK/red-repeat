@@ -962,20 +962,34 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- No formal RED-Plan is active; the most recently completed Plan is
-  `RED-Plan-64`. The current `package.json` and release-ledger versions are
-  `1.15.0`.
-- The current non-formal Production engineering documentation-governance task
-  is complete across the repository contract, project brief/decisions/state,
-  supporting owner manifest, song-content authoring and release-reference docs;
-  it made no product implementation change.
-- `D-024` is Accepted with implementation Pending. Cross-mode playback
-  continuity is a target behavior, not a current capability. The experience
-  review's A–E work packages are not collectively approved, and implementation
-  has not started.
-- Before experience-upgrade implementation, obtain separate approval for the
-  remaining A–E proposal scope and split only approved work into development
-  tasks. `D-024` remains its own accepted, pending implementation target.
+- `RED-Plan-65` R1 work package A1–A5 is implemented and its local acceptance
+  gates are complete on `codex/red-plan-65-experience-a`, based on
+  `634a65b71fa37aac8cc3ed0e55ef9a06b8261d37`. The current `package.json` and
+  release-ledger versions remain `1.15.0`; `RED-Plan-64` remains the latest
+  product release. Plan-65 creates no version, tag, merge or deployment.
+- The implementation separates core Song Edition readiness from optional
+  Explain article loading, preserves Catalog query/anchor across same-document
+  navigation, reuses validated immutable runtime resources and compatible
+  Edition cores, removes automatic whole-library warmup from Catalog, and
+  restores reachable Full Song navigation at intermediate widths.
+- Local evidence: `npm test` passed (48 files / 349 tests), `npm run typecheck`
+  passed, `npm run lint` passed with two existing Fast Refresh warnings,
+  production and `/red-repeat/` subpath builds passed, and
+  `npm run pwa:inspect -- /red-repeat/` passed. Browser checks covered Catalog
+  return/query/anchor and mode-button hit targets at `390×844`, `768×1024` and
+  `1365×900`; this is not real-device or installed-PWA evidence. Existing
+  automated download tests cover complete snapshots, H1 fallback, H2 staging
+  failure and manifest switching. No installed-PWA or human listening check
+  was run; those observations remain non-blocking under the current contract.
+- `D-024` remains Accepted with implementation Pending; Plan-65 does not add
+  cross-mode continuous playback. `D-025` is partially implemented (A complete;
+  B–E pending). `D-026` is partially implemented (Catalog-return F1 validated;
+  Explain-preview F2 pending). F3 mastery/automatic proficiency evaluation
+  remains explicitly excluded.
+- Next: review and integrate the Plan-65 branch through its authorized PR
+  boundary. Any later B–E or F2 implementation must stay within the approved
+  product goals and receive its own execution scope; no new architecture or
+  behavior is implied by this status entry.
 
 ## Historical completion record (RED-Plan-37–64)
 

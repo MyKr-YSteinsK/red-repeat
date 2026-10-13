@@ -1957,7 +1957,7 @@
   -webkit-backdrop-filter: var(--player-glass-blur);
 }
 
-@media (min-width: 641px) {
+@media (min-width: 900px) {
   .full-song-layout {
     display: block;
     padding-right: calc(18rem + clamp(2rem, 6vw, 5rem));
@@ -2261,6 +2261,7 @@
 }
 
 .edition-task-nav button {
+  min-width: 4.75rem;
   min-height: 2.35rem;
   padding: 0.45rem 0.7rem;
   border: 1px solid transparent;
@@ -2270,6 +2271,7 @@
   font-family: var(--font-mono);
   font-size: 0.68rem;
   letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 .edition-task-nav button:hover,
@@ -2818,6 +2820,28 @@
 }
 
 @media (max-width: 900px) {
+  .song-edition[data-mode='all'] .practice-page-header {
+    align-items: stretch;
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .song-edition[data-mode='all'] .practice-page-tools {
+    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .song-edition[data-mode='all'] .edition-task-nav {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .song-edition[data-mode='all'] .edition-task-nav button {
+    flex: 1;
+    padding-inline: 0.7rem;
+  }
+
   .practice-controls {
     position: sticky;
     bottom: 0;

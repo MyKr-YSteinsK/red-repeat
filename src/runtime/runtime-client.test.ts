@@ -275,6 +275,84 @@ describe('Runtime Client', () => {
     await expectRuntimeError(pending, 'abort', '/library-runtime/catalog.json')
   })
 
+  it('reuses validated immutable runtime documents and clears them on invalidation', async () => {
+    const logicalPath = `/library-runtime/songs/first-light/lyrics.${'a'.repeat(64)}.json`
+    const fetchImpl = vi.fn(async () => jsonResponse(lyrics))
+    const client = createRuntimeClient({ fetchImpl })
+
+    await expect(client.loadLyrics(logicalPath)).resolves.toEqual(lyrics)
+    await expect(client.loadLyrics(logicalPath)).resolves.toEqual(lyrics)
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+
+    client.invalidate()
+    await expect(client.loadLyrics(logicalPath)).resolves.toEqual(lyrics)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps a shared request alive when one view aborts its subscription', async () => {
+    const logicalPath = `/library-runtime/songs/first-light/lyrics.${'c'.repeat(64)}.json`
+    const controller = new AbortController()
+    let resolveResponse: ((response: Response) => void) | undefined
+    const fetchImpl = vi.fn(
+      (_url: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((resolve, reject) => {
+          resolveResponse = resolve
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('aborted', 'AbortError'))
+          })
+        }),
+    )
+    const client = createRuntimeClient({ fetchImpl })
+    const first = client.loadLyrics(logicalPath, { signal: controller.signal })
+    const second = client.loadLyrics(logicalPath)
+
+    await vi.waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce())
+    controller.abort()
+    resolveResponse?.(jsonResponse(lyrics))
+
+    await expectRuntimeError(first, 'abort', logicalPath)
+    await expect(second).resolves.toEqual(lyrics)
+    expect(fetchImpl).toHaveBeenCalledOnce()
+  })
+
+  it('starts a new request when the previous shared request was already aborted', async () => {
+    const logicalPath = `/library-runtime/songs/first-light/lyrics.${'e'.repeat(64)}.json`
+    const controller = new AbortController()
+    const fetchImpl = vi.fn<typeof fetch>()
+      .mockImplementationOnce(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(new DOMException('aborted', 'AbortError'))
+            })
+          }),
+      )
+      .mockResolvedValueOnce(jsonResponse(lyrics))
+    const client = createRuntimeClient({ fetchImpl })
+    const abandoned = client.loadLyrics(logicalPath, { signal: controller.signal })
+
+    await vi.waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce())
+    controller.abort()
+    await Promise.resolve()
+
+    const recovered = client.loadLyrics(logicalPath)
+    await expectRuntimeError(abandoned, 'abort', logicalPath)
+    await expect(recovered).resolves.toEqual(lyrics)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not cache a document that fails schema validation', async () => {
+    const logicalPath = `/library-runtime/songs/first-light/lyrics.${'d'.repeat(64)}.json`
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ invalid: true }))
+      .mockResolvedValueOnce(jsonResponse(lyrics))
+    const client = createRuntimeClient({ fetchImpl })
+
+    await expectRuntimeError(client.loadLyrics(logicalPath), 'schema', logicalPath)
+    await expect(client.loadLyrics(logicalPath)).resolves.toEqual(lyrics)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
   it('invalidates an old response when pending work is cancelled', async () => {
     let resolveResponse: ((response: Response) => void) | undefined
     const fetchImpl = vi.fn(

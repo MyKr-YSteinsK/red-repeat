@@ -648,6 +648,8 @@ describe('App Library consumer', () => {
         /\/edition\.|\/practice\.|\/timeline\./.test(String(input)),
       ),
     ).toBe(false)
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toMatch(/\/catalog\.json$/)
   })
 
   it('restores persisted Practice state after entering an edition', async () => {
@@ -693,6 +695,66 @@ describe('App Library consumer', () => {
     fireEvent.change(search, { target: { value: '不存在' } })
     expect(screen.getByRole('status')).toHaveTextContent('没有找到歌曲')
     expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
+  })
+
+  it('keeps catalog search and its visible anchor across same-document edition navigation', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => responseForResumeUrl(input))
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')
+    const originalScrollTo = Object.getOwnPropertyDescriptor(window, 'scrollTo')
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 420,
+    })
+    const scrollTo = vi.fn()
+    Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      value: scrollTo,
+    })
+
+    try {
+      render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
+      await screen.findByRole('link', { name: '打开 Second Signal' })
+      const search = screen.getByRole('searchbox', { name: '搜索歌曲或歌手' })
+      fireEvent.change(search, { target: { value: 'first' } })
+
+      const editionLink = screen.getByRole('link', { name: '打开 First Light' })
+      const catalogEntry = editionLink.closest<HTMLElement>('.catalog-entry')
+      expect(catalogEntry).not.toBeNull()
+      const rect = vi
+        .fn<() => DOMRect>()
+        .mockReturnValueOnce({ top: 60, bottom: 160 } as DOMRect)
+        .mockReturnValueOnce({ top: 60, bottom: 160 } as DOMRect)
+        .mockReturnValueOnce({ top: 95, bottom: 195 } as DOMRect)
+      catalogEntry!.getBoundingClientRect = rect
+
+      const timeOrigin = window.performance.timeOrigin
+      fireEvent.click(editionLink)
+      expect(await screen.findByRole('heading', { name: 'First Light' })).toBeInTheDocument()
+      fireEvent.click(
+        within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }),
+      )
+
+      expect(await screen.findByRole('searchbox', { name: '搜索歌曲或歌手' })).toHaveValue('first')
+      expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
+      expect(window.performance.timeOrigin).toBe(timeOrigin)
+      expect(fetchImpl.mock.calls.filter(([input]) => String(input).endsWith('/catalog.json'))).toHaveLength(1)
+      expect(scrollTo).toHaveBeenCalledOnce()
+      expect(scrollTo).toHaveBeenCalledWith(
+        expect.objectContaining({ behavior: 'auto', top: expect.any(Number) }),
+      )
+    } finally {
+      if (originalScrollY) {
+        Object.defineProperty(window, 'scrollY', originalScrollY)
+      } else {
+        delete (window as { scrollY?: number }).scrollY
+      }
+      if (originalScrollTo) {
+        Object.defineProperty(window, 'scrollTo', originalScrollTo)
+      } else {
+        delete (window as { scrollTo?: typeof window.scrollTo }).scrollTo
+      }
+    }
   })
 })
 

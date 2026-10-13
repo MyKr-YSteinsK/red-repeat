@@ -2,6 +2,8 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useLayoutEffect,
+  useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -24,7 +26,6 @@ import { SongEditionPage } from './edition/SongEditionPage'
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { useSwipeReveal } from './library/use-swipe-reveal'
 import { SettingsPage } from './settings/SettingsPage'
-import { warmCatalogRuntime } from './pwa/runtime-cache'
 import {
   getUpdateManager,
   type UpdateManager,
@@ -59,6 +60,13 @@ type CatalogState =
   | { status: 'ready'; catalog: Catalog }
   | { status: 'error'; error: unknown }
 
+interface CatalogViewportState {
+  hasPosition: boolean
+  scrollY: number
+  anchorSongId?: string
+  anchorTop?: number
+}
+
 function App({
   runtimeClient = defaultRuntimeClient,
   updateManager: providedUpdateManager,
@@ -70,6 +78,11 @@ function App({
   const [retryKey, setRetryKey] = useState(0)
   const [catalogState, setCatalogState] = useState<CatalogState>({
     status: 'loading',
+  })
+  const [catalogQuery, setCatalogQuery] = useState('')
+  const catalogViewportRef = useRef<CatalogViewportState>({
+    hasPosition: false,
+    scrollY: 0,
   })
 
   useEffect(() => {
@@ -107,19 +120,6 @@ function App({
     }
   }, [retryKey, runtimeClient])
 
-  useEffect(() => {
-    if (catalogState.status !== 'ready') {
-      return
-    }
-
-    const controller = new AbortController()
-    void warmCatalogRuntime(catalogState.catalog, runtimeClient, {
-      signal: controller.signal,
-    })
-
-    return () => controller.abort()
-  }, [catalogState, runtimeClient])
-
   const homeHref = createLibraryHref(window.location)
   const settingsHref = createSettingsHref(window.location)
   const retryCatalog = (): void => {
@@ -135,6 +135,9 @@ function App({
           state={catalogState}
           runtimeClient={runtimeClient}
           onRetry={retryCatalog}
+          query={catalogQuery}
+          onQueryChange={setCatalogQuery}
+          viewportRef={catalogViewportRef}
         />
       ) : route.kind === 'settings' ? (
         <SettingsPage
@@ -176,6 +179,9 @@ function App({
           state={catalogState}
           runtimeClient={runtimeClient}
           onRetry={retryCatalog}
+          query={catalogQuery}
+          onQueryChange={setCatalogQuery}
+          viewportRef={catalogViewportRef}
         />
       ) : (
         <EditionRoute
@@ -216,10 +222,16 @@ function LibraryRoute({
   state,
   runtimeClient,
   onRetry,
+  query,
+  onQueryChange,
+  viewportRef,
 }: {
   state: CatalogState
   runtimeClient: RuntimeClient
   onRetry: () => void
+  query: string
+  onQueryChange: (query: string) => void
+  viewportRef: { current: CatalogViewportState }
 }) {
   if (state.status === 'loading') {
     return (
@@ -265,6 +277,9 @@ function LibraryRoute({
       key={catalog.contentHash}
       catalog={catalog}
       runtimeClient={runtimeClient}
+      query={query}
+      onQueryChange={onQueryChange}
+      viewportRef={viewportRef}
     />
   )
 }
@@ -298,11 +313,16 @@ function EmptyLibrary() {
 function CatalogLibrary({
   catalog,
   runtimeClient,
+  query,
+  onQueryChange,
+  viewportRef,
 }: {
   catalog: Catalog
   runtimeClient: RuntimeClient
+  query: string
+  onQueryChange: (query: string) => void
+  viewportRef: { current: CatalogViewportState }
 }) {
-  const [query, setQuery] = useState('')
   const [downloadBySongId, setDownloadBySongId] = useState<
     Readonly<Record<string, SongDownloadState>>
   >({})
@@ -310,6 +330,32 @@ function CatalogLibrary({
     new Set(),
   )
   const [openSongId, setOpenSongId] = useState<string | null>(null)
+
+  useLayoutEffect(() => {
+    const saved = viewportRef.current
+    if (!saved.hasPosition) {
+      return
+    }
+
+    const anchor = saved.anchorSongId
+      ? [...document.querySelectorAll<HTMLElement>('.catalog-entry[data-song-id]')]
+          .find((entry) => entry.dataset.songId === saved.anchorSongId)
+      : undefined
+    const anchorOffset = saved.anchorTop ?? 0
+    const targetScrollY = anchor
+      ? window.scrollY + anchor.getBoundingClientRect().top - anchorOffset
+      : saved.scrollY
+    const nextScrollY = Math.max(0, targetScrollY)
+    if (Math.abs(nextScrollY - window.scrollY) > 1) {
+      window.scrollTo({ top: nextScrollY, behavior: 'auto' })
+    }
+  }, [viewportRef])
+
+  useEffect(() => {
+    const captureViewport = (): void => captureCatalogViewport(viewportRef)
+    window.addEventListener('scroll', captureViewport, { passive: true })
+    return () => window.removeEventListener('scroll', captureViewport)
+  }, [viewportRef])
 
   useEffect(() => {
     let active = true
@@ -426,7 +472,7 @@ function CatalogLibrary({
             type="search"
             value={query}
             placeholder="搜索歌曲或歌手"
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => onQueryChange(event.target.value)}
           />
         </label>
       </div>
@@ -460,6 +506,7 @@ function CatalogLibrary({
               isRemoving={removingSongIds.has(edition.songId)}
               onDownload={handleDownload}
               onRemove={handleRemove}
+              onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
               isSwipeOpen={openSongId === edition.songId}
               onSwipeOpen={() => setOpenSongId(edition.songId)}
               onSwipeClose={() => setOpenSongId(null)}
@@ -503,6 +550,7 @@ function CatalogEditionCard({
   isRemoving,
   onDownload,
   onRemove,
+  onBeforeNavigate,
   isSwipeOpen,
   onSwipeOpen,
   onSwipeClose,
@@ -514,6 +562,7 @@ function CatalogEditionCard({
   isRemoving: boolean
   onDownload: (edition: CatalogEdition) => void
   onRemove: (edition: CatalogEdition) => void
+  onBeforeNavigate: () => void
   isSwipeOpen: boolean
   onSwipeOpen: () => void
   onSwipeClose: () => void
@@ -563,6 +612,7 @@ function CatalogEditionCard({
               className="catalog-entry-link"
               href={createEditionHref(edition.songId, window.location)}
               aria-label={`打开 ${edition.title}`}
+              onClick={onBeforeNavigate}
             >
               <img
                 className="catalog-cover"
@@ -656,6 +706,27 @@ function matchesCatalogSearch(
   return [edition.title, edition.artist].some((value) =>
     value.toLocaleLowerCase().includes(normalizedQuery),
   )
+}
+
+function captureCatalogViewport(
+  viewportRef: { current: CatalogViewportState },
+): void {
+  const visibleEntry = [
+    ...document.querySelectorAll<HTMLElement>('.catalog-entry[data-song-id]'),
+  ].find((entry) => {
+    const rect = entry.getBoundingClientRect()
+    return rect.bottom > 0 && rect.top < window.innerHeight
+  })
+  viewportRef.current = {
+    hasPosition: true,
+    scrollY: window.scrollY,
+    ...(visibleEntry?.dataset.songId
+      ? {
+          anchorSongId: visibleEntry.dataset.songId,
+          anchorTop: visibleEntry.getBoundingClientRect().top,
+        }
+      : {}),
+  }
 }
 
 function EditionRoute({

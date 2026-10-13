@@ -51,14 +51,14 @@ export function parseAppRoute(
 }
 
 export function createLibraryHref(location: NavigationLocation): string {
-  return `${location.pathname}${location.search}`
+  return `${createAppPath(location)}#library`
 }
 
 export function createEditionHref(
   songId: string,
   location: NavigationLocation,
 ): string {
-  return `${createLibraryHref(location)}#edition=${encodeURIComponent(songId)}`
+  return `${createAppPath(location)}#edition=${encodeURIComponent(songId)}`
 }
 
 export function createTimingDebuggerHref(
@@ -66,7 +66,7 @@ export function createTimingDebuggerHref(
   location: NavigationLocation,
 ): string {
   const query = songId ? `&edition=${encodeURIComponent(songId)}` : ''
-  return `${createLibraryHref(location)}#timing=debug${query}`
+  return `${createAppPath(location)}#timing=debug${query}`
 }
 
 export function createSettingsHref(
@@ -76,5 +76,9 @@ export function createSettingsHref(
   const suffix = releaseVersion
     ? `&release=${encodeURIComponent(releaseVersion)}`
     : ''
-  return `${createLibraryHref(location)}#settings${suffix}`
+  return `${createAppPath(location)}#settings${suffix}`
+}
+
+function createAppPath(location: NavigationLocation): string {
+  return `${location.pathname}${location.search}`
 }

@@ -5,15 +5,10 @@ import type {
   TimelineDocument,
 } from '../library/schema'
 import {
-  RuntimeClientError,
   type RuntimeClient,
   type RuntimeLoadOptions,
 } from './runtime-client'
-import {
-  assembleRuntimeSongEdition,
-  type AssembledSongEdition,
-  type RuntimeFeatureContent,
-} from './song-edition'
+import { assembleRuntimeSongEdition, type AssembledSongEdition } from './song-edition'
 import {
   clearTimingOverrides,
   createEffectiveOccurrenceTimingProvider,
@@ -30,14 +25,39 @@ export interface RuntimeSongEditionCore {
   timeline: TimelineDocument
   practice: PracticeDocument
   timingProvider: OccurrenceTimingProvider
-  features: readonly RuntimeFeatureContent[]
-  featureErrors: readonly RuntimeFeatureLoadError[]
   assembled: AssembledSongEdition
 }
 
-export interface RuntimeFeatureLoadError {
-  descriptor: RuntimeEdition['features'][number]
-  error: unknown
+const MAX_CACHED_SONG_EDITIONS = 12
+const cachedSongEditionsByClient = new WeakMap<
+  RuntimeClient,
+  Map<string, RuntimeSongEditionCore>
+>()
+
+export function getCachedRuntimeSongEditionCore(
+  client: RuntimeClient,
+  catalogEdition: CatalogEdition,
+): RuntimeSongEditionCore | undefined {
+  const cache = cachedSongEditionsByClient.get(client)
+  const key = getSongEditionCacheKey(
+    catalogEdition.songId,
+    catalogEdition.editionUrl,
+  )
+  const core = cache?.get(key)
+  if (
+    !core ||
+    !cache ||
+    !hasMatchingEditionContentUrl(
+      core.catalogEdition.editionUrl,
+      core.edition.contentHash,
+    )
+  ) {
+    return undefined
+  }
+
+  cache.delete(key)
+  cache.set(key, core)
+  return refreshCoreTimingProvider(core, false)
 }
 
 export async function loadRuntimeSongEditionCore(
@@ -50,6 +70,14 @@ export async function loadRuntimeSongEditionCore(
   )
   const effectiveCatalogEdition =
     downloadedSnapshot?.catalogEdition ?? catalogEdition
+  const cachedCore = getCachedSongEditionCore(
+    client,
+    effectiveCatalogEdition,
+  )
+  if (cachedCore) {
+    return refreshCoreTimingProvider(cachedCore, true)
+  }
+
   const edition = await client.loadEdition(
     effectiveCatalogEdition.editionUrl,
     options,
@@ -59,20 +87,6 @@ export async function loadRuntimeSongEditionCore(
     client.loadTimeline(edition.timelineUrl, options),
     client.loadPractice(edition.practiceUrl, options),
   ])
-  const featureResults = await Promise.all(
-    edition.features.map(async (descriptor) => ({
-      descriptor,
-      result: await loadFeatureSafely(client, descriptor, options),
-    })),
-  )
-  const features = featureResults.flatMap(({ descriptor, result }) =>
-    result.status === 'ok' ? [{ descriptor, content: result.content }] : [],
-  )
-  const featureErrors = featureResults.flatMap(({ descriptor, result }) =>
-    result.status === 'error'
-      ? [{ descriptor, error: result.error }]
-      : [],
-  )
 
   const timingIdentity: TimingOverrideIdentity = {
     songId: edition.song.songId,
@@ -98,36 +112,111 @@ export async function loadRuntimeSongEditionCore(
     timeline,
     practice,
     timingProvider,
-    features,
-    featureErrors,
   }
-  return {
+  const loadedCore: RuntimeSongEditionCore = {
     ...core,
     assembled: assembleRuntimeSongEdition({
       ...core,
       timingProvider,
+      features: [],
       allowMissingFeatureContent: true,
     }),
   }
+  cacheSongEditionCore(client, loadedCore)
+  return loadedCore
 }
 
-async function loadFeatureSafely(
+function getCachedSongEditionCore(
   client: RuntimeClient,
-  descriptor: RuntimeEdition['features'][number],
-  options: RuntimeLoadOptions,
-): Promise<
-  | { status: 'ok'; content: string }
-  | { status: 'error'; error: unknown }
-> {
-  try {
-    return {
-      status: 'ok',
-      content: await client.loadFeature(descriptor, options),
+  catalogEdition: CatalogEdition,
+): RuntimeSongEditionCore | undefined {
+  const cache = cachedSongEditionsByClient.get(client)
+  const core = cache?.get(
+    getSongEditionCacheKey(catalogEdition.songId, catalogEdition.editionUrl),
+  )
+  return core &&
+    hasMatchingEditionContentUrl(core.catalogEdition.editionUrl, core.edition.contentHash)
+    ? core
+    : undefined
+}
+
+function cacheSongEditionCore(
+  client: RuntimeClient,
+  core: RuntimeSongEditionCore,
+): void {
+  if (!hasMatchingEditionContentUrl(core.catalogEdition.editionUrl, core.edition.contentHash)) {
+    return
+  }
+  let cache = cachedSongEditionsByClient.get(client)
+  if (!cache) {
+    cache = new Map()
+    cachedSongEditionsByClient.set(client, cache)
+  }
+
+  const key = getSongEditionCacheKey(
+    core.catalogEdition.songId,
+    core.catalogEdition.editionUrl,
+  )
+  cache.delete(key)
+  cache.set(key, core)
+  while (cache.size > MAX_CACHED_SONG_EDITIONS) {
+    const oldestKey = cache.keys().next().value
+    if (oldestKey === undefined) {
+      return
     }
-  } catch (error) {
-    if (error instanceof RuntimeClientError && error.kind === 'abort') {
-      throw error
-    }
-    return { status: 'error', error }
+    cache.delete(oldestKey)
+  }
+}
+
+function getSongEditionCacheKey(songId: string, editionUrl: string): string {
+  return `${songId}\u0000${editionUrl}`
+}
+
+function hasMatchingEditionContentUrl(
+  editionUrl: string,
+  contentHash: string,
+): boolean {
+  const path = editionUrl.split(/[?#]/, 1)[0] ?? editionUrl
+  return path.endsWith(`.${contentHash}.json`)
+}
+
+function refreshCoreTimingProvider(
+  core: RuntimeSongEditionCore,
+  clearIncompatible: boolean,
+): RuntimeSongEditionCore {
+  const identity: TimingOverrideIdentity = {
+    songId: core.edition.song.songId,
+    editionContentHash: core.edition.contentHash,
+    audioSourceHash: core.edition.audio.sourceHash,
+    baseTimelineUrl: core.edition.timelineUrl,
+  }
+  const storedTiming = readTimingOverrides(identity, {
+    occurrences: core.timeline.occurrences,
+  })
+  if (
+    clearIncompatible &&
+    storedTiming.kind !== 'none' &&
+    storedTiming.kind !== 'compatible'
+  ) {
+    clearTimingOverrides(identity)
+  }
+  const timingProvider = createEffectiveOccurrenceTimingProvider(
+    core.timeline,
+    storedTiming.kind === 'compatible' ? storedTiming.document : undefined,
+  )
+
+  return {
+    ...core,
+    timingProvider,
+    assembled: assembleRuntimeSongEdition({
+      catalogEdition: core.catalogEdition,
+      edition: core.edition,
+      lyrics: core.lyrics,
+      timeline: core.timeline,
+      practice: core.practice,
+      timingProvider,
+      features: [],
+      allowMissingFeatureContent: true,
+    }),
   }
 }

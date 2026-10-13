@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
   RuntimeClient,
   RuntimeClientError,
 } from '../runtime/runtime-client'
 import {
+  getCachedRuntimeSongEditionCore,
   loadRuntimeSongEditionCore,
   type RuntimeSongEditionCore,
 } from '../runtime/song-edition-loader'
@@ -19,9 +20,21 @@ export function useSongEditionCore(
   catalogEdition: CatalogEdition,
   retryKey: number,
 ): SongEditionLoadState {
-  const [state, setState] = useState<SongEditionLoadState>({
-    status: 'loading',
-  })
+  const requestKey = `${catalogEdition.songId}\u0000${catalogEdition.editionUrl}\u0000${retryKey}`
+  const cachedCore = useMemo(
+    () =>
+      retryKey === 0
+        ? getCachedRuntimeSongEditionCore(runtimeClient, catalogEdition)
+        : undefined,
+    [catalogEdition, retryKey, runtimeClient],
+  )
+  const [requestState, setRequestState] = useState<{
+    key: string
+    state: SongEditionLoadState
+  }>(() => ({
+    key: requestKey,
+    state: cachedCore ? { status: 'ready', core: cachedCore } : { status: 'loading' },
+  }))
 
   useEffect(() => {
     let active = true
@@ -32,15 +45,16 @@ export function useSongEditionCore(
     })
       .then((core) => {
         if (active) {
-          setState({ status: 'ready', core })
+          setRequestState({ key: requestKey, state: { status: 'ready', core } })
         }
       })
       .catch((error: unknown) => {
         if (
           active &&
+          !cachedCore &&
           !(error instanceof RuntimeClientError && error.kind === 'abort')
         ) {
-          setState({ status: 'error', error })
+          setRequestState({ key: requestKey, state: { status: 'error', error } })
         }
       })
 
@@ -48,7 +62,12 @@ export function useSongEditionCore(
       active = false
       controller.abort()
     }
-  }, [catalogEdition, retryKey, runtimeClient])
+  }, [cachedCore, catalogEdition, requestKey, runtimeClient])
 
-  return state
+  if (requestState.key === requestKey) {
+    return requestState.state
+  }
+  return cachedCore
+    ? { status: 'ready', core: cachedCore }
+    : { status: 'loading' }
 }
