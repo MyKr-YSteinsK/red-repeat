@@ -985,7 +985,8 @@ uses the separately authorized task-input source package.
   restores its position/rate/playing or paused intent, including the interrupted
   Practice ramp stage. Cancel/new command/mode exit/song or Edition replacement/
   media error/timing revision invalidation cannot revive old callbacks. The
-  AudioEngine checks generations before queued media play calls.
+  AudioEngine checks generations before queued media play calls and resets the
+  media source/clock before its first new-source notification.
 - Practice keeps `0.6/0.8/1` ramp, fixed-speed preference and existing persistence.
   Pause resumes the unfinished pass from its position; explicit replay restarts.
   Changing Unit or Practice mode cancels an old Practice operation; passive
@@ -994,7 +995,7 @@ uses the separately authorized task-input source package.
 - Mode-local selection, control preference, loaded Explain topic and reading
   position survive mode unmount in the current Edition. No hidden workspace DOM,
   new learning/persistence schema, SongRepository or ResourceScheduler was added.
-- Evidence: 49 test files / 380 tests passed; root and `/red-repeat/` builds and
+- Evidence: 49 test files / 381 tests passed; root and `/red-repeat/` builds and
   PWA artifact inspections passed; lint passed with only two existing Fast Refresh
   warnings using CLI exclusions for ignored `.cache/` probes and `.private/`.
   Source/download regression preserves D-021/D-022/D-023 and existing data.

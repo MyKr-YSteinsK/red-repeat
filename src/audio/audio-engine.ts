@@ -206,6 +206,9 @@ export class AudioEngine {
     }
 
     this.beginOperation(true)
+    // The first notification for the new identity must observe its own clock.
+    this.media.src = sourceUrl
+    this.media.currentTime = 0
     this.setState({
       status: 'loading',
       intent: 'continuous',
@@ -216,8 +219,6 @@ export class AudioEngine {
       activeRange: undefined,
       error: undefined,
     })
-    this.media.src = sourceUrl
-    this.media.currentTime = 0
     this.applyPlaybackRate()
     this.media.load()
   }

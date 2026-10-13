@@ -14,6 +14,17 @@ afterEach(() => {
 })
 
 describe('Audio Engine foundation', () => {
+  it('notifies the new source at zero time before its metadata arrives', () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    engine.loadSource('/old.m4a')
+    media.currentTime = 3.6
+    const listener = vi.fn()
+    engine.subscribe(listener)
+    engine.loadSource('/new.m4a')
+    expect(listener.mock.calls.at(-1)?.[0]).toMatchObject({ sourceUrl: '/new.m4a', currentTimeMs: 0 })
+  })
+
   it('returns one global engine owner', () => {
     const first = getAudioEngineWithFake()
     const second = getAudioEngine()
