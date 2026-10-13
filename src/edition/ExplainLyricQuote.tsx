@@ -2,49 +2,47 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
 import { LyricText } from './LyricText'
+import { SongPlaybackSession } from './song-playback-session'
+import { useSessionViewState } from './song-playback-context'
 
 export interface ExplainLyricQuoteProps {
   model: AssembledSongEdition
   segmentId: string
   audioEngine?: AudioEngine | null
+  playbackSession?: SongPlaybackSession | null
 }
 
 export function ExplainLyricQuote({
   model,
   segmentId,
   audioEngine,
+  playbackSession,
 }: ExplainLyricQuoteProps) {
   const segment = model.segmentsById[segmentId]
   const occurrences = useMemo(
     () => model.occurrencesBySegmentId[segmentId] ?? [],
     [model.occurrencesBySegmentId, segmentId],
   )
-  const occurrenceIds = useMemo(
-    () => new Set(occurrences.map(({ occurrence }) => occurrence.id)),
-    [occurrences],
-  )
-  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(
+  const localSession = useMemo(() => audioEngine && !playbackSession
+    ? new SongPlaybackSession(model.edition.contentHash, audioEngine.getState().sourceUrl ?? model.edition.audio.url, audioEngine, audioEngine.getState().playbackRate)
+    : null, [audioEngine, model.edition.audio.url, model.edition.contentHash, playbackSession])
+  const session = playbackSession ?? localSession
+  const previewOwner = useMemo(() => ({}), [])
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useSessionViewState(`quote.${segmentId}`,
     occurrences[0]?.occurrence.id,
   )
   const [message, setMessage] = useState<string>()
   const [playingOccurrenceId, setPlayingOccurrenceId] = useState<string>()
   const operationRef = useRef(0)
 
-  useEffect(
-    () => () => {
-      const state = audioEngine?.getState()
-      operationRef.current += 1
-      if (
-        audioEngine &&
-        state?.intent === 'range' &&
-        state.activeOccurrenceId &&
-        occurrenceIds.has(state.activeOccurrenceId)
-      ) {
-        audioEngine.pause()
-      }
-    },
-    [audioEngine, occurrenceIds],
-  )
+  useEffect(() => {
+    localSession?.activate()
+    return () => {
+      operationRef.current++
+      session?.cancelPreview(previewOwner)
+      localSession?.close()
+    }
+  }, [localSession, previewOwner, session])
 
   if (!segment) {
     return (
@@ -64,23 +62,30 @@ export function ExplainLyricQuote({
       setMessage('这句歌词还没有可播放的时间范围。')
       return
     }
-    if (!audioEngine) {
+    if (!audioEngine || !session) {
       setMessage('当前环境无法播放音频。')
       return
     }
 
+    if (playingOccurrenceId) {
+      operationRef.current++
+      session.cancelPreview(previewOwner)
+      setPlayingOccurrenceId(undefined)
+      return
+    }
     const timing = model.timingProvider.getTiming(selectedOccurrence.occurrence)
     const operation = operationRef.current + 1
     operationRef.current = operation
     setMessage(undefined)
     setPlayingOccurrenceId(selectedOccurrence.occurrence.id)
-    void audioEngine
-      .playRangeUntilComplete(
+    void session
+      .playPreview(
         {
           startMs: timing.startMs,
           endMs: timing.endMs,
         },
         selectedOccurrence.occurrence.id,
+        previewOwner,
       )
       .then((completion) => {
         if (operationRef.current !== operation) {
@@ -95,15 +100,7 @@ export function ExplainLyricQuote({
 
   const selectOccurrence = (nextOccurrenceId: string): void => {
     operationRef.current += 1
-    const state = audioEngine?.getState()
-    if (
-      audioEngine &&
-      state?.intent === 'range' &&
-      state.activeOccurrenceId &&
-      occurrenceIds.has(state.activeOccurrenceId)
-    ) {
-      audioEngine.pause()
-    }
+    session?.cancelPreview(previewOwner)
     setPlayingOccurrenceId(undefined)
     setMessage(undefined)
     setSelectedOccurrenceId(nextOccurrenceId)
@@ -147,7 +144,7 @@ export function ExplainLyricQuote({
           ) : null}
           <button className="control-button control-button--quiet control-button--sm" type="button" onClick={playSelectedOccurrence}>
             {playingOccurrenceId === selectedOccurrence?.occurrence.id
-              ? '播放中…'
+              ? '取消试听'
               : '试听这句'}
           </button>
         </div>

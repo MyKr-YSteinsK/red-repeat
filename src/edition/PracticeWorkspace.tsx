@@ -37,6 +37,7 @@ import {
 import { PracticeSegmentPicker } from './PracticeSegmentPicker'
 import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
+import { useSessionViewState } from './song-playback-context'
 
 const PRACTICE_SPEEDS = [0.6, 0.8, 1] as const
 type PracticeSpeed = (typeof PRACTICE_SPEEDS)[number]
@@ -61,17 +62,16 @@ export function PracticeWorkspace({
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
   )
-  const [learningState, setLearningState] = useState<PracticeLearningState>(() =>
+  const [learningState, setLearningState] = useSessionViewState<PracticeLearningState>('practice.selection', () =>
     loadSafeLearningState(model, practiceIndex),
   )
-  const [continuousPlayback, setContinuousPlayback] = useState(false)
-  const [rampPractice, setRampPractice] = useState(false)
-  const [playbackRate, setPlaybackRate] = useState<PracticeSpeed>(() =>
+  const [continuousPlayback, setContinuousPlayback] = useSessionViewState('practice.continuous', false)
+  const [rampPractice, setRampPractice] = useSessionViewState('practice.ramp', false)
+  const [playbackRate, setPlaybackRate] = useSessionViewState<PracticeSpeed>('practice.rate', () =>
     normalizePracticeSpeed(readPracticePlaybackRate(model.edition.song.songId)),
   )
   const [pickerOpen, setPickerOpen] = useState(false)
   const [message, setMessage] = useState<string>()
-  const operationRef = useRef(0)
   const workspaceRef = useRef<HTMLElement | null>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
@@ -89,16 +89,15 @@ export function PracticeWorkspace({
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
 
   const cancelPlayback = useCallback((): void => {
-    operationRef.current += 1
-    playback.engine?.pause()
-  }, [playback.engine])
+    playback.session?.pause()
+  }, [playback.session])
 
   const persistLearningState = useCallback(
     (nextState: PracticeLearningState): void => {
       setLearningState(nextState)
       savePracticeLearningState(model.edition.song.songId, nextState)
     },
-    [model.edition.song.songId],
+    [model.edition.song.songId, setLearningState],
   )
 
   const selectOccurrence = useCallback(
@@ -119,7 +118,7 @@ export function PracticeWorkspace({
         setPickerOpen(false)
         return
       }
-      cancelPlayback()
+      playback.session?.cancelPractice()
       pendingNavigationRef.current = true
       const nextState = focusPracticeUnitStart(
         learningState,
@@ -130,31 +129,8 @@ export function PracticeWorkspace({
       setPickerOpen(false)
       setMessage(undefined)
     },
-    [cancelPlayback, learningState, persistLearningState, practiceIndex],
+    [learningState, persistLearningState, practiceIndex, playback.session],
   )
-
-  useEffect(() => {
-    if (
-      !requestedPracticeUnitId ||
-      requestedPracticeUnitId === learningState.practiceUnitId
-    ) {
-      return
-    }
-    if (practiceIndex.unitsById.has(requestedPracticeUnitId)) {
-      const timeoutId = globalThis.setTimeout(() => {
-        navigatePracticeUnit(requestedPracticeUnitId)
-        onRequestedPracticeUnitConsumed?.()
-      }, 0)
-      return () => globalThis.clearTimeout(timeoutId)
-    }
-    onRequestedPracticeUnitConsumed?.()
-  }, [
-    learningState.practiceUnitId,
-    onRequestedPracticeUnitConsumed,
-    practiceIndex.unitsById,
-    requestedPracticeUnitId,
-    navigatePracticeUnit,
-  ])
 
   useLayoutEffect(() => {
     if (!pendingNavigationRef.current) {
@@ -235,21 +211,8 @@ export function PracticeWorkspace({
     }
   }, [currentUnit?.id])
 
-  useEffect(() => {
-    if (!playback.engine) {
-      return
-    }
-    try {
-      playback.engine.setPlaybackRate(playbackRate)
-    } catch {
-      playback.engine.setPlaybackRate(1)
-    }
-  }, [playback.engine, playbackRate])
-
-  useEffect(() => () => cancelPlayback(), [cancelPlayback])
-
   const playSelection = useCallback(
-    async (occurrenceId: string): Promise<void> => {
+    async (occurrenceId: string, forceUnit = false): Promise<void> => {
       if (!playback.engine) {
         setMessage('当前环境无法播放音频。')
         return
@@ -262,7 +225,7 @@ export function PracticeWorkspace({
         return
       }
 
-      const range = continuousPlayback
+      const range = continuousPlayback || forceUnit
         ? resolvePracticeUnitRangeFromOccurrence(
             unit.id,
             occurrenceId,
@@ -276,31 +239,9 @@ export function PracticeWorkspace({
             model.timeline,
             model.timingProvider,
           )
-      const token = ++operationRef.current
       setMessage(undefined)
-
-      const rates: readonly number[] = rampPractice
-        ? PRACTICE_SPEEDS
-        : [playbackRate]
-      for (const rate of rates) {
-        if (token !== operationRef.current) {
-          return
-        }
-        playback.engine.setPlaybackRate(rate)
-        const completion = await playback.engine.playRangeUntilComplete(
-          range,
-          occurrenceId,
-        )
-        if (completion.status !== 'completed') {
-          if (completion.status === 'errored') {
-            setMessage(completion.error.message)
-          }
-          return
-        }
-      }
-      if (token === operationRef.current) {
-        playback.engine.setPlaybackRate(playbackRate)
-      }
+      const completion = await playback.session?.playPractice(range, occurrenceId, rampPractice ? PRACTICE_SPEEDS : [playbackRate], playbackRate)
+      if (completion?.status === 'errored') setMessage(completion.error.message)
     },
     [
       continuousPlayback,
@@ -308,11 +249,29 @@ export function PracticeWorkspace({
       model.timeline,
       model.timingProvider,
       playback.engine,
+      playback.session,
       practiceIndex,
       playbackRate,
       rampPractice,
     ],
   )
+
+  const consumedRequest = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!requestedPracticeUnitId) { consumedRequest.current = undefined; return }
+    if (consumedRequest.current === requestedPracticeUnitId) return
+    const request = requestedPracticeUnitId
+    const timeout = globalThis.setTimeout(() => {
+      consumedRequest.current = request
+      const unit = practiceIndex.unitsById.get(request)
+      if (unit) {
+        navigatePracticeUnit(unit.id)
+        void playSelection(unit.occurrenceIds[0], true)
+      }
+      onRequestedPracticeUnitConsumed?.()
+    }, 0)
+    return () => globalThis.clearTimeout(timeout)
+  }, [requestedPracticeUnitId, practiceIndex, navigatePracticeUnit, playSelection, onRequestedPracticeUnitConsumed])
 
   const handleOccurrenceClick = (occurrenceId: string): void => {
     selectOccurrence(occurrenceId)
@@ -327,7 +286,11 @@ export function PracticeWorkspace({
       cancelPlayback()
       return
     }
-    void playSelection(currentOccurrence.occurrence.id)
+    if (playback.session?.canResumePractice()) {
+      void playback.session.resumePractice().then(completion => {
+        if (completion.status === 'errored') setMessage(completion.error.message)
+      })
+    } else void playSelection(currentOccurrence.occurrence.id)
   }
 
   const changeUnit = (direction: 'previous' | 'next'): void => {
@@ -342,6 +305,7 @@ export function PracticeWorkspace({
 
   const setSpeed = (nextSpeed: PracticeSpeed): void => {
     setPlaybackRate(nextSpeed)
+    playback.session?.setRate(nextSpeed)
     savePracticePlaybackRate(model.edition.song.songId, nextSpeed)
   }
 
@@ -484,11 +448,14 @@ export function PracticeWorkspace({
           </button>
         </div>
         <div className="practice-dock-modes">
+          <button className="practice-player-button practice-mode-button" type="button" disabled={!playback.engine} onClick={() => currentOccurrence && void playSelection(currentOccurrence.occurrence.id)}>
+            重播
+          </button>
           <button
             className="practice-player-button practice-mode-button"
             type="button"
             aria-pressed={continuousPlayback}
-            onClick={() => setContinuousPlayback((value) => !value)}
+            onClick={() => { playback.session?.cancelPractice(); setContinuousPlayback((value) => !value) }}
           >
             连续播放
           </button>
@@ -497,7 +464,7 @@ export function PracticeWorkspace({
             type="button"
             aria-pressed={rampPractice}
             aria-describedby="practice-ramp-explanation"
-            onClick={() => setRampPractice((value) => !value)}
+            onClick={() => { playback.session?.cancelPractice(); setRampPractice((value) => !value) }}
           >
             渐速练习
           </button>

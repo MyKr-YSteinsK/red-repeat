@@ -182,7 +182,7 @@ describe('PracticeWorkspace 1.0', () => {
 
     expect(dock).not.toBeNull()
     expect(dock).not.toHaveClass('control-sheet')
-    expect(dock?.querySelectorAll('.practice-player-button')).toHaveLength(8)
+    expect(dock?.querySelectorAll('.practice-player-button')).toHaveLength(9)
     expect(container.querySelector('.practice-segment-picker-layer')).toBeNull()
     expect(screen.getByRole('button', { name: '播放第 01 句' })).not.toHaveClass('control-button')
     expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
@@ -190,7 +190,7 @@ describe('PracticeWorkspace 1.0', () => {
     expect(dock?.querySelector('.practice-dock-primary .practice-play-button')).toBeInTheDocument()
     expect(dock?.querySelectorAll('.practice-rate-actions .practice-player-button')).toHaveLength(3)
     expect(dock?.querySelector('.practice-dock-modes')).toBeInTheDocument()
-    expect(dock?.querySelectorAll('.practice-dock-modes .practice-player-button')).toHaveLength(2)
+    expect(dock?.querySelectorAll('.practice-dock-modes .practice-player-button')).toHaveLength(3)
     expect(dock?.querySelectorAll(':scope > div')).toHaveLength(3)
     expect(screen.getByRole('button', { name: '上一段' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '下一段' })).toBeEnabled()

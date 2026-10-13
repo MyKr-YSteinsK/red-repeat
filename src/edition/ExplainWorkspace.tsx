@@ -9,6 +9,7 @@ import {
 } from './FeatureMarkdown'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 import { useSongEditionPlayback } from './use-song-edition-playback'
+import { useSessionViewState } from './song-playback-context'
 import {
   RuntimeClientError,
   type RuntimeClient,
@@ -48,12 +49,12 @@ export function ExplainWorkspace({
   audioEngine,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [selectedTopicId, setSelectedTopicId] = useState(
+  const [selectedTopicId, setSelectedTopicId] = useSessionViewState('explain.topic',
     model.edition.features[0]?.id,
   )
-  const [featureStates, setFeatureStates] = useState<
+  const [featureStates, setFeatureStates] = useSessionViewState<
     Readonly<Record<string, ExplainFeatureLoadState>>
-  >({})
+  >('explain.features', {})
   const [retryByUrl, setRetryByUrl] = useState<Readonly<Record<string, number>>>({})
   const startedRequestsRef = useRef(new Set<string>())
   const featureStatesRef = useRef(featureStates)
@@ -63,7 +64,7 @@ export function ExplainWorkspace({
       featureStatesRef.current = next
       setFeatureStates(next)
     },
-    [],
+    [setFeatureStates],
   )
   const topics = useMemo(
     () => createTopicEntries(model.edition.features, featureStates),
@@ -250,6 +251,7 @@ export function ExplainWorkspace({
                     model={model}
                     segmentId={segmentId}
                     audioEngine={playback.engine}
+                    playbackSession={playback.session}
                   />
                 )}
               />

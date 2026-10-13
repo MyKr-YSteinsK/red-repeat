@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  DEFAULT_PLAYBACK_RATE,
   type AudioEngine,
 } from '../audio/audio-engine'
 import type { RuntimeClient } from '../runtime/runtime-client'
@@ -15,12 +14,13 @@ import {
 } from '../practice/practice-scope'
 import {
   PRACTICE_PLAYBACK_RATES,
-  readPracticePlaybackRate,
   savePracticePlaybackRate,
 } from '../practice/practice-rate'
 import { useAudioProgress } from './use-audio-progress'
 import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
+import { useSessionViewState } from './song-playback-context'
+import type { SongPlaybackSession } from './song-playback-session'
 
 export interface FullSongWorkspaceProps {
   model: AssembledSongEdition
@@ -36,9 +36,9 @@ export function FullSongWorkspace({
   onStartPracticeUnit,
 }: FullSongWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState<string>()
-  const [selectedSectionId, setSelectedSectionId] = useState<string>()
-  const [followLyrics, setFollowLyrics] = useState(true)
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useSessionViewState<string | undefined>('full.occurrence', undefined)
+  const [selectedSectionId, setSelectedSectionId] = useSessionViewState<string | undefined>('full.section', undefined)
+  const [followLyrics, setFollowLyrics] = useSessionViewState('full.follow', true)
   const [message, setMessage] = useState<string>()
   const [skipAutoFollowOccurrenceId, setSkipAutoFollowOccurrenceId] =
     useState<string>()
@@ -58,7 +58,7 @@ export function FullSongWorkspace({
       setMessage(undefined)
       playback.playOccurrenceContinuously?.(assembledOccurrence)
     },
-    [playback],
+    [playback, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
@@ -77,13 +77,13 @@ export function FullSongWorkspace({
         return
       }
 
-      void playback.engine
-        .playRange({ startMs: section.startMs, endMs: section.endMs })
-        .catch((error: unknown) => {
-          setMessage(error instanceof Error ? error.message : '器乐段播放失败。')
+      void playback.session
+        ?.playBounded({ startMs: section.startMs, endMs: section.endMs })
+        .then((completion) => {
+          if (completion.status === 'errored') setMessage(completion.error.message)
         })
     },
-    [playback.engine],
+    [playback.engine, playback.session, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const handleReplayOccurrence = useCallback(
@@ -100,8 +100,8 @@ export function FullSongWorkspace({
 
       setMessage(undefined)
       const timing = model.timingProvider.getTiming(assembledOccurrence.occurrence)
-      void playback.engine
-        .playRangeUntilComplete(
+      void playback.session
+        ?.playBounded(
           {
             startMs: timing.startMs,
             endMs: timing.endMs,
@@ -114,7 +114,7 @@ export function FullSongWorkspace({
           }
         })
     },
-    [model.timingProvider, playback.engine],
+    [model.timingProvider, playback.engine, playback.session, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const handleStartPractice = useCallback(
@@ -188,11 +188,11 @@ export function FullSongWorkspace({
     setFollowLyrics(true)
     setMessage(undefined)
     if (playback.engine) {
-      playback.engine.pause()
-      void playback.engine.seek(0).catch(() => undefined)
+      playback.session?.pause()
+      void playback.session?.seek(0).catch(() => undefined)
     }
     scrollToTop()
-  }, [playback.engine, scrollToTop])
+  }, [playback.engine, playback.session, scrollToTop, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId])
 
   return (
     <section
@@ -253,6 +253,7 @@ export function FullSongWorkspace({
         <FullSongPlayer
           model={model}
           engine={playback.engine}
+          session={playback.session}
           sectionLabel={playback.resolution.currentSection?.label ?? '间奏 / 空白'}
           onScrollToTop={scrollToTop}
           onReset={resetPlayback}
@@ -492,12 +493,14 @@ function FullSongOccurrence({
 function FullSongPlayer({
   model,
   engine,
+  session,
   sectionLabel,
   onScrollToTop,
   onReset,
 }: {
   model: AssembledSongEdition
   engine: AudioEngine | null
+  session: SongPlaybackSession | null
   sectionLabel: string
   onScrollToTop: () => void
   onReset: () => void
@@ -510,45 +513,31 @@ function FullSongPlayer({
   )
   const isPlaying = progress.status === 'playing'
 
-  useEffect(() => {
-    if (!engine) {
-      return
-    }
-
-    try {
-      engine.setPlaybackRate(
-        readPracticePlaybackRate(model.edition.song.songId),
-      )
-    } catch {
-      engine.setPlaybackRate(DEFAULT_PLAYBACK_RATE)
-    }
-  }, [engine, model.edition.song.songId])
-
   const togglePlayback = (): void => {
     if (!engine) {
       return
     }
 
     if (isPlaying) {
-      engine.pause()
+      session?.pause()
       return
     }
 
-    void engine.playContinuous().catch(() => undefined)
+    void session?.playContinuous().catch(() => undefined)
   }
 
   const seek = (timeMs: number): void => {
     if (!engine || durationMs <= 0) {
       return
     }
-    void engine.seek(Math.min(Math.max(0, timeMs), durationMs)).catch(() => undefined)
+    void session?.seek(Math.min(Math.max(0, timeMs), durationMs)).catch(() => undefined)
   }
 
   const setRate = (rate: (typeof PRACTICE_PLAYBACK_RATES)[number]): void => {
     if (!engine) {
       return
     }
-    engine.setPlaybackRate(rate)
+    session?.setRate(rate)
     savePracticePlaybackRate(model.edition.song.songId, rate)
   }
 

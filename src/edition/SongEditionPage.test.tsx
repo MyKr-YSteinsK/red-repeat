@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
@@ -98,6 +98,76 @@ const practice: PracticeDocument = {
 }
 
 describe('SongEditionPage 学唱入口', () => {
+  it.each([true, false])('restores playing=%s through the actual Explain quote integration', async (playing) => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const props = propsFor(undefined, engine)
+    vi.mocked(props.runtimeClient.loadFeature).mockResolvedValue('# Quote\n\n[[segment:s001]]')
+    render(<SongEditionPage {...props} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    if (playing) {
+      fireEvent.click(screen.getByRole('button', { name: '播放' }))
+      await waitFor(() => expect(media.paused).toBe(false))
+    }
+    media.currentTime = 1.2
+    fireEvent.click(screen.getByRole('button', { name: '讲解' }))
+    fireEvent.click(await screen.findByRole('button', { name: '试听这句' }))
+    await waitFor(() => expect(engine.getState().activeOccurrenceId).toBe('o001'))
+    await waitFor(() => expect(media.paused).toBe(false))
+    act(() => { media.currentTime = 0.35; media.paused = true; media.emit('ended') })
+    await waitFor(() => expect(media.currentTime).toBe(1.2))
+    expect(media.paused).toBe(!playing)
+    expect(screen.getByRole('button', { name: '试听这句' })).toBeInTheDocument()
+  })
+
+  it('keeps mode selection/preferences/topics across unmounts without retaining hidden workspaces', async () => {
+    const props = propsFor()
+    vi.mocked(props.runtimeClient.loadEdition).mockResolvedValue({ ...edition, features: [...edition.features, { id: 'second', url: '/library-runtime/second.md' }] })
+    const { container } = render(<SongEditionPage {...props} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '连续播放' }))
+    fireEvent.click(screen.getByRole('button', { name: '渐速练习' }))
+    fireEvent.click(screen.getByRole('button', { name: '讲解' }))
+    await screen.findByRole('combobox', { name: '选择讲解主题' })
+    fireEvent.change(screen.getByRole('combobox', { name: '选择讲解主题' }), { target: { value: 'second' } })
+    await waitFor(() => expect(container.querySelector('.explain-workspace')).toHaveAttribute('data-current-topic-id', 'second'))
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Second line' }))
+    fireEvent.wheel(container.querySelector('.full-song-lyrics-stream')!)
+    fireEvent.click(screen.getByRole('button', { name: '学唱' }))
+    expect(screen.getByRole('button', { name: '连续播放' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '渐速练习' })).toHaveAttribute('aria-pressed', 'true')
+    expect(container.querySelectorAll('.practice-workspace,.full-song-workspace,.explain-workspace')).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: '讲解' }))
+    expect(screen.getByRole('combobox', { name: '选择讲解主题' })).toHaveValue('second')
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    expect(container.querySelector('.full-song-workspace')).toHaveAttribute('data-selected-occurrence-id', 'o002')
+    expect(container.querySelector('.full-song-workspace')).toHaveAttribute('data-follow-lyrics', 'false')
+  })
+
+  it.each(['讲解', '学唱'])('keeps continuous media playing when browsing %s', async (mode) => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    render(<SongEditionPage {...propsFor(undefined, engine)} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(media.paused).toBe(false))
+    engine.setPlaybackRate(0.8)
+    media.currentTime = 0.62
+    const calls = { pause: media.pause.mock.calls.length, load: media.load.mock.calls.length, play: media.play.mock.calls.length }
+    fireEvent.click(screen.getByRole('button', { name: mode }))
+    expect(media.paused).toBe(false)
+    expect(media.currentTime).toBe(0.62)
+    expect(media.playbackRate).toBe(0.8)
+    expect(media.pause).toHaveBeenCalledTimes(calls.pause)
+    expect(media.load).toHaveBeenCalledTimes(calls.load)
+    expect(media.play).toHaveBeenCalledTimes(calls.play)
+  })
+
   it('defaults to the Chinese Practice workspace without Focus or Immersive primary controls', async () => {
     render(<SongEditionPage {...propsFor()} />)
 
@@ -177,7 +247,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(await screen.findByText('A small note.')).toBeInTheDocument()
   })
 
-  it('hands a selected Full Song line to the first occurrence of its Practice Unit', async () => {
+  it('starts a bounded Practice Unit only on the explicit Full Song Practice action', async () => {
     const media = new FakeMedia()
     const engine = createAudioEngine(media)
     activeEngine = engine
@@ -197,7 +267,8 @@ describe('SongEditionPage 学唱入口', () => {
         'o001',
       )
     })
-    expect(media.play).toHaveBeenCalledOnce()
+    await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
+    expect(engine.getState().activeRange).toMatchObject({ startMs: 50, endMs: 800 })
   })
 
   it('keeps the same audio session across Full Song to Practice without reload, reset, or autoplay', async () => {
@@ -393,4 +464,6 @@ class FakeMedia implements AudioMediaAdapter {
   removeEventListener(event: string, listener: () => void): void {
     this.listeners.get(event)?.delete(listener)
   }
+
+  emit(event: string): void { this.listeners.get(event)?.forEach(listener => listener()) }
 }

@@ -970,6 +970,54 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-66` R1 implements B1–B5 and D-024 / D-026 F2 on `main`, based on
+  `2a12cbbbee4faac53279198112f19aff221bd353`. Product validation is complete;
+  the authorized `1.17.0` release identity/remote delivery is the remaining
+  closeout boundary. Do not infer a deployed version from this source entry.
+- `SongPlaybackSession` owns commands for the validated song/content/audio/
+  timeline identity and the existing single AudioEngine. Mode mounts only
+  subscribe; Full Song → Explain/passive Practice keeps media time/source/rate.
+  Explicit line/Unit actions create bounded Practice; Catalog/song exit cancels
+  operations and pauses. Compatible reopen retains position without autoplay.
+- Preview replacement inherits the original context. Only valid natural completion
+  restores its position/rate/playing or paused intent, including the interrupted
+  Practice ramp stage. Cancel/new command/mode exit/song or Edition replacement/
+  media error/timing revision invalidation cannot revive old callbacks. The
+  AudioEngine checks generations before queued media play calls.
+- Practice keeps `0.6/0.8/1` ramp, fixed-speed preference and existing persistence.
+  Pause resumes the unfinished pass from its position; explicit replay restarts.
+  Changing Unit or Practice mode cancels an old Practice operation; passive
+  browsing does not stop Full Song. Fixed-rate selection during a ramp updates
+  its final fixed preference without changing the current ramp stage.
+- Mode-local selection, control preference, loaded Explain topic and reading
+  position survive mode unmount in the current Edition. No hidden workspace DOM,
+  new learning/persistence schema, SongRepository or ResourceScheduler was added.
+- Evidence: 49 test files / 380 tests passed; root and `/red-repeat/` builds and
+  PWA artifact inspections passed; lint passed with only two existing Fast Refresh
+  warnings using CLI exclusions for ignored `.cache/` probes and `.private/`.
+  Source/download regression preserves D-021/D-022/D-023 and existing data.
+- Edge `155.0.4283.45` with real public audio and SW blocked passed continuous
+  media events/time/source at 390/768/1365 widths, playing/paused preview recovery,
+  explicit cancel/mode exit/media resource failure, bounded takeover/pause-resume/
+  replay and all three ramp rates, reading/topic recovery, F1 in all three modes
+  and source replacement. Plan-65's browser harness passed 20 warm/conflict entries
+  with zero loading frames, including downloaded offline H1 and cached H2/active H1.
+  Traces/results are ignored local evidence under `.cache/plan66-*` and
+  `.cache/plan65-r2-plan66-regression/`, not canonical source.
+- D-024 and D-026 F2 are implemented; D-025 A/B are complete, C–E remain pending.
+  F3 remains excluded. Further C–E work needs a separately scoped task; no next
+  Plan starts here. D-027 keeps ordinary development on `main`.
+- Real iOS/device, human listening and installed-PWA adoption were not executed.
+  The PWA update/activation and snapshot transaction code were unchanged; these
+  real-use limits remain separate post-deploy observations, not automated PASS.
+  The two existing user documents and the old detached worktree's blocked
+  `public/library-runtime.tmp-24684/` residue remain untouched and excluded.
+
+## Previous completion record (RED-Plan-65/R2)
+
+These statements describe the Plan-65 closeout; its version, decisions and
+validation counts are historical evidence, superseded above where Plan-66 applies.
+
 - `RED-Plan-65` R2 completes A1–A5 and the warm-reopen acceptance supplement.
   Product implementation `a863d577086d69e3bb3588850db13971db555f5a` is integrated
   into local `main` by fast-forward from `634a65b`. This metadata prepares the

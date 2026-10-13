@@ -186,6 +186,7 @@ export class AudioEngine {
   getState(): AudioEngineState {
     return {
       ...this.state,
+      currentTimeMs: this.state.sourceUrl ? this.readCurrentTimeMs() : this.state.currentTimeMs,
       activeRange: this.state.activeRange
         ? { ...this.state.activeRange }
         : undefined,
@@ -248,7 +249,7 @@ export class AudioEngine {
     }
 
     return Promise.resolve()
-      .then(() => this.media.play())
+      .then(() => this.isCurrentOperation(generation) ? this.media.play() : undefined)
       .then(() => {
         if (this.isCurrentOperation(generation)) {
           this.setState({
@@ -560,7 +561,7 @@ export class AudioEngine {
     this.media.currentTime = range.startMs / 1000
 
     void Promise.resolve()
-      .then(() => this.media.play())
+      .then(() => this.isCurrentOperation(generation) ? this.media.play() : undefined)
       .then(() => {
         if (!this.isCurrentOperation(generation)) {
           return

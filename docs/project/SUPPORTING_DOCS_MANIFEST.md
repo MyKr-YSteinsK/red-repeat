@@ -21,7 +21,8 @@ are evidence and never active execution instructions.
 | `.private/research/<song>/...` and `.private/library-pending/...` | Private provenance, research and pending intake | Human-only/private; do not expose or import wholesale |
 | `src/App.tsx`, `src/navigation.ts`, `src/edition/SongEditionPage.tsx` | Catalog route, route parsing/hrefs, manifest-confirmed warm-entry handoff, Song Edition mode selection and current UI dispatch | Active navigation and UI shell owners; the loader remains the snapshot identity authority |
 | `src/runtime/runtime-client.ts`, `src/pwa/catalog-cache.ts` | Catalog local-first loading/cache plus Runtime fetch, parsed-document validation and compatibility handling | Active data-loading owners |
-| `src/edition/PracticeWorkspace.tsx`, `src/edition/use-song-edition-playback.ts` | Current Practice controls and workspace playback integration with the shared engine | Active Practice UI/playback path; current rate ramp is implemented in `PracticeWorkspace.tsx` |
+| `src/edition/SongEditionPage.tsx`, `src/edition/song-playback-session.ts`, `src/edition/song-playback-context.ts`, `src/edition/use-song-edition-playback.ts` | Validated Edition identity, one song-level command owner, preview recovery/cancellation, Practice ramp/pause-resume, mode-local view context and playback subscriptions | Active; mode unmount releases subscriptions, song exit pauses; one shared AudioEngine |
+| `src/edition/PracticeWorkspace.tsx`, `src/edition/FullSongWorkspace.tsx`, `src/edition/ExplainWorkspace.tsx`, `src/edition/ExplainLyricQuote.tsx` | Current mode controls, selection/reading state and explicit playback intents | Active UI adapters; bounded commands/ramp and preview lifecycle belong to the song session |
 | `src/practice/practice-state.ts`, `src/practice/practice-rate.ts` | Practice resume/progress and playback-rate normalization/local persistence | Active Practice persistence owners |
 | `src/audio/audio-engine.ts`, `src/timeline/resolver.ts`, `src/timeline/occurrence-timing.ts` | Shared media instance, current timeline resolution and canonical Occurrence timing-provider contract | Active shared playback/timing owners |
 | `src/practice/practice-timing-overrides.ts` | Identity-bound local timing override validation, persistence and effective provider construction | Active sparse override owner; same-field `startMs/endMs` only |
@@ -42,10 +43,12 @@ are evidence and never active execution instructions.
   `src/practice/practice-playback-session.ts` and
   `src/edition/use-practice-controller.ts` are retained code, not the current
   Practice UI execution path; their legacy ramp parameters are not current
-  product requirements. Current Practice controls and ramp behavior are owned
-  by `src/edition/PracticeWorkspace.tsx` and `src/practice/practice-rate.ts`.
-- Proposed `SongRepository`, `PlaybackSession` and `ResourceScheduler` names
-  describe unimplemented review architecture, not active repository owners.
+  product requirements. Current Practice controls are owned by `src/edition/PracticeWorkspace.tsx`;
+  ramp operations belong to `src/edition/song-playback-session.ts`, and compatible
+  fixed-rate persistence remains in `src/practice/practice-rate.ts`.
+- Proposed `SongRepository` and `ResourceScheduler` remain unimplemented review
+  architecture. Plan-66 implements the concrete `SongPlaybackSession` owner above;
+  the review report does not independently authorize broader session architecture.
 - `docs/archive/` Plans, Handoffs, migration material and retrospectives are
   historical evidence, not active specifications or execution instructions.
 - Historical Plans/Handoffs are not stored as active supporting specs. If any are

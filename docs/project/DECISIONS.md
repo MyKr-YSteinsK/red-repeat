@@ -315,9 +315,9 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 
 - Status: Accepted
 - Source: `USER_DECISION` (2026-10-13)
-- Implementation: Pending
+- Implementation: Implemented under `RED-Plan-66` B1–B5.
 
-以下是已批准的目标行为，尚未由当前实现提供：
+以下是已批准的目标行为，已由 `RED-Plan-66` 的歌曲级播放 owner 实现：
 
 - 同一 Song Edition 的 Full Song 正在连续播放时切换到 Explain，默认继续播放。
 - 切换到 Practice 仅查看内容时，保留现有播放上下文；查看本身不暂停音频，
@@ -336,7 +336,7 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 
 - Status: Accepted
 - Source: `USER_DECISION` (2026-10-13)
-- Implementation: Partial — A1–A5 completed under `RED-Plan-65`; B–E remain pending.
+- Implementation: Partial — A1–A5 completed under `RED-Plan-65`; B1–B5 implemented under `RED-Plan-66`; C–E remain pending.
 
 用户已批准按 A–E 工作包推进体验升级方向；这项批准定义产品方向，不代表所有
 工作包的实现已经启动，也不自动批准未在具体任务中授权的实现范围或技术架构。
@@ -349,7 +349,7 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 
 - Status: Accepted
 - Source: `USER_DECISION` (2026-10-13)
-- Implementation: Partial — F1 validated under `RED-Plan-65`; F2 remains pending.
+- Implementation: Implemented — F1 validated under `RED-Plan-65` and retained under `RED-Plan-66`; F2 implemented and validated under `RED-Plan-66`.
 
 - 从任一 Song Edition 模式返回 Catalog 时暂停当前音频，保留兼容的恢复位置；不
   提供全局 mini-player。
@@ -357,8 +357,10 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
   前正在播放，则从暂存位置恢复播放；若之前暂停，则保持暂停。
 - 用户明确取消试听或切换歌曲时，新操作优先，不自动恢复旧歌曲音频。
 
-这些行为是已批准的目标。`RED-Plan-65` 仅完成并验证了 Catalog-return F1；
-Explain-preview F2 尚未实现。本决定不规定实现接口或状态机。
+这些行为是已批准的目标。`RED-Plan-65` 完成了 Catalog-return F1；
+`RED-Plan-66` 完成了 Explain-preview F2，并保留 F1。试听仅在同曲有效操作
+自然完成时恢复；显式取消、新播放操作、模式退出、离歌或错误优先，不恢复旧意图。
+本决定不规定具体实现接口或状态机。
 
 ## D-027｜默认在 main 开发｜Default Development on Main
 

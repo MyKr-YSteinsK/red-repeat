@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   AudioEngine,
   AudioEngineState,
@@ -8,6 +8,9 @@ import { resolveTimeline, type TimelineResolution } from '../timeline/resolver'
 import type { OccurrenceTimingProvider } from '../timeline/occurrence-timing'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { AssembledOccurrence, AssembledSongEdition } from '../runtime/song-edition'
+import { readPracticePlaybackRate } from '../practice/practice-rate'
+import { SongPlaybackContext } from './song-playback-context'
+import { SongPlaybackSession } from './song-playback-session'
 
 const IDLE_AUDIO_STATE: AudioEngineState = {
   status: 'idle',
@@ -18,6 +21,7 @@ const IDLE_AUDIO_STATE: AudioEngineState = {
 
 export interface SongEditionPlaybackSnapshot {
   engine: AudioEngine | null
+  session: SongPlaybackSession | null
   audioState: AudioEngineState
   resolution: TimelineResolution
   selectedOccurrenceId?: string
@@ -43,6 +47,11 @@ export function useSongEditionPlayback(
     providedEngine ?? (typeof Audio === 'undefined' ? null : getAudioEngine())
   const timingProvider = providedTimingProvider ?? model.timingProvider
   const sourceUrl = runtimeClient.resolveAsset(model.edition.audio.url)
+  const sharedSession = useContext(SongPlaybackContext)?.session
+  const localSession = useMemo(() => engine && !sharedSession
+    ? new SongPlaybackSession(model.edition.contentHash, sourceUrl, engine, readPracticePlaybackRate(model.edition.song.songId))
+    : null, [engine, model.edition.contentHash, model.edition.song.songId, sharedSession, sourceUrl])
+  const session = sharedSession ?? localSession
   const initialDerivedState = derivePlaybackState(
     engine?.getState() ?? IDLE_AUDIO_STATE,
     sourceUrl,
@@ -101,19 +110,10 @@ export function useSongEditionPlayback(
   }, [engine, model.timeline, sourceUrl, timingProvider])
 
   useEffect(() => {
-    if (!engine) {
-      return
-    }
-
-    if (engine.getState().sourceUrl !== sourceUrl) {
-      engine.loadSource(sourceUrl)
-    }
-    return () => {
-      if (engine.getState().sourceUrl === sourceUrl) {
-        engine.pause()
-      }
-    }
-  }, [engine, sourceUrl])
+    if (!localSession) return
+    localSession.activate()
+    return () => localSession.close()
+  }, [localSession])
 
   const selectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
@@ -123,16 +123,13 @@ export function useSongEditionPlayback(
       }
 
       const timing = timingProvider.getTiming(assembledOccurrence.occurrence)
-      void engine
-        .playRange(
+      void session
+        ?.playBounded(
           { startMs: timing.startMs, endMs: timing.endMs },
           assembledOccurrence.occurrence.id,
         )
-        .catch(() => {
-          // The Engine publishes a recoverable error state for the UI.
-        })
     },
-    [engine, timingProvider],
+    [engine, session, timingProvider],
   )
   const playOccurrenceContinuously = useCallback(
     (
@@ -144,15 +141,16 @@ export function useSongEditionPlayback(
         return
       }
 
-      void engine.playContinuousFrom(startMs).catch(() => {
+      void session?.playContinuous(startMs).catch(() => {
         // The Engine publishes a recoverable error state for the UI.
       })
     },
-    [engine, timingProvider],
+    [engine, session, timingProvider],
   )
 
   return {
     engine,
+    session,
     audioState: derivedState.audioState,
     resolution: derivedState.resolution,
     selectedOccurrenceId,

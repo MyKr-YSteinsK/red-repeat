@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { getAudioEngine } from '../audio/audio-engine'
+import type { RuntimeSongEditionCore } from '../runtime/song-edition-loader'
+import { SongPlaybackSession } from './song-playback-session'
+import { SongPlaybackContext } from './song-playback-context'
+import { readPracticePlaybackRate } from '../practice/practice-rate'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -28,43 +33,7 @@ export function SongEditionPage({
   preparedLoad,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
-  const [tab, setTab] = useState<SongEditionTab>('practice')
-  const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
-    string | undefined
-  >()
-  const [coverViewerOpen, setCoverViewerOpen] = useState(false)
-  const coverTriggerRef = useRef<HTMLButtonElement | null>(null)
-  const coverViewerRef = useRef<HTMLDivElement | null>(null)
-  const coverViewerWasOpenRef = useRef(false)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey, preparedLoad)
-
-  useEffect(() => {
-    if (!coverViewerOpen) {
-      if (coverViewerWasOpenRef.current) {
-        coverViewerWasOpenRef.current = false
-        coverTriggerRef.current?.focus()
-      }
-      return
-    }
-
-    coverViewerWasOpenRef.current = true
-    const previousOverflow = document.body.style.overflow
-    const closeOnEscape = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        setCoverViewerOpen(false)
-      }
-    }
-
-    document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', closeOnEscape)
-    coverViewerRef.current?.focus()
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [coverViewerOpen])
 
   if (state.status === 'loading') {
     return <SongEditionStatus homeHref={homeHref} />
@@ -97,9 +66,96 @@ export function SongEditionPage({
     )
   }
 
-  const { core } = state
+  return (
+    <ReadySongEdition
+      key={playbackIdentity(state.core.edition)}
+      core={state.core}
+      runtimeClient={runtimeClient}
+      homeHref={homeHref}
+      audioEngine={audioEngine}
+    />
+  )
+}
+
+function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
+  core: RuntimeSongEditionCore
+  runtimeClient: RuntimeClient
+  homeHref: string
+  audioEngine?: AudioEngine
+}) {
+  const [tab, setTab] = useState<SongEditionTab>('practice')
+  const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
+    string | undefined
+  >()
+  const [coverViewerOpen, setCoverViewerOpen] = useState(false)
+  const coverTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const coverViewerRef = useRef<HTMLDivElement | null>(null)
+  const coverViewerWasOpenRef = useRef(false)
+
+  useEffect(() => {
+    if (!coverViewerOpen) {
+      if (coverViewerWasOpenRef.current) {
+        coverViewerWasOpenRef.current = false
+        coverTriggerRef.current?.focus()
+      }
+      return
+    }
+
+    coverViewerWasOpenRef.current = true
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setCoverViewerOpen(false)
+      }
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    coverViewerRef.current?.focus()
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [coverViewerOpen])
+
+  const engine = audioEngine ?? (typeof Audio === 'undefined' ? null : getAudioEngine())
+  const sourceUrl = runtimeClient.resolveAsset(core.edition.audio.url)
+  const identity = playbackIdentity(core.edition)
+  const session = useMemo(
+    () => engine ? new SongPlaybackSession(
+      identity, sourceUrl, engine, readPracticePlaybackRate(core.edition.song.songId),
+    ) : null,
+    [engine, identity, sourceUrl, core.edition.song.songId],
+  )
+  const context = useMemo(() => ({ session, views: new Map<string, unknown>() }), [session])
+  useEffect(() => {
+    session?.activate()
+    return () => session?.close()
+  }, [session])
+  const timingRef = useRef(core.timingProvider)
+  useEffect(() => {
+    if (timingRef.current !== core.timingProvider) {
+      session?.invalidateTiming()
+      timingRef.current = core.timingProvider
+    }
+  }, [core.timingProvider, session])
+  const scrollByMode = useRef(new Map<SongEditionTab, number>())
+  const changeTab = (next: SongEditionTab): void => {
+    if (tab === next) return
+    scrollByMode.current.set(tab, window.scrollY)
+    if (tab === 'explain') session?.cancelPreview()
+    setTab(next)
+  }
+  useLayoutEffect(() => {
+    if (scrollByMode.current.size === 0) return
+    const top = scrollByMode.current.get(tab) ?? 0
+    if (Math.abs(window.scrollY - top) > 0.5) window.scrollTo({ top, behavior: 'auto' })
+  }, [tab])
   const song = core.edition.song
   return (
+    <SongPlaybackContext.Provider value={context}>
     <main
       className="song-edition is-practice-page"
       aria-labelledby="song-title"
@@ -146,7 +202,7 @@ export function SongEditionPage({
               aria-current={tab === 'practice' ? 'page' : undefined}
               onClick={() => {
                 setPracticeNavigationRequest(undefined)
-                setTab('practice')
+                changeTab('practice')
               }}
             >
               学唱
@@ -155,7 +211,7 @@ export function SongEditionPage({
               type="button"
               className={tab === 'all' ? 'is-active' : ''}
               aria-current={tab === 'all' ? 'page' : undefined}
-              onClick={() => setTab('all')}
+              onClick={() => changeTab('all')}
             >
               全曲
             </button>
@@ -163,7 +219,7 @@ export function SongEditionPage({
               type="button"
               className={tab === 'explain' ? 'is-active' : ''}
               aria-current={tab === 'explain' ? 'page' : undefined}
-              onClick={() => setTab('explain')}
+              onClick={() => changeTab('explain')}
             >
               讲解
             </button>
@@ -187,7 +243,7 @@ export function SongEditionPage({
           audioEngine={audioEngine}
           onStartPracticeUnit={(practiceUnitId) => {
             setPracticeNavigationRequest(practiceUnitId)
-            setTab('practice')
+            changeTab('practice')
           }}
         />
       ) : (
@@ -220,6 +276,7 @@ export function SongEditionPage({
         </div>
       ) : null}
     </main>
+    </SongPlaybackContext.Provider>
   )
 }
 
@@ -254,4 +311,9 @@ function describeEditionError(error: unknown): string {
     return `Runtime ${error.kind} while reading ${error.logicalPath}.`
   }
   return 'The edition resources returned an unexpected error.'
+}
+
+function playbackIdentity(edition: RuntimeSongEditionCore['edition']): string {
+  return [edition.song.songId, edition.contentHash, edition.audio.sourceHash,
+    edition.audio.runtimeHash, edition.timelineUrl].join(':')
 }
