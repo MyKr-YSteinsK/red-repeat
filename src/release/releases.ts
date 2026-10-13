@@ -15,6 +15,20 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.17.0',
+    date: '2026-10-14',
+    commit: 'aba90b7',
+    level: 'minor',
+    title: '同曲听唱讲解连续播放',
+    summary: '全曲播放时可切换讲解或查看学唱而不中断，歌词试听自然结束后恢复原播放位置与意图，练习暂停可从原处继续。',
+    changes: [
+      '同一歌曲的全曲、学唱和讲解共享播放会话；切换模式保留声音、选句、主题与阅读位置。',
+      '明确练一句或练一段才接管为有界练习；暂停后继续当前练习，重播则从头开始，保留原有渐速与控速。',
+      '讲解试听自然结束后恢复原位置及播放或暂停意图；取消、切模式、切歌、新播放命令和媒体错误不会恢复旧操作。',
+      '返回曲库仍暂停并保留兼容恢复位置；重新打开不会自动播放，完整离线下载与安全更新规则保持。',
+    ],
+  },
+  {
     version: '1.16.0',
     date: '2026-10-13',
     commit: 'a863d57',
