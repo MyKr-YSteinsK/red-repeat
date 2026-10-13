@@ -17,7 +17,7 @@ export const RELEASES: readonly ReleaseNote[] = [
   {
     version: '1.17.0',
     date: '2026-10-14',
-    commit: 'aba90b7',
+    commit: '7456a0d',
     level: 'minor',
     title: '同曲听唱讲解连续播放',
     summary: '全曲播放时可切换讲解或查看学唱而不中断，歌词试听自然结束后恢复原播放位置与意图，练习暂停可从原处继续。',

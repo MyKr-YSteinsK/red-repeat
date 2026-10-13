@@ -15,7 +15,7 @@ evidence only.
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.17.0` / `v1.17.0 -> aba90b7` (product commit
+- Latest ledger/prepared tag: `1.17.0` / `v1.17.0 -> 7456a0d` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
   build identity. Existing `v1.16.0 -> a863d57`, `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
@@ -972,7 +972,7 @@ uses the separately authorized task-input source package.
 
 - `RED-Plan-66` R1 implements B1–B5 and D-024 / D-026 F2 on `main`, based on
   `2a12cbbbee4faac53279198112f19aff221bd353`. Product implementation is
-  `aba90b7b69a3908ed1c433541ad5d50012463a23`; validation is complete. This metadata
+  `7456a0d658d98b592ff706ae09d62bef8ee88fc9` (including feature ancestor `aba90b7`); validation is complete. This metadata
   prepares `1.17.0` and its annotated product tag. Exact metadata build SHA,
   push/CI/Pages/smoke are independently verified in the final delivery receipt;
   this source entry does not pre-claim a deployed version.
