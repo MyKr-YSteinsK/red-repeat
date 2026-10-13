@@ -245,7 +245,7 @@ describe('song download snapshot cache', () => {
     )
   })
 
-  it('never renders a cached Catalog edition before selecting the active downloaded snapshot', async () => {
+  it.each([false, true])('never renders cached H2 before active H1 (prepared entry: %s)', async (prepared) => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
 
@@ -277,12 +277,21 @@ describe('song download snapshot cache', () => {
       { fetchImpl: fixtureFetch(snapshotH1) },
     )
 
+    const preparedLoad = prepared ? {
+      songId: snapshotH2.catalogEdition.songId,
+      editionUrl: snapshotH2.catalogEdition.editionUrl,
+      state: {
+        status: 'ready' as const,
+        core: await loadRuntimeSongEditionCore(cachedClient, snapshotH2.catalogEdition),
+      },
+    } : undefined
     const renderedCoreHashes: string[] = []
     const { result, unmount } = renderHook(() => {
       const state = useSongEditionCore(
         cachedClient,
         snapshotH2.catalogEdition,
         0,
+        preparedLoad,
       )
       if (state.status === 'ready') {
         renderedCoreHashes.push(state.core.edition.contentHash)

@@ -23,6 +23,8 @@ import {
   RuntimeClientError,
 } from './runtime/runtime-client'
 import { SongEditionPage } from './edition/SongEditionPage'
+import type { PreparedSongEditionLoad } from './edition/use-song-edition-core'
+import { hasWarmSongEditionCore, loadRuntimeSongEditionCore } from './runtime/song-edition-loader'
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { useSwipeReveal } from './library/use-swipe-reveal'
 import { SettingsPage } from './settings/SettingsPage'
@@ -80,20 +82,58 @@ function App({
     status: 'loading',
   })
   const [catalogQuery, setCatalogQuery] = useState('')
+  const [preparedEntry, setPreparedEntry] = useState<PreparedSongEditionLoad>()
+  const handledHrefRef = useRef(window.location.href)
   const catalogViewportRef = useRef<CatalogViewportState>({
     hasPosition: false,
     scrollY: 0,
   })
 
   useEffect(() => {
-    const updateRoute = (): void => setRoute(parseAppRoute(window.location))
+    let active = true
+    let controller: AbortController | undefined
+    const updateRoute = (): void => {
+      const href = window.location.href
+      if (handledHrefRef.current === href) return
+      handledHrefRef.current = href
+      controller?.abort()
+      const nextRoute = parseAppRoute(window.location)
+      const edition = nextRoute.kind === 'edition' && catalogState.status === 'ready'
+        ? catalogState.catalog.editions.find(candidate => candidate.songId === nextRoute.songId)
+        : undefined
+
+      if (route.kind === 'library' && edition && hasWarmSongEditionCore(runtimeClient, edition.songId)) {
+        // Keep the mounted Catalog while checking the manifest. Only this
+        // entry's resolved result may seed the destination's first render.
+        const requestController = new AbortController()
+        controller = requestController
+        const finish = (state: PreparedSongEditionLoad['state']): void => {
+          if (!active || requestController.signal.aborted || window.location.href !== href) return
+          setPreparedEntry({ songId: edition.songId, editionUrl: edition.editionUrl, state })
+          setRoute(nextRoute)
+        }
+        void loadRuntimeSongEditionCore(runtimeClient, edition, { signal: requestController.signal })
+          .then(core => finish({ status: 'ready', core }))
+          .catch((error: unknown) => {
+            if (!(error instanceof RuntimeClientError && error.kind === 'abort')) {
+              finish({ status: 'error', error })
+            }
+          })
+        return
+      }
+
+      setPreparedEntry(undefined)
+      setRoute(nextRoute)
+    }
     window.addEventListener('hashchange', updateRoute)
     window.addEventListener('popstate', updateRoute)
     return () => {
+      active = false
+      controller?.abort()
       window.removeEventListener('hashchange', updateRoute)
       window.removeEventListener('popstate', updateRoute)
     }
-  }, [])
+  }, [catalogState, route, runtimeClient])
 
   useEffect(() => {
     let active = true
@@ -190,6 +230,7 @@ function App({
           runtimeClient={runtimeClient}
           homeHref={homeHref}
           onRetry={retryCatalog}
+          preparedLoad={preparedEntry}
         />
       )}
       <SiteFooter editionCount={getEditionCount(catalogState)} />
@@ -735,12 +776,14 @@ function EditionRoute({
   runtimeClient,
   homeHref,
   onRetry,
+  preparedLoad,
 }: {
   route: Extract<AppRoute, { kind: 'edition' }>
   state: CatalogState
   runtimeClient: RuntimeClient
   homeHref: string
   onRetry: () => void
+  preparedLoad?: PreparedSongEditionLoad
 }) {
   if (state.status === 'loading') {
     return (
@@ -804,6 +847,7 @@ function EditionRoute({
       catalogEdition={edition}
       runtimeClient={runtimeClient}
       homeHref={homeHref}
+      preparedLoad={preparedLoad}
     />
   )
 }

@@ -5,6 +5,7 @@ import type {
   TimelineDocument,
 } from '../library/schema'
 import {
+  RuntimeClientError,
   type RuntimeClient,
   type RuntimeLoadOptions,
 } from './runtime-client'
@@ -34,6 +35,14 @@ const cachedSongEditionsByClient = new WeakMap<
   Map<string, RuntimeSongEditionCore>
 >()
 
+// This is a navigation hint, never an identity decision or a renderable core.
+// A warm entry still resolves the active downloaded manifest asynchronously.
+export function hasWarmSongEditionCore(client: RuntimeClient, songId: string): boolean {
+  return [...(cachedSongEditionsByClient.get(client)?.values() ?? [])].some(
+    (core) => core.catalogEdition.songId === songId,
+  )
+}
+
 export async function loadRuntimeSongEditionCore(
   client: RuntimeClient,
   catalogEdition: CatalogEdition,
@@ -46,6 +55,14 @@ export async function loadRuntimeSongEditionCore(
   )
   const effectiveCatalogEdition =
     downloadedSnapshot?.catalogEdition ?? catalogEdition
+  if (options.signal?.aborted) {
+    throw new RuntimeClientError({
+      kind: 'abort',
+      logicalPath: effectiveCatalogEdition.editionUrl,
+      url: effectiveCatalogEdition.editionUrl,
+      message: 'Song Edition entry was cancelled before core selection.',
+    })
+  }
   const cachedCore = getCachedSongEditionCore(
     client,
     effectiveCatalogEdition,

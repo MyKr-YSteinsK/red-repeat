@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -619,6 +620,55 @@ describe('App Library consumer', () => {
     })
   })
 
+  it('keeps the mounted Catalog until a warm entry has confirmed its manifest', async () => {
+    const client = warmClientForApp()
+    render(<App runtimeClient={client} />)
+    fireEvent.click(await screen.findByRole('link', { name: '打开 First Light' }))
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }))
+    await screen.findByRole('heading', { name: '曲库' })
+    const catalogMain = screen.getByRole('main')
+    const delayed = delayManifestRead()
+    try {
+      fireEvent.click(screen.getByRole('link', { name: '打开 First Light' }))
+      await waitFor(() => expect(delayed.open).toHaveBeenCalled())
+      expect(screen.getByRole('main')).toBe(catalogMain)
+      expect(screen.queryByRole('heading', { name: '正在打开歌曲…' })).not.toBeInTheDocument()
+      await act(async () => delayed.resolve())
+      await screen.findByRole('heading', { name: 'First Light' })
+      expect(client.loadEdition).toHaveBeenCalledOnce()
+      expect(client.loadLyrics).toHaveBeenCalledOnce()
+      expect(client.loadTimeline).toHaveBeenCalledOnce()
+      expect(client.loadPractice).toHaveBeenCalledOnce()
+    } finally {
+      delayed.restore()
+    }
+  })
+
+  it('discards a cancelled warm entry before opening another song', async () => {
+    const client = warmClientForApp()
+    render(<App runtimeClient={client} />)
+    fireEvent.click(await screen.findByRole('link', { name: '打开 First Light' }))
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }))
+    await screen.findByRole('heading', { name: '曲库' })
+    const delayed = delayManifestRead()
+    try {
+      fireEvent.click(screen.getByRole('link', { name: '打开 First Light' }))
+      await waitFor(() => expect(delayed.open).toHaveBeenCalled())
+      window.history.replaceState({}, '', '/#library')
+      fireEvent(window, new PopStateEvent('popstate'))
+      await act(async () => delayed.resolve())
+      expect(screen.getByRole('heading', { name: '曲库' })).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: 'First Light' })).not.toBeInTheDocument()
+      fireEvent.click(screen.getByRole('link', { name: '打开 Second Signal' }))
+      await screen.findByRole('heading', { name: 'Second Signal' })
+      expect(screen.queryByRole('heading', { name: 'First Light' })).not.toBeInTheDocument()
+    } finally {
+      delayed.restore()
+    }
+  })
+
   it('keeps catalog cards focused on metadata and skips resume enrichment', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
@@ -762,6 +812,40 @@ function clientFor(payload: unknown): RuntimeClient {
   return createRuntimeClient({
     fetchImpl: vi.fn(async (input) => responseForAppUrl(input, payload)),
   })
+}
+
+function warmClientForApp(): RuntimeClient {
+  const catalog = {
+    ...populatedCatalog,
+    editions: populatedCatalog.editions.map((entry, index) => ({
+      ...entry,
+      editionUrl: `/library-runtime/songs/${entry.songId}/edition.${(index === 0 ? 'c' : 'e').repeat(64)}.json`,
+    })),
+  }
+  return {
+    loadCatalog: vi.fn(async () => catalog),
+    loadEdition: vi.fn(async (url: string) => url.includes('first-light') ? runtimeEditionForApp : secondRuntimeEditionForApp),
+    loadLyrics: vi.fn(async () => ({ segments: [] })),
+    loadTimeline: vi.fn(async () => ({ audioSourceHash: 'd'.repeat(64), sections: [], occurrences: [] })),
+    loadPractice: vi.fn(async () => ({ units: [] })),
+    resolveAsset: (url: string) => url,
+  } as unknown as RuntimeClient
+}
+
+function delayManifestRead() {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+  let resolveCache!: (cache: Cache) => void
+  const pending = new Promise<Cache>(resolve => { resolveCache = resolve })
+  const open = vi.fn(() => pending)
+  Object.defineProperty(globalThis, 'caches', { configurable: true, value: { open } })
+  return {
+    open,
+    resolve: () => resolveCache({ match: vi.fn(async () => undefined) } as unknown as Cache),
+    restore: () => {
+      if (original) Object.defineProperty(globalThis, 'caches', original)
+      else delete (globalThis as { caches?: CacheStorage }).caches
+    },
+  }
 }
 
 function responseForAppUrl(input: RequestInfo | URL, catalog: unknown = populatedCatalog): Response {

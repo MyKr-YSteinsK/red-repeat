@@ -14,21 +14,34 @@ export type SongEditionLoadState =
   | { status: 'ready'; core: RuntimeSongEditionCore }
   | { status: 'error'; error: unknown }
 
+export interface PreparedSongEditionLoad {
+  songId: string
+  editionUrl: string
+  state: Exclude<SongEditionLoadState, { status: 'loading' }>
+}
+
 export function useSongEditionCore(
   runtimeClient: RuntimeClient,
   catalogEdition: CatalogEdition,
   retryKey: number,
+  preparedLoad?: PreparedSongEditionLoad,
 ): SongEditionLoadState {
   const requestKey = `${catalogEdition.songId}\u0000${catalogEdition.editionUrl}\u0000${retryKey}`
+  const preparedState = retryKey === 0 &&
+    preparedLoad?.songId === catalogEdition.songId &&
+    preparedLoad.editionUrl === catalogEdition.editionUrl
+    ? preparedLoad.state
+    : undefined
   const [requestState, setRequestState] = useState<{
     key: string
     state: SongEditionLoadState
   }>(() => ({
     key: requestKey,
-    state: { status: 'loading' },
+    state: preparedState ?? { status: 'loading' },
   }))
 
   useEffect(() => {
+    if (preparedState) return
     let active = true
     const controller = new AbortController()
 
@@ -53,8 +66,9 @@ export function useSongEditionCore(
       active = false
       controller.abort()
     }
-  }, [catalogEdition, requestKey, runtimeClient])
+  }, [catalogEdition, preparedState, requestKey, runtimeClient])
 
+  if (preparedState) return preparedState
   if (requestState.key === requestKey) {
     return requestState.state
   }

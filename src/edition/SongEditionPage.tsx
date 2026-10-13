@@ -8,7 +8,7 @@ import {
 import { FullSongWorkspace } from './FullSongWorkspace'
 import { PracticeWorkspace } from './PracticeWorkspace'
 import { ExplainWorkspace } from './ExplainWorkspace'
-import { useSongEditionCore } from './use-song-edition-core'
+import { useSongEditionCore, type PreparedSongEditionLoad } from './use-song-edition-core'
 
 type SongEditionTab = 'practice' | 'all' | 'explain'
 
@@ -17,6 +17,7 @@ export interface SongEditionPageProps {
   runtimeClient: RuntimeClient
   homeHref: string
   audioEngine?: AudioEngine
+  preparedLoad?: PreparedSongEditionLoad
 }
 
 export function SongEditionPage({
@@ -24,6 +25,7 @@ export function SongEditionPage({
   runtimeClient,
   homeHref,
   audioEngine,
+  preparedLoad,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
   const [tab, setTab] = useState<SongEditionTab>('practice')
@@ -34,7 +36,7 @@ export function SongEditionPage({
   const coverTriggerRef = useRef<HTMLButtonElement | null>(null)
   const coverViewerRef = useRef<HTMLDivElement | null>(null)
   const coverViewerWasOpenRef = useRef(false)
-  const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey)
+  const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey, preparedLoad)
 
   useEffect(() => {
     if (!coverViewerOpen) {

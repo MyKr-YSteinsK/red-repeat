@@ -180,6 +180,30 @@ describe('runtime Song Edition loader', () => {
     expect(client.loadTimeline).toHaveBeenCalledOnce()
   })
 
+  it('does not refresh or clear local timing for an aborted cached entry', async () => {
+    const client = {
+      loadEdition: vi.fn(async () => edition),
+      loadLyrics: vi.fn(async () => ({ segments: [] })),
+      loadTimeline: vi.fn(async () => ({ audioSourceHash: edition.audio.sourceHash, sections: [], occurrences: [] })),
+      loadPractice: vi.fn(async () => ({ units: [] })),
+    } as unknown as RuntimeClient
+    await loadRuntimeSongEditionCore(client, catalogEdition)
+    const incompatible = createTimingOverridesDocument({
+      songId: edition.song.songId,
+      editionContentHash: 'e'.repeat(64),
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: edition.timelineUrl,
+    })
+    incompatible.occurrences = { o001: { startMs: 20 } }
+    expect(saveTimingOverrides(incompatible)).toBe(true)
+    const controller = new AbortController()
+    controller.abort()
+    await expect(loadRuntimeSongEditionCore(client, catalogEdition, { signal: controller.signal }))
+      .rejects.toMatchObject({ kind: 'abort' })
+    expect(client.loadEdition).toHaveBeenCalledOnce()
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey(edition.song.songId))).not.toBeNull()
+  })
+
   it('retains same-edition timing overrides and clears only the changed edition', async () => {
     let currentEdition = edition
     const occurrence = {
