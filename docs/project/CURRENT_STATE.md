@@ -11,11 +11,11 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.17.0`. This metadata prepares the
+- Current package/ledger user version: `1.18.0`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.17.0` / `v1.17.0 -> 7456a0d` (product commit
+- Latest ledger/prepared tag: `1.18.0` / `v1.18.0 -> dfa5e08` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
   build identity. Existing `v1.16.0 -> a863d57`, `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
@@ -969,6 +969,36 @@ uses the separately authorized task-input source package.
   remain governed by D-013/D-016 and are not reopened by this content change.
 
 ## Current work / Next action
+
+- `RED-Plan-67` completes C1–C5 on `main`. Product implementation commit is
+  `dfa5e085417a6fa85fd232d4de3e3059925d50d5`; this metadata prepares the
+  authorized `1.18.0` MINOR release and annotated `v1.18.0` at that product
+  commit. Exact metadata build SHA, push, CI, Pages and production identity are
+  reported separately at delivery and are not asserted ahead of verification.
+- Current mobile UI has a compact song header and sticky three-mode navigation,
+  a collapsed Practice dock with on-demand secondary controls, local
+  display-only translation/Romaji/text-size preferences, and Full Song lyric
+  following that yields to manual browsing. These changes do not alter the
+  shared audio/session owner, canonical content/schema, timing, offline
+  snapshot, PWA update or learning-progress contracts.
+- Verification: targeted UI tests passed (3 files / 39 tests); Library compile
+  generated 6 editions / 89 runtime files; TypeScript and Vite production-build
+  boundaries passed. Edge `155.0.4283.45` at `390×844`, `768×1024` and
+  `1365×900` confirmed sticky navigation, reachable expanded controls, display
+  filtering with Ruby retained, and readable-area follow/manual pause/resume.
+  This is desktop-browser evidence, not iOS/device or installed-PWA evidence.
+- D-024 and D-026 are implemented; D-025 A–C are complete, D–E remain pending,
+  and F3 remains excluded. The next action is release-delivery verification for
+  `1.18.0`; later D–E work needs its own approved execution scope.
+- Real iOS/device, human listening and installed-PWA adoption were not executed.
+  The two existing user documents and the unrelated detached Plan-65 worktree
+  remain untouched. The build-created untracked
+  `public/library-runtime.tmp-11104/` is excluded from staging.
+
+## Previous completion record (RED-Plan-66/R1)
+
+These statements describe the Plan-66 closeout; its version, decisions and
+validation counts are historical evidence, superseded above where Plan-67 applies.
 
 - `RED-Plan-66` R1 implements B1–B5 and D-024 / D-026 F2 on `main`, based on
   `2a12cbbbee4faac53279198112f19aff221bd353`. Product implementation is

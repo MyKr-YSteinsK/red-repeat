@@ -15,6 +15,20 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.18.0',
+    date: '2026-10-14',
+    commit: 'dfa5e08',
+    level: 'minor',
+    title: '移动端歌词阅读与交互体验优化',
+    summary: '收紧歌曲页头部并固定模式导航，精简学唱常用控制，为歌词加入本地显示偏好和全曲可读区跟随。',
+    changes: [
+      '手机歌曲页采用紧凑头部和固定三模式导航，长歌词中仍可切换学唱、全曲与讲解。',
+      '学唱 dock 默认突出播放与上下文，速度、重播、连续播放和渐速练习可按需展开；折叠控制不改变播放状态。',
+      '新增本地歌词翻译、Romaji 显示和字号偏好；变更显示时保留阅读位置，Ruby 与其他歌词层保持原样。',
+      '全曲仅在当前句离开可读区时自动跟随；手动浏览可停止跟随并按需回到当前句，原有全曲播放器基线保持。',
+    ],
+  },
+  {
     version: '1.17.0',
     date: '2026-10-14',
     commit: '7456a0d',
