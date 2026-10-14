@@ -11,11 +11,11 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.18.0`. This metadata prepares the
+- Current package/ledger user version: `1.19.0`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.18.0` / `v1.18.0 -> dfa5e08` (product commit
+- Latest ledger/prepared tag: `1.19.0` / `v1.19.0 -> d8f0d5f` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
   build identity. Existing `v1.16.0 -> a863d57`, `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
@@ -970,12 +970,43 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-68` R1 implements D1–D5 on `main`, based on
+  `e64571f708c51ed59094f6749116e1263455accb`. The focused product commit is
+  `d8f0d5fa72f3694ca6fe557e7ee7cfa4888d6bdf`; the authorized `1.19.0` MINOR
+  release and annotated `v1.19.0` target that commit. This metadata commit is
+  the separate build identity; remote push, CI, Pages and production identity
+  are reported at delivery rather than pre-asserted here.
+- D1 adds explicit Occurrence-to-Practice and evidence-backed Explain navigation
+  with return context. D2 adds identity-bound, paused-by-default recent resume;
+  D3 adds a user-managed, identity-checked queue without mastery scoring. D4
+  adds a whitelist-only local backup/preview/import path with per-domain
+  conflict consent and verified compensating rollback. D5 records the integrated
+  state; no E architecture or F3 learning assessment was introduced.
+- Verification: 14 directly affected test files / 139 tests passed; one local
+  candidate production build passed (6 editions / 89 runtime files, TypeScript
+  and Vite) before a later dependency-array-only lint fix; exact-final-SHA build
+  evidence is left to CI. Targeted lint had 0 errors and 6 React Fast Refresh
+  warnings. An isolated
+  browser exercised the 390×844 context/resume/queue route and personal-backup
+  export, preview, explicit restore and reload. This is not iOS, human-listening
+  or installed-PWA evidence.
+- D-024 and D-026 are implemented; D-025 A–D are complete, E remains pending,
+  and F3 remains excluded. No E implementation has started; it needs a separate
+  approved scope after the current `1.19.0` delivery boundary.
+- Real iOS/device, human listening and installed-PWA adoption were not executed.
+  The two existing user documents remain untouched. The build-created
+  untracked `public/library-runtime.tmp-11104/` is excluded from staging.
+
+## Previous completion record (RED-Plan-67/R1)
+
+The following statements describe the Plan-67 closeout and remain historical
+evidence; current release identity and Plan status are recorded above.
+
 - `RED-Plan-67` completes C1–C5 on `main`. Product implementation commit is
-  `dfa5e085417a6fa85fd232d4de3e3059925d50d5`; this metadata prepares the
-  authorized `1.18.0` MINOR release and annotated `v1.18.0` at that product
-  commit. Exact metadata build SHA, push, CI, Pages and production identity are
-  reported separately at delivery and are not asserted ahead of verification.
-- Current mobile UI has a compact song header and sticky three-mode navigation,
+  `dfa5e085417a6fa85fd232d4de3e3059925d50d5`; its authorized `1.18.0` MINOR
+  release and annotated `v1.18.0` targeted that product commit. The release
+  metadata commit was the independent build identity.
+- Plan-67 introduced a compact song header and sticky three-mode navigation,
   a collapsed Practice dock with on-demand secondary controls, local
   display-only translation/Romaji/text-size preferences, and Full Song lyric
   following that yields to manual browsing. These changes do not alter the
@@ -987,13 +1018,13 @@ uses the separately authorized task-input source package.
   `1365×900` confirmed sticky navigation, reachable expanded controls, display
   filtering with Ruby retained, and readable-area follow/manual pause/resume.
   This is desktop-browser evidence, not iOS/device or installed-PWA evidence.
-- D-024 and D-026 are implemented; D-025 A–C are complete, D–E remain pending,
-  and F3 remains excluded. The next action is release-delivery verification for
-  `1.18.0`; later D–E work needs its own approved execution scope.
+- At the Plan-67 closeout, D-024 and D-026 were implemented; D-025 A–C were
+  complete, D–E remained pending, and F3 remained excluded. The next action then
+  was release-delivery verification for `1.18.0`.
 - Real iOS/device, human listening and installed-PWA adoption were not executed.
-  The two existing user documents and the unrelated detached Plan-65 worktree
-  remain untouched. The build-created untracked
-  `public/library-runtime.tmp-11104/` is excluded from staging.
+  At that time, the two existing user documents and the unrelated detached
+  Plan-65 worktree were left untouched; `public/library-runtime.tmp-11104/` was
+  excluded from staging.
 
 ## Previous completion record (RED-Plan-66/R1)
 

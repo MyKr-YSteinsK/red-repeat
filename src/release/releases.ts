@@ -15,6 +15,20 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.19.0',
+    date: '2026-10-14',
+    commit: 'd8f0d5f',
+    level: 'minor',
+    title: '歌词上下文学习闭环与本地状态备份',
+    summary: '从具体歌词位置进入练习或真实关联讲解，继续上次学习并手动维护待练队列；个人状态可按身份校验后本地备份与恢复。',
+    changes: [
+      'Practice 与 Full Song 的具体 Occurrence 可显式进入对应练习位置或真实引用讲解，并返回来源阅读位置；普通点击歌词仍保留原播放语义。',
+      'Catalog 提供轻量“继续上次”入口，按当前完整 Edition identity 恢复模式与稳定位置，默认暂停且不预加载所有歌曲内容。',
+      '新增用户手动维护的待练队列，支持去重、排序、删除、身份校验和自然结束后的继续操作；不新增掌握度或完成评分。',
+      '新增白名单个人 JSON 备份与导入预览；仅恢复兼容的本地进度、速度、显示偏好、最近位置、待练队列及 timing overrides，冲突需明确授权并对失败写入尝试回滚。',
+    ],
+  },
+  {
     version: '1.18.0',
     date: '2026-10-14',
     commit: 'dfa5e08',
