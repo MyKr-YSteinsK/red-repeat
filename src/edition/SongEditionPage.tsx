@@ -3,6 +3,7 @@ import { getAudioEngine } from '../audio/audio-engine'
 import type { RuntimeSongEditionCore } from '../runtime/song-edition-loader'
 import { SongPlaybackSession } from './song-playback-session'
 import { SongPlaybackContext } from './song-playback-context'
+import { LyricDisplayPreferencesProvider } from './LyricDisplayPreferences'
 import { readPracticePlaybackRate } from '../practice/practice-rate'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
@@ -41,28 +42,28 @@ export function SongEditionPage({
 
   if (state.status === 'error') {
     return (
-      <main
-        className="song-edition song-edition-status"
-        aria-labelledby="song-title"
-        role="alert"
-      >
-        <p className="eyebrow">歌曲 / 错误</p>
-        <h1 id="song-title">歌曲暂时无法打开</h1>
-        <p className="song-status-copy">无法读取这首歌的内容，请重试。</p>
-        <p className="song-status-detail">{describeEditionError(state.error)}</p>
-        <div className="song-status-actions">
-          <button
-            className="text-button"
-            type="button"
-            onClick={() => setRetryKey((value) => value + 1)}
-          >
-            重试
-          </button>
-          <a className="text-link" href={homeHref}>
-            返回曲库
-          </a>
-        </div>
-      </main>
+        <main
+          className="song-edition song-edition-status"
+          aria-labelledby="song-title"
+          role="alert"
+        >
+          <p className="eyebrow">歌曲 / 错误</p>
+          <h1 id="song-title">歌曲暂时无法打开</h1>
+          <p className="song-status-copy">无法读取这首歌的内容，请重试。</p>
+          <p className="song-status-detail">{describeEditionError(state.error)}</p>
+          <div className="song-status-actions">
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setRetryKey((value) => value + 1)}
+            >
+              重试
+            </button>
+            <a className="text-link" href={homeHref}>
+              返回曲库
+            </a>
+          </div>
+        </main>
     )
   }
 
@@ -156,126 +157,128 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
   const song = core.edition.song
   return (
     <SongPlaybackContext.Provider value={context}>
-    <main
-      className="song-edition is-practice-page"
-      aria-labelledby="song-title"
-      data-mode={tab}
-    >
-      <header className="practice-page-header">
-        <div className="practice-page-identity">
-          <a className="text-link" href={homeHref}>
-            返回曲库
-          </a>
-          <div className="practice-page-song">
-            <p className="eyebrow">学唱</p>
-            <h1 id="song-title">{song.title}</h1>
-            <p className="practice-page-artist">{song.artist}</p>
-            {song.album || song.year !== undefined ? (
-              <p className="practice-page-meta">
-                {song.album ?? ''}
-                {song.album && song.year !== undefined ? ' / ' : ''}
-                {song.year ?? ''}
-              </p>
-            ) : null}
+      <LyricDisplayPreferencesProvider>
+        <main
+          className="song-edition is-practice-page"
+          aria-labelledby="song-title"
+          data-mode={tab}
+        >
+          <header className="practice-page-header">
+            <div className="practice-page-identity">
+              <a className="text-link" href={homeHref}>
+                返回曲库
+              </a>
+              <div className="practice-page-song">
+                <p className="eyebrow">学唱</p>
+                <h1 id="song-title">{song.title}</h1>
+                <p className="practice-page-artist">{song.artist}</p>
+                {song.album || song.year !== undefined ? (
+                  <p className="practice-page-meta">
+                    {song.album ?? ''}
+                    {song.album && song.year !== undefined ? ' / ' : ''}
+                    {song.year ?? ''}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                ref={coverTriggerRef}
+                className="practice-page-cover-trigger"
+                type="button"
+                aria-label={`查看${song.title}封面大图`}
+                aria-haspopup="dialog"
+                aria-expanded={coverViewerOpen}
+                onClick={() => setCoverViewerOpen(true)}
+              >
+                <img
+                  className="practice-page-cover"
+                  src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
+                  alt=""
+                />
+              </button>
+            </div>
+          </header>
+          <div className="practice-page-tools">
+            <nav className="edition-task-nav" aria-label="歌曲任务">
+              <button
+                type="button"
+                className={tab === 'practice' ? 'is-active' : ''}
+                aria-current={tab === 'practice' ? 'page' : undefined}
+                onClick={() => {
+                  setPracticeNavigationRequest(undefined)
+                  changeTab('practice')
+                }}
+              >
+                学唱
+              </button>
+              <button
+                type="button"
+                className={tab === 'all' ? 'is-active' : ''}
+                aria-current={tab === 'all' ? 'page' : undefined}
+                onClick={() => changeTab('all')}
+              >
+                全曲
+              </button>
+              <button
+                type="button"
+                className={tab === 'explain' ? 'is-active' : ''}
+                aria-current={tab === 'explain' ? 'page' : undefined}
+                onClick={() => changeTab('explain')}
+              >
+                讲解
+              </button>
+            </nav>
           </div>
-          <button
-            ref={coverTriggerRef}
-            className="practice-page-cover-trigger"
-            type="button"
-            aria-label={`查看${song.title}封面大图`}
-            aria-haspopup="dialog"
-            aria-expanded={coverViewerOpen}
-            onClick={() => setCoverViewerOpen(true)}
-          >
-            <img
-              className="practice-page-cover"
-              src={runtimeClient.resolveAsset(core.edition.artwork.coverSmallUrl)}
-              alt=""
+
+          {tab === 'practice' ? (
+            <PracticeWorkspace
+              key={core.edition.contentHash}
+              model={core.assembled}
+              runtimeClient={runtimeClient}
+              audioEngine={audioEngine}
+              requestedPracticeUnitId={practiceNavigationRequest}
+              onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
             />
-          </button>
-        </div>
-        <div className="practice-page-tools">
-          <nav className="edition-task-nav" aria-label="歌曲任务">
-            <button
-              type="button"
-              className={tab === 'practice' ? 'is-active' : ''}
-              aria-current={tab === 'practice' ? 'page' : undefined}
-              onClick={() => {
-                setPracticeNavigationRequest(undefined)
+          ) : tab === 'all' ? (
+            <FullSongWorkspace
+              model={core.assembled}
+              runtimeClient={runtimeClient}
+              audioEngine={audioEngine}
+              onStartPracticeUnit={(practiceUnitId) => {
+                setPracticeNavigationRequest(practiceUnitId)
                 changeTab('practice')
               }}
-            >
-              学唱
-            </button>
-            <button
-              type="button"
-              className={tab === 'all' ? 'is-active' : ''}
-              aria-current={tab === 'all' ? 'page' : undefined}
-              onClick={() => changeTab('all')}
-            >
-              全曲
-            </button>
-            <button
-              type="button"
-              className={tab === 'explain' ? 'is-active' : ''}
-              aria-current={tab === 'explain' ? 'page' : undefined}
-              onClick={() => changeTab('explain')}
-            >
-              讲解
-            </button>
-          </nav>
-        </div>
-      </header>
-
-      {tab === 'practice' ? (
-        <PracticeWorkspace
-          key={core.edition.contentHash}
-          model={core.assembled}
-          runtimeClient={runtimeClient}
-          audioEngine={audioEngine}
-          requestedPracticeUnitId={practiceNavigationRequest}
-          onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
-        />
-      ) : tab === 'all' ? (
-        <FullSongWorkspace
-          model={core.assembled}
-          runtimeClient={runtimeClient}
-          audioEngine={audioEngine}
-          onStartPracticeUnit={(practiceUnitId) => {
-            setPracticeNavigationRequest(practiceUnitId)
-            changeTab('practice')
-          }}
-        />
-      ) : (
-        <ExplainWorkspace
-          model={core.assembled}
-          runtimeClient={runtimeClient}
-          audioEngine={audioEngine}
-        />
-      )}
-      {coverViewerOpen ? (
-        <div
-          className="cover-viewer-backdrop"
-          onClick={() => setCoverViewerOpen(false)}
-        >
-          <div
-            ref={coverViewerRef}
-            className="cover-viewer"
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${song.title}封面预览`}
-            tabIndex={-1}
-          >
-            <img
-              className="cover-viewer-image"
-              src={runtimeClient.resolveAsset(core.edition.artwork.coverLargeUrl)}
-              alt={`${song.title}封面大图`}
-              onClick={(event) => event.stopPropagation()}
             />
-          </div>
-        </div>
-      ) : null}
-    </main>
+          ) : (
+            <ExplainWorkspace
+              model={core.assembled}
+              runtimeClient={runtimeClient}
+              audioEngine={audioEngine}
+            />
+          )}
+          {coverViewerOpen ? (
+            <div
+              className="cover-viewer-backdrop"
+              onClick={() => setCoverViewerOpen(false)}
+            >
+              <div
+                ref={coverViewerRef}
+                className="cover-viewer"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${song.title}封面预览`}
+                tabIndex={-1}
+              >
+                <img
+                  className="cover-viewer-image"
+                  src={runtimeClient.resolveAsset(core.edition.artwork.coverLargeUrl)}
+                  alt={`${song.title}封面大图`}
+                  onClick={(event) => event.stopPropagation()}
+                />
+              </div>
+            </div>
+          ) : null}
+        </main>
+      </LyricDisplayPreferencesProvider>
     </SongPlaybackContext.Provider>
   )
 }

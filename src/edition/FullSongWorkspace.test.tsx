@@ -15,6 +15,7 @@ import { createEffectiveOccurrenceTimingProvider } from '../practice/practice-ti
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { FullSongWorkspace } from './FullSongWorkspace'
+import { LyricDisplayPreferencesProvider } from './LyricDisplayPreferences'
 
 const engines: AudioEngine[] = []
 
@@ -152,6 +153,49 @@ const modelWithTimingOverride = {
     occurrences: { o002: { startMs: 420, endMs: 880 } },
   }),
 }
+
+const displayPreferencesModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics: {
+    segments: [
+      {
+        id: 's001',
+        lyrics: '歌',
+        ruby: [{ start: 0, end: 1, base: '歌', reading: 'うた' }],
+        translation: '第一句译文',
+        layers: [
+          { id: 'romaji', label: 'Romaji', text: 'uta' },
+          { id: 'pitch-guide', label: '音高提示', text: 'low' },
+        ],
+      },
+      { id: 's002', lyrics: 'Stay near', translation: '靠近一些' },
+      { id: 's003', lyrics: 'Counterpoint line', translation: '对位句' },
+      { id: 's004', lyrics: 'One more light', translation: '再亮一点' },
+    ],
+  } satisfies LyricsDocument,
+  timeline: {
+    audioSourceHash: 'a'.repeat(64),
+    sections: [
+      { id: 'verse', label: 'Verse', startMs: 0, endMs: 1200 },
+      { id: 'instrumental', label: 'Instrumental', startMs: 1200, endMs: 1500 },
+      { id: 'chorus', label: 'Chorus', startMs: 1500, endMs: 2600 },
+    ],
+    occurrences: [
+      { id: 'o001', segmentId: 's001', sectionId: 'verse', startMs: 50, endMs: 550 },
+      { id: 'o002', segmentId: 's002', sectionId: 'verse', startMs: 400, endMs: 950 },
+      { id: 'o003', segmentId: 's003', sectionId: 'verse', startMs: 650, endMs: 1150 },
+      { id: 'o004', segmentId: 's004', sectionId: 'chorus', startMs: 1550, endMs: 1950 },
+    ],
+  } satisfies TimelineDocument,
+  practice: {
+    units: [
+      { id: 'p001', sectionId: 'verse', label: 'Verse', occurrenceIds: ['o001', 'o002', 'o003'] },
+      { id: 'p002', sectionId: 'chorus', label: 'Chorus', occurrenceIds: ['o004'] },
+    ],
+  },
+  features: [],
+})
 
 const gappedModel = assembleRuntimeSongEdition({
   catalogEdition,
@@ -517,39 +561,26 @@ describe('FullSongWorkspace', () => {
     )
   })
 
-  it('does not scroll for the first primary after a lyric click, then follows later playback', async () => {
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
-    const scrollIntoView = vi.fn()
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
+  it('follows playback only when the active occurrence leaves the readable viewport', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { engine, frames } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    const setRowsTop = mockLyricRowsRect(120)
+    await engine.playContinuous()
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.15
+      frames.flush()
     })
+    expect(scrollTo).not.toHaveBeenCalled()
 
-    try {
-      const { engine, frames } = renderWorkspace()
-      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
-
-      fireEvent.click(
-        screen.getByRole('button', { name: '从这里连续播放：Stay near' }),
-      )
-      await waitFor(() => expect(engine.getState().status).toBe('playing'))
-      expect(scrollIntoView).not.toHaveBeenCalled()
-
-      await act(async () => {
-        mediaFor(engine).currentTime = 1
-        frames.flush()
-      })
-      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled())
-    } finally {
-      if (originalScrollIntoView) {
-        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-          configurable: true,
-          value: originalScrollIntoView,
-        })
-      } else {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
-      }
-    }
+    setRowsTop(-80)
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.75
+      frames.flush()
+    })
+    await waitFor(() => expect(scrollTo).toHaveBeenCalled())
+    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ behavior: 'smooth' }))
   })
 
   it('plays an instrumental section without inventing a lyric occurrence', async () => {
@@ -614,115 +645,71 @@ describe('FullSongWorkspace', () => {
     }
   })
 
-  it('follows semantic primary changes, then stops stealing the viewport after manual browse', async () => {
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
-    const scrollIntoView = vi.fn()
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
+  it('stops following after manual wheel browsing and resumes on request', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { engine, frames } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    mockLyricRowsRect(-80)
+    await engine.playContinuous()
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.15
+      frames.flush()
     })
+    await waitFor(() => expect(scrollTo).toHaveBeenCalled())
+    const callsBeforeManualBrowse = scrollTo.mock.calls.length
 
-    try {
-      const { engine, frames } = renderWorkspace()
-      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
-      await engine.playContinuous()
+    fireEvent.wheel(screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!)
+    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
 
-      await act(async () => {
-        mediaFor(engine).currentTime = 0.15
-        frames.flush()
-      })
-      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled())
-      const callsBeforeManualBrowse = scrollIntoView.mock.calls.length
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.75
+      frames.flush()
+    })
+    expect(document.querySelector('[data-occurrence-id="o002"]')).toHaveClass('is-primary-active')
+    expect(scrollTo).toHaveBeenCalledTimes(callsBeforeManualBrowse)
 
-      fireEvent.wheel(screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!)
-      expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
-
-      await act(async () => {
-        mediaFor(engine).currentTime = 0.75
-        frames.flush()
-      })
-      expect(
-        document.querySelector('[data-occurrence-id="o002"]'),
-      ).toHaveClass('is-primary-active')
-      expect(scrollIntoView).toHaveBeenCalledTimes(callsBeforeManualBrowse)
-
-      fireEvent.click(screen.getByRole('button', { name: '回到当前句' }))
-      await waitFor(() =>
-        expect(scrollIntoView.mock.calls.length).toBeGreaterThan(
-          callsBeforeManualBrowse,
-        ),
-      )
-    } finally {
-      if (originalScrollIntoView) {
-        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-          configurable: true,
-          value: originalScrollIntoView,
-        })
-      } else {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
-      }
-    }
+    fireEvent.click(screen.getByRole('button', { name: '回到当前句' }))
+    await waitFor(() => expect(scrollTo.mock.calls.length).toBeGreaterThan(callsBeforeManualBrowse))
   })
 
   it('distinguishes touch taps from manual browsing and resumes follow after a lyric click', async () => {
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
-    const scrollIntoView = vi.fn()
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { engine, frames } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    mockLyricRowsRect(-80)
+    const stream = screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!
+
+    fireEvent.touchStart(stream)
+    expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
+
+    fireEvent.touchMove(stream)
+    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+    const callsBeforeResume = scrollTo.mock.calls.length
+
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Stay near' }))
+    await waitFor(() => expect(engine.getState().status).toBe('playing'))
+    expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
+
+    await act(async () => {
+      mediaFor(engine).currentTime = 1
+      frames.flush()
     })
-
-    try {
-      const { engine, frames } = renderWorkspace()
-      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
-      const stream = screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!
-
-      fireEvent.touchStart(stream)
-      expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
-
-      fireEvent.touchMove(stream)
-      expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
-      const callsBeforeResume = scrollIntoView.mock.calls.length
-
-      fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Stay near' }))
-      await waitFor(() => expect(engine.getState().status).toBe('playing'))
-      expect(screen.queryByRole('button', { name: '回到当前句' })).not.toBeInTheDocument()
-
-      await act(async () => {
-        mediaFor(engine).currentTime = 1
-        frames.flush()
-      })
-      await waitFor(() =>
-        expect(scrollIntoView.mock.calls.length).toBeGreaterThan(callsBeforeResume),
-      )
-    } finally {
-      if (originalScrollIntoView) {
-        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-          configurable: true,
-          value: originalScrollIntoView,
-        })
-      } else {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
-      }
-    }
+    await waitFor(() => expect(scrollTo.mock.calls.length).toBeGreaterThan(callsBeforeResume))
   })
 
   it('uses automatic scrolling when reduced motion is preferred', async () => {
     const originalMatchMedia = window.matchMedia
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
-    const scrollIntoView = vi.fn()
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: vi.fn(() => ({ matches: true })),
-    })
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
     })
 
     try {
       const { engine, frames } = renderWorkspace()
       await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      mockLyricRowsRect(-80)
       await engine.playContinuous()
 
       await act(async () => {
@@ -730,25 +717,52 @@ describe('FullSongWorkspace', () => {
         frames.flush()
       })
       await waitFor(() =>
-        expect(scrollIntoView).toHaveBeenCalledWith({
-          block: 'center',
+        expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({
           behavior: 'auto',
-        }),
+        })),
       )
     } finally {
       Object.defineProperty(window, 'matchMedia', {
         configurable: true,
         value: originalMatchMedia,
       })
-      if (originalScrollIntoView) {
-        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-          configurable: true,
-          value: originalScrollIntoView,
-        })
-      } else {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView
-      }
     }
+  })
+
+  it('stops following when keyboard scrolling is used outside controls', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { engine, frames } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    mockLyricRowsRect(-80)
+    await engine.playContinuous()
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.15
+      frames.flush()
+    })
+    await waitFor(() => expect(scrollTo).toHaveBeenCalled())
+    const callsBeforeBrowse = scrollTo.mock.calls.length
+
+    fireEvent.keyDown(screen.getByRole('button', { name: '回到顶部' }), {
+      key: 'PageDown',
+    })
+    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+    await act(async () => {
+      mediaFor(engine).currentTime = 0.75
+      frames.flush()
+    })
+    expect(scrollTo).toHaveBeenCalledTimes(callsBeforeBrowse)
+  })
+
+  it('stops following when the scrollbar rail receives pointer input', () => {
+    renderWorkspace()
+
+    fireEvent.pointerDown(window, { clientX: window.innerWidth - 1 })
+
+    expect(document.querySelector('.full-song-workspace')).toHaveAttribute(
+      'data-follow-lyrics',
+      'false',
+    )
+    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
   })
 
   it('does not expose the old full-song practice modes or mega dock controls', () => {
@@ -760,6 +774,37 @@ describe('FullSongWorkspace', () => {
     expect(screen.queryByText('跟唱留白')).not.toBeInTheDocument()
     expect(screen.queryByText(/Loop/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/repeat count/i)).not.toBeInTheDocument()
+  })
+
+  it('applies lyric display preferences without changing Full Song playback state', () => {
+    const { engine } = renderWorkspace({ model: displayPreferencesModel })
+    const initialState = engine.getState()
+    const initialLoads = mediaFor(engine).load.mock.calls.length
+    const initialPlays = mediaFor(engine).play.mock.calls.length
+    const initialPauses = mediaFor(engine).pause.mock.calls.length
+
+    expect(screen.getByText('第一句译文')).toBeInTheDocument()
+    expect(screen.getByText('uta')).toBeInTheDocument()
+    expect(screen.getByText('low')).toBeInTheDocument()
+    expect(screen.getByText('うた')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('歌词显示'))
+    fireEvent.click(screen.getByRole('checkbox', { name: '显示翻译' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '显示 Romaji' }))
+    fireEvent.click(screen.getByRole('radio', { name: '大' }))
+
+    expect(screen.queryByText('第一句译文')).not.toBeInTheDocument()
+    expect(screen.queryByText('uta')).not.toBeInTheDocument()
+    expect(screen.getByText('low')).toBeInTheDocument()
+    expect(screen.getByText('うた')).toBeInTheDocument()
+    expect(document.querySelector('.full-song-workspace')).toHaveAttribute(
+      'data-lyric-size',
+      'large',
+    )
+    expect(engine.getState()).toEqual(initialState)
+    expect(mediaFor(engine).load).toHaveBeenCalledTimes(initialLoads)
+    expect(mediaFor(engine).play).toHaveBeenCalledTimes(initialPlays)
+    expect(mediaFor(engine).pause).toHaveBeenCalledTimes(initialPauses)
   })
 })
 
@@ -775,12 +820,14 @@ function renderWorkspace(options: {
   const engine = createAudioEngine(media, { frameScheduler: frames })
   engines.push(engine)
   render(
-    <FullSongWorkspace
-      model={options.model ?? model}
-      runtimeClient={runtimeClientFor()}
-      audioEngine={engine}
-      onStartPracticeUnit={options.onStartPracticeUnit}
-    />,
+    <LyricDisplayPreferencesProvider>
+      <FullSongWorkspace
+        model={options.model ?? model}
+        runtimeClient={runtimeClientFor()}
+        audioEngine={engine}
+        onStartPracticeUnit={options.onStartPracticeUnit}
+      />
+    </LyricDisplayPreferencesProvider>,
   )
   mediaByEngine.set(engine, media)
   return { engine, frames }
@@ -800,6 +847,19 @@ function runtimeClientFor(): RuntimeClient {
   return {
     resolveAsset: (logicalPath: string) => `/app${logicalPath}`,
   } as unknown as RuntimeClient
+}
+
+function mockLyricRowsRect(initialTop: number): (top: number) => void {
+  const rectMocks = [...document.querySelectorAll<HTMLElement>('[data-occurrence-id]')].map(
+    (element) => vi.spyOn(element, 'getBoundingClientRect'),
+  )
+  const setTop = (top: number): void => {
+    rectMocks.forEach((rectMock) =>
+      rectMock.mockReturnValue(new DOMRect(0, top, 320, 48)),
+    )
+  }
+  setTop(initialTop)
+  return setTop
 }
 
 class FakeMedia implements AudioMediaAdapter {

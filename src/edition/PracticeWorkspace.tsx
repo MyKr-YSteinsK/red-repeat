@@ -38,6 +38,12 @@ import { PracticeSegmentPicker } from './PracticeSegmentPicker'
 import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import { useSessionViewState } from './song-playback-context'
+import {
+  LyricDisplayPreferencesControls,
+  useLyricAnchorPreservation,
+  useLyricDisplayPreferences,
+  visibleLyricLayers,
+} from './LyricDisplayPreferences'
 
 const PRACTICE_SPEEDS = [0.6, 0.8, 1] as const
 type PracticeSpeed = (typeof PRACTICE_SPEEDS)[number]
@@ -71,11 +77,17 @@ export function PracticeWorkspace({
     normalizePracticeSpeed(readPracticePlaybackRate(model.edition.song.songId)),
   )
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [moreControlsExpanded, setMoreControlsExpanded] = useState(false)
   const [message, setMessage] = useState<string>()
   const workspaceRef = useRef<HTMLElement | null>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
   const pendingNavigationRef = useRef(false)
+  const { preferences } = useLyricDisplayPreferences()
+  const preserveLyricAnchor = useLyricAnchorPreservation(
+    workspaceRef,
+    preferences,
+  )
 
   const currentUnit =
     practiceIndex.unitsById.get(learningState.practiceUnitId) ??
@@ -361,6 +373,7 @@ export function PracticeWorkspace({
       data-audible-occurrence-id={audibleCurrentOccurrenceId}
       data-continuous-playback={continuousPlayback}
       data-ramp-practice={rampPractice}
+      data-lyric-size={preferences.textSize}
     >
       <div className="practice-layout">
         <div className="practice-lyrics-column">
@@ -370,9 +383,14 @@ export function PracticeWorkspace({
                 <p className="eyebrow">当前学习段 / {String(unitIndex + 1).padStart(2, '0')}</p>
                 <h2 id="practice-unit-title">{currentUnit.label}</h2>
               </div>
-              <p className="practice-unit-count">
-                {currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句
-              </p>
+              <div className="practice-unit-heading-tools">
+                <p className="practice-unit-count">
+                  {currentOccurrenceIndex + 1} / {currentUnitOccurrences.length} 句
+                </p>
+                <LyricDisplayPreferencesControls
+                  onBeforeChange={preserveLyricAnchor}
+                />
+              </div>
             </header>
             <ol className="practice-lyric-list">
               {currentUnitOccurrences.map((assembledOccurrence, index) => (
@@ -381,6 +399,8 @@ export function PracticeWorkspace({
                   assembledOccurrence={assembledOccurrence}
                   lyricNumber={index + 1}
                   isCurrent={assembledOccurrence.occurrence.id === visibleCurrentOccurrenceId}
+                  translationVisible={preferences.translationVisible}
+                  romajiVisible={preferences.romajiVisible}
                   onPlay={() => handleOccurrenceClick(assembledOccurrence.occurrence.id)}
                 />
               ))}
@@ -390,7 +410,12 @@ export function PracticeWorkspace({
 
       </div>
 
-      <aside ref={dockRef} className="practice-controls practice-dock" aria-label="练习控制">
+      <aside
+        ref={dockRef}
+        className="practice-controls practice-dock"
+        aria-label="练习控制"
+        data-more-controls-expanded={moreControlsExpanded}
+      >
         <div className="practice-dock-topline">
           <button
             className="practice-player-button practice-context-navigation"
@@ -423,6 +448,33 @@ export function PracticeWorkspace({
           </button>
         </div>
         <div className="practice-dock-primary">
+          <button
+            className="practice-player-button practice-play-button"
+            type="button"
+            onClick={togglePlayback}
+            disabled={!playback.engine}
+          >
+            {playback.audioState.status === 'playing' ? '暂停' : '播放'}
+          </button>
+          <button
+            className="practice-player-button practice-dock-more-toggle"
+            type="button"
+            aria-expanded={moreControlsExpanded}
+            aria-controls="practice-dock-more-controls"
+            aria-label={`更多控制，当前速度 ${playbackRate.toFixed(2)} 倍，连续播放${continuousPlayback ? '开启' : '关闭'}，渐速练习${rampPractice ? '开启' : '关闭'}`}
+            onClick={() => setMoreControlsExpanded((value) => !value)}
+          >
+            <span>更多</span>
+            <span className="practice-dock-more-status" aria-hidden="true">
+              {playbackRate.toFixed(2)}× · {continuousPlayback ? '连续' : '单句'}{rampPractice ? ' · 渐速' : ''}
+            </span>
+          </button>
+        </div>
+        <div
+          id="practice-dock-more-controls"
+          className="practice-dock-secondary"
+          data-expanded={moreControlsExpanded}
+        >
           <div className="practice-rate-actions" aria-label="播放速度">
             {PRACTICE_SPEEDS.map((speed) => (
               <button
@@ -438,36 +490,28 @@ export function PracticeWorkspace({
               </button>
             ))}
           </div>
-          <button
-            className="practice-player-button practice-play-button"
-            type="button"
-            onClick={togglePlayback}
-            disabled={!playback.engine}
-          >
-            {playback.audioState.status === 'playing' ? '暂停' : '播放'}
-          </button>
-        </div>
-        <div className="practice-dock-modes">
-          <button className="practice-player-button practice-mode-button" type="button" disabled={!playback.engine} onClick={() => currentOccurrence && void playSelection(currentOccurrence.occurrence.id)}>
-            重播
-          </button>
-          <button
-            className="practice-player-button practice-mode-button"
-            type="button"
-            aria-pressed={continuousPlayback}
-            onClick={() => { playback.session?.cancelPractice(); setContinuousPlayback((value) => !value) }}
-          >
-            连续播放
-          </button>
-          <button
-            className="practice-player-button practice-mode-button"
-            type="button"
-            aria-pressed={rampPractice}
-            aria-describedby="practice-ramp-explanation"
-            onClick={() => { playback.session?.cancelPractice(); setRampPractice((value) => !value) }}
-          >
-            渐速练习
-          </button>
+          <div className="practice-dock-modes">
+            <button className="practice-player-button practice-mode-button" type="button" disabled={!playback.engine} onClick={() => currentOccurrence && void playSelection(currentOccurrence.occurrence.id)}>
+              重播
+            </button>
+            <button
+              className="practice-player-button practice-mode-button"
+              type="button"
+              aria-pressed={continuousPlayback}
+              onClick={() => { playback.session?.cancelPractice(); setContinuousPlayback((value) => !value) }}
+            >
+              连续播放
+            </button>
+            <button
+              className="practice-player-button practice-mode-button"
+              type="button"
+              aria-pressed={rampPractice}
+              aria-describedby="practice-ramp-explanation"
+              onClick={() => { playback.session?.cancelPractice(); setRampPractice((value) => !value) }}
+            >
+              渐速练习
+            </button>
+          </div>
         </div>
         <p id="practice-ramp-explanation" className="practice-sr-only">
           开启渐速练习时，播放会按 0.60x、0.80x、1.00x 依次进行；速度按钮仍可设置关闭渐速后的播放速度。
@@ -489,18 +533,24 @@ function PracticeLyricRow({
   assembledOccurrence,
   lyricNumber,
   isCurrent,
+  translationVisible,
+  romajiVisible,
   onPlay,
 }: {
   assembledOccurrence: AssembledOccurrence
   lyricNumber: number
   isCurrent: boolean
+  translationVisible: boolean
+  romajiVisible: boolean
   onPlay: () => void
 }) {
   const { occurrence, segment } = assembledOccurrence
+  const visibleLayers = visibleLyricLayers(segment.layers, romajiVisible)
   return (
     <li
       className={`practice-lyric-row${isCurrent ? ' is-current' : ''}`}
       data-occurrence-id={occurrence.id}
+      data-reading-anchor-id={occurrence.id}
     >
       <div className="practice-lyric-cluster">
         <button
@@ -511,10 +561,12 @@ function PracticeLyricRow({
         >
           <LyricText segment={segment} />
         </button>
-        <p className="practice-translation">{segment.translation}</p>
-        {segment.layers?.length ? (
+        {translationVisible ? (
+          <p className="practice-translation">{segment.translation}</p>
+        ) : null}
+        {visibleLayers?.length ? (
           <div className="practice-readings" aria-label="读音">
-            {segment.layers.map((layer) => (
+            {visibleLayers.map((layer) => (
               <p key={layer.id}>
                 <span>{layer.label}</span> {layer.text}
               </p>

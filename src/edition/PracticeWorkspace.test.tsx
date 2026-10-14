@@ -10,6 +10,7 @@ import {
   type AssembledSongEdition,
 } from '../runtime/song-edition'
 import { PracticeWorkspace } from './PracticeWorkspace'
+import { LyricDisplayPreferencesProvider } from './LyricDisplayPreferences'
 
 const catalogEdition: CatalogEdition = {
   songId: 'first-light',
@@ -72,6 +73,30 @@ const model = assembleRuntimeSongEdition({
   lyrics: {
     segments: [
       { id: 's001', lyrics: 'First line', translation: '第一句' },
+      { id: 's002', lyrics: 'Second line', translation: '第二句' },
+      { id: 's003', lyrics: 'Chorus line', translation: '副歌' },
+    ],
+  },
+  timeline,
+  practice,
+  features: [],
+})
+
+const displayPreferencesModel = assembleRuntimeSongEdition({
+  catalogEdition,
+  edition,
+  lyrics: {
+    segments: [
+      {
+        id: 's001',
+        lyrics: '歌',
+        ruby: [{ start: 0, end: 1, base: '歌', reading: 'うた' }],
+        translation: '第一句译文',
+        layers: [
+          { id: 'romaji', label: 'Romaji', text: 'uta' },
+          { id: 'pitch-guide', label: '音高提示', text: 'low' },
+        ],
+      },
       { id: 's002', lyrics: 'Second line', translation: '第二句' },
       { id: 's003', lyrics: 'Chorus line', translation: '副歌' },
     ],
@@ -167,6 +192,10 @@ describe('PracticeWorkspace 1.0', () => {
     renderWorkspace()
 
     expect(screen.getByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /更多控制，当前速度 1\.00 倍/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
     expect(screen.getByRole('button', { name: '0.60x' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '0.80x' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '1.00x' })).toBeInTheDocument()
@@ -176,18 +205,99 @@ describe('PracticeWorkspace 1.0', () => {
     expect(screen.queryByText('展开练习控制')).not.toBeInTheDocument()
   })
 
-  it('keeps the dock to context, primary, and mode rows with accessible ramp guidance', () => {
+  it('expands and collapses secondary controls without changing Practice playback state', () => {
+    const engine = createFakeEngine()
+    renderWorkspace(engine)
+    const before = engine.getState()
+    const more = screen.getByRole('button', { name: /更多控制/ })
+
+    fireEvent.click(more)
+    expect(more).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: '重播' })).toBeInTheDocument()
+    fireEvent.click(more)
+    expect(more).toHaveAttribute('aria-expanded', 'false')
+    expect(engine.getState()).toEqual(before)
+    expect(engine.playRangeUntilComplete).not.toHaveBeenCalled()
+  })
+
+  it('applies independent display preferences without changing playback or Practice state', () => {
+    const engine = createFakeEngine()
+    const { container } = renderWorkspace(engine, { model: displayPreferencesModel })
+    const initialState = engine.getState()
+    const initialLoads = engine.loadSource.mock.calls.length
+    const initialNonDisplayStorage = snapshotLocalStorage().filter(
+      (entry) => !entry.startsWith('red-repeat:lyric-display-preferences:v1:'),
+    )
+
+    expect(screen.getByText('第一句译文')).toBeInTheDocument()
+    expect(screen.getByText('Romaji')).toBeInTheDocument()
+    expect(screen.getByText('uta')).toBeInTheDocument()
+    expect(screen.getByText('音高提示')).toBeInTheDocument()
+    expect(screen.getByText('low')).toBeInTheDocument()
+    expect(screen.getByText('うた')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('歌词显示'))
+    fireEvent.click(screen.getByRole('checkbox', { name: '显示翻译' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '显示 Romaji' }))
+    fireEvent.click(screen.getByRole('radio', { name: '大' }))
+
+    expect(screen.queryByText('第一句译文')).not.toBeInTheDocument()
+    expect(screen.queryByText('uta')).not.toBeInTheDocument()
+    expect(screen.getByText('音高提示')).toBeInTheDocument()
+    expect(screen.getByText('low')).toBeInTheDocument()
+    expect(screen.getByText('うた')).toBeInTheDocument()
+    expect(container.querySelector('.practice-workspace')).toHaveAttribute(
+      'data-lyric-size',
+      'large',
+    )
+    expect(engine.getState()).toEqual(initialState)
+    expect(engine.loadSource).toHaveBeenCalledTimes(initialLoads)
+    expect(engine.playRangeUntilComplete).not.toHaveBeenCalled()
+    expect(
+      snapshotLocalStorage().filter(
+        (entry) => !entry.startsWith('red-repeat:lyric-display-preferences:v1:'),
+      ),
+    ).toEqual(initialNonDisplayStorage)
+  })
+
+  it('preserves the visible lyric anchor when a display preference changes', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        if (this.hasAttribute('data-reading-anchor-id')) {
+          const hidden = window.localStorage.getItem(
+            'red-repeat:lyric-display-preferences:v1',
+          )?.includes('"translationVisible":false')
+          const top = hidden ? 230 : 200
+          return { top, bottom: top + 50, height: 50 } as DOMRect
+        }
+        return { top: 0, bottom: 0, height: 0 } as DOMRect
+      },
+    )
+
+    renderWorkspace()
+    fireEvent.click(screen.getByText('歌词显示'))
+    fireEvent.click(screen.getByRole('checkbox', { name: '显示翻译' }))
+
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 30, behavior: 'auto' })
+  })
+
+  it('keeps common actions compact and preserves all secondary controls', () => {
     const { container } = renderWorkspace()
     const dock = container.querySelector('.practice-dock')
 
     expect(dock).not.toBeNull()
     expect(dock).not.toHaveClass('control-sheet')
-    expect(dock?.querySelectorAll('.practice-player-button')).toHaveLength(9)
+    expect(dock?.querySelectorAll('.practice-player-button')).toHaveLength(10)
     expect(container.querySelector('.practice-segment-picker-layer')).toBeNull()
     expect(screen.getByRole('button', { name: '播放第 01 句' })).not.toHaveClass('control-button')
     expect(dock?.querySelector('.practice-dock-navigation')).toBeNull()
     expect(dock?.querySelector('.practice-dock-topline')).toBeInTheDocument()
     expect(dock?.querySelector('.practice-dock-primary .practice-play-button')).toBeInTheDocument()
+    expect(dock?.querySelector('.practice-dock-secondary')).toHaveAttribute(
+      'data-expanded',
+      'false',
+    )
     expect(dock?.querySelectorAll('.practice-rate-actions .practice-player-button')).toHaveLength(3)
     expect(dock?.querySelector('.practice-dock-modes')).toBeInTheDocument()
     expect(dock?.querySelectorAll('.practice-dock-modes .practice-player-button')).toHaveLength(3)
@@ -582,12 +692,14 @@ function renderWorkspace(
   } as unknown as RuntimeClient
   const { model: workspaceModel = model, ...workspaceProps } = props
   return render(
-    <PracticeWorkspace
-      model={workspaceModel}
-      runtimeClient={runtimeClient}
-      audioEngine={engine}
-      {...workspaceProps}
-    />,
+    <LyricDisplayPreferencesProvider>
+      <PracticeWorkspace
+        model={workspaceModel}
+        runtimeClient={runtimeClient}
+        audioEngine={engine}
+        {...workspaceProps}
+      />
+    </LyricDisplayPreferencesProvider>,
   )
 }
 
@@ -618,6 +730,7 @@ function createFakeEngine() {
     update,
   }
   return engine as unknown as AudioEngine & {
+    loadSource: ReturnType<typeof vi.fn>
     playRangeUntilComplete: ReturnType<typeof vi.fn>
     setPlaybackRate: ReturnType<typeof vi.fn>
     update: (next: Partial<AudioEngineState>) => void

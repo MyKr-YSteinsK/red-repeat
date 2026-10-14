@@ -21,6 +21,12 @@ import { LyricText } from './LyricText'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import { useSessionViewState } from './song-playback-context'
 import type { SongPlaybackSession } from './song-playback-session'
+import {
+  LyricDisplayPreferencesControls,
+  useLyricAnchorPreservation,
+  useLyricDisplayPreferences,
+  visibleLyricLayers,
+} from './LyricDisplayPreferences'
 
 export interface FullSongWorkspaceProps {
   model: AssembledSongEdition
@@ -39,11 +45,19 @@ export function FullSongWorkspace({
   const [selectedOccurrenceId, setSelectedOccurrenceId] = useSessionViewState<string | undefined>('full.occurrence', undefined)
   const [selectedSectionId, setSelectedSectionId] = useSessionViewState<string | undefined>('full.section', undefined)
   const [followLyrics, setFollowLyrics] = useSessionViewState('full.follow', true)
+  const [hasVisitedFullSong, setHasVisitedFullSong] = useSessionViewState('full.hasVisited', false)
   const [message, setMessage] = useState<string>()
-  const [skipAutoFollowOccurrenceId, setSkipAutoFollowOccurrenceId] =
-    useState<string>()
+  const [skipAutoFollowOccurrenceId, setSkipAutoFollowOccurrenceId] = useState<
+    string | undefined
+  >(() => hasVisitedFullSong ? playback.resolution.primaryOccurrence?.id : undefined)
   const [pendingPlaybackStartOccurrenceId, setPendingPlaybackStartOccurrenceId] =
     useState<string>()
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const { preferences } = useLyricDisplayPreferences()
+  const preserveLyricAnchor = useLyricAnchorPreservation(
+    workspaceRef,
+    preferences,
+  )
   const practiceIndex = useMemo(
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
@@ -63,6 +77,69 @@ export function FullSongWorkspace({
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
   const isPlaying = playback.audioState.status === 'playing'
+
+  useEffect(() => {
+    if (!hasVisitedFullSong) setHasVisitedFullSong(true)
+  }, [hasVisitedFullSong, setHasVisitedFullSong])
+
+  const stopFollowingLyrics = useCallback((): void => {
+    setSkipAutoFollowOccurrenceId(undefined)
+    setPendingPlaybackStartOccurrenceId(undefined)
+    setFollowLyrics(false)
+  }, [setFollowLyrics])
+
+  useEffect(() => {
+    const scrollKeys = new Set([
+      'ArrowDown',
+      'ArrowUp',
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      ' ',
+    ])
+    const pageScrollKeys = new Set([
+      'ArrowDown',
+      'ArrowUp',
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+    ])
+    const isInteractiveTarget = (target: EventTarget | null): boolean =>
+      target instanceof Element &&
+      Boolean(
+        target.closest(
+          'a, button, input, select, textarea, summary, [contenteditable="true"]',
+        ),
+      )
+    const isTextEntryTarget = (target: EventTarget | null): boolean =>
+      target instanceof Element &&
+      Boolean(target.closest('input, select, textarea, [contenteditable="true"]'))
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const shouldTrackPageScroll =
+        pageScrollKeys.has(event.key)
+          ? !isTextEntryTarget(event.target)
+          : !isInteractiveTarget(event.target)
+      if (scrollKeys.has(event.key) && shouldTrackPageScroll) {
+        stopFollowingLyrics()
+      }
+    }
+    const onPointerDown = (event: PointerEvent): void => {
+      if (isInteractiveTarget(event.target)) return
+      const root = document.documentElement
+      const scrollbarWidth = window.innerWidth - root.clientWidth
+      const scrollbarStart = scrollbarWidth > 0 ? root.clientWidth : window.innerWidth - 12
+      if (event.clientX >= scrollbarStart) stopFollowingLyrics()
+    }
+
+    window.addEventListener('keydown', onKeyDown, true)
+    window.addEventListener('pointerdown', onPointerDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true)
+      window.removeEventListener('pointerdown', onPointerDown, true)
+    }
+  }, [stopFollowingLyrics])
 
   const handleSelectSection = useCallback(
     (section: Section): void => {
@@ -196,8 +273,10 @@ export function FullSongWorkspace({
 
   return (
     <section
+      ref={workspaceRef}
       className="full-song-workspace"
       aria-label="全曲歌词"
+      data-lyric-size={preferences.textSize}
       data-current-section-id={playback.resolution.currentSection?.id}
       data-selected-occurrence-id={visibleSelectedOccurrenceId}
       data-selected-section-id={visibleSelectedSectionId}
@@ -208,19 +287,24 @@ export function FullSongWorkspace({
           <p className="eyebrow">全曲</p>
           <h2>跟着整首歌走。</h2>
         </div>
-        {!followLyrics ? (
-          <button
-            className="full-song-return-current"
-            type="button"
-            onClick={() => {
-              setSkipAutoFollowOccurrenceId(undefined)
-              setPendingPlaybackStartOccurrenceId(undefined)
-              setFollowLyrics(true)
-            }}
-          >
-            回到当前句
-          </button>
-        ) : null}
+        <div className="full-song-heading-actions">
+          <LyricDisplayPreferencesControls
+            onBeforeChange={preserveLyricAnchor}
+          />
+          {!followLyrics ? (
+            <button
+              className="full-song-return-current"
+              type="button"
+              onClick={() => {
+                setSkipAutoFollowOccurrenceId(undefined)
+                setPendingPlaybackStartOccurrenceId(undefined)
+                setFollowLyrics(true)
+              }}
+            >
+              回到当前句
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="full-song-layout">
@@ -236,12 +320,10 @@ export function FullSongWorkspace({
               : undefined
           }
           followLyrics={followLyrics}
-          onManualBrowse={() => {
-            setSkipAutoFollowOccurrenceId(undefined)
-            setPendingPlaybackStartOccurrenceId(undefined)
-            setFollowLyrics(false)
-          }}
+          onManualBrowse={stopFollowingLyrics}
           suppressAutoFollowOccurrenceId={skipAutoFollowOccurrenceId}
+          translationVisible={preferences.translationVisible}
+          romajiVisible={preferences.romajiVisible}
           practiceIndex={practiceIndex}
           onSelectOccurrence={handleSelectOccurrence}
           onReplayOccurrence={handleReplayOccurrence}
@@ -278,6 +360,8 @@ interface FullSongLyricsProps {
   followLyrics: boolean
   onManualBrowse: () => void
   suppressAutoFollowOccurrenceId?: string
+  translationVisible: boolean
+  romajiVisible: boolean
   practiceIndex: PracticeIndex
   onSelectOccurrence: (occurrence: AssembledOccurrence) => void
   onReplayOccurrence: (occurrence: AssembledOccurrence) => void
@@ -295,6 +379,8 @@ function FullSongLyrics({
   followLyrics,
   onManualBrowse,
   suppressAutoFollowOccurrenceId,
+  translationVisible,
+  romajiVisible,
   practiceIndex,
   onSelectOccurrence,
   onReplayOccurrence,
@@ -326,12 +412,25 @@ function FullSongLyrics({
     }
 
     const element = occurrenceElements.current.get(primaryOccurrenceId)
-    if (!element || typeof element.scrollIntoView !== 'function') {
+    if (!element) {
       return
     }
 
-    element.scrollIntoView({
-      block: 'center',
+    const rect = element.getBoundingClientRect()
+    if (rect.height <= 0) return
+    const readable = getReadableViewport()
+    const margin = 16
+    if (
+      rect.top >= readable.top + margin &&
+      rect.bottom <= readable.bottom - margin
+    ) return
+
+    const availableHeight = Math.max(0, readable.bottom - readable.top)
+    const desiredTop = rect.height > availableHeight - margin * 2
+      ? readable.top + margin
+      : readable.top + Math.max(margin, (availableHeight - rect.height) / 2)
+    window.scrollTo({
+      top: Math.max(0, window.scrollY + rect.top - desiredTop),
       behavior: prefersReducedMotion() ? 'auto' : 'smooth',
     })
   }, [followLyrics, primaryOccurrenceId, suppressAutoFollowOccurrenceId])
@@ -378,6 +477,8 @@ function FullSongLyrics({
                   activeOccurrenceIds={activeOccurrenceIds}
                   primaryOccurrenceId={primaryOccurrenceId}
                   selectedOccurrenceId={selectedOccurrenceId}
+                  translationVisible={translationVisible}
+                  romajiVisible={romajiVisible}
                   hasPracticeUnit={practiceIndex.unitIdByOccurrenceId.has(
                     assembledOccurrence.occurrence.id,
                   )}
@@ -411,6 +512,8 @@ function FullSongOccurrence({
   activeOccurrenceIds,
   primaryOccurrenceId,
   selectedOccurrenceId,
+  translationVisible,
+  romajiVisible,
   hasPracticeUnit,
   refCallback,
   onSelect,
@@ -421,6 +524,8 @@ function FullSongOccurrence({
   activeOccurrenceIds: ReadonlySet<string>
   primaryOccurrenceId?: string
   selectedOccurrenceId?: string
+  translationVisible: boolean
+  romajiVisible: boolean
   hasPracticeUnit: boolean
   refCallback: (element: HTMLElement | null) => void
   onSelect: (occurrence: AssembledOccurrence) => void
@@ -428,6 +533,7 @@ function FullSongOccurrence({
   onStartPractice?: (occurrence: AssembledOccurrence) => void
 }) {
   const { occurrence, segment } = assembledOccurrence
+  const visibleLayers = visibleLyricLayers(segment.layers, romajiVisible)
   const isActive = activeOccurrenceIds.has(occurrence.id)
   const isPrimary = primaryOccurrenceId === occurrence.id
   const isSelected = selectedOccurrenceId === occurrence.id
@@ -446,6 +552,7 @@ function FullSongOccurrence({
       ref={refCallback}
       className={className}
       data-occurrence-id={occurrence.id}
+      data-reading-anchor-id={occurrence.id}
       data-active-kind={isPrimary ? 'primary' : isActive ? 'secondary' : 'none'}
       aria-current={isPrimary ? 'true' : undefined}
     >
@@ -458,10 +565,12 @@ function FullSongOccurrence({
         >
           <LyricText segment={segment} />
         </button>
-        <p className="full-song-translation">{segment.translation}</p>
-        {segment.layers?.length ? (
+        {translationVisible ? (
+          <p className="full-song-translation">{segment.translation}</p>
+        ) : null}
+        {visibleLayers?.length ? (
           <div className="full-song-reading" aria-label="读音">
-            {segment.layers.map((layer) => (
+            {visibleLayers.map((layer) => (
               <p key={layer.id}>
                 <span>{layer.label}</span>
                 {layer.text}
@@ -596,6 +705,30 @@ function FullSongPlayer({
       </div>
     </aside>
   )
+}
+
+function getReadableViewport(): { top: number; bottom: number } {
+  const visualHeight = Math.min(
+    window.innerHeight,
+    window.visualViewport?.height ?? window.innerHeight,
+  )
+  let top = 0
+  const nav = document.querySelector<HTMLElement>('.practice-page-tools')
+  if (nav) {
+    const rect = nav.getBoundingClientRect()
+    const stickyTop = Number.parseFloat(getComputedStyle(nav).top) || 0
+    if (rect.top <= stickyTop + 1 && rect.bottom > 0) {
+      top = Math.max(0, rect.bottom)
+    }
+  }
+
+  let bottom = visualHeight
+  const player = document.querySelector<HTMLElement>('.full-song-player')
+  if (player && getComputedStyle(player).position === 'fixed') {
+    const playerTop = player.getBoundingClientRect().top
+    if (playerTop > 0) bottom = Math.min(bottom, playerTop)
+  }
+  return { top, bottom: Math.max(top, bottom) }
 }
 
 function formatPlayerTime(timeMs: number): string {
