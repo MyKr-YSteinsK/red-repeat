@@ -336,7 +336,11 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 
 - Status: Accepted
 - Source: `USER_DECISION` (2026-10-13)
-- Implementation: Partial — A1–A5 completed under `RED-Plan-65`; B1–B5 implemented under `RED-Plan-66`; C1–C5 implemented under `RED-Plan-67`; D1–D5 implemented under `RED-Plan-68`; E remains pending. F3 remains excluded.
+- Implementation: Partial — A1–A5 completed under `RED-Plan-65`; B1–B5
+  implemented under `RED-Plan-66`; C1–C5 implemented under `RED-Plan-67`;
+  D1–D5 implemented under `RED-Plan-68`; E has a measured Full Song scrub
+  optimization under `RED-Plan-69`, with other performance candidates not
+  implemented. F3 remains excluded.
 
 用户已批准按 A–E 工作包推进体验升级方向；这项批准定义产品方向，不代表所有
 工作包的实现已经启动，也不自动批准未在具体任务中授权的实现范围或技术架构。

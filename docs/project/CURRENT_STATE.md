@@ -11,13 +11,14 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.19.0`. This metadata prepares the
+- Current package/ledger user version: `1.19.1`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.19.0` / `v1.19.0 -> d8f0d5f` (product commit
+- Latest ledger/prepared tag: `1.19.1` / `v1.19.1 -> 40b0b73` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
-  build identity. Existing `v1.16.0 -> a863d57`, `v1.15.0 -> 19e45d1`,
+  build identity. Existing `v1.19.0 -> d8f0d5f`, `v1.16.0 -> a863d57`,
+  `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
   `v1.13.1 -> 9bfd6ab`,
   `v1.13.0 -> e102189`,
@@ -969,6 +970,49 @@ uses the separately authorized task-input source package.
   remain governed by D-013/D-016 and are not reopened by this content change.
 
 ## Current work / Next action
+
+- No formal RED-Plan is active. `RED-Plan-69` R1 closes the Chinese delivery
+  contract and one measured Full Song scrub improvement in the `1.19.1` PATCH;
+  product commit `40b0b7303be477cd5532b138f77f6dbb672fee49` is the annotated
+  tag target. The following release-metadata commit is the independent build
+  identity. Push, CI, Pages and production identity are verified at delivery.
+- `AGENTS.md` now defaults user-facing reports and Plan/report headings to
+  Chinese, records the active `SongPlaybackSession` owner and current
+  D-024/D-026 behavior, and preserves targeted verification with all matching
+  high-risk gates. The proposed `SongRepository`/`ResourceScheduler` remain
+  unimplemented; no broader architecture was adopted.
+- E measurement used the Codex In-app Browser (`Chrome/155.0.0.0` UA) at
+  `127.0.0.1:5174`, viewport `390×843`, without Service Worker control, on
+  `night-dancer-imase`. Each measured action began after the same hashed audio
+  asset was loaded in the current page; this was not a downloaded-snapshot or
+  installed-PWA test. The temporary media counter muted the element, so no
+  listening claim is made. The canonical source audio SHA-256 is
+  `373393efa184640fab23dee91bc1a691094003f6ac42bb082bf21d0de29dc9e3`; its
+  loaded runtime asset URL contains `f8d5760c50e4678052040445e395825cdd5739d641f73ec4378f9d89ea50c5b5`.
+  Three baseline drags (two direct UI drags and one controlled CDP drag) each
+  produced 8 `input` events and one final `change`, causing 9 seek/time writes
+  and 9 pause/play calls. Three controlled after samples produced the same
+  input events but only one seek/time write and one pause/play call; a further
+  direct UI drag confirmed the same 9-to-1 reduction. Harness pointer timings
+  varied and are not INP or perceptual latency evidence. Final position,
+  playing/paused intent and `1.0x` rate were checked; keyboard step seeking
+  remained immediate.
+- `useAudioProgress` was not separately profiled: equal snapshots are
+  suppressed, its subscription belongs to the compact player, and its focused
+  test verifies the lyric tree does not rerender per playback frame. The
+  loader checks the active downloaded snapshot before reusing a warm core, and
+  Explain Features remain on-demand; source review found no reason to expand
+  these candidates into separate measurements in this task.
+- D-024/D-026 remain implemented; D-025 A–D are complete, E is partially
+  implemented by this measured scrub change, and F3 remains excluded. Real
+  iOS/Safari touch, human listening and installed-PWA adoption were not run and
+  remain `POST-DEPLOY OBSERVATION`. The existing untracked documents and
+  `public/library-runtime.tmp-11104/` remain untouched.
+
+## Previous completion record (RED-Plan-68/R1)
+
+The following entries describe the Plan-68 closeout and remain historical
+evidence; current release identity and Plan status are recorded above.
 
 - `RED-Plan-68` R1 implements D1–D5 on `main`, based on
   `e64571f708c51ed59094f6749116e1263455accb`. The focused product commit is

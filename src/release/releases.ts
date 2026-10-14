@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.19.1',
+    date: '2026-10-14',
+    commit: '40b0b73',
+    level: 'patch',
+    title: '全曲进度拖动优化',
+    summary: '拖动全曲进度条时先预览目标位置，松开后再定位一次，避免播放过程中反复中断恢复。',
+    changes: [
+      '指针拖动期间只更新预览位置，释放后按最终位置一次性定位；播放时继续播放，暂停时保持暂停。',
+      '键盘方向键仍逐步立即定位，播放速度沿用当前设置。',
+    ],
+  },
+  {
     version: '1.19.0',
     date: '2026-10-14',
     commit: 'd8f0d5f',
