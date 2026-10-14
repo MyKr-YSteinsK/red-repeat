@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import {
   type AudioEngine,
 } from '../audio/audio-engine'
@@ -675,11 +683,18 @@ function FullSongPlayer({
   onReset: () => void
 }) {
   const progress = useAudioProgress(engine)
+  const [scrubDraftMs, setScrubDraftMs] = useState<number>()
+  const pointerScrubRef = useRef<{
+    pointerId: number
+    startMs: number
+    currentMs: number
+  } | null>(null)
   const durationMs = progress.durationMs ?? model.edition.audio.durationMs
   const currentTimeMs = Math.min(
     Math.max(0, progress.currentTimeMs),
     durationMs,
   )
+  const displayedTimeMs = scrubDraftMs ?? currentTimeMs
   const isPlaying = progress.status === 'playing'
 
   const togglePlayback = (): void => {
@@ -699,7 +714,53 @@ function FullSongPlayer({
     if (!engine || durationMs <= 0) {
       return
     }
-    void session?.seek(Math.min(Math.max(0, timeMs), durationMs)).catch(() => undefined)
+    const targetMs = Math.min(Math.max(0, timeMs), durationMs)
+    setScrubDraftMs(targetMs)
+    const pendingSeek = session?.seek(targetMs)
+    if (!pendingSeek) {
+      setScrubDraftMs(undefined)
+      return
+    }
+    void pendingSeek
+      .catch(() => undefined)
+      .finally(() => {
+        setScrubDraftMs((current) => current === targetMs ? undefined : current)
+      })
+  }
+
+  const beginPointerScrub = (event: ReactPointerEvent<HTMLInputElement>): void => {
+    if (!engine || durationMs <= 0) return
+    pointerScrubRef.current = {
+      pointerId: event.pointerId,
+      startMs: currentTimeMs,
+      currentMs: currentTimeMs,
+    }
+    setScrubDraftMs(currentTimeMs)
+  }
+
+  const updateProgressInput = (event: FormEvent<HTMLInputElement>): void => {
+    const timeMs = Math.min(
+      Math.max(0, Number(event.currentTarget.value)),
+      durationMs,
+    )
+    const pointerScrub = pointerScrubRef.current
+    if (pointerScrub) {
+      pointerScrub.currentMs = timeMs
+      setScrubDraftMs(timeMs)
+      return
+    }
+    seek(timeMs)
+  }
+
+  const finishPointerScrub = (event: ReactPointerEvent<HTMLInputElement>): void => {
+    const pointerScrub = pointerScrubRef.current
+    if (!pointerScrub || pointerScrub.pointerId !== event.pointerId) return
+    pointerScrubRef.current = null
+    if (pointerScrub.currentMs === pointerScrub.startMs) {
+      setScrubDraftMs(undefined)
+    } else {
+      seek(pointerScrub.currentMs)
+    }
   }
 
   const setRate = (rate: (typeof PRACTICE_PLAYBACK_RATES)[number]): void => {
@@ -715,7 +776,7 @@ function FullSongPlayer({
       <div className="full-song-player-topline">
         <span>全曲播放</span>
         <span>
-          {formatPlayerTime(currentTimeMs)} / {formatPlayerTime(durationMs)}
+          {formatPlayerTime(displayedTimeMs)} / {formatPlayerTime(durationMs)}
         </span>
       </div>
       <input
@@ -724,10 +785,13 @@ function FullSongPlayer({
         min="0"
         max={durationMs}
         step="100"
-        value={currentTimeMs}
+        value={displayedTimeMs}
         aria-label="播放进度"
         disabled={!engine || durationMs <= 0}
-        onChange={(event) => seek(Number(event.currentTarget.value))}
+        onInput={updateProgressInput}
+        onPointerDown={beginPointerScrub}
+        onPointerUp={finishPointerScrub}
+        onPointerCancel={finishPointerScrub}
       />
       <div className="full-song-player-context">
         <span>当前段：{sectionLabel}</span>

@@ -542,7 +542,7 @@ describe('FullSongWorkspace', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '播放' }))
     await waitFor(() => expect(engine.getState().status).toBe('playing'))
-    fireEvent.change(progress, { target: { value: '900' } })
+    fireEvent.input(progress, { target: { value: '900' } })
     await waitFor(() => {
       expect(engine.getState()).toMatchObject({
         status: 'playing',
@@ -559,6 +559,47 @@ describe('FullSongWorkspace', () => {
     expect(window.localStorage.getItem('red-repeat:practice-rate:v1:first-light')).toBe(
       '0.8',
     )
+  })
+
+  it('commits pointer scrubbing once while keeping keyboard seeking immediate', async () => {
+    const { engine } = renderWorkspace()
+    await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+    const progress = screen.getByRole('slider', { name: '播放进度' })
+    const media = mediaFor(engine)
+    const seek = vi.spyOn(engine, 'seek')
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(engine.getState().status).toBe('playing'))
+    const playsBeforeScrub = media.play.mock.calls.length
+    const pausesBeforeScrub = media.pause.mock.calls.length
+
+    fireEvent.pointerDown(progress, { pointerId: 7, pointerType: 'mouse' })
+    fireEvent.input(progress, { target: { value: '500' } })
+    fireEvent.input(progress, { target: { value: '1000' } })
+    fireEvent.input(progress, { target: { value: '1500' } })
+
+    expect(seek).not.toHaveBeenCalled()
+    expect(engine.getState().status).toBe('playing')
+    expect(media.play).toHaveBeenCalledTimes(playsBeforeScrub)
+    expect(media.pause).toHaveBeenCalledTimes(pausesBeforeScrub)
+    expect(progress).toHaveValue('1500')
+
+    fireEvent.pointerUp(progress, { pointerId: 7, pointerType: 'mouse' })
+    fireEvent.change(progress, { target: { value: '1500' } })
+    await waitFor(() => {
+      expect(seek).toHaveBeenCalledTimes(1)
+      expect(engine.getState()).toMatchObject({
+        status: 'playing',
+        currentTimeMs: 1500,
+      })
+    })
+    expect(seek).toHaveBeenLastCalledWith(1500)
+    expect(media.play).toHaveBeenCalledTimes(playsBeforeScrub + 1)
+    expect(media.pause).toHaveBeenCalledTimes(pausesBeforeScrub + 1)
+
+    fireEvent.input(progress, { target: { value: '900' } })
+    await waitFor(() => expect(seek).toHaveBeenCalledTimes(2))
+    expect(seek).toHaveBeenLastCalledWith(900)
   })
 
   it('follows playback only when the active occurrence leaves the readable viewport', async () => {
@@ -619,7 +660,7 @@ describe('FullSongWorkspace', () => {
       await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
       fireEvent.click(screen.getByRole('button', { name: '播放' }))
       await waitFor(() => expect(engine.getState().status).toBe('playing'))
-      fireEvent.change(screen.getByRole('slider', { name: '播放进度' }), {
+      fireEvent.input(screen.getByRole('slider', { name: '播放进度' }), {
         target: { value: '900' },
       })
       await waitFor(() => expect(engine.getState().currentTimeMs).toBe(900))
