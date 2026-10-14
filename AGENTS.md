@@ -20,9 +20,10 @@ runtime Skills and should not be duplicated here.
   budgets in `docs/reviews/` are proposals, not implementation authority or
   permission. User approval authorizes the stated direction, not a claim that it
   is implemented: keep approved goals separate from current behavior, and do not
-  install a target architecture through documentation maintenance. For example,
-  approved cross-mode playback continuity remains future behavior until
-  implemented and recorded through the applicable decision process.
+  install a target architecture through documentation maintenance. D-024
+  cross-mode playback continuity and the scoped D-026 Catalog/preview behavior
+  are implemented under RED-Plan-65/66; approval of these behaviors does not
+  authorize broader playback architecture.
 - Keep migration/documentation work separate from product behavior. Do not use
   a documentation task to change product code, content, schema, PWA lifecycle,
   release behavior or deployment topology.
@@ -50,16 +51,20 @@ runtime Skills and should not be duplicated here.
   `src/runtime/song-edition-loader.ts`; `src/runtime/runtime-client.ts` owns
   runtime fetching and parsed document validation. Current route and Catalog
   behavior is split between `src/navigation.ts` and `src/App.tsx`.
-- `src/audio/audio-engine.ts` owns the shared media instance; the active
-  workspace playback integration is `src/edition/use-song-edition-playback.ts`
-  with timeline semantics in `src/timeline/*`. Practice UI commands live in
-  `src/edition/PracticeWorkspace.tsx`, with persisted Practice state in
+- `src/audio/audio-engine.ts` owns the shared media instance;
+  `src/edition/song-playback-session.ts` owns active song-level playback
+  commands and cross-mode continuity, integrated through
+  `src/edition/use-song-edition-playback.ts` with timeline semantics in
+  `src/timeline/*`. `src/edition/PracticeWorkspace.tsx` is the current Practice
+  command adapter, with persisted Practice state in
   `src/practice/practice-state.ts`. The retained
   `src/practice/practice-controller.ts`,
   `src/practice/practice-playback-session.ts` and
   `src/edition/use-practice-controller.ts` are not the current Practice UI main
-  path and do not define its behavior. Proposed `SongRepository`,
-  `PlaybackSession` and `ResourceScheduler` owners are not current components.
+  path and do not define its behavior. `SongRepository` and
+  `ResourceScheduler` remain proposed, unimplemented owners; the active
+  `SongPlaybackSession` does not imply a broader proposed `PlaybackSession`
+  architecture.
 - `src/pwa/song-download.ts` owns complete downloaded-song transactions and
   their manifests; `src/pwa/runtime-cache.ts` and `src/pwa/cache-routes.ts` own
   runtime cache/warmup paths. `src/pwa/update-manager.ts`,
@@ -113,6 +118,10 @@ runtime Skills and should not be duplicated here.
 - Select checks for the changed boundary. `npm run build` already runs
   `library:compile`, `tsc -b` and the Vite build, so duplicate standalone checks
   are not ritual requirements.
+- Run matching focused tests and the shortest useful browser path locally;
+  rely on the final `main` CI for its full quality regression instead of
+  repeating the same full suite locally. This does not waive matching
+  high-risk data, identity, audio, PWA lifecycle or release gates.
 - Source/content/schema/compiler changes use the matching library validation,
   audio-identity, compile and build oracles. PWA/build changes use artifact
   inspection; release/deployment changes use the matching identity checks.
@@ -186,16 +195,16 @@ runtime Skills and should not be duplicated here.
 
 ## Delivery and reporting conventions
 
-- Delivery reports default to Chinese prose, including `TASK_RESULT`, Plan/Task
-  summaries, changes, verification, risks, deviations, residual risks,
-  recommendations and USER CHECK notes. Keep paths, branches, tags, SHAs,
+- Unless the user requests another language, user-facing replies, `TASK_RESULT`,
+  Plans, reviews, acceptance notes and release reports use Chinese prose by
+  default. Formal Plan H1 titles use `# RED-Plan-<n> — 中文标题`; report H1/H2
+  headings use Chinese without an automatically appended English translation
+  or `｜English Title`. Keep paths, branches, tags, SHAs,
   versions, commands, identifiers, APIs, URLs/routes, schema fields, test
   names, status enums, formal third-party names, original error messages and
   exact quotations in their precise original form.
-  Formal report H1 and primary H2 headings default to
-  `中文｜English`; new Plan filenames and numbering stay unchanged, while Plan
-  H1 titles default to `# RED-Plan-<n> — 中文标题｜English Title`. Explicit user,
-  Plan or quotation-format requirements take precedence.
+  New Plan filenames and numbering stay unchanged. Explicit user or quotation-
+  format requirements take precedence.
 
 ## Stop conditions
 
