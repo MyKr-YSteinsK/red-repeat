@@ -6,6 +6,7 @@ import {
   type ValidationResult,
 } from './diagnostics'
 import {
+  CATALOG_COVER_MAX_WIDTH,
   compileAudio,
   compileArtwork,
   COVER_LARGE_MAX_WIDTH,
@@ -212,6 +213,15 @@ async function compileSongPackage(options: {
     variant: 'cover-small',
     maxWidth: COVER_SMALL_MAX_WIDTH,
   })
+  // Keep the existing hash-addressed cover-small URL class so downloaded
+  // snapshots and the service-worker runtime route continue to recognize it.
+  const catalogCover = await compileArtwork({
+    sourcePath: coverSource,
+    destinationDirectory: songOutputRoot,
+    cacheRoot: options.cacheRoot,
+    variant: 'cover-small',
+    maxWidth: CATALOG_COVER_MAX_WIDTH,
+  })
   const coverLarge = await compileArtwork({
     sourcePath: coverSource,
     destinationDirectory: songOutputRoot,
@@ -298,7 +308,7 @@ async function compileSongPackage(options: {
       artist: manifest.artist,
       ...(manifest.album ? { album: manifest.album } : {}),
       ...(manifest.year !== undefined ? { year: manifest.year } : {}),
-      coverUrl: runtimeUrl(manifest.songId, coverSmall.filename),
+      coverUrl: runtimeUrl(manifest.songId, catalogCover.filename),
       editionUrl: runtimeUrl(manifest.songId, editionFilename),
     },
   }

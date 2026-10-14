@@ -68,6 +68,9 @@ describe('Library Compiler media pipeline', () => {
       }),
     )
     expect(firstEdition.edition.artwork.heroLargeUrl).toBeDefined()
+    const catalogCoverUrl = firstEdition.catalog.editions[0]?.coverUrl
+    expect(catalogCoverUrl).toBeDefined()
+    expect(catalogCoverUrl).not.toBe(firstEdition.edition.artwork.coverSmallUrl)
     expect(firstEdition.editionUrls.every((url) => fileForRuntimeUrl(fixture.outputRoot, url))).toBe(true)
 
     const audioPath = fileForRuntimeUrl(
@@ -88,6 +91,7 @@ describe('Library Compiler media pipeline', () => {
     expect(audioProbe.container.split(',')).toContain('mp4')
     expect(audioProbe.durationMs).toBeGreaterThan(0)
 
+    await expectArtwork(fixture.outputRoot, catalogCoverUrl, 256)
     await expectArtwork(fixture.outputRoot, firstEdition.edition.artwork.coverSmallUrl, 640)
     await expectArtwork(fixture.outputRoot, firstEdition.edition.artwork.coverLargeUrl, 1600)
     await expectArtwork(fixture.outputRoot, firstEdition.edition.artwork.heroLargeUrl, 1920)

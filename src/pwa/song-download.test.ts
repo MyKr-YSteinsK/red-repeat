@@ -57,20 +57,31 @@ describe('song download snapshot cache', () => {
     })
 
     const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
-    expect(fetchImpl).toHaveBeenCalledTimes(8)
-    expect(cache.entries.size).toBe(9)
+    expect(fetchImpl).toHaveBeenCalledTimes(9)
+    expect(cache.entries.size).toBe(10)
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
       status: 'installed',
       contentHash: HASH_A,
       snapshotEdition: snapshotH1.catalogEdition,
     })
 
-    const manifest = await readManifest(cache, 'first-light')
+    const manifest = await readManifest(cache, 'first-light') as {
+      urls: string[]
+    }
     expect(manifest).toMatchObject({
       schemaVersion: 2,
       contentHash: HASH_A,
       catalogEdition: snapshotH1.catalogEdition,
     })
+    expect(manifest.urls).toContain(
+      absoluteUrl(snapshotH1.catalogEdition.coverUrl),
+    )
+    expect(manifest.urls).toContain(
+      absoluteUrl(snapshotH1.edition.artwork.coverSmallUrl),
+    )
+    expect(snapshotH1.catalogEdition.coverUrl).not.toBe(
+      snapshotH1.edition.artwork.coverSmallUrl,
+    )
 
     const networkFetch = vi
       .spyOn(globalThis, 'fetch')
@@ -90,10 +101,11 @@ describe('song download snapshot cache', () => {
   it('migrates a complete v1 manifest in place without deleting the download', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)
+    const legacyH1 = createSnapshotFixtures('a', HASH_A, false)
     await downloadSongRuntime(
-      snapshotH1.catalogEdition,
-      runtimeClientFor(snapshotH1),
-      { fetchImpl: fixtureFetch(snapshotH1), now: () => 456 },
+      legacyH1.catalogEdition,
+      runtimeClientFor(legacyH1),
+      { fetchImpl: fixtureFetch(legacyH1), now: () => 456 },
     )
 
     const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
@@ -115,11 +127,11 @@ describe('song download snapshot cache', () => {
     await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
       status: 'installed',
       contentHash: HASH_A,
-      editionUrl: snapshotH1.catalogEdition.editionUrl,
+      editionUrl: legacyH1.catalogEdition.editionUrl,
     })
     await expect(readManifest(cache, 'first-light')).resolves.toMatchObject({
       schemaVersion: 2,
-      catalogEdition: snapshotH1.catalogEdition,
+      catalogEdition: legacyH1.catalogEdition,
     })
   })
 
@@ -203,8 +215,17 @@ describe('song download snapshot cache', () => {
     expect(manifest.urls).toContain(
       absoluteUrl(snapshotH2.edition.practiceUrl),
     )
+    expect(manifest.urls).toContain(
+      absoluteUrl(snapshotH2.catalogEdition.coverUrl),
+    )
+    expect(manifest.urls).toContain(
+      absoluteUrl(snapshotH2.edition.artwork.coverSmallUrl),
+    )
     expect(manifest.urls).not.toContain(
       absoluteUrl(snapshotH1.edition.practiceUrl),
+    )
+    expect(manifest.urls).not.toContain(
+      absoluteUrl(snapshotH1.catalogEdition.coverUrl),
     )
   })
 
@@ -344,10 +365,12 @@ interface SnapshotFixtures {
 function createSnapshotFixtures(
   suffix: string,
   contentHash: string,
+  separateCatalogCover = true,
 ): SnapshotFixtures {
   const resourceHash = suffix === 'a'
     ? {
         cover: HASH_B,
+        catalogCover: HASH_F,
         lyrics: HASH_C,
         timeline: HASH_D,
         practice: HASH_E,
@@ -356,6 +379,7 @@ function createSnapshotFixtures(
       }
     : {
         cover: HASH_C,
+        catalogCover: HASH_A,
         lyrics: HASH_D,
         timeline: HASH_E,
         practice: HASH_F,
@@ -363,11 +387,13 @@ function createSnapshotFixtures(
         audio: HASH_D,
       }
   const base = '/library-runtime/songs/first-light'
+  const coverSmallUrl = `${base}/cover-small.${resourceHash.cover}.webp`
+  const catalogCoverUrl = `${base}/cover-small.${separateCatalogCover ? resourceHash.catalogCover : resourceHash.cover}.webp`
   const catalogEdition: CatalogEdition = {
     songId: 'first-light',
     title: `First Light ${suffix.toUpperCase()}`,
     artist: 'A Composer',
-    coverUrl: `${base}/cover-small.${resourceHash.cover}.webp`,
+    coverUrl: catalogCoverUrl,
     editionUrl: `${base}/edition.${contentHash}.json`,
   }
   const edition: RuntimeEdition = {
@@ -401,7 +427,7 @@ function createSnapshotFixtures(
       },
     },
     artwork: {
-      coverSmallUrl: catalogEdition.coverUrl,
+      coverSmallUrl,
       coverLargeUrl: `${base}/cover-large.${resourceHash.cover}.webp`,
     },
   }
@@ -451,6 +477,7 @@ function responseForLogicalPath(
   }
   if (
     logicalPath === catalogEdition.coverUrl ||
+    logicalPath === edition.artwork.coverSmallUrl ||
     logicalPath === edition.artwork.coverLargeUrl ||
     logicalPath === edition.audio.url
   ) {

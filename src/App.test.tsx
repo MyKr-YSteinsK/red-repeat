@@ -18,6 +18,14 @@ import {
   readSongDownloadState,
 } from './pwa/song-download'
 
+const routeModuleControl = vi.hoisted(() => ({
+  settingsLoadGate: undefined as Promise<void> | undefined,
+  settingsFailures: 0,
+  timingDebuggerFailures: 0,
+  settingsLoads: 0,
+  timingDebuggerLoads: 0,
+}))
+
 vi.mock('./pwa/song-download', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./pwa/song-download')>()
   return {
@@ -25,6 +33,27 @@ vi.mock('./pwa/song-download', async (importOriginal) => {
     downloadSongRuntime: vi.fn(actual.downloadSongRuntime),
     readSongDownloadState: vi.fn(actual.readSongDownloadState),
   }
+})
+
+vi.mock('./settings/SettingsPage', async (importOriginal) => {
+  routeModuleControl.settingsLoads += 1
+  if (routeModuleControl.settingsLoadGate) {
+    await routeModuleControl.settingsLoadGate
+  }
+  if (routeModuleControl.settingsFailures > 0) {
+    routeModuleControl.settingsFailures -= 1
+    throw new Error('settings chunk unavailable')
+  }
+  return importOriginal<typeof import('./settings/SettingsPage')>()
+})
+
+vi.mock('./debugger/TimingDebuggerPage', async (importOriginal) => {
+  routeModuleControl.timingDebuggerLoads += 1
+  if (routeModuleControl.timingDebuggerFailures > 0) {
+    routeModuleControl.timingDebuggerFailures -= 1
+    throw new Error('timing debugger chunk unavailable')
+  }
+  return importOriginal<typeof import('./debugger/TimingDebuggerPage')>()
 })
 
 const emptyCatalog = {
@@ -163,6 +192,11 @@ const resumeLyricsForApp = {
 }
 
 beforeEach(async () => {
+  routeModuleControl.settingsLoadGate = undefined
+  routeModuleControl.settingsFailures = 0
+  routeModuleControl.timingDebuggerFailures = 0
+  routeModuleControl.settingsLoads = 0
+  routeModuleControl.timingDebuggerLoads = 0
   const actual = await vi.importActual<typeof import('./pwa/song-download')>(
     './pwa/song-download',
   )
@@ -182,6 +216,51 @@ afterEach(() => {
 })
 
 describe('App Library consumer', () => {
+  it('does not load optional route modules on the Catalog entry', async () => {
+    render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+    expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
+    expect(routeModuleControl.settingsLoads).toBe(0)
+    expect(routeModuleControl.timingDebuggerLoads).toBe(0)
+  })
+
+  it('shows an accessible local loading state while the Settings chunk is pending', async () => {
+    let releaseSettingsLoad: (() => void) | undefined
+    const settingsLoadGate = new Promise<void>((resolve) => {
+      releaseSettingsLoad = resolve
+    })
+    routeModuleControl.settingsLoadGate = settingsLoadGate
+    window.history.replaceState({}, '', '/#settings')
+
+    render(<App runtimeClient={clientFor(emptyCatalog)} />)
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '正在加载设置模块…',
+    )
+    await act(async () => {
+      releaseSettingsLoad?.()
+    })
+    expect(
+      await screen.findByRole('heading', { name: '设置' }),
+    ).toBeInTheDocument()
+  })
+
+  it('recovers from a failed Timing Debugger chunk without reloading the document', async () => {
+    routeModuleControl.timingDebuggerFailures = 1
+    window.history.replaceState({}, '', '/#timing=debug')
+    render(<App runtimeClient={clientFor(populatedCatalog)} />)
+
+    expect(
+      await screen.findByRole('alert', { name: '页面加载错误' }),
+    ).toHaveTextContent('Timing Debugger模块暂时无法加载。')
+    fireEvent.click(screen.getByRole('button', { name: '重试加载' }))
+
+    expect(
+      await screen.findByRole('heading', { name: '选择一首歌' }),
+    ).toBeInTheDocument()
+    expect(window.location.hash).toBe('#timing=debug')
+  })
+
   it('keeps the existing empty Library state for a zero-edition catalog', async () => {
     render(<App runtimeClient={clientFor(emptyCatalog)} />)
 

@@ -8,6 +8,7 @@ import { hashFile, hashText, stableJsonBuffer, stableStringify } from './hash'
 
 export const TIMELINE_DURATION_TOLERANCE_MS = 100
 export const COVER_SMALL_MAX_WIDTH = 640
+export const CATALOG_COVER_MAX_WIDTH = 256
 export const COVER_LARGE_MAX_WIDTH = 1600
 export const HERO_LARGE_MAX_WIDTH = 1920
 export const ARTWORK_WEBP_QUALITY = 82

@@ -5,6 +5,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ComponentType,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
@@ -30,9 +31,7 @@ import {
 import { SongEditionPage } from './edition/SongEditionPage'
 import type { PreparedSongEditionLoad } from './edition/use-song-edition-core'
 import { hasWarmSongEditionCore, loadRuntimeSongEditionCore } from './runtime/song-edition-loader'
-import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { useSwipeReveal } from './library/use-swipe-reveal'
-import { SettingsPage } from './settings/SettingsPage'
 import { PracticeQueuePanel } from './practice/PracticeQueuePanel'
 import { readResumeContext } from './practice/resume-context'
 import { readPracticeResumeMetadata } from './practice/practice-state'
@@ -53,6 +52,11 @@ const DevTimelineDebuggerPage = import.meta.env.DEV
       return { default: module.TimelineDebuggerPage }
     })
   : undefined
+
+const loadSettingsPage = () =>
+  import('./settings/SettingsPage').then(({ SettingsPage }) => SettingsPage)
+const loadTimingDebuggerPage = () =>
+  import('./debugger/TimingDebuggerPage').then(({ TimingDebuggerPage }) => TimingDebuggerPage)
 
 if (import.meta.env.DEV) {
   void import('./debugger/TimelineDebugger.css')
@@ -191,21 +195,33 @@ function App({
           viewportRef={catalogViewportRef}
         />
       ) : route.kind === 'settings' ? (
-        <SettingsPage
-          catalogState={catalogState}
-          runtimeClient={runtimeClient}
+        <AsyncRoutePage
+          key="settings"
+          load={loadSettingsPage}
+          pageName="设置"
           homeHref={homeHref}
-          onRetryCatalog={retryCatalog}
-          updateManager={currentUpdateManager}
-          highlightVersion={route.releaseVersion}
+          pageProps={{
+            catalogState,
+            runtimeClient,
+            homeHref,
+            onRetryCatalog: retryCatalog,
+            updateManager: currentUpdateManager,
+            highlightVersion: route.releaseVersion,
+          }}
         />
       ) : route.kind === 'timing-debugger' ? (
-        <TimingDebuggerPage
-          songId={route.songId}
-          catalogState={catalogState}
-          runtimeClient={runtimeClient}
+        <AsyncRoutePage
+          key="timing-debugger"
+          load={loadTimingDebuggerPage}
+          pageName="Timing Debugger"
           homeHref={homeHref}
-          onRetryCatalog={retryCatalog}
+          pageProps={{
+            songId: route.songId,
+            catalogState,
+            runtimeClient,
+            homeHref,
+            onRetryCatalog: retryCatalog,
+          }}
         />
       ) : route.kind === 'timeline-debugger' &&
         import.meta.env.DEV &&
@@ -1015,6 +1031,89 @@ function SiteFooter({ editionCount }: { editionCount: number }) {
       <p>曲库 / {String(editionCount).padStart(2, '0')}</p>
     </footer>
   )
+}
+
+function RouteChunkLoading({ pageName }: { pageName: string }) {
+  return (
+    <main className="library library-status" aria-labelledby="route-loading-title">
+      <div className="library-heading">
+        <p className="eyebrow">页面加载</p>
+        <h1 id="route-loading-title">正在打开{pageName}…</h1>
+      </div>
+      <p className="status-line" role="status">
+        正在加载{pageName}模块…
+      </p>
+    </main>
+  )
+}
+
+interface AsyncRoutePageProps<Props extends object> {
+  load: () => Promise<ComponentType<Props>>
+  pageName: string
+  homeHref: string
+  pageProps: Props
+}
+
+function AsyncRoutePage<Props extends object>({
+  load,
+  pageName,
+  homeHref,
+  pageProps,
+}: AsyncRoutePageProps<Props>) {
+  const [page, setPage] = useState<ComponentType<Props> | null>(null)
+  const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+
+  useEffect(() => {
+    let active = true
+    void load()
+      .then((loadedPage) => {
+        if (active) setPage(() => loadedPage)
+      })
+      .catch(() => {
+        if (active) setFailed(true)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [attempt, load])
+
+  if (failed) {
+    return (
+      <main className="library library-status" aria-labelledby="route-error-title">
+        <div className="library-heading">
+          <p className="eyebrow">页面加载 / 错误</p>
+          <h1 id="route-error-title">{pageName}暂时无法打开</h1>
+          <p className="library-lede">模块加载失败，可以重试或返回曲库。</p>
+        </div>
+        <section className="error-state" role="alert" aria-label="页面加载错误">
+          <p className="empty-kicker">可恢复错误</p>
+          <p>{pageName}模块暂时无法加载。</p>
+          <div className="song-status-actions">
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => {
+                setFailed(false)
+                setAttempt((value) => value + 1)
+              }}
+            >
+              重试加载
+            </button>
+            <a className="text-link" href={homeHref}>
+              返回曲库
+            </a>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
+  if (!page) return <RouteChunkLoading pageName={pageName} />
+
+  const LoadedPage = page
+  return <LoadedPage {...pageProps} />
 }
 
 function getEditionCount(state: CatalogState): number {
