@@ -11,7 +11,7 @@ const indexCss = readFileSync(
   'utf8',
 )
 const practiceMobileStart = appCss.indexOf(
-  '/* Practice mobile dock: three compact rows plus measured final-row reachability. */',
+  '/* Practice mobile dock: two frequent-control rows plus measured expansion reachability. */',
 )
 const practiceMobileEnd = appCss.indexOf(
   '/* Practice segment picker:',
@@ -20,9 +20,9 @@ const practiceMobileEnd = appCss.indexOf(
 const practiceMobileCss = appCss.slice(practiceMobileStart, practiceMobileEnd)
 
 describe('mobile player layout contracts', () => {
-  it('keeps the Practice rates before a bounded play column with measured reachability reserve', () => {
+  it('keeps the primary play action beside More with measured expansion reachability reserve', () => {
     expect(practiceMobileCss).toContain(
-      'grid-template-columns: minmax(0, 3fr) minmax(5rem, 0.9fr);',
+      'grid-template-columns: minmax(0, 3fr) minmax(5.5rem, 1fr);',
     )
     expect(practiceMobileCss).toContain(
       'padding-bottom: var(--practice-dock-reachability-reserve, 1rem);',
