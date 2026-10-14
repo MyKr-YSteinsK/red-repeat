@@ -1319,6 +1319,31 @@
   outline-offset: 2px;
 }
 
+.catalog-offline-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: max-content;
+  min-height: 2.75rem;
+  margin-top: 0.45rem;
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.catalog-offline-filter input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-red);
+}
+
+.catalog-offline-filter input:focus-visible {
+  outline: 2px solid var(--color-red);
+  outline-offset: 3px;
+}
+
 .catalog-section {
   margin-top: clamp(3rem, 7vw, 5.5rem);
 }
@@ -1343,6 +1368,13 @@
   padding: 1.2rem 0;
   border-bottom: 1px solid var(--color-line);
   color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.catalog-offline-note {
+  margin: 0 0 0.8rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 

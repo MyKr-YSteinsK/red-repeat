@@ -11,6 +11,10 @@ import {
 import './App.css'
 import type { Catalog, CatalogEdition } from './library/runtime-schema'
 import {
+  getInstalledSnapshotEdition,
+  matchesCatalogSearch,
+} from './library/catalog-search'
+import {
   createEditionHref,
   createLibraryHref,
   createContinueHref,
@@ -86,6 +90,7 @@ function App({
     status: 'loading',
   })
   const [catalogQuery, setCatalogQuery] = useState('')
+  const [catalogOfflineOnly, setCatalogOfflineOnly] = useState(false)
   const [preparedEntry, setPreparedEntry] = useState<PreparedSongEditionLoad>()
   const handledHrefRef = useRef(window.location.href)
   const catalogViewportRef = useRef<CatalogViewportState>({
@@ -181,6 +186,8 @@ function App({
           onRetry={retryCatalog}
           query={catalogQuery}
           onQueryChange={setCatalogQuery}
+          offlineOnly={catalogOfflineOnly}
+          onOfflineOnlyChange={setCatalogOfflineOnly}
           viewportRef={catalogViewportRef}
         />
       ) : route.kind === 'settings' ? (
@@ -225,6 +232,8 @@ function App({
           onRetry={retryCatalog}
           query={catalogQuery}
           onQueryChange={setCatalogQuery}
+          offlineOnly={catalogOfflineOnly}
+          onOfflineOnlyChange={setCatalogOfflineOnly}
           viewportRef={catalogViewportRef}
         />
       ) : (
@@ -269,6 +278,8 @@ function LibraryRoute({
   onRetry,
   query,
   onQueryChange,
+  offlineOnly,
+  onOfflineOnlyChange,
   viewportRef,
 }: {
   state: CatalogState
@@ -276,6 +287,8 @@ function LibraryRoute({
   onRetry: () => void
   query: string
   onQueryChange: (query: string) => void
+  offlineOnly: boolean
+  onOfflineOnlyChange: (offlineOnly: boolean) => void
   viewportRef: { current: CatalogViewportState }
 }) {
   if (state.status === 'loading') {
@@ -324,6 +337,8 @@ function LibraryRoute({
       runtimeClient={runtimeClient}
       query={query}
       onQueryChange={onQueryChange}
+      offlineOnly={offlineOnly}
+      onOfflineOnlyChange={onOfflineOnlyChange}
       viewportRef={viewportRef}
     />
   )
@@ -360,12 +375,16 @@ function CatalogLibrary({
   runtimeClient,
   query,
   onQueryChange,
+  offlineOnly,
+  onOfflineOnlyChange,
   viewportRef,
 }: {
   catalog: Catalog
   runtimeClient: RuntimeClient
   query: string
   onQueryChange: (query: string) => void
+  offlineOnly: boolean
+  onOfflineOnlyChange: (offlineOnly: boolean) => void
   viewportRef: { current: CatalogViewportState }
 }) {
   const [downloadBySongId, setDownloadBySongId] = useState<
@@ -375,6 +394,9 @@ function CatalogLibrary({
     new Set(),
   )
   const [openSongId, setOpenSongId] = useState<string | null>(null)
+  const [downloadStateCheckComplete, setDownloadStateCheckComplete] =
+    useState(false)
+  const downloadStateStorageUnavailable = typeof caches === 'undefined'
 
   useLayoutEffect(() => {
     const saved = viewportRef.current
@@ -404,23 +426,58 @@ function CatalogLibrary({
 
   useEffect(() => {
     let active = true
+
+    if (typeof caches === 'undefined') {
+      return () => {
+        active = false
+      }
+    }
+
     void Promise.all(
-      catalog.editions.map(async (edition) => [
-        edition.songId,
-        await readSongDownloadState(edition.songId),
-      ] as const),
+      catalog.editions.map(
+        async (edition): Promise<readonly [string, SongDownloadState]> => {
+          try {
+            const state = await readSongDownloadState(edition.songId)
+            if (
+              state.songId !== edition.songId ||
+              (state.status === 'installed' &&
+                !getInstalledSnapshotEdition(edition.songId, state))
+            ) {
+              return [
+                edition.songId,
+                {
+                  songId: edition.songId,
+                  status: 'failed' as const,
+                  errorMessage: '本机下载身份无法确认。',
+                },
+              ] as const
+            }
+            return [edition.songId, state] as const
+          } catch {
+            return [
+              edition.songId,
+              {
+                songId: edition.songId,
+                status: 'failed' as const,
+                errorMessage: '无法确认本机离线状态。',
+              },
+            ] as const
+          }
+        },
+      ),
     ).then((entries) => {
       if (!active) {
         return
       }
       setDownloadBySongId(Object.fromEntries(entries))
+      setDownloadStateCheckComplete(true)
 
       entries.forEach(([songId, state]) => {
         const currentEdition = catalog.editions.find(
           (edition) => edition.songId === songId,
         )
         if (
-          state.status !== 'installed' ||
+          !getInstalledSnapshotEdition(songId, state) ||
           !currentEdition ||
           state.editionUrl === currentEdition.editionUrl
         ) {
@@ -501,10 +558,27 @@ function CatalogLibrary({
     }
   }
 
-  const normalizedQuery = query.trim().toLocaleLowerCase()
-  const filteredEditions = catalog.editions.filter((edition) =>
-    matchesCatalogSearch(edition, normalizedQuery),
-  )
+  const filteredEditions = catalog.editions.flatMap((catalogEdition, index) => {
+    const download = downloadBySongId[catalogEdition.songId]
+    const snapshotEdition = downloadStateStorageUnavailable
+      ? undefined
+      : getInstalledSnapshotEdition(catalogEdition.songId, download)
+    const displayEdition = offlineOnly
+      ? snapshotEdition
+      : catalogEdition
+
+    if (
+      !displayEdition ||
+      !matchesCatalogSearch(displayEdition, query)
+    ) {
+      return []
+    }
+
+    return [{ catalogEdition, displayEdition, download, index }]
+  })
+  const hasUnverifiedOfflineState = Object.values(downloadBySongId).some(
+    (download) => download.status === 'failed' || download.status === 'installing',
+  ) || downloadStateStorageUnavailable
   const savedResumeContext = readResumeContext()
   const savedResumeEdition = savedResumeContext
     ? catalog.editions.find(({ songId }) => songId === savedResumeContext.songId)
@@ -533,13 +607,21 @@ function CatalogLibrary({
         <h1 id="library-title">曲库</h1>
         <p className="library-lede">选择一首歌，开始阅读与学唱。</p>
         <label className="library-search">
-          <span>搜索歌曲或歌手</span>
+          <span>搜索歌曲、歌手、专辑或罗马字</span>
           <input
             type="search"
             value={query}
-            placeholder="搜索歌曲或歌手"
+            placeholder="搜索歌曲、歌手、专辑或罗马字"
             onChange={(event) => onQueryChange(event.target.value)}
           />
+        </label>
+        <label className="catalog-offline-filter">
+          <input
+            type="checkbox"
+            checked={offlineOnly}
+            onChange={(event) => onOfflineOnlyChange(event.target.checked)}
+          />
+          <span>仅显示离线可用</span>
         </label>
       </div>
 
@@ -567,7 +649,7 @@ function CatalogLibrary({
       />
 
       <CatalogSection
-        title="全部歌曲"
+        title={offlineOnly ? '离线可用歌曲' : '全部歌曲'}
         onClick={(event) => {
           const target = event.target
           if (
@@ -579,32 +661,62 @@ function CatalogLibrary({
           setOpenSongId(null)
         }}
       >
+        {offlineOnly &&
+        downloadStateCheckComplete &&
+        filteredEditions.length > 0 &&
+        hasUnverifiedOfflineState ? (
+          <p className="catalog-offline-note" role="status">
+            部分歌曲的离线状态无法确认。
+          </p>
+        ) : null}
         {filteredEditions.length > 0 ? (
-          filteredEditions.map((edition) => (
+          filteredEditions.map(({ catalogEdition, displayEdition, download, index }) => (
             <CatalogEditionCard
-              key={edition.songId}
-              edition={edition}
-              index={catalog.editions.indexOf(edition)}
+              key={catalogEdition.songId}
+              edition={displayEdition}
+              index={index}
               runtimeClient={runtimeClient}
               download={
-                downloadBySongId[edition.songId] ?? {
-                  songId: edition.songId,
+                download ?? {
+                  songId: catalogEdition.songId,
                   status: 'not-installed',
                 }
               }
-              isRemoving={removingSongIds.has(edition.songId)}
+              isRemoving={removingSongIds.has(catalogEdition.songId)}
               onDownload={handleDownload}
               onRemove={handleRemove}
               onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
-              isSwipeOpen={openSongId === edition.songId}
-              onSwipeOpen={() => setOpenSongId(edition.songId)}
+              isSwipeOpen={openSongId === catalogEdition.songId}
+              onSwipeOpen={() => setOpenSongId(catalogEdition.songId)}
               onSwipeClose={() => setOpenSongId(null)}
             />
           ))
         ) : (
           <div className="catalog-no-results" role="status">
-            <strong>没有找到歌曲</strong>
-            <span>试试其他歌曲名或歌手。</span>
+            {offlineOnly ? (
+              !downloadStateCheckComplete &&
+              !downloadStateStorageUnavailable ? (
+                <>
+                  <strong>正在核验离线状态</strong>
+                  <span>请稍候，正在检查本机完整歌曲快照。</span>
+                </>
+              ) : hasUnverifiedOfflineState ? (
+                <>
+                  <strong>无法确认离线状态</strong>
+                  <span>本机下载记录暂时无法核验，请稍后重试。</span>
+                </>
+              ) : (
+                <>
+                  <strong>没有符合条件的离线歌曲</strong>
+                  <span>当前搜索条件下没有已核验的完整离线快照。</span>
+                </>
+              )
+            ) : (
+              <>
+                <strong>没有找到歌曲</strong>
+                <span>试试其他歌曲名、歌手或专辑。</span>
+              </>
+            )}
           </div>
         )}
       </CatalogSection>
@@ -786,18 +898,6 @@ function CatalogDownloadSlot({
         <span className="catalog-download-error">{download.errorMessage}</span>
       ) : null}
     </div>
-  )
-}
-
-function matchesCatalogSearch(
-  edition: CatalogEdition,
-  normalizedQuery: string,
-): boolean {
-  if (!normalizedQuery) {
-    return true
-  }
-  return [edition.title, edition.artist].some((value) =>
-    value.toLocaleLowerCase().includes(normalizedQuery),
   )
 }
 

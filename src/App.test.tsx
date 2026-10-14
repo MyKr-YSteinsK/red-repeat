@@ -13,6 +13,19 @@ import {
   createRuntimeClient,
   type RuntimeClient,
 } from './runtime/runtime-client'
+import {
+  downloadSongRuntime,
+  readSongDownloadState,
+} from './pwa/song-download'
+
+vi.mock('./pwa/song-download', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./pwa/song-download')>()
+  return {
+    ...actual,
+    downloadSongRuntime: vi.fn(actual.downloadSongRuntime),
+    readSongDownloadState: vi.fn(actual.readSongDownloadState),
+  }
+})
 
 const emptyCatalog = {
   contractVersion: 3,
@@ -149,7 +162,16 @@ const resumeLyricsForApp = {
   ],
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  const actual = await vi.importActual<typeof import('./pwa/song-download')>(
+    './pwa/song-download',
+  )
+  vi.mocked(downloadSongRuntime)
+    .mockReset()
+    .mockImplementation(actual.downloadSongRuntime)
+  vi.mocked(readSongDownloadState)
+    .mockReset()
+    .mockImplementation(actual.readSongDownloadState)
   window.history.replaceState({}, '', '/')
   window.localStorage.clear()
 })
@@ -747,14 +769,184 @@ describe('App Library consumer', () => {
       screen.queryByRole('heading', { name: '最近学习' }),
     ).not.toBeInTheDocument()
 
-    const search = screen.getByRole('searchbox', { name: '搜索歌曲或歌手' })
+    const search = screen.getByRole('searchbox', { name: '搜索歌曲、歌手、专辑或罗马字' })
     fireEvent.change(search, { target: { value: 'another' } })
     expect(screen.getByRole('link', { name: '打开 Second Signal' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: '打开 First Light' })).not.toBeInTheDocument()
 
+    fireEvent.change(search, { target: { value: 'returning' } })
+    expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
+
     fireEvent.change(search, { target: { value: '不存在' } })
     expect(screen.getByRole('status')).toHaveTextContent('没有找到歌曲')
     expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
+  })
+
+  it('shows only the verified H1 snapshot in offline mode while Catalog H2 refresh is pending', async () => {
+    const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: {},
+    })
+    const snapshotH1 = {
+      ...populatedCatalog.editions[0],
+      title: 'First Light H1',
+      editionUrl: '/library-runtime/songs/first-light/edition.h1.json',
+    }
+    const catalogH2 = {
+      ...populatedCatalog,
+      contentHash: 'c'.repeat(64),
+      editions: [
+        {
+          ...populatedCatalog.editions[0],
+          title: 'First Light H2',
+          editionUrl: '/library-runtime/songs/first-light/edition.h2.json',
+        },
+        populatedCatalog.editions[1],
+      ],
+    }
+    vi.mocked(readSongDownloadState).mockImplementation(async (songId) =>
+      songId === snapshotH1.songId
+        ? {
+            songId,
+            status: 'installed',
+            editionUrl: snapshotH1.editionUrl,
+            snapshotEdition: snapshotH1,
+          }
+        : { songId, status: 'not-installed' },
+    )
+    vi.mocked(downloadSongRuntime).mockImplementation(
+      () => new Promise<Awaited<ReturnType<typeof downloadSongRuntime>>>(() => {}),
+    )
+
+    try {
+      render(<App runtimeClient={clientFor(catalogH2)} />)
+      const offlineFilter = await screen.findByRole('checkbox', {
+        name: '仅显示离线可用',
+      })
+      await waitFor(() => expect(downloadSongRuntime).toHaveBeenCalledTimes(1))
+
+      fireEvent.click(offlineFilter)
+      expect(
+        await screen.findByRole('link', { name: '打开 First Light H1' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('link', { name: '打开 First Light H2' }),
+      ).not.toBeInTheDocument()
+      expect(downloadSongRuntime).toHaveBeenCalledTimes(1)
+
+      fireEvent.change(
+        screen.getByRole('searchbox', {
+          name: '搜索歌曲、歌手、专辑或罗马字',
+        }),
+        { target: { value: 'H2' } },
+      )
+      expect(
+        await screen.findByText('没有符合条件的离线歌曲'),
+      ).toBeInTheDocument()
+
+      fireEvent.change(
+        screen.getByRole('searchbox', {
+          name: '搜索歌曲、歌手、专辑或罗马字',
+        }),
+        { target: { value: 'H1' } },
+      )
+      expect(
+        await screen.findByRole('link', { name: '打开 First Light H1' }),
+      ).toBeInTheDocument()
+      expect(downloadSongRuntime).toHaveBeenCalledTimes(1)
+    } finally {
+      if (originalCaches) {
+        Object.defineProperty(globalThis, 'caches', originalCaches)
+      } else {
+        delete (globalThis as { caches?: CacheStorage }).caches
+      }
+    }
+  })
+
+  it('reports unavailable offline verification without changing ordinary download actions', async () => {
+    const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: undefined,
+    })
+
+    try {
+      render(<App runtimeClient={clientFor(populatedCatalog)} />)
+      const offlineFilter = await screen.findByRole('checkbox', {
+        name: '仅显示离线可用',
+      })
+      fireEvent.click(offlineFilter)
+      expect(await screen.findByText('无法确认离线状态')).toBeInTheDocument()
+      fireEvent.click(offlineFilter)
+      expect(
+        screen.getByRole('button', { name: '下载 First Light' }),
+      ).toBeInTheDocument()
+    } finally {
+      if (originalCaches) {
+        Object.defineProperty(globalThis, 'caches', originalCaches)
+      } else {
+        delete (globalThis as { caches?: CacheStorage }).caches
+      }
+    }
+  })
+
+  it('distinguishes pending, unverifiable, and confirmed-empty offline results', async () => {
+    const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: {},
+    })
+    const pendingReaders: Array<
+      (state: Awaited<ReturnType<typeof readSongDownloadState>>) => void
+    > = []
+    vi.mocked(readSongDownloadState).mockImplementation(
+      (songId) =>
+        new Promise((resolve) =>
+          pendingReaders.push((state) => resolve({ ...state, songId })),
+        ),
+    )
+
+    try {
+      const { unmount } = render(
+        <App runtimeClient={clientFor(populatedCatalog)} />,
+      )
+      fireEvent.click(
+        await screen.findByRole('checkbox', { name: '仅显示离线可用' }),
+      )
+      expect(
+        screen.getByText('正在核验离线状态'),
+      ).toBeInTheDocument()
+
+      await act(async () => {
+        pendingReaders.forEach((resolve) =>
+          resolve({ songId: '', status: 'failed' }),
+        )
+      })
+      expect(
+        await screen.findByText('无法确认离线状态'),
+      ).toBeInTheDocument()
+
+      unmount()
+      vi.mocked(readSongDownloadState).mockImplementation(async (songId) => ({
+        songId,
+        status: 'not-installed',
+      }))
+      render(<App runtimeClient={clientFor(populatedCatalog)} />)
+      fireEvent.click(
+        await screen.findByRole('checkbox', { name: '仅显示离线可用' }),
+      )
+      expect(
+        await screen.findByText('没有符合条件的离线歌曲'),
+      ).toBeInTheDocument()
+    } finally {
+      if (originalCaches) {
+        Object.defineProperty(globalThis, 'caches', originalCaches)
+      } else {
+        delete (globalThis as { caches?: CacheStorage }).caches
+      }
+    }
   })
 
   it('keeps catalog search and its visible anchor across same-document edition navigation', async () => {
@@ -774,7 +966,7 @@ describe('App Library consumer', () => {
     try {
       render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
       await screen.findByRole('link', { name: '打开 Second Signal' })
-      const search = screen.getByRole('searchbox', { name: '搜索歌曲或歌手' })
+      const search = screen.getByRole('searchbox', { name: '搜索歌曲、歌手、专辑或罗马字' })
       fireEvent.change(search, { target: { value: 'first' } })
 
       const editionLink = screen.getByRole('link', { name: '打开 First Light' })
@@ -794,7 +986,7 @@ describe('App Library consumer', () => {
         within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }),
       )
 
-      expect(await screen.findByRole('searchbox', { name: '搜索歌曲或歌手' })).toHaveValue('first')
+      expect(await screen.findByRole('searchbox', { name: '搜索歌曲、歌手、专辑或罗马字' })).toHaveValue('first')
       expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
       expect(screen.queryByRole('link', { name: '打开 Second Signal' })).not.toBeInTheDocument()
       expect(window.performance.timeOrigin).toBe(timeOrigin)
@@ -803,6 +995,27 @@ describe('App Library consumer', () => {
       expect(scrollTo).toHaveBeenCalledWith(
         expect.objectContaining({ behavior: 'auto', top: expect.any(Number) }),
       )
+
+      fireEvent.click(
+        screen.getByRole('checkbox', { name: '仅显示离线可用' }),
+      )
+      fireEvent.click(screen.getByRole('link', { name: '设置' }))
+      expect(
+        await screen.findByRole('heading', { name: '设置' }),
+      ).toBeInTheDocument()
+      fireEvent.click(
+        within(screen.getByRole('main')).getByRole('link', {
+          name: '返回曲库',
+        }),
+      )
+      expect(
+        await screen.findByRole('checkbox', { name: '仅显示离线可用' }),
+      ).toBeChecked()
+      expect(
+        screen.getByRole('searchbox', {
+          name: '搜索歌曲、歌手、专辑或罗马字',
+        }),
+      ).toHaveValue('first')
     } finally {
       if (originalScrollY) {
         Object.defineProperty(window, 'scrollY', originalScrollY)
