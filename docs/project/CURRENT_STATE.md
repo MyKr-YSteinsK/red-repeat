@@ -11,13 +11,14 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.20.0`. This metadata prepares the
+- Current package/ledger user version: `1.20.1`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.20.0` / `v1.20.0 -> dc2dc84` (product commit
+- Latest ledger/prepared tag: `1.20.1` / `v1.20.1 -> 19123e7` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
-  build identity. Existing `v1.19.1 -> 40b0b73`, `v1.19.0 -> d8f0d5f`,
+  build identity. Existing `v1.20.0 -> dc2dc84`, `v1.19.1 -> 40b0b73`,
+  `v1.19.0 -> d8f0d5f`,
   `v1.16.0 -> a863d57`,
   `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
@@ -978,12 +979,16 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-72` R1 implements P1 route-level loading and P2 Catalog cover
+  sizing. Product commit `19123e7` is the `1.20.1` PATCH tag target; package,
+  ledger, build identity and this state are updated in the separate metadata
+  commit. Push, CI, Pages and production identity are verified separately at
+  delivery.
 - `RED-Plan-70` R1 was a read-only milestone checkpoint. `RED-Plan-71` R1
-  completes Catalog search and offline-availability filtering as a `1.20.0`
+  completed Catalog search and offline-availability filtering as a `1.20.0`
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
-  is the annotated tag target, and the following release-metadata commit is
-  the independent build identity. Push, CI, Pages and production identity are
-  verified separately at delivery.
+  is its annotated tag target and its metadata commit is the independent build
+  identity.
 - No next formal Plan is active. Future product work requires a separately
   authorized Plan; no additional A–E proposal or architecture is implicitly
   started by this completion.
@@ -1368,3 +1373,39 @@ each historical task and do not replace the current repository identity above.
   390×844 browser path confirmed slug Romaji and simplified-title alias search,
   filter empty-state wording and readable layout. Real iOS/Safari and installed
   PWA remain `POST-DEPLOY OBSERVATION`, not claimed as PASS.
+
+## RED-Plan-72 implementation and release status
+
+- P1 makes `SettingsPage` and the production-public `TimingDebuggerPage`
+  route-level dynamic imports with a local accessible loading state and a
+  retryable error state. Catalog and default Practice do not load either page
+  module; the DEV-only Timeline Debugger remains separate. Both direct hash
+  routes and the existing Settings entry remain available.
+- P2 compiles a distinct 256px Catalog thumbnail from each canonical cover and
+  changes only `CatalogEdition.coverUrl`. `RuntimeEdition.artwork.coverSmallUrl`
+  remains 640px and the large Edition image remains unchanged. The existing
+  hash-addressed `cover-small` URL class is reused, so no schema, cache-route,
+  snapshot-owner or PWA lifecycle change was needed. Complete download tests
+  cover both Catalog and Edition image URLs, H1/H2 replacement, H1 fallback
+  and legacy manifest migration.
+- Same-config production build comparison: baseline `3d40b890` / `1.20.0`
+  entry was `476,124 B` (`140,547 B` local gzip level 9); the candidate
+  implementation source for `19123e7` entry was `406,732 B` (`117,274 B`), a
+  `69,392 B` / `14.6%` raw and `23,273 B` / `16.6%` gzip reduction. Settings
+  is a separate `63,786 B` (`22,453 B` gzip) chunk and Timing Debugger is
+  `8,254 B` (`2,757 B` gzip); these figures are local gzip measurements, not
+  observed HTTP `Content-Encoding` or transfer timings. All JavaScript chunks
+  together changed from `481,777 B` / `142,746 B` gzip to `484,425 B` /
+  `144,683 B` gzip, a small total increase while reducing Catalog/Practice
+  entry cost.
+- Six 640×640 Catalog covers totaled `368,806 B`; six generated 256×256
+  thumbnails total `79,154 B`, saving `289,652 B` / `78.5%`. Original 640px
+  Edition covers and 1600px large images remain available.
+- Verification: candidate `npm run build` passed for six editions and 95
+  generated runtime files; 41 focused App/compiler/download tests passed;
+  touched-file ESLint and `npm run pwa:inspect` passed. A desktop Codex
+  in-app browser exercised Catalog → Settings → Catalog → Timing Debugger →
+  Catalog → default Practice and direct refresh of both auxiliary routes.
+  Browser Network timing, real iOS/Safari, installed-PWA and user-perceived
+  performance were not measured; they remain separate observations, not a
+  claimed PASS.

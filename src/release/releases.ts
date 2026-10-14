@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.20.1',
+    date: '2026-10-14',
+    commit: '19123e7',
+    level: 'patch',
+    title: '首屏加载与曲库封面资源优化',
+    summary: '设置页与公开 Timing Debugger 改为按需加载，曲库改用更轻的独立封面缩略图。',
+    changes: [
+      'Catalog 和默认 Practice 首访不再加载 Settings 与 Timing Debugger 页面模块；直达路由仍可加载并支持失败重试。',
+      '曲库使用独立 256px 封面缩略图，歌曲 Edition 的 640px 小封面和大图保持原样。',
+      '完整离线快照继续收录曲库缩略图与 Edition 图片，H1/H2 manifest-last 切换与失败回退合同保持。',
+    ],
+  },
+  {
     version: '1.20.0',
     date: '2026-10-14',
     commit: 'dc2dc84',
