@@ -5,6 +5,11 @@ import {
 } from './practice-scope'
 
 export const PRACTICE_STATE_SCHEMA_VERSION = 1 as const
+export const PRACTICE_STATE_STORAGE_PREFIX = 'red-repeat:practice:'
+
+export function getPracticeStateStorageKey(songId: string): string {
+  return `${PRACTICE_STATE_STORAGE_PREFIX}${songId}`
+}
 
 export interface PracticeLearningState {
   schemaVersion: typeof PRACTICE_STATE_SCHEMA_VERSION
@@ -182,6 +187,47 @@ export function resolvePracticeResumeSummary(
   }
 }
 
+/** Strict, read-only validation for a backup against the active Practice identity. */
+export function parsePracticeLearningStateForBackup(
+  value: unknown,
+  practice: PracticeDocument,
+  timeline: Parameters<typeof createPracticeIndex>[1],
+): PracticeLearningState | undefined {
+  if (!isRecord(value)) return undefined
+  const allowed = ['schemaVersion', 'practiceUnitId', 'currentOccurrenceId', 'coveredUntilByUnit', 'updatedAt']
+  if (
+    Object.keys(value).some((key) => !allowed.includes(key)) ||
+    !Object.hasOwn(value, 'schemaVersion') ||
+    !Object.hasOwn(value, 'practiceUnitId') ||
+    !Object.hasOwn(value, 'currentOccurrenceId') ||
+    !Object.hasOwn(value, 'coveredUntilByUnit') ||
+    value.schemaVersion !== PRACTICE_STATE_SCHEMA_VERSION ||
+    typeof value.practiceUnitId !== 'string' ||
+    typeof value.currentOccurrenceId !== 'string' ||
+    (value.updatedAt !== undefined && !isValidUpdatedAt(value.updatedAt)) ||
+    !isRecord(value.coveredUntilByUnit) ||
+    Object.keys(value.coveredUntilByUnit).length > 200 ||
+    Object.keys(value.coveredUntilByUnit).some((key) => key === '__proto__' || key === 'constructor')
+  ) return undefined
+
+  const index = createPracticeIndex(practice, timeline)
+  const currentUnitId = index.unitIdByOccurrenceId.get(value.currentOccurrenceId)
+  if (!currentUnitId || currentUnitId !== value.practiceUnitId) return undefined
+  const coveredUntilByUnit: Record<string, string> = {}
+  for (const [unitId, occurrenceId] of Object.entries(value.coveredUntilByUnit)) {
+    if (typeof occurrenceId !== 'string' ||
+      index.unitIdByOccurrenceId.get(occurrenceId) !== unitId) return undefined
+    coveredUntilByUnit[unitId] = occurrenceId
+  }
+  return {
+    schemaVersion: PRACTICE_STATE_SCHEMA_VERSION,
+    practiceUnitId: currentUnitId,
+    currentOccurrenceId: value.currentOccurrenceId,
+    coveredUntilByUnit,
+    ...(value.updatedAt !== undefined ? { updatedAt: value.updatedAt } : {}),
+  }
+}
+
 export function loadPracticeLearningState(
   songId: string,
   practice: PracticeDocument,
@@ -307,7 +353,7 @@ function normalizeCoveredUntil(
 }
 
 function storageKey(songId: string): string {
-  return `red-repeat:practice:${songId}`
+  return getPracticeStateStorageKey(songId)
 }
 
 function getBrowserStorage(): PracticeStorage | undefined {

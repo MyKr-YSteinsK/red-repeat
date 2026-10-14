@@ -678,13 +678,39 @@ describe('PracticeWorkspace 1.0', () => {
     }
     expect(screen.queryByRole('dialog', { name: '选择学习段' })).not.toBeInTheDocument()
   })
+
+  it('shows an explicit queue completion only after natural bounded playback completion', async () => {
+    const engine = createFakeEngine()
+    renderWorkspace(engine, {
+      activeQueueItemId: 'first-light:item-1',
+      nextQueueHref: '/#edition=second-signal&practiceItem=item-2',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    expect(await screen.findByText('本次有界练习已自然结束。待练标记仍保留。')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '下一条待练' })).toHaveAttribute(
+      'href',
+      '/#edition=second-signal&practiceItem=item-2',
+    )
+  })
+
+  it('does not report a queue completion after playback is cancelled', async () => {
+    const engine = createFakeEngine()
+    engine.playRangeUntilComplete.mockResolvedValue({ status: 'cancelled' })
+    renderWorkspace(engine, { activeQueueItemId: 'first-light:item-1' })
+
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => expect(engine.playRangeUntilComplete).toHaveBeenCalledOnce())
+    expect(screen.queryByText('本次有界练习已自然结束。待练标记仍保留。')).not.toBeInTheDocument()
+  })
 })
 
 function renderWorkspace(
   engine = createFakeEngine(),
   props: Pick<
     ComponentProps<typeof PracticeWorkspace>,
-    'requestedPracticeUnitId' | 'onRequestedPracticeUnitConsumed'
+    'requestedPracticeUnitId' | 'onRequestedPracticeUnitConsumed' |
+    'activeQueueItemId' | 'nextQueueHref'
   > & { model?: AssembledSongEdition } = {},
 ) {
   const runtimeClient = {

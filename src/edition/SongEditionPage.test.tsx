@@ -17,6 +17,8 @@ import {
   type RuntimeClientErrorKind,
 } from '../runtime/runtime-client'
 import { SongEditionPage, type SongEditionPageProps } from './SongEditionPage'
+import { saveResumeContext } from '../practice/resume-context'
+import { addPracticeQueueItem, readPracticeQueue } from '../practice/practice-queue'
 
 let activeEngine: AudioEngine | undefined
 
@@ -264,11 +266,142 @@ describe('SongEditionPage 学唱入口', () => {
     await waitFor(() => {
       expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
         'data-current-occurrence-id',
-        'o001',
+        'o002',
       )
     })
     await waitFor(() => expect(media.play).toHaveBeenCalledTimes(2))
-    expect(engine.getState().activeRange).toMatchObject({ startMs: 50, endMs: 800 })
+    expect(engine.getState().activeRange).toMatchObject({ startMs: 450, endMs: 800 })
+  })
+
+  it('searches related Features only after a Practice action and returns to the exact Occurrence without audio takeover', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const props = propsFor(undefined, engine)
+    vi.mocked(props.runtimeClient.loadFeature).mockResolvedValue('# Quote\n\n[[segment:s001]]')
+    const { container } = render(<SongEditionPage {...props} />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    expect(props.runtimeClient.loadFeature).not.toHaveBeenCalled()
+    expect(media.play).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: '看相关讲解' }))
+    expect(await screen.findByRole('region', { name: '讲解工作台' })).toBeInTheDocument()
+    await waitFor(() => expect(props.runtimeClient.loadFeature).toHaveBeenCalledOnce())
+    expect(container.querySelector('.explain-workspace')).toHaveAttribute('data-current-topic-id', 'note')
+    expect(container.querySelector('[data-selected-occurrence-id="o001"]')).not.toBeNull()
+    expect(media.play).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: '返回来源位置' }))
+    expect(await screen.findByRole('region', { name: '学唱工作台' })).toHaveAttribute('data-current-occurrence-id', 'o001')
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('continues a compatible saved Full Song position on the startup build without autoplay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    saveResumeContext({
+      schemaVersion: 1,
+      songId: 'first-light',
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      mode: 'all',
+      occurrenceId: 'o002',
+      updatedAt: 10,
+    })
+
+    const { container } = render(<SongEditionPage {...propsFor(undefined, engine)} continueLastRequested />)
+    await screen.findByRole('heading', { name: 'First Light' })
+    expect(screen.getByRole('region', { name: '全曲歌词' })).toBeInTheDocument()
+    expect(container.querySelector('.full-song-workspace')).toHaveAttribute('data-selected-occurrence-id', 'o002')
+    expect(media.play).not.toHaveBeenCalled()
+    expect(media.currentTime).toBe(0)
+  })
+
+  it('falls back to Practice for a mismatched saved Edition identity', async () => {
+    saveResumeContext({
+      schemaVersion: 1,
+      songId: 'first-light',
+      editionContentHash: 'd'.repeat(64),
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      mode: 'all',
+      occurrenceId: 'o002',
+      updatedAt: 10,
+    })
+    render(<SongEditionPage {...propsFor()} continueLastRequested />)
+
+    expect(await screen.findByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
+    expect(screen.getByText(/最近位置与当前完整 Song Edition 不兼容/)).toBeInTheDocument()
+  })
+
+  it('opens a compatible queue item at its exact Practice Occurrence without autoplay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    expect(addPracticeQueueItem({
+      songId: 'first-light',
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      practiceUnitId: 'p001',
+      occurrenceId: 'o002',
+      segmentId: 's002',
+    })).toBe('added')
+    const itemId = readPracticeQueue().items[0].id
+    const { container } = render(<SongEditionPage {...propsFor(undefined, engine)} practiceQueueItemId={itemId} />)
+
+    expect(await screen.findByRole('region', { name: '学唱工作台' })).toHaveAttribute('data-current-occurrence-id', 'o002')
+    expect(container.querySelector('.practice-workspace')).toBeInTheDocument()
+    expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('updates the exact Practice target when a same-song queue route changes in place', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const props = propsFor(undefined, engine)
+    vi.mocked(props.runtimeClient.loadPractice).mockResolvedValue({
+      units: [
+        { id: 'p001', sectionId: 'verse', label: '主歌 A', occurrenceIds: ['o001'] },
+        { id: 'p002', sectionId: 'verse', label: '副歌 B', occurrenceIds: ['o002'] },
+      ],
+    })
+    expect(addPracticeQueueItem({
+      songId: 'first-light',
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      practiceUnitId: 'p001',
+      occurrenceId: 'o001',
+      segmentId: 's001',
+    })).toBe('added')
+    expect(addPracticeQueueItem({
+      songId: 'first-light',
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      practiceUnitId: 'p002',
+      occurrenceId: 'o002',
+      segmentId: 's002',
+    })).toBe('added')
+    const [firstItem, secondItem] = readPracticeQueue().items
+    const view = render(
+      <SongEditionPage {...props} practiceQueueItemId={firstItem.id} />,
+    )
+
+    const workspace = await screen.findByRole('region', { name: '学唱工作台' })
+    await waitFor(() => expect(workspace).toHaveAttribute('data-current-occurrence-id', 'o001'))
+    expect(screen.getByRole('heading', { name: '主歌 A' })).toBeInTheDocument()
+
+    view.rerender(
+      <SongEditionPage {...props} practiceQueueItemId={secondItem.id} />,
+    )
+
+    await waitFor(() => expect(workspace).toHaveAttribute('data-current-occurrence-id', 'o002'))
+    expect(screen.getByRole('heading', { name: '副歌 B' })).toBeInTheDocument()
+    expect(media.play).not.toHaveBeenCalled()
   })
 
   it('keeps the same audio session across Full Song to Practice without reload, reset, or autoplay', async () => {

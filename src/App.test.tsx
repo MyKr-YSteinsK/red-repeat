@@ -669,7 +669,7 @@ describe('App Library consumer', () => {
     }
   })
 
-  it('keeps catalog cards focused on metadata and skips resume enrichment', async () => {
+  it('shows legacy Practice resume metadata without loading song Runtime until the user continues', async () => {
     window.localStorage.setItem(
       'red-repeat:practice:first-light',
       JSON.stringify({
@@ -690,7 +690,8 @@ describe('App Library consumer', () => {
 
     expect(await screen.findByRole('heading', { name: '曲库' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '打开 First Light' })).toBeInTheDocument()
-    expect(screen.queryByText('上次：主歌 B · 第2句')).not.toBeInTheDocument()
+    expect(screen.getByText('学唱 · o002')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '继续上次 →' })).toBeInTheDocument()
     expect(screen.queryByText('开始学唱')).not.toBeInTheDocument()
     expect(screen.queryByText('继续学唱')).not.toBeInTheDocument()
     expect(
@@ -700,6 +701,15 @@ describe('App Library consumer', () => {
     ).toBe(false)
     expect(fetchImpl).toHaveBeenCalledTimes(1)
     expect(String(fetchImpl.mock.calls[0]?.[0])).toMatch(/\/catalog\.json$/)
+
+    fireEvent.click(screen.getByRole('link', { name: '继续上次 →' }))
+    expect(await screen.findByRole('heading', { name: 'First Light' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: '学唱工作台' })).toHaveAttribute(
+        'data-current-occurrence-id',
+        'o002',
+      )
+    })
   })
 
   it('restores persisted Practice state after entering an edition', async () => {

@@ -5,6 +5,18 @@ import { SongPlaybackSession } from './song-playback-session'
 import { SongPlaybackContext } from './song-playback-context'
 import { LyricDisplayPreferencesProvider } from './LyricDisplayPreferences'
 import { readPracticePlaybackRate } from '../practice/practice-rate'
+import { createPracticeIndex } from '../practice/practice-scope'
+import {
+  isResumeIdentityCompatible,
+  readResumeContext,
+  saveResumeContext,
+  type ResumeContext,
+  type ResumeMode,
+} from '../practice/resume-context'
+import { addPracticeQueueItem, readPracticeQueueStatus } from '../practice/practice-queue'
+import type { PracticeQueueItem } from '../practice/practice-queue'
+import { createPracticeQueueHref } from '../navigation'
+import { readPracticeResumeMetadata } from '../practice/practice-state'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
@@ -16,7 +28,22 @@ import { PracticeWorkspace } from './PracticeWorkspace'
 import { ExplainWorkspace } from './ExplainWorkspace'
 import { useSongEditionCore, type PreparedSongEditionLoad } from './use-song-edition-core'
 
-type SongEditionTab = 'practice' | 'all' | 'explain'
+type SongEditionTab = ResumeMode
+
+interface PracticeNavigationIntent {
+  practiceUnitId: string
+  occurrenceId: string
+}
+
+interface RelatedExplainIntent {
+  segmentId: string
+  occurrenceId: string
+}
+
+interface ResumePracticeTarget {
+  practiceUnitId: string
+  occurrenceId: string
+}
 
 export interface SongEditionPageProps {
   catalogEdition: CatalogEdition
@@ -24,6 +51,8 @@ export interface SongEditionPageProps {
   homeHref: string
   audioEngine?: AudioEngine
   preparedLoad?: PreparedSongEditionLoad
+  continueLastRequested?: boolean
+  practiceQueueItemId?: string
 }
 
 export function SongEditionPage({
@@ -32,6 +61,8 @@ export function SongEditionPage({
   homeHref,
   audioEngine,
   preparedLoad,
+  continueLastRequested,
+  practiceQueueItemId,
 }: SongEditionPageProps) {
   const [retryKey, setRetryKey] = useState(0)
   const state = useSongEditionCore(runtimeClient, catalogEdition, retryKey, preparedLoad)
@@ -67,6 +98,8 @@ export function SongEditionPage({
     )
   }
 
+  const entry = resolveEntryContext(state.core, continueLastRequested, practiceQueueItemId)
+
   return (
     <ReadySongEdition
       key={playbackIdentity(state.core.edition)}
@@ -74,20 +107,37 @@ export function SongEditionPage({
       runtimeClient={runtimeClient}
       homeHref={homeHref}
       audioEngine={audioEngine}
+      initialTab={entry.tab}
+      initialPracticeTarget={entry.practiceTarget}
+      initialFullSongOccurrenceId={entry.fullSongOccurrenceId}
+      initialExplainFeatureId={entry.explainFeatureId}
+      entryMessage={entry.message}
+      activeQueueItemId={entry.activeQueueItemId}
+      nextQueueItem={entry.nextQueueItem}
     />
   )
 }
 
-function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
+function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialTab,
+  initialPracticeTarget, initialFullSongOccurrenceId, initialExplainFeatureId,
+  entryMessage, activeQueueItemId, nextQueueItem,
+}: {
   core: RuntimeSongEditionCore
   runtimeClient: RuntimeClient
   homeHref: string
   audioEngine?: AudioEngine
+  initialTab: SongEditionTab
+  initialPracticeTarget?: ResumePracticeTarget
+  initialFullSongOccurrenceId?: string
+  initialExplainFeatureId?: string
+  entryMessage?: string
+  activeQueueItemId?: string
+  nextQueueItem?: PracticeQueueItem
 }) {
-  const [tab, setTab] = useState<SongEditionTab>('practice')
-  const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<
-    string | undefined
-  >()
+  const [tab, setTab] = useState<SongEditionTab>(initialTab)
+  const [practiceNavigationRequest, setPracticeNavigationRequest] = useState<PracticeNavigationIntent | undefined>()
+  const [relatedExplainIntent, setRelatedExplainIntent] = useState<RelatedExplainIntent | undefined>()
+  const [explainSourceMode, setExplainSourceMode] = useState<Exclude<SongEditionTab, 'explain'> | undefined>()
   const [coverViewerOpen, setCoverViewerOpen] = useState(false)
   const coverTriggerRef = useRef<HTMLButtonElement | null>(null)
   const coverViewerRef = useRef<HTMLDivElement | null>(null)
@@ -143,11 +193,59 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
     }
   }, [core.timingProvider, session])
   const scrollByMode = useRef(new Map<SongEditionTab, number>())
+  const saveResume = (mode: ResumeMode, target: Partial<Pick<ResumeContext, 'occurrenceId' | 'practiceUnitId' | 'featureId'>> = {}): void => {
+    saveResumeContext({
+      schemaVersion: 1,
+      songId: core.edition.song.songId,
+      editionContentHash: core.edition.contentHash,
+      audioSourceHash: core.edition.audio.sourceHash,
+      timelineUrl: core.edition.timelineUrl,
+      mode,
+      updatedAt: Date.now(),
+      ...target,
+    })
+  }
   const changeTab = (next: SongEditionTab): void => {
     if (tab === next) return
     scrollByMode.current.set(tab, window.scrollY)
+    const previous = readResumeContext()
+    const identity = {
+      songId: core.edition.song.songId,
+      editionContentHash: core.edition.contentHash,
+      audioSourceHash: core.edition.audio.sourceHash,
+      timelineUrl: core.edition.timelineUrl,
+    }
+    saveResume(next, previous && isResumeIdentityCompatible(previous, identity)
+      ? { occurrenceId: previous.occurrenceId, practiceUnitId: previous.practiceUnitId, featureId: previous.featureId }
+      : {})
     if (tab === 'explain') session?.cancelPreview()
     setTab(next)
+  }
+  const addToPracticeQueue = (assembledOccurrence: import('../runtime/song-edition').AssembledOccurrence): 'added' | 'duplicate' | 'full' | 'unavailable' => {
+    const practiceUnitId = createPracticeIndex(core.practice, core.timeline)
+      .unitIdByOccurrenceId.get(assembledOccurrence.occurrence.id)
+    if (!practiceUnitId) return 'unavailable'
+    return addPracticeQueueItem({
+      songId: core.edition.song.songId,
+      editionContentHash: core.edition.contentHash,
+      audioSourceHash: core.edition.audio.sourceHash,
+      timelineUrl: core.edition.timelineUrl,
+      practiceUnitId,
+      occurrenceId: assembledOccurrence.occurrence.id,
+      segmentId: assembledOccurrence.segment.id,
+    })
+  }
+  const showRelatedExplain = (mode: Exclude<SongEditionTab, 'explain'>, occurrenceId: string, segmentId: string): void => {
+    setExplainSourceMode(mode)
+    setRelatedExplainIntent({ occurrenceId, segmentId })
+    changeTab('explain')
+  }
+  const returnToExplainSource = (): void => {
+    if (!explainSourceMode) return
+    setRelatedExplainIntent(undefined)
+    const sourceMode = explainSourceMode
+    setExplainSourceMode(undefined)
+    changeTab(sourceMode)
   }
   useLayoutEffect(() => {
     if (scrollByMode.current.size === 0) return
@@ -205,6 +303,8 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
                 aria-current={tab === 'practice' ? 'page' : undefined}
                 onClick={() => {
                   setPracticeNavigationRequest(undefined)
+                  setRelatedExplainIntent(undefined)
+                  setExplainSourceMode(undefined)
                   changeTab('practice')
                 }}
               >
@@ -214,7 +314,7 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
                 type="button"
                 className={tab === 'all' ? 'is-active' : ''}
                 aria-current={tab === 'all' ? 'page' : undefined}
-                onClick={() => changeTab('all')}
+                onClick={() => { setRelatedExplainIntent(undefined); setExplainSourceMode(undefined); changeTab('all') }}
               >
                 全曲
               </button>
@@ -229,30 +329,48 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine }: {
             </nav>
           </div>
 
+          {entryMessage ? <p className="song-entry-message" role="status">{entryMessage}</p> : null}
+
           {tab === 'practice' ? (
             <PracticeWorkspace
               key={core.edition.contentHash}
               model={core.assembled}
               runtimeClient={runtimeClient}
               audioEngine={audioEngine}
-              requestedPracticeUnitId={practiceNavigationRequest}
-              onRequestedPracticeUnitConsumed={() => setPracticeNavigationRequest(undefined)}
+              requestedPracticeIntent={practiceNavigationRequest}
+              initialPracticeTarget={initialPracticeTarget}
+              onRequestedPracticeIntentConsumed={() => setPracticeNavigationRequest(undefined)}
+              onResumePosition={({ practiceUnitId, occurrenceId }) => saveResume('practice', { practiceUnitId, occurrenceId })}
+              onShowRelatedExplain={(occurrenceId, segmentId) => showRelatedExplain('practice', occurrenceId, segmentId)}
+              onAddToQueue={addToPracticeQueue}
+              activeQueueItemId={activeQueueItemId}
+              nextQueueHref={nextQueueItem
+                ? createPracticeQueueHref(nextQueueItem.songId, nextQueueItem.id, window.location)
+                : undefined}
             />
           ) : tab === 'all' ? (
             <FullSongWorkspace
               model={core.assembled}
               runtimeClient={runtimeClient}
               audioEngine={audioEngine}
-              onStartPracticeUnit={(practiceUnitId) => {
-                setPracticeNavigationRequest(practiceUnitId)
+              initialOccurrenceId={initialFullSongOccurrenceId}
+              onStartPracticeUnit={(practiceUnitId, occurrenceId) => {
+                setPracticeNavigationRequest({ practiceUnitId, occurrenceId })
                 changeTab('practice')
               }}
+              onShowRelatedExplain={(occurrenceId, segmentId) => showRelatedExplain('all', occurrenceId, segmentId)}
+              onAddToQueue={addToPracticeQueue}
+              onResumeOccurrence={(occurrenceId) => saveResume('all', { occurrenceId })}
             />
           ) : (
             <ExplainWorkspace
               model={core.assembled}
               runtimeClient={runtimeClient}
               audioEngine={audioEngine}
+              initialFeatureId={initialExplainFeatureId}
+              relatedContext={relatedExplainIntent}
+              onReturnToSource={explainSourceMode ? returnToExplainSource : undefined}
+              onResumeFeature={(featureId) => saveResume('explain', { featureId })}
             />
           )}
           {coverViewerOpen ? (
@@ -319,4 +437,92 @@ function describeEditionError(error: unknown): string {
 function playbackIdentity(edition: RuntimeSongEditionCore['edition']): string {
   return [edition.song.songId, edition.contentHash, edition.audio.sourceHash,
     edition.audio.runtimeHash, edition.timelineUrl].join(':')
+}
+
+function resolveEntryContext(
+  core: RuntimeSongEditionCore,
+  continueLastRequested?: boolean,
+  practiceQueueItemId?: string,
+): {
+  tab: SongEditionTab
+  practiceTarget?: ResumePracticeTarget
+  activeQueueItemId?: string
+  nextQueueItem?: PracticeQueueItem
+  fullSongOccurrenceId?: string
+  explainFeatureId?: string
+  message?: string
+} {
+  const practiceIndex = createPracticeIndex(core.practice, core.timeline)
+  if (practiceQueueItemId) {
+    const queue = readPracticeQueueStatus()
+    const item = queue.queue.items.find(({ id }) => id === practiceQueueItemId)
+    if (queue.invalid || !item) {
+      return { tab: 'practice', message: '待练项目无法验证，已安全打开普通学唱。' }
+    }
+    const matches = item.songId === core.edition.song.songId &&
+      item.editionContentHash === core.edition.contentHash &&
+      item.audioSourceHash === core.edition.audio.sourceHash &&
+      item.timelineUrl === core.edition.timelineUrl &&
+      item.practiceUnitId === practiceIndex.unitIdByOccurrenceId.get(item.occurrenceId) &&
+      core.assembled.segmentsById[item.segmentId] !== undefined &&
+      core.timeline.occurrences.some(({ id, segmentId }) =>
+        id === item.occurrenceId && segmentId === item.segmentId,
+      )
+    return matches
+      ? {
+          tab: 'practice',
+          practiceTarget: { practiceUnitId: item.practiceUnitId, occurrenceId: item.occurrenceId },
+          activeQueueItemId: item.id,
+          nextQueueItem: queue.queue.items[queue.queue.items.indexOf(item) + 1],
+        }
+      : { tab: 'practice', message: '待练项目对应的版本或歌词已变化，已安全打开普通学唱；队列项目仍保留。' }
+  }
+
+  if (!continueLastRequested) return { tab: 'practice' }
+  const saved = readResumeContext()
+  const currentIdentity = {
+    songId: core.edition.song.songId,
+    editionContentHash: core.edition.contentHash,
+    audioSourceHash: core.edition.audio.sourceHash,
+    timelineUrl: core.edition.timelineUrl,
+  }
+  if (!saved || saved.songId !== currentIdentity.songId) {
+    if (!saved) {
+      const legacy = readPracticeResumeMetadata(currentIdentity.songId)
+      const practiceUnitId = legacy
+        ? practiceIndex.unitIdByOccurrenceId.get(legacy.occurrenceId)
+        : undefined
+      if (legacy && practiceUnitId) {
+        return {
+          tab: 'practice',
+          practiceTarget: { practiceUnitId, occurrenceId: legacy.occurrenceId },
+        }
+      }
+    }
+    return { tab: 'practice', message: '没有可恢复的最近学习位置，已从学唱打开。' }
+  }
+  if (
+    saved.editionContentHash !== currentIdentity.editionContentHash ||
+    saved.audioSourceHash !== currentIdentity.audioSourceHash ||
+    saved.timelineUrl !== currentIdentity.timelineUrl
+  ) {
+    return { tab: 'practice', message: '最近位置与当前完整 Song Edition 不兼容，已安全回到学唱。' }
+  }
+  if (saved.mode === 'practice') {
+    const unitId = saved.occurrenceId
+      ? practiceIndex.unitIdByOccurrenceId.get(saved.occurrenceId)
+      : undefined
+    if (unitId && (!saved.practiceUnitId || saved.practiceUnitId === unitId)) {
+      return { tab: 'practice', practiceTarget: { practiceUnitId: unitId, occurrenceId: saved.occurrenceId! } }
+    }
+    return { tab: 'practice', message: '最近的学唱句子已不在当前版本中，已安全回到默认学唱位置。' }
+  }
+  if (saved.mode === 'all') {
+    return saved.occurrenceId && core.assembled.occurrencesById[saved.occurrenceId]
+      ? { tab: 'all', fullSongOccurrenceId: saved.occurrenceId }
+      : { tab: 'practice', message: '最近的全曲位置已不在当前版本中，已安全回到学唱。' }
+  }
+  return saved.featureId && core.edition.features.some(({ id }) => id === saved.featureId)
+    ? { tab: 'explain', explainFeatureId: saved.featureId }
+    : { tab: 'practice', message: '最近的讲解主题已不在当前版本中，已安全回到学唱。' }
 }

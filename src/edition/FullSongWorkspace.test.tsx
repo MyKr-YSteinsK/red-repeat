@@ -516,7 +516,7 @@ describe('FullSongWorkspace', () => {
     ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '开始学这一段 →' }))
-    expect(onStartPracticeUnit).toHaveBeenCalledWith('p001')
+    expect(onStartPracticeUnit).toHaveBeenCalledWith('p001', 'o002')
   })
 
   it('provides compact playback, accessible progress seeking, and shared speed controls', async () => {

@@ -32,7 +32,11 @@ export interface FullSongWorkspaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
-  onStartPracticeUnit?: (practiceUnitId: string) => void
+  onStartPracticeUnit?: (practiceUnitId: string, occurrenceId: string) => void
+  onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
+  onResumeOccurrence?: (occurrenceId: string) => void
+  initialOccurrenceId?: string
 }
 
 export function FullSongWorkspace({
@@ -40,9 +44,13 @@ export function FullSongWorkspace({
   runtimeClient,
   audioEngine,
   onStartPracticeUnit,
+  onShowRelatedExplain,
+  onAddToQueue,
+  onResumeOccurrence,
+  initialOccurrenceId,
 }: FullSongWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
-  const [selectedOccurrenceId, setSelectedOccurrenceId] = useSessionViewState<string | undefined>('full.occurrence', undefined)
+  const [selectedOccurrenceId, setSelectedOccurrenceId] = useSessionViewState<string | undefined>('full.occurrence', initialOccurrenceId)
   const [selectedSectionId, setSelectedSectionId] = useSessionViewState<string | undefined>('full.section', undefined)
   const [followLyrics, setFollowLyrics] = useSessionViewState('full.follow', true)
   const [hasVisitedFullSong, setHasVisitedFullSong] = useSessionViewState('full.hasVisited', false)
@@ -65,6 +73,7 @@ export function FullSongWorkspace({
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      onResumeOccurrence?.(assembledOccurrence.occurrence.id)
       setSelectedSectionId(undefined)
       setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
       setPendingPlaybackStartOccurrenceId(assembledOccurrence.occurrence.id)
@@ -72,11 +81,17 @@ export function FullSongWorkspace({
       setMessage(undefined)
       playback.playOccurrenceContinuously?.(assembledOccurrence)
     },
-    [playback, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
+    [onResumeOccurrence, playback, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
   const isPlaying = playback.audioState.status === 'playing'
+
+  useEffect(() => {
+    if (selectedOccurrenceId && model.occurrencesById[selectedOccurrenceId]) {
+      onResumeOccurrence?.(selectedOccurrenceId)
+    }
+  }, [model.occurrencesById, onResumeOccurrence, selectedOccurrenceId])
 
   useEffect(() => {
     if (!hasVisitedFullSong) setHasVisitedFullSong(true)
@@ -166,6 +181,7 @@ export function FullSongWorkspace({
   const handleReplayOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
+      onResumeOccurrence?.(assembledOccurrence.occurrence.id)
       setSelectedSectionId(undefined)
       setSkipAutoFollowOccurrenceId(assembledOccurrence.occurrence.id)
       setPendingPlaybackStartOccurrenceId(assembledOccurrence.occurrence.id)
@@ -191,7 +207,7 @@ export function FullSongWorkspace({
           }
         })
     },
-    [model.timingProvider, playback.engine, playback.session, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
+    [model.timingProvider, onResumeOccurrence, playback.engine, playback.session, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const handleStartPractice = useCallback(
@@ -200,7 +216,7 @@ export function FullSongWorkspace({
         assembledOccurrence.occurrence.id,
       )
       if (practiceUnitId) {
-        onStartPracticeUnit?.(practiceUnitId)
+        onStartPracticeUnit?.(practiceUnitId, assembledOccurrence.occurrence.id)
       }
     },
     [onStartPracticeUnit, practiceIndex],
@@ -331,6 +347,12 @@ export function FullSongWorkspace({
           onStartPracticeUnit={
             onStartPracticeUnit ? handleStartPractice : undefined
           }
+          onShowRelatedExplain={onShowRelatedExplain}
+          onAddToQueue={onAddToQueue ? (occurrence) => {
+            const result = onAddToQueue(occurrence)
+            setMessage(queueResultLabel(result))
+            return result
+          } : undefined}
         />
         <FullSongPlayer
           model={model}
@@ -367,6 +389,8 @@ interface FullSongLyricsProps {
   onReplayOccurrence: (occurrence: AssembledOccurrence) => void
   onSelectSection: (section: Section) => void
   onStartPracticeUnit?: (occurrence: AssembledOccurrence) => void
+  onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }
 
 function FullSongLyrics({
@@ -386,6 +410,8 @@ function FullSongLyrics({
   onReplayOccurrence,
   onSelectSection,
   onStartPracticeUnit,
+  onShowRelatedExplain,
+  onAddToQueue,
 }: FullSongLyricsProps) {
   const occurrenceElements = useRef(new Map<string, HTMLElement>())
   const pendingScrollSuppressionRef = useRef<string | undefined>(undefined)
@@ -497,6 +523,8 @@ function FullSongLyrics({
                   onSelect={onSelectOccurrence}
                   onReplay={onReplayOccurrence}
                   onStartPractice={onStartPracticeUnit}
+                  onShowRelatedExplain={onShowRelatedExplain}
+                  onAddToQueue={onAddToQueue}
                 />
               ))}
             </div>
@@ -519,6 +547,8 @@ function FullSongOccurrence({
   onSelect,
   onReplay,
   onStartPractice,
+  onShowRelatedExplain,
+  onAddToQueue,
 }: {
   assembledOccurrence: AssembledOccurrence
   activeOccurrenceIds: ReadonlySet<string>
@@ -531,6 +561,8 @@ function FullSongOccurrence({
   onSelect: (occurrence: AssembledOccurrence) => void
   onReplay: (occurrence: AssembledOccurrence) => void
   onStartPractice?: (occurrence: AssembledOccurrence) => void
+  onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }) {
   const { occurrence, segment } = assembledOccurrence
   const visibleLayers = visibleLyricLayers(segment.layers, romajiVisible)
@@ -593,10 +625,38 @@ function FullSongOccurrence({
               开始学这一段 →
             </button>
           ) : null}
+          {onShowRelatedExplain ? (
+            <button
+              className="full-song-quick-action"
+              type="button"
+              onClick={() => onShowRelatedExplain(occurrence.id, segment.id)}
+            >
+              看相关讲解
+            </button>
+          ) : null}
+          {onAddToQueue ? (
+            <button
+              className="full-song-quick-action"
+              type="button"
+              onClick={() => onAddToQueue(assembledOccurrence)}
+            >
+              加入待练
+            </button>
+          ) : null}
         </div>
       ) : null}
     </article>
   )
+}
+
+function queueResultLabel(result: 'added' | 'duplicate' | 'full' | 'unavailable'): string {
+  return result === 'added'
+    ? '已加入待练。'
+    : result === 'duplicate'
+      ? '这句已在待练队列中。'
+      : result === 'full'
+        ? '待练队列已满，请先移除一项。'
+        : '暂时无法保存待练项目；本机原有数据已保留。'
 }
 
 function FullSongPlayer({

@@ -1,6 +1,6 @@
 export type AppRoute =
   | { kind: 'library' }
-  | { kind: 'edition'; songId: string }
+  | { kind: 'edition'; songId: string; continueLast?: true; practiceQueueItemId?: string }
   | { kind: 'settings'; releaseVersion?: string }
   | { kind: 'timing-debugger'; songId?: string }
   | { kind: 'timeline-debugger'; songId?: string }
@@ -18,6 +18,7 @@ export function parseAppRoute(
   const debugMode = params.get('debug')?.trim()
   const timingMode = params.get('timing')?.trim()
   const songId = params.get('edition')?.trim()
+  const practiceQueueItemId = params.get('practiceItem')?.trim()
   const releaseVersion = params.get('release')?.trim()
 
   const devMode = import.meta.env.DEV && (options.devMode ?? true)
@@ -47,7 +48,16 @@ export function parseAppRoute(
     }
   }
 
-  return songId ? { kind: 'edition', songId } : { kind: 'library' }
+  return songId
+    ? {
+        kind: 'edition',
+        songId,
+        ...(practiceQueueItemId ? { practiceQueueItemId } : {}),
+        ...(!practiceQueueItemId && params.get('continue') === '1'
+          ? { continueLast: true as const }
+          : {}),
+      }
+    : { kind: 'library' }
 }
 
 export function createLibraryHref(location: NavigationLocation): string {
@@ -59,6 +69,21 @@ export function createEditionHref(
   location: NavigationLocation,
 ): string {
   return `${createAppPath(location)}#edition=${encodeURIComponent(songId)}`
+}
+
+export function createContinueHref(
+  songId: string,
+  location: NavigationLocation,
+): string {
+  return `${createAppPath(location)}#edition=${encodeURIComponent(songId)}&continue=1`
+}
+
+export function createPracticeQueueHref(
+  songId: string,
+  itemId: string,
+  location: NavigationLocation,
+): string {
+  return `${createAppPath(location)}#edition=${encodeURIComponent(songId)}&practiceItem=${encodeURIComponent(itemId)}`
 }
 
 export function createTimingDebuggerHref(

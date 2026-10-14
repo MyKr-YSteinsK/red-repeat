@@ -24,7 +24,7 @@ interface LyricDisplayPreferencesContextValue {
   update: (patch: Partial<Omit<LyricDisplayPreferences, 'version'>>) => void
 }
 
-const STORAGE_KEY = 'red-repeat:lyric-display-preferences:v1'
+export const LYRIC_DISPLAY_PREFERENCES_STORAGE_KEY = 'red-repeat:lyric-display-preferences:v1'
 
 export const DEFAULT_LYRIC_DISPLAY_PREFERENCES: LyricDisplayPreferences = {
   version: 1,
@@ -48,7 +48,7 @@ export function readLyricDisplayPreferences(
     const availableStorage =
       storage ?? (typeof window === 'undefined' ? undefined : window.localStorage)
     if (!availableStorage) return DEFAULT_LYRIC_DISPLAY_PREFERENCES
-    const raw = availableStorage.getItem(STORAGE_KEY)
+    const raw = availableStorage.getItem(LYRIC_DISPLAY_PREFERENCES_STORAGE_KEY)
     if (!raw) return DEFAULT_LYRIC_DISPLAY_PREFERENCES
     const parsed: unknown = JSON.parse(raw)
     if (!isLyricDisplayPreferences(parsed)) {
@@ -74,7 +74,7 @@ export function LyricDisplayPreferencesProvider({
       preferencesRef.current = next
       setPreferences(next)
       try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        window.localStorage.setItem(LYRIC_DISPLAY_PREFERENCES_STORAGE_KEY, JSON.stringify(next))
       } catch {
         // Reading controls still work for this page when browser storage is unavailable.
       }
@@ -208,8 +208,16 @@ export function useLyricAnchorPreservation(
   return capture
 }
 
-function isLyricDisplayPreferences(value: unknown): value is LyricDisplayPreferences {
-  if (!value || typeof value !== 'object') return false
+export function isLyricDisplayPreferences(value: unknown): value is LyricDisplayPreferences {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const record = value as Record<string, unknown>
+  if (
+    Object.keys(record).length !== 4 ||
+    !Object.hasOwn(record, 'version') ||
+    !Object.hasOwn(record, 'translationVisible') ||
+    !Object.hasOwn(record, 'romajiVisible') ||
+    !Object.hasOwn(record, 'textSize')
+  ) return false
   const candidate = value as Partial<LyricDisplayPreferences>
   return (
     candidate.version === 1 &&

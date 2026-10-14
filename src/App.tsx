@@ -13,6 +13,7 @@ import type { Catalog, CatalogEdition } from './library/runtime-schema'
 import {
   createEditionHref,
   createLibraryHref,
+  createContinueHref,
   createSettingsHref,
   parseAppRoute,
   type AppRoute,
@@ -28,6 +29,9 @@ import { hasWarmSongEditionCore, loadRuntimeSongEditionCore } from './runtime/so
 import { TimingDebuggerPage } from './debugger/TimingDebuggerPage'
 import { useSwipeReveal } from './library/use-swipe-reveal'
 import { SettingsPage } from './settings/SettingsPage'
+import { PracticeQueuePanel } from './practice/PracticeQueuePanel'
+import { readResumeContext } from './practice/resume-context'
+import { readPracticeResumeMetadata } from './practice/practice-state'
 import {
   getUpdateManager,
   type UpdateManager,
@@ -501,6 +505,27 @@ function CatalogLibrary({
   const filteredEditions = catalog.editions.filter((edition) =>
     matchesCatalogSearch(edition, normalizedQuery),
   )
+  const savedResumeContext = readResumeContext()
+  const savedResumeEdition = savedResumeContext
+    ? catalog.editions.find(({ songId }) => songId === savedResumeContext.songId)
+    : undefined
+  const legacyPracticeResume = savedResumeEdition
+    ? undefined
+    : catalog.editions
+      .map((edition) => ({ edition, metadata: readPracticeResumeMetadata(edition.songId) }))
+      .filter((entry) => entry.metadata?.updatedAt !== undefined)
+      .sort((left, right) => (right.metadata?.updatedAt ?? 0) - (left.metadata?.updatedAt ?? 0))[0]
+  const lastContext = savedResumeEdition && savedResumeContext
+    ? savedResumeContext
+    : legacyPracticeResume?.metadata
+      ? {
+          songId: legacyPracticeResume.edition.songId,
+          mode: 'practice' as const,
+          occurrenceId: legacyPracticeResume.metadata.occurrenceId,
+          practiceUnitId: legacyPracticeResume.metadata.practiceUnitId,
+        }
+      : undefined
+  const lastEdition = savedResumeEdition ?? legacyPracticeResume?.edition
 
   return (
     <main className="library library-populated" aria-labelledby="library-title">
@@ -517,6 +542,29 @@ function CatalogLibrary({
           />
         </label>
       </div>
+
+      {lastContext && lastEdition ? (
+        <section className="catalog-continue" aria-label="继续上次学习">
+          <div>
+            <p className="eyebrow">最近学习</p>
+            <h2>继续上次：{lastEdition.title}</h2>
+            <p>{resumeModeLabel(lastContext.mode)} · {lastContext.occurrenceId ?? '恢复到安全位置'}</p>
+          </div>
+          <a
+            className="catalog-continue-link"
+            href={createContinueHref(lastContext.songId, window.location)}
+            onClick={() => captureCatalogViewport(viewportRef)}
+          >
+            继续上次 →
+          </a>
+        </section>
+      ) : null}
+
+      <PracticeQueuePanel
+        catalog={catalog}
+        runtimeClient={runtimeClient}
+        onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
+      />
 
       <CatalogSection
         title="全部歌曲"
@@ -562,6 +610,10 @@ function CatalogLibrary({
       </CatalogSection>
     </main>
   )
+}
+
+function resumeModeLabel(mode: 'practice' | 'all' | 'explain'): string {
+  return mode === 'practice' ? '学唱' : mode === 'all' ? '全曲' : '讲解'
 }
 
 function CatalogSection({
@@ -848,6 +900,8 @@ function EditionRoute({
       runtimeClient={runtimeClient}
       homeHref={homeHref}
       preparedLoad={preparedLoad}
+      continueLastRequested={route.continueLast}
+      practiceQueueItemId={route.practiceQueueItemId}
     />
   )
 }

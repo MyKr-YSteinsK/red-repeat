@@ -25,6 +25,10 @@ export interface ExplainWorkspaceProps {
   model: AssembledSongEdition
   runtimeClient: RuntimeClient
   audioEngine?: AudioEngine
+  initialFeatureId?: string
+  relatedContext?: { segmentId: string; occurrenceId: string }
+  onReturnToSource?: () => void
+  onResumeFeature?: (featureId: string) => void
 }
 
 interface ExplainTopicEntry {
@@ -47,16 +51,26 @@ export function ExplainWorkspace({
   model,
   runtimeClient,
   audioEngine,
+  initialFeatureId,
+  relatedContext,
+  onReturnToSource,
+  onResumeFeature,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const [selectedTopicId, setSelectedTopicId] = useSessionViewState('explain.topic',
-    model.edition.features[0]?.id,
+    initialFeatureId ?? model.edition.features[0]?.id,
   )
   const [featureStates, setFeatureStates] = useSessionViewState<
     Readonly<Record<string, ExplainFeatureLoadState>>
   >('explain.features', {})
   const [retryByUrl, setRetryByUrl] = useState<Readonly<Record<string, number>>>({})
+  const [relatedLookup, setRelatedLookup] = useState<{
+    key: string
+    result: { status: 'found'; featureId: string } | { status: 'not-found' } | { status: 'unavailable' }
+  }>()
+  const relatedLookupKeyRef = useRef<string | undefined>(undefined)
   const startedRequestsRef = useRef(new Set<string>())
+  const featureLoadPromisesRef = useRef(new Map<string, Promise<ExplainArticle>>())
   const featureStatesRef = useRef(featureStates)
   const updateFeatureState = useCallback(
     (url: string, state: ExplainFeatureLoadState): void => {
@@ -66,6 +80,30 @@ export function ExplainWorkspace({
     },
     [setFeatureStates],
   )
+  const loadFeatureArticle = useCallback((
+    descriptor: RuntimeFeatureDescriptor,
+    signal: AbortSignal,
+  ): Promise<ExplainArticle> => {
+    const existing = featureLoadPromisesRef.current.get(descriptor.url)
+    if (existing) return existing
+    const request = runtimeClient
+      .loadFeature(descriptor, { signal })
+      .then((content) => parseFeatureArticle({ descriptor, content }))
+    featureLoadPromisesRef.current.set(descriptor.url, request)
+    void request.then(
+      () => {
+        if (featureLoadPromisesRef.current.get(descriptor.url) === request) {
+          featureLoadPromisesRef.current.delete(descriptor.url)
+        }
+      },
+      () => {
+        if (featureLoadPromisesRef.current.get(descriptor.url) === request) {
+          featureLoadPromisesRef.current.delete(descriptor.url)
+        }
+      },
+    )
+    return request
+  }, [runtimeClient])
   const topics = useMemo(
     () => createTopicEntries(model.edition.features, featureStates),
     [featureStates, model.edition.features],
@@ -76,6 +114,13 @@ export function ExplainWorkspace({
   const selectedRetry = selectedFeatureUrl
     ? retryByUrl[selectedFeatureUrl] ?? 0
     : 0
+  const relatedLookupKey = relatedContext
+    ? `${relatedContext.segmentId}\u0000${relatedContext.occurrenceId}`
+    : undefined
+  const activeRelatedLookup = useMemo(() => {
+    if (relatedLookup && relatedLookup.key === relatedLookupKey) return relatedLookup.result
+    return relatedContext ? { status: 'loading' as const } : undefined
+  }, [relatedContext, relatedLookup, relatedLookupKey])
   const topicHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const pendingTopicNavigationRef = useRef<{
     anchor: ReturnType<typeof captureScrollAnchor>
@@ -83,6 +128,91 @@ export function ExplainWorkspace({
   } | undefined>(undefined)
 
   useEffect(() => {
+    if (!relatedContext) {
+      relatedLookupKeyRef.current = undefined
+      return
+    }
+    const lookupKey = `${relatedContext.segmentId}\u0000${relatedContext.occurrenceId}`
+    if (relatedLookupKeyRef.current === lookupKey) return
+    relatedLookupKeyRef.current = lookupKey
+    if (model.edition.features.length === 0) {
+      void Promise.resolve().then(() => {
+        if (relatedLookupKeyRef.current === lookupKey) {
+          setRelatedLookup({ key: lookupKey, result: { status: 'not-found' } })
+        }
+      })
+      return
+    }
+    const controller = new AbortController()
+    let active = true
+    const descriptors = model.edition.features
+    const readyTopics = descriptors.flatMap((descriptor) => {
+      const state = featureStatesRef.current[descriptor.url]
+      return state?.status === 'ready'
+        ? [{ descriptor, article: state.article }]
+        : []
+    })
+    const readyMatch = readyTopics.find(({ article }) => article.blocks.some(
+      (block) => block.kind === 'lyric-reference' && block.segmentId === relatedContext.segmentId,
+    ))
+    if (readyMatch) {
+      void Promise.resolve().then(() => {
+        if (!active) return
+        setSelectedTopicId(readyMatch.descriptor.id)
+        setRelatedLookup({
+          key: lookupKey,
+          result: { status: 'found', featureId: readyMatch.descriptor.id },
+        })
+      })
+      return () => {
+        active = false
+        controller.abort()
+      }
+    }
+
+    void Promise.all(descriptors.map(async (descriptor) => {
+      const cached = featureStatesRef.current[descriptor.url]
+      if (cached?.status === 'ready') return { descriptor, article: cached.article }
+      const article = await loadFeatureArticle(descriptor, controller.signal)
+      return { descriptor, article }
+    })).then((loaded) => {
+      if (!active) return
+      for (const { descriptor, article } of loaded) {
+        updateFeatureState(descriptor.url, { status: 'ready', article })
+      }
+      const match = loaded.find(({ article }) => article.blocks.some(
+        (block) => block.kind === 'lyric-reference' && block.segmentId === relatedContext.segmentId,
+      ))
+      if (match) {
+        setSelectedTopicId(match.descriptor.id)
+        setRelatedLookup({
+          key: lookupKey,
+          result: { status: 'found', featureId: match.descriptor.id },
+        })
+      } else {
+        setRelatedLookup({ key: lookupKey, result: { status: 'not-found' } })
+      }
+    }).catch((error: unknown) => {
+      if (active && !(error instanceof RuntimeClientError && error.kind === 'abort')) {
+        setRelatedLookup({ key: lookupKey, result: { status: 'unavailable' } })
+      }
+    })
+    return () => {
+      active = false
+      controller.abort()
+    }
+  }, [loadFeatureArticle, model.edition.features, relatedContext, setSelectedTopicId, updateFeatureState])
+
+  useEffect(() => {
+    if (!selectedTopic) return
+    if (relatedContext && (
+      activeRelatedLookup?.status !== 'found' || activeRelatedLookup.featureId !== selectedTopic.id
+    )) return
+    onResumeFeature?.(selectedTopic.id)
+  }, [activeRelatedLookup, onResumeFeature, relatedContext, selectedTopic])
+
+  useEffect(() => {
+    if (relatedContext && activeRelatedLookup?.status === 'loading') return
     const descriptor = selectedDescriptor
     if (!descriptor) {
       return
@@ -102,13 +232,12 @@ export function ExplainWorkspace({
     let active = true
     const controller = new AbortController()
     updateFeatureState(descriptor.url, { status: 'loading' })
-    void runtimeClient
-      .loadFeature(descriptor, { signal: controller.signal })
-      .then((content) => {
+    void loadFeatureArticle(descriptor, controller.signal)
+      .then((article) => {
         if (active) {
           updateFeatureState(descriptor.url, {
             status: 'ready',
-            article: parseFeatureArticle({ descriptor, content }),
+            article,
           })
         }
       })
@@ -130,8 +259,11 @@ export function ExplainWorkspace({
     }
   }, [
     runtimeClient,
+    loadFeatureArticle,
     selectedDescriptor,
     selectedRetry,
+    relatedContext,
+    activeRelatedLookup?.status,
     updateFeatureState,
   ])
 
@@ -199,6 +331,11 @@ export function ExplainWorkspace({
           <p className="eyebrow">讲解</p>
           <h2>从作品里听见更多。</h2>
         </div>
+        {onReturnToSource ? (
+          <button className="explain-return-source" type="button" onClick={onReturnToSource}>
+            返回来源位置
+          </button>
+        ) : null}
         {topics.length > 1 ? (
           <label className="explain-topic-select">
             <span>选择主题</span>
@@ -223,6 +360,10 @@ export function ExplainWorkspace({
           </label>
         ) : null}
       </header>
+
+      {activeRelatedLookup?.status === 'loading' ? <p className="explain-related-status" role="status">正在查找引用这句歌词的讲解…</p> : null}
+      {activeRelatedLookup?.status === 'not-found' ? <p className="explain-related-status" role="status">暂无引用这句歌词的讲解。</p> : null}
+      {activeRelatedLookup?.status === 'unavailable' ? <p className="explain-related-status" role="status">讲解暂时无法核对；学唱和全曲仍可使用。</p> : null}
 
       <div className="explain-workspace-layout">
         <nav className="explain-topic-directory" aria-label="讲解主题目录">
@@ -252,6 +393,7 @@ export function ExplainWorkspace({
                     segmentId={segmentId}
                     audioEngine={playback.engine}
                     playbackSession={playback.session}
+                    preferredOccurrenceId={relatedContext?.segmentId === segmentId ? relatedContext.occurrenceId : undefined}
                   />
                 )}
               />

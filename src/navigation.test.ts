@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   createEditionHref,
+  createContinueHref,
+  createPracticeQueueHref,
   createLibraryHref,
   createSettingsHref,
   createTimingDebuggerHref,
@@ -26,6 +28,25 @@ describe('static-safe navigation', () => {
     expect(parseAppRoute({ hash: '#edition=first-light' })).toEqual({
       kind: 'edition',
       songId: 'first-light',
+    })
+  })
+
+  it('adds explicit, one-shot entry intents for continue and the practice queue', () => {
+    expect(createContinueHref('first-light', location)).toBe(
+      '/red-repeat/?view=archive#edition=first-light&continue=1',
+    )
+    expect(parseAppRoute({ hash: '#edition=first-light&continue=1' })).toEqual({
+      kind: 'edition',
+      songId: 'first-light',
+      continueLast: true,
+    })
+    expect(createPracticeQueueHref('first-light', 'first-light:a:o001', location)).toBe(
+      '/red-repeat/?view=archive#edition=first-light&practiceItem=first-light%3Aa%3Ao001',
+    )
+    expect(parseAppRoute({ hash: '#edition=first-light&practiceItem=item-123' })).toEqual({
+      kind: 'edition',
+      songId: 'first-light',
+      practiceQueueItemId: 'item-123',
     })
   })
 

@@ -5,6 +5,7 @@ import type { LyricsDocument, PracticeDocument, TimelineDocument } from '../libr
 import { buildInfo } from '../release/build-info'
 import { createUpdateManager } from '../pwa/update-manager'
 import type { RuntimeClient } from '../runtime/runtime-client'
+import { getPracticeRateStorageKey } from '../practice/practice-rate'
 import { SettingsPage } from './SettingsPage'
 
 const newerVersion = nextPatchVersion(buildInfo.version)
@@ -69,7 +70,9 @@ const timeline: TimelineDocument = {
     endMs: 350,
   }],
 }
-const practice: PracticeDocument = { units: [] }
+const practice: PracticeDocument = {
+  units: [{ id: 'p001', sectionId: 'verse', label: '主歌', occurrenceIds: ['o001'] }],
+}
 
 function runtimeClient(): RuntimeClient {
   return {
@@ -136,6 +139,63 @@ describe('SettingsPage', () => {
     expect(
       await screen.findByText('当前没有待合入的播放切口微调。'),
     ).toBeInTheDocument()
+  })
+
+  it('previews a backup without writes and applies a selected explicit overwrite only after confirmation', async () => {
+    const rateKey = getPracticeRateStorageKey('first-light')
+    window.localStorage.setItem(rateKey, '1')
+    const backupRaw = JSON.stringify({
+      format: 'red-repeat-personal-backup',
+      schemaVersion: 1,
+      createdAt: '2026-10-14T00:00:00.000Z',
+      payload: {
+        practice: [],
+        rates: [{
+          identity: {
+            songId: 'first-light',
+            editionContentHash: edition.contentHash,
+            audioSourceHash: edition.audio.sourceHash,
+            timelineUrl: edition.timelineUrl,
+          },
+          value: 0.6,
+        }],
+        timingOverrides: [],
+      },
+    })
+    const backupFile = new File([], 'backup.json', { type: 'application/json' })
+    Object.defineProperty(backupFile, 'text', {
+      value: async () => backupRaw,
+    })
+
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText('选择本机 JSON 备份'), {
+      target: { files: [backupFile] },
+    })
+    expect(await screen.findByText(/预览已完成；当前尚未写入/)).toBeInTheDocument()
+    expect(window.localStorage.getItem(rateKey)).toBe('1')
+    expect(screen.getByText(/播放速度：新增 0，已有冲突 1/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText(/播放速度：/))
+    fireEvent.click(screen.getByLabelText('明确覆盖该域中身份相同的已有值'))
+    fireEvent.click(screen.getByLabelText(/播放速度：/))
+    fireEvent.click(screen.getByLabelText(/播放速度：/))
+    expect(screen.getByLabelText('明确覆盖该域中身份相同的已有值')).not.toBeChecked()
+    fireEvent.click(screen.getByLabelText('明确覆盖该域中身份相同的已有值'))
+    const confirm = screen.getByRole('button', { name: '确认导入所选数据域' })
+    expect(confirm).toBeEnabled()
+    expect(window.localStorage.getItem(rateKey)).toBe('1')
+    fireEvent.click(confirm)
+
+    expect(await screen.findByText(/已恢复 1 项本机状态/)).toBeInTheDocument()
+    expect(window.localStorage.getItem(rateKey)).toBe('0.6')
   })
 
   it('manually checks for a newer build without offering an immediate reload action', async () => {

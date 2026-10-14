@@ -10,6 +10,7 @@ export interface ExplainLyricQuoteProps {
   segmentId: string
   audioEngine?: AudioEngine | null
   playbackSession?: SongPlaybackSession | null
+  preferredOccurrenceId?: string
 }
 
 export function ExplainLyricQuote({
@@ -17,6 +18,7 @@ export function ExplainLyricQuote({
   segmentId,
   audioEngine,
   playbackSession,
+  preferredOccurrenceId,
 }: ExplainLyricQuoteProps) {
   const segment = model.segmentsById[segmentId]
   const occurrences = useMemo(
@@ -34,6 +36,12 @@ export function ExplainLyricQuote({
   const [message, setMessage] = useState<string>()
   const [playingOccurrenceId, setPlayingOccurrenceId] = useState<string>()
   const operationRef = useRef(0)
+
+  useEffect(() => {
+    if (preferredOccurrenceId && occurrences.some(({ occurrence }) => occurrence.id === preferredOccurrenceId)) {
+      setSelectedOccurrenceId(preferredOccurrenceId)
+    }
+  }, [occurrences, preferredOccurrenceId, setSelectedOccurrenceId])
 
   useEffect(() => {
     localSession?.activate()

@@ -4,6 +4,7 @@ import {
   loadPracticeLearningState,
   readPracticeResumeMetadata,
   resolvePracticeResumeSummary,
+  parsePracticeLearningStateForBackup,
   savePracticeLearningState,
   setCurrentPracticeOccurrence,
   type PracticeStorage,
@@ -91,6 +92,20 @@ describe('Practice learning state', () => {
       occurrenceId: 'o002',
     })
     expect(storage.writeCount).toBe(0)
+  })
+
+  it('validates backup Practice state against current Occurrence-to-Unit identity without normalizing it', () => {
+    const valid = {
+      schemaVersion: 1,
+      practiceUnitId: 'p001',
+      currentOccurrenceId: 'o002',
+      coveredUntilByUnit: { p001: 'o002' },
+      updatedAt: 5,
+    }
+    expect(parsePracticeLearningStateForBackup(valid, practice, timeline)).toEqual(valid)
+    expect(parsePracticeLearningStateForBackup({ ...valid, currentOccurrenceId: 'o003' }, practice, timeline)).toBeUndefined()
+    expect(parsePracticeLearningStateForBackup({ ...valid, coveredUntilByUnit: { p001: 'o003' } }, practice, timeline)).toBeUndefined()
+    expect(parsePracticeLearningStateForBackup({ ...valid, extra: true }, practice, timeline)).toBeUndefined()
   })
 
   it('resolves a legacy resume summary without manufacturing updatedAt', () => {

@@ -54,6 +54,14 @@ export interface PracticeWorkspaceProps {
   audioEngine?: AudioEngine
   requestedPracticeUnitId?: string
   onRequestedPracticeUnitConsumed?: () => void
+  requestedPracticeIntent?: { practiceUnitId: string; occurrenceId: string }
+  onRequestedPracticeIntentConsumed?: () => void
+  initialPracticeTarget?: { practiceUnitId: string; occurrenceId: string }
+  onResumePosition?: (target: { practiceUnitId: string; occurrenceId: string }) => void
+  onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
+  activeQueueItemId?: string
+  nextQueueHref?: string
 }
 
 export function PracticeWorkspace({
@@ -62,6 +70,14 @@ export function PracticeWorkspace({
   audioEngine,
   requestedPracticeUnitId,
   onRequestedPracticeUnitConsumed,
+  requestedPracticeIntent,
+  onRequestedPracticeIntentConsumed,
+  initialPracticeTarget,
+  onResumePosition,
+  onShowRelatedExplain,
+  onAddToQueue,
+  activeQueueItemId,
+  nextQueueHref,
 }: PracticeWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
   const practiceIndex = useMemo(
@@ -69,7 +85,7 @@ export function PracticeWorkspace({
     [model.practice, model.timeline],
   )
   const [learningState, setLearningState] = useSessionViewState<PracticeLearningState>('practice.selection', () =>
-    loadSafeLearningState(model, practiceIndex),
+    loadSafeLearningState(model, practiceIndex, initialPracticeTarget),
   )
   const [continuousPlayback, setContinuousPlayback] = useSessionViewState('practice.continuous', false)
   const [rampPractice, setRampPractice] = useSessionViewState('practice.ramp', false)
@@ -79,10 +95,16 @@ export function PracticeWorkspace({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [moreControlsExpanded, setMoreControlsExpanded] = useState(false)
   const [message, setMessage] = useState<string>()
+  const [completedQueueItemId, setCompletedQueueItemId] = useState<string>()
   const workspaceRef = useRef<HTMLElement | null>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
-  const pendingNavigationRef = useRef(false)
+  const pendingNavigationRef = useRef(Boolean(initialPracticeTarget))
+  const pendingOccurrenceNavigationRef = useRef(Boolean(initialPracticeTarget))
+  const initialPracticeTargetKey = initialPracticeTarget
+    ? `${initialPracticeTarget.practiceUnitId}\u0000${initialPracticeTarget.occurrenceId}`
+    : undefined
+  const previousInitialPracticeTargetKey = useRef(initialPracticeTargetKey)
   const { preferences } = useLyricDisplayPreferences()
   const preserveLyricAnchor = useLyricAnchorPreservation(
     workspaceRef,
@@ -96,6 +118,14 @@ export function PracticeWorkspace({
     ? model.occurrencesById[learningState.currentOccurrenceId] ??
       model.occurrencesById[currentUnit.occurrenceIds[0]]
     : undefined
+  useEffect(() => {
+    if (currentUnit && currentOccurrence) {
+      onResumePosition?.({
+        practiceUnitId: currentUnit.id,
+        occurrenceId: currentOccurrence.occurrence.id,
+      })
+    }
+  }, [currentOccurrence, currentUnit, onResumePosition])
   const followsPlayback =
     (continuousPlayback || rampPractice) && playback.audioState.status === 'playing'
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
@@ -108,8 +138,12 @@ export function PracticeWorkspace({
     (nextState: PracticeLearningState): void => {
       setLearningState(nextState)
       savePracticeLearningState(model.edition.song.songId, nextState)
+      onResumePosition?.({
+        practiceUnitId: nextState.practiceUnitId,
+        occurrenceId: nextState.currentOccurrenceId,
+      })
     },
-    [model.edition.song.songId, setLearningState],
+    [model.edition.song.songId, onResumePosition, setLearningState],
   )
 
   const selectOccurrence = useCallback(
@@ -132,6 +166,7 @@ export function PracticeWorkspace({
       }
       playback.session?.cancelPractice()
       pendingNavigationRef.current = true
+      pendingOccurrenceNavigationRef.current = false
       const nextState = focusPracticeUnitStart(
         learningState,
         practiceIndex,
@@ -144,18 +179,71 @@ export function PracticeWorkspace({
     [learningState, persistLearningState, practiceIndex, playback.session],
   )
 
+  useEffect(() => {
+    if (!initialPracticeTargetKey) {
+      previousInitialPracticeTargetKey.current = undefined
+      return
+    }
+    if (previousInitialPracticeTargetKey.current === initialPracticeTargetKey) {
+      return
+    }
+
+    const practiceUnitId = initialPracticeTarget?.practiceUnitId
+    const occurrenceId = initialPracticeTarget?.occurrenceId
+    if (!practiceUnitId || !occurrenceId) return
+
+    const timeout = globalThis.setTimeout(() => {
+      previousInitialPracticeTargetKey.current = initialPracticeTargetKey
+      const unit = practiceIndex.unitsById.get(practiceUnitId)
+      if (!unit || !unit.occurrenceIds.includes(occurrenceId)) {
+        setMessage('这条待练目标目前不属于可用的练习段。')
+        return
+      }
+
+      playback.session?.cancelPractice()
+      pendingNavigationRef.current = true
+      pendingOccurrenceNavigationRef.current = true
+      const focusedState = focusPracticeUnitStart(
+        learningState,
+        practiceIndex,
+        unit.id,
+      )
+      persistLearningState(
+        setCurrentPracticeOccurrence(focusedState, practiceIndex, occurrenceId),
+      )
+      setCompletedQueueItemId(undefined)
+      setMessage(undefined)
+    }, 0)
+
+    return () => globalThis.clearTimeout(timeout)
+  }, [
+    initialPracticeTargetKey,
+    initialPracticeTarget?.practiceUnitId,
+    initialPracticeTarget?.occurrenceId,
+    learningState,
+    practiceIndex,
+    persistLearningState,
+    playback.session,
+  ])
+
   useLayoutEffect(() => {
     if (!pendingNavigationRef.current) {
       return
     }
     pendingNavigationRef.current = false
+    const target = pendingOccurrenceNavigationRef.current
+      ? Array.from(
+          workspaceRef.current?.querySelectorAll<HTMLElement>('[data-occurrence-id]') ?? [],
+        ).find((element) => element.dataset.occurrenceId === learningState.currentOccurrenceId)
+      : lyricsAnchorRef.current
+    pendingOccurrenceNavigationRef.current = false
     restoreScrollPolicy(
       'reveal-content-start',
       undefined,
-      lyricsAnchorRef.current,
+      target ?? lyricsAnchorRef.current,
       96,
     )
-  }, [learningState.practiceUnitId])
+  }, [learningState.practiceUnitId, learningState.currentOccurrenceId])
 
   useLayoutEffect(() => {
     const workspace = workspaceRef.current
@@ -252,8 +340,12 @@ export function PracticeWorkspace({
             model.timingProvider,
           )
       setMessage(undefined)
+      setCompletedQueueItemId(undefined)
       const completion = await playback.session?.playPractice(range, occurrenceId, rampPractice ? PRACTICE_SPEEDS : [playbackRate], playbackRate)
       if (completion?.status === 'errored') setMessage(completion.error.message)
+      if (completion?.status === 'completed' && activeQueueItemId) {
+        setCompletedQueueItemId(activeQueueItemId)
+      }
     },
     [
       continuousPlayback,
@@ -265,25 +357,42 @@ export function PracticeWorkspace({
       practiceIndex,
       playbackRate,
       rampPractice,
+      activeQueueItemId,
     ],
   )
 
   const consumedRequest = useRef<string | undefined>(undefined)
-  useEffect(() => {
-    if (!requestedPracticeUnitId) { consumedRequest.current = undefined; return }
-    if (consumedRequest.current === requestedPracticeUnitId) return
-    const request = requestedPracticeUnitId
-    const timeout = globalThis.setTimeout(() => {
-      consumedRequest.current = request
-      const unit = practiceIndex.unitsById.get(request)
-      if (unit) {
-        navigatePracticeUnit(unit.id)
-        void playSelection(unit.occurrenceIds[0], true)
+  const legacyIntent = requestedPracticeUnitId
+    ? {
+        practiceUnitId: requestedPracticeUnitId,
+        occurrenceId: practiceIndex.unitsById.get(requestedPracticeUnitId)?.occurrenceIds[0] ?? '',
       }
+    : undefined
+  const requestedIntent = requestedPracticeIntent ?? legacyIntent
+  const requestKey = requestedIntent
+    ? `${requestedIntent.practiceUnitId}\u0000${requestedIntent.occurrenceId}`
+    : undefined
+  useEffect(() => {
+    if (!requestedIntent || !requestKey) { consumedRequest.current = undefined; return }
+    if (consumedRequest.current === requestKey) return
+    const request = requestedIntent
+    const timeout = globalThis.setTimeout(() => {
+      consumedRequest.current = requestKey
+      const unit = practiceIndex.unitsById.get(request.practiceUnitId)
+      if (unit && unit.occurrenceIds.includes(request.occurrenceId)) {
+        navigatePracticeUnit(unit.id)
+        selectOccurrence(request.occurrenceId)
+        pendingNavigationRef.current = true
+        pendingOccurrenceNavigationRef.current = Boolean(requestedPracticeIntent)
+        void playSelection(request.occurrenceId, true)
+      } else {
+        setMessage('这句目前不属于可用的练习段。')
+      }
+      onRequestedPracticeIntentConsumed?.()
       onRequestedPracticeUnitConsumed?.()
     }, 0)
     return () => globalThis.clearTimeout(timeout)
-  }, [requestedPracticeUnitId, practiceIndex, navigatePracticeUnit, playSelection, onRequestedPracticeUnitConsumed])
+  }, [requestKey, requestedIntent, requestedPracticeIntent, practiceIndex, navigatePracticeUnit, selectOccurrence, playSelection, onRequestedPracticeIntentConsumed, onRequestedPracticeUnitConsumed])
 
   const handleOccurrenceClick = (occurrenceId: string): void => {
     selectOccurrence(occurrenceId)
@@ -402,6 +511,8 @@ export function PracticeWorkspace({
                   translationVisible={preferences.translationVisible}
                   romajiVisible={preferences.romajiVisible}
                   onPlay={() => handleOccurrenceClick(assembledOccurrence.occurrence.id)}
+                  onShowRelatedExplain={onShowRelatedExplain}
+                  onAddToQueue={onAddToQueue}
                 />
               ))}
             </ol>
@@ -517,6 +628,17 @@ export function PracticeWorkspace({
           开启渐速练习时，播放会按 0.60x、0.80x、1.00x 依次进行；速度按钮仍可设置关闭渐速后的播放速度。
         </p>
         {message ? <p className="practice-message" role="status">{message}</p> : null}
+        {activeQueueItemId && completedQueueItemId === activeQueueItemId ? (
+          <div className="practice-queue-completion" role="status">
+            <p>本次有界练习已自然结束。待练标记仍保留。</p>
+            <button type="button" onClick={() => {
+              setCompletedQueueItemId(undefined)
+              if (currentOccurrence) void playSelection(currentOccurrence.occurrence.id)
+            }}>再练这句</button>
+            {nextQueueHref ? <a href={nextQueueHref}>下一条待练</a> : null}
+            <button type="button" onClick={() => setCompletedQueueItemId(undefined)}>稍后练</button>
+          </div>
+        ) : null}
       </aside>
       <PracticeSegmentPicker
         units={practiceIndex.units}
@@ -536,6 +658,8 @@ function PracticeLyricRow({
   translationVisible,
   romajiVisible,
   onPlay,
+  onShowRelatedExplain,
+  onAddToQueue,
 }: {
   assembledOccurrence: AssembledOccurrence
   lyricNumber: number
@@ -543,9 +667,12 @@ function PracticeLyricRow({
   translationVisible: boolean
   romajiVisible: boolean
   onPlay: () => void
+  onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }) {
   const { occurrence, segment } = assembledOccurrence
   const visibleLayers = visibleLyricLayers(segment.layers, romajiVisible)
+  const [queueFeedback, setQueueFeedback] = useState<string>()
   return (
     <li
       className={`practice-lyric-row${isCurrent ? ' is-current' : ''}`}
@@ -586,6 +713,24 @@ function PracticeLyricRow({
             </div>
           </details>
         ) : null}
+        {isCurrent ? (
+          <div className="practice-lyric-context-actions" aria-label="当前句操作">
+            {onShowRelatedExplain ? (
+              <button type="button" onClick={() => onShowRelatedExplain(occurrence.id, segment.id)}>
+                看相关讲解
+              </button>
+            ) : null}
+            {onAddToQueue ? (
+              <button
+                type="button"
+                onClick={() => setQueueFeedback(queueResultLabel(onAddToQueue(assembledOccurrence)))}
+              >
+                加入待练
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+        {queueFeedback ? <p className="practice-queue-feedback" role="status">{queueFeedback}</p> : null}
       </div>
     </li>
   )
@@ -594,6 +739,7 @@ function PracticeLyricRow({
 function loadSafeLearningState(
   model: AssembledSongEdition,
   practiceIndex: PracticeIndex,
+  initialTarget?: { practiceUnitId: string; occurrenceId: string },
 ): PracticeLearningState {
   if (practiceIndex.units.length === 0) {
     return {
@@ -604,14 +750,35 @@ function loadSafeLearningState(
     }
   }
   try {
-    return loadPracticeLearningState(
+    const state = loadPracticeLearningState(
       model.edition.song.songId,
       model.practice,
       model.timeline,
     )
+    if (
+      initialTarget &&
+      practiceIndex.unitIdByOccurrenceId.get(initialTarget.occurrenceId) === initialTarget.practiceUnitId
+    ) {
+      return {
+        ...state,
+        practiceUnitId: initialTarget.practiceUnitId,
+        currentOccurrenceId: initialTarget.occurrenceId,
+      }
+    }
+    return state
   } catch {
     return createInitialPracticeState(practiceIndex)
   }
+}
+
+function queueResultLabel(result: 'added' | 'duplicate' | 'full' | 'unavailable'): string {
+  return result === 'added'
+    ? '已加入待练。'
+    : result === 'duplicate'
+      ? '这句已在待练队列中。'
+      : result === 'full'
+        ? '待练队列已满，请先移除一项。'
+        : '暂时无法保存待练项目；本机原有数据已保留。'
 }
 
 function normalizePracticeSpeed(value: number): PracticeSpeed {

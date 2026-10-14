@@ -3958,3 +3958,259 @@
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   }
 }
+
+/* RED-Plan-68: local resume, manual practice queue, and personal backup. */
+.catalog-continue,
+.practice-queue-panel {
+  margin-top: 1.4rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.catalog-continue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.catalog-continue .eyebrow,
+.practice-queue-heading .eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--color-muted);
+}
+
+.catalog-continue h2,
+.practice-queue-heading h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.catalog-continue p:last-child {
+  margin: 0.45rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.catalog-continue-link,
+.practice-queue-open {
+  flex: 0 0 auto;
+  color: var(--color-red);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.practice-queue-panel {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.practice-queue-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.practice-queue-toggle,
+.practice-queue-entry-actions button {
+  min-height: 2rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.practice-queue-toggle:hover,
+.practice-queue-toggle:focus-visible,
+.practice-queue-entry-actions button:not(:disabled):hover,
+.practice-queue-entry-actions button:not(:disabled):focus-visible {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.practice-queue-entry-actions button:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.practice-queue-status,
+.practice-queue-feedback,
+.explain-related-status,
+.song-entry-message,
+.personal-backup-message {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.practice-queue-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-line);
+  list-style: none;
+}
+
+.practice-queue-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.practice-queue-entry-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.practice-queue-entry-copy strong {
+  overflow-wrap: anywhere;
+  color: var(--color-ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.practice-queue-entry-copy span {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.4;
+}
+
+.practice-queue-entry-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.practice-queue-feedback,
+.practice-queue-completion {
+  margin-top: 0.85rem;
+}
+
+.practice-queue-completion {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-ink);
+}
+
+.practice-queue-completion p {
+  margin: 0;
+}
+
+.practice-queue-completion-actions,
+.practice-lyric-context-actions,
+.personal-backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+}
+
+.practice-lyric-context-actions {
+  margin-top: 0.4rem;
+}
+
+.practice-lyric-context-actions button,
+.explain-return-source {
+  padding: 0;
+  border: 0;
+  color: var(--color-red);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.explain-return-source {
+  align-self: center;
+}
+
+.personal-backup-actions {
+  margin-top: 0.75rem;
+}
+
+.personal-backup-file {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.personal-backup-file input {
+  max-width: min(100%, 18rem);
+}
+
+.personal-backup-safety-note {
+  margin: 0.85rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.personal-backup-preview {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.personal-backup-domain {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.personal-backup-overwrite {
+  color: var(--color-muted);
+  font-size: 0.76rem;
+}
+
+@media (max-width: 640px) {
+  .catalog-continue {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .practice-queue-entry {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .practice-queue-entry-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .personal-backup-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
