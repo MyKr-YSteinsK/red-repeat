@@ -11,13 +11,14 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.19.1`. This metadata prepares the
+- Current package/ledger user version: `1.20.0`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.19.1` / `v1.19.1 -> 40b0b73` (product commit
+- Latest ledger/prepared tag: `1.20.0` / `v1.20.0 -> dc2dc84` (product commit
   date `2026-10-14`); the following release-metadata commit is the independent
-  build identity. Existing `v1.19.0 -> d8f0d5f`, `v1.16.0 -> a863d57`,
+  build identity. Existing `v1.19.1 -> 40b0b73`, `v1.19.0 -> d8f0d5f`,
+  `v1.16.0 -> a863d57`,
   `v1.15.0 -> 19e45d1`,
   `v1.14.0 -> 123ad02`,
   `v1.13.1 -> 9bfd6ab`,
@@ -63,8 +64,14 @@ evidence only.
 
 ## Current product capabilities
 
-- Local-first Catalog loading/search, metadata-focused Song Edition cards and
+- Local-first Catalog loading, metadata-focused Song Edition cards and
   explicit per-song identity-coherent offline snapshot install/removal.
+- Catalog search normalizes Unicode width, case, whitespace and songId
+  separators, AND-matches title/artist/album/songId terms, and includes only
+  the two traceable simplified-title aliases recorded in the search owner.
+  The session-local “仅显示离线可用” filter displays the identity-verified
+  installed `snapshotEdition`, including H1 while Catalog H2 refresh is pending;
+  pending, failed and unavailable verification are not reported as no matches.
 - Practice-ready Core is independent of optional Explain articles. Warm Catalog
   navigation retains the mounted Catalog until the active manifest/core is
   confirmed, then hands that entry's result to the Song Edition page; cached
@@ -971,11 +978,17 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- No formal RED-Plan is active. `RED-Plan-69` R1 closes the Chinese delivery
-  contract and one measured Full Song scrub improvement in the `1.19.1` PATCH;
-  product commit `40b0b7303be477cd5532b138f77f6dbb672fee49` is the annotated
-  tag target. The following release-metadata commit is the independent build
-  identity. Push, CI, Pages and production identity are verified at delivery.
+- `RED-Plan-70` R1 was a read-only milestone checkpoint. `RED-Plan-71` R1
+  completes Catalog search and offline-availability filtering as a `1.20.0`
+  MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
+  is the annotated tag target, and the following release-metadata commit is
+  the independent build identity. Push, CI, Pages and production identity are
+  verified separately at delivery.
+- No next formal Plan is active. Future product work requires a separately
+  authorized Plan; no additional A–E proposal or architecture is implicitly
+  started by this completion.
+- The RED-Plan-69 measurement details below remain historical evidence for
+  `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
   Chinese, records the active `SongPlaybackSession` owner and current
   D-024/D-026 behavior, and preserves targeted verification with all matching
@@ -1331,3 +1344,27 @@ each historical task and do not replace the current repository identity above.
   as normal Production maintenance and feature evolution. Future boundary
   regressions reopen matching validation, but do not automatically downgrade
   lifecycle.
+
+## RED-Plan-71 implementation and release status
+
+- `src/library/catalog-search.ts` owns NFKC/lowercase/whitespace normalization,
+  multi-token AND matching over canonical Catalog fields and songId tokens,
+  and two documented simplified-title aliases. No guessed Chinese translation
+  aliases or canonical Song Edition source changes were introduced.
+- Catalog's “仅显示离线可用” filter includes only `installed` states with a
+  same-song `snapshotEdition` returned by the offline snapshot owner. It shows
+  the installed edition itself, keeps H1 available during an H2 background
+  refresh, preserves Continue and queue surfaces, and distinguishes checking,
+  unverifiable and confirmed-empty results. Filter/search state remains in App
+  memory across same-document navigation.
+- Product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d` is the annotated
+  `v1.20.0` MINOR tag target. Release metadata is committed separately; this
+  source records the package/ledger release identity, while push, exact-SHA CI,
+  Pages deployment and live identity remain separate delivery observations.
+- Verification: Catalog/App tests `28/28` passed; existing
+  `src/pwa/song-download.test.ts` tests `8/8` passed; targeted ESLint passed;
+  one candidate `npm run build` passed for six editions and 89 runtime files.
+  Build emitted only the existing optional `NO_HERO_ARTWORK` warnings. A local
+  390×844 browser path confirmed slug Romaji and simplified-title alias search,
+  filter empty-state wording and readable layout. Real iOS/Safari and installed
+  PWA remain `POST-DEPLOY OBSERVATION`, not claimed as PASS.

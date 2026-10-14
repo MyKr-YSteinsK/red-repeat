@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.20.0',
+    date: '2026-10-14',
+    commit: 'dc2dc84',
+    level: 'minor',
+    title: '曲库搜索与离线可用筛选',
+    summary: '曲库支持规范化的多词检索、可追溯标题字形别名，以及按本机完整离线快照筛选。',
+    changes: [
+      '可按歌曲名、歌手、专辑和 songId 查找，统一处理 Unicode 宽窄字符、大小写、空白和连字符分词。',
+      '加入千本樱、妄想感伤代偿联盟两条有来源的简体标题字形别名；未加入猜测性译名。',
+      '仅离线筛选按身份核验通过的本机快照展示，Catalog 指向 H2 时仍可看到完整 H1；核验中或失败时明确区分状态。',
+    ],
+  },
+  {
     version: '1.19.1',
     date: '2026-10-14',
     commit: '40b0b73',
