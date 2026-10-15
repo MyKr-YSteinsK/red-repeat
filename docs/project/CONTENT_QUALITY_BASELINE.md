@@ -347,7 +347,13 @@ COMMUNITY 来源本轮没有被用作确定事实。搜索结果中的社媒转�
 
 ## 身份传播与发布前提
 
-### 已核实的传播链
+> 本节传播链与矩阵保留 RED-Plan-76 当时的实现证据，包含旧 clear 路径和当时的
+> ASCII-only Feature id 问题，不代表当前缺陷。后者已在 Plan-77 修复；当前有效
+> sparse v3 Timing 已由 D-028 / Plan-78 非破坏性归档，严格按完整 identity 恢复，
+> 不再按下列旧路径自动清除。当前处置见本文末尾「RED-Plan-78 / D-028 当前实施状态」；
+> WORK 候选的现行逐域复核见 [WORK_CONTENT_REVIEW.md](WORK_CONTENT_REVIEW.md)。
+
+### 已核实的传播链（Plan-76 历史快照）
 
 1. [compiler.ts](../../src/library/compiler.ts) compileFeatures 读取Markdown并统一换行，
    用 hashText 生成 id.<hash>.md；Feature descriptor 的 id/URL进入 editionPayload。

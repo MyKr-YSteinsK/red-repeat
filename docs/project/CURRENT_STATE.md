@@ -994,6 +994,13 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-79 / R1` 已完成 WORK 七篇候选／旧八篇、61 Segment 的独立审稿与来源复核，
+  见 [WORK_CONTENT_REVIEW.md](WORK_CONTENT_REVIEW.md)。翻译处置为接受候选26／需修订20／
+  保留现译7／待来源8；90处引用及27个章节目标结构有效，但候选语义／显示仍需修订。
+  研究交付不等于原包获准集成；特殊读法、声部／对位未核听，完整制作名单未独立取得。
+  建议七主题及旧03合入08，须用户／Architect采纳后另行冻结内容与身份／数据验收范围。
+  本轮仅研究文档和必要索引／状态／旧基线时效澄清，未改歌曲、代码、Timing或1.23.2版本，
+  不自动启动下一Plan或跨identity迁移；Git／CI／Pages结果按最终回执核验。
 - `RED-Plan-78 / R1` 已按 D-028 完成 sparse v3 Timing 非破坏性保全与完整 identity
   选择。D-028 已 Accepted；路线 B 未批准。具体浏览器/测试证据与版本交付见本文件末尾
   的 Plan-78 记录。

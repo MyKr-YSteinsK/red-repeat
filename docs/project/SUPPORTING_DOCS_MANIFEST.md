@@ -8,6 +8,7 @@ are evidence and never active execution instructions.
 | --- | --- | --- |
 | `docs/歌曲内容生成规范.md` | Content/source/timing authoring and QA contract | Active; detailed prose owner |
 | `docs/project/CONTENT_QUALITY_BASELINE.md` | 六曲逐篇/逐 Segment 内容审查、主张来源与后续内容身份风险研究基线 | RED-Plan-76 / R1；研究证据与候选，不是 canonical 歌曲内容、Accepted Decision 或迁移授权 |
+| `docs/project/WORK_CONTENT_REVIEW.md` | WORK 七篇候选、旧八篇去向、61 Segment 独立审稿和来源复核 | RED-Plan-79 / R1；推荐定稿清单与 HOLD，不是内容集成、用户批准或身份迁移授权 |
 | `src/library/schema.ts`, `src/library/source-package.ts`, `src/library/validator.ts` | Executable public source schema, discovery and cross-file/media invariants | Active machine-enforced owner |
 | `src/library/compiler.ts`, `src/library/media.ts`, `src/library/hash.ts`, `src/library/*cli.ts` | Deterministic runtime generation and media/hash outputs | Active compiler owner; generated output is ignored |
 | `src/library/runtime-schema.ts`, `src/runtime/runtime-client.ts`, `src/runtime/song-edition-loader.ts`, `src/runtime/song-edition.ts`, `src/edition/use-song-edition-core.ts` | Runtime document schemas; Catalog/Runtime fetch and validation; Song Edition loading, downloaded-snapshot selection, core document assembly and optional Feature loading | Active loader/assembly owners; contract version 3 |
