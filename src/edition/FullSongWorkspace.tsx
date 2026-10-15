@@ -42,6 +42,7 @@ export interface FullSongWorkspaceProps {
   audioEngine?: AudioEngine
   onStartPracticeUnit?: (practiceUnitId: string, occurrenceId: string) => void
   onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
   onResumeOccurrence?: (occurrenceId: string) => void
   initialOccurrenceId?: string
@@ -53,6 +54,7 @@ export function FullSongWorkspace({
   audioEngine,
   onStartPracticeUnit,
   onShowRelatedExplain,
+  createTimingDebuggerHref,
   onAddToQueue,
   onResumeOccurrence,
   initialOccurrenceId,
@@ -356,6 +358,7 @@ export function FullSongWorkspace({
             onStartPracticeUnit ? handleStartPractice : undefined
           }
           onShowRelatedExplain={onShowRelatedExplain}
+          createTimingDebuggerHref={createTimingDebuggerHref}
           onAddToQueue={onAddToQueue ? (occurrence) => {
             const result = onAddToQueue(occurrence)
             setMessage(queueResultLabel(result))
@@ -398,6 +401,7 @@ interface FullSongLyricsProps {
   onSelectSection: (section: Section) => void
   onStartPracticeUnit?: (occurrence: AssembledOccurrence) => void
   onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }
 
@@ -419,6 +423,7 @@ function FullSongLyrics({
   onSelectSection,
   onStartPracticeUnit,
   onShowRelatedExplain,
+  createTimingDebuggerHref,
   onAddToQueue,
 }: FullSongLyricsProps) {
   const occurrenceElements = useRef(new Map<string, HTMLElement>())
@@ -532,6 +537,7 @@ function FullSongLyrics({
                   onReplay={onReplayOccurrence}
                   onStartPractice={onStartPracticeUnit}
                   onShowRelatedExplain={onShowRelatedExplain}
+                  createTimingDebuggerHref={createTimingDebuggerHref}
                   onAddToQueue={onAddToQueue}
                 />
               ))}
@@ -556,6 +562,7 @@ function FullSongOccurrence({
   onReplay,
   onStartPractice,
   onShowRelatedExplain,
+  createTimingDebuggerHref,
   onAddToQueue,
 }: {
   assembledOccurrence: AssembledOccurrence
@@ -570,6 +577,7 @@ function FullSongOccurrence({
   onReplay: (occurrence: AssembledOccurrence) => void
   onStartPractice?: (occurrence: AssembledOccurrence) => void
   onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }) {
   const { occurrence, segment } = assembledOccurrence
@@ -641,6 +649,14 @@ function FullSongOccurrence({
             >
               看相关讲解
             </button>
+          ) : null}
+          {createTimingDebuggerHref ? (
+            <a
+              className="full-song-quick-action"
+              href={createTimingDebuggerHref(occurrence.id)}
+            >
+              校准这句
+            </a>
           ) : null}
           {onAddToQueue ? (
             <button

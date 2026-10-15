@@ -406,6 +406,26 @@ describe('App Library consumer', () => {
     ).toHaveAttribute('href', '/#timing=debug&edition=first-light')
   })
 
+  it('opens a direct Occurrence Timing Debugger link and keeps the safe Song Edition return target', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/#timing=debug&edition=first-light&occurrence=o002&return=edition',
+    )
+    render(
+      <App
+        runtimeClient={createRuntimeClient({ fetchImpl: vi.fn(async input => responseForResumeUrl(input)) })}
+      />,
+    )
+
+    const target = await screen.findByRole('button', { name: /Second resume line/ })
+    expect(target).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('link', { name: '返回刚才的歌曲' })).toHaveAttribute(
+      'href',
+      '/#edition=first-light&continue=1',
+    )
+  })
+
   it('shows an explicit debugger state for an unknown runtime edition', async () => {
     window.history.replaceState({}, '', '/#debug=timeline&edition=missing')
     render(<App runtimeClient={clientFor(populatedCatalog)} />)

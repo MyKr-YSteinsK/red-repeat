@@ -205,6 +205,22 @@ describe('PracticeWorkspace 1.0', () => {
     expect(screen.queryByText('展开练习控制')).not.toBeInTheDocument()
   })
 
+  it('exposes calibration only for the active Practice line and targets its exact Occurrence', () => {
+    const createTimingDebuggerHref = vi.fn((occurrenceId: string) => `/timing/${occurrenceId}`)
+    renderWorkspace(createFakeEngine(), { createTimingDebuggerHref })
+
+    expect(screen.getByRole('link', { name: '校准这句' })).toHaveAttribute(
+      'href',
+      '/timing/o001',
+    )
+    fireEvent.click(screen.getByRole('button', { name: '播放第 02 句' }))
+    expect(screen.getByRole('link', { name: '校准这句' })).toHaveAttribute(
+      'href',
+      '/timing/o002',
+    )
+    expect(createTimingDebuggerHref).toHaveBeenCalledWith('o002')
+  })
+
   it('expands and collapses secondary controls without changing Practice playback state', () => {
     const engine = createFakeEngine()
     renderWorkspace(engine)
@@ -711,6 +727,7 @@ function renderWorkspace(
     ComponentProps<typeof PracticeWorkspace>,
     'requestedPracticeUnitId' | 'onRequestedPracticeUnitConsumed' |
     'activeQueueItemId' | 'nextQueueHref'
+    | 'createTimingDebuggerHref'
   > & { model?: AssembledSongEdition } = {},
 ) {
   const runtimeClient = {

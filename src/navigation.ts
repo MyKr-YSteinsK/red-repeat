@@ -2,7 +2,7 @@ export type AppRoute =
   | { kind: 'library' }
   | { kind: 'edition'; songId: string; continueLast?: true; practiceQueueItemId?: string }
   | { kind: 'settings'; releaseVersion?: string }
-  | { kind: 'timing-debugger'; songId?: string }
+  | { kind: 'timing-debugger'; songId?: string; occurrenceId?: string; returnToEdition?: true }
   | { kind: 'timeline-debugger'; songId?: string }
 
 type NavigationLocation = Pick<Location, 'hash' | 'pathname' | 'search'>
@@ -18,6 +18,9 @@ export function parseAppRoute(
   const debugMode = params.get('debug')?.trim()
   const timingMode = params.get('timing')?.trim()
   const songId = params.get('edition')?.trim()
+  const occurrenceId = params.has('occurrence')
+    ? params.get('occurrence') ?? ''
+    : undefined
   const practiceQueueItemId = params.get('practiceItem')?.trim()
   const releaseVersion = params.get('release')?.trim()
 
@@ -34,6 +37,10 @@ export function parseAppRoute(
     return {
       kind: 'timing-debugger',
       ...(songId ? { songId } : {}),
+      ...(songId && occurrenceId !== undefined ? { occurrenceId } : {}),
+      ...(songId && params.get('return') === 'edition'
+        ? { returnToEdition: true as const }
+        : {}),
     }
   }
 
@@ -89,9 +96,17 @@ export function createPracticeQueueHref(
 export function createTimingDebuggerHref(
   songId: string | undefined,
   location: NavigationLocation,
+  occurrenceId?: string,
+  options: { returnToEdition?: boolean } = {},
 ): string {
   const query = songId ? `&edition=${encodeURIComponent(songId)}` : ''
-  return `${createAppPath(location)}#timing=debug${query}`
+  const occurrence = songId && occurrenceId !== undefined
+    ? `&occurrence=${encodeURIComponent(occurrenceId)}`
+    : ''
+  const returnToEdition = songId && options.returnToEdition
+    ? '&return=edition'
+    : ''
+  return `${createAppPath(location)}#timing=debug${query}${occurrence}${returnToEdition}`
 }
 
 export function createSettingsHref(

@@ -1983,7 +1983,10 @@
   margin-top: 0.75rem;
 }
 
-.full-song-quick-actions button {
+.full-song-quick-actions button,
+.full-song-quick-actions a {
+  display: inline-flex;
+  align-items: center;
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-control-sm);
@@ -1991,10 +1994,13 @@
   background: var(--color-surface);
   cursor: pointer;
   font-size: 0.78rem;
+  text-decoration: none;
 }
 
 .full-song-quick-actions button:hover,
-.full-song-quick-actions button:focus-visible {
+.full-song-quick-actions button:focus-visible,
+.full-song-quick-actions a:hover,
+.full-song-quick-actions a:focus-visible {
   border-color: var(--color-red);
   color: var(--color-red);
 }
@@ -3649,6 +3655,10 @@
   text-align: left;
 }
 
+.timing-debugger-section li[id^='timing-occurrence-'] {
+  scroll-margin-block: 25vh;
+}
+
 .timing-debugger-section li.is-playing button {
   border-left: 0.35rem solid var(--color-red);
 }
@@ -3720,6 +3730,17 @@
   margin: 1rem 0 0;
   color: var(--color-red);
   font-size: 0.8rem;
+}
+
+.timing-debugger-save-state {
+  margin: 0.8rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.timing-debugger button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .timing-debugger-selector .timing-debugger-song-list {
@@ -4178,6 +4199,7 @@
 }
 
 .practice-lyric-context-actions button,
+.practice-lyric-context-actions a,
 .explain-return-source {
   padding: 0;
   border: 0;
@@ -4188,6 +4210,10 @@
   font-size: 0.75rem;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+}
+
+.practice-lyric-context-actions a {
+  align-self: center;
 }
 
 .explain-return-source {

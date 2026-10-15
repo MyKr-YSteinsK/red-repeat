@@ -223,6 +223,8 @@ function App({
           homeHref={homeHref}
           pageProps={{
             songId: route.songId,
+            occurrenceId: route.occurrenceId,
+            returnToEdition: route.returnToEdition,
             catalogState,
             runtimeClient,
             homeHref,

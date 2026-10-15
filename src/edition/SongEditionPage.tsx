@@ -15,7 +15,7 @@ import {
 } from '../practice/resume-context'
 import { addPracticeQueueItem, readPracticeQueueStatus } from '../practice/practice-queue'
 import type { PracticeQueueItem } from '../practice/practice-queue'
-import { createPracticeQueueHref } from '../navigation'
+import { createPracticeQueueHref, createTimingDebuggerHref } from '../navigation'
 import { readPracticeResumeMetadata } from '../practice/practice-state'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { CatalogEdition } from '../library/runtime-schema'
@@ -172,6 +172,10 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
   }, [coverViewerOpen])
 
   const engine = audioEngine ?? (typeof Audio === 'undefined' ? null : getAudioEngine())
+  const timingDebuggerHref = (occurrenceId: string): string =>
+    createTimingDebuggerHref(core.edition.song.songId, window.location, occurrenceId, {
+      returnToEdition: true,
+    })
   const sourceUrl = runtimeClient.resolveAsset(core.edition.audio.url)
   const identity = playbackIdentity(core.edition)
   const session = useMemo(
@@ -342,6 +346,7 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
               onRequestedPracticeIntentConsumed={() => setPracticeNavigationRequest(undefined)}
               onResumePosition={({ practiceUnitId, occurrenceId }) => saveResume('practice', { practiceUnitId, occurrenceId })}
               onShowRelatedExplain={(occurrenceId, segmentId) => showRelatedExplain('practice', occurrenceId, segmentId)}
+              createTimingDebuggerHref={timingDebuggerHref}
               onAddToQueue={addToPracticeQueue}
               activeQueueItemId={activeQueueItemId}
               nextQueueHref={nextQueueItem
@@ -359,6 +364,7 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
                 changeTab('practice')
               }}
               onShowRelatedExplain={(occurrenceId, segmentId) => showRelatedExplain('all', occurrenceId, segmentId)}
+              createTimingDebuggerHref={timingDebuggerHref}
               onAddToQueue={addToPracticeQueue}
               onResumeOccurrence={(occurrenceId) => saveResume('all', { occurrenceId })}
             />

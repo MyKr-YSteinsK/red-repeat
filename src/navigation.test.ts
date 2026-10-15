@@ -86,6 +86,34 @@ describe('static-safe navigation', () => {
     })
   })
 
+  it('round-trips an encoded Occurrence target and a safe Song Edition return hint', () => {
+    const href = createTimingDebuggerHref('first light', location, 'o:002 / verse', {
+      returnToEdition: true,
+    })
+
+    expect(href).toBe(
+      '/red-repeat/?view=archive#timing=debug&edition=first%20light&occurrence=o%3A002%20%2F%20verse&return=edition',
+    )
+    expect(parseAppRoute({
+      hash: '#timing=debug&edition=first%20light&occurrence=o%3A002%20%2F%20verse&return=edition',
+    })).toEqual({
+      kind: 'timing-debugger',
+      songId: 'first light',
+      occurrenceId: 'o:002 / verse',
+      returnToEdition: true,
+    })
+  })
+
+  it('preserves an explicitly empty Occurrence target so the Debugger can reject it safely', () => {
+    expect(parseAppRoute({
+      hash: '#timing=debug&edition=first-light&occurrence=',
+    })).toEqual({
+      kind: 'timing-debugger',
+      songId: 'first-light',
+      occurrenceId: '',
+    })
+  })
+
   it('exposes the Settings route under the current static-safe path', () => {
     expect(createSettingsHref(location)).toBe('/red-repeat/?view=archive#settings')
     expect(parseAppRoute({ hash: '#settings' })).toEqual({ kind: 'settings' })

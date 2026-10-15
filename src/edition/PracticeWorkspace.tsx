@@ -59,6 +59,7 @@ export interface PracticeWorkspaceProps {
   initialPracticeTarget?: { practiceUnitId: string; occurrenceId: string }
   onResumePosition?: (target: { practiceUnitId: string; occurrenceId: string }) => void
   onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
   activeQueueItemId?: string
   nextQueueHref?: string
@@ -75,6 +76,7 @@ export function PracticeWorkspace({
   initialPracticeTarget,
   onResumePosition,
   onShowRelatedExplain,
+  createTimingDebuggerHref,
   onAddToQueue,
   activeQueueItemId,
   nextQueueHref,
@@ -512,6 +514,7 @@ export function PracticeWorkspace({
                   romajiVisible={preferences.romajiVisible}
                   onPlay={() => handleOccurrenceClick(assembledOccurrence.occurrence.id)}
                   onShowRelatedExplain={onShowRelatedExplain}
+                  createTimingDebuggerHref={createTimingDebuggerHref}
                   onAddToQueue={onAddToQueue}
                 />
               ))}
@@ -659,6 +662,7 @@ function PracticeLyricRow({
   romajiVisible,
   onPlay,
   onShowRelatedExplain,
+  createTimingDebuggerHref,
   onAddToQueue,
 }: {
   assembledOccurrence: AssembledOccurrence
@@ -668,6 +672,7 @@ function PracticeLyricRow({
   romajiVisible: boolean
   onPlay: () => void
   onShowRelatedExplain?: (occurrenceId: string, segmentId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   onAddToQueue?: (occurrence: AssembledOccurrence) => 'added' | 'duplicate' | 'full' | 'unavailable'
 }) {
   const { occurrence, segment } = assembledOccurrence
@@ -719,6 +724,9 @@ function PracticeLyricRow({
               <button type="button" onClick={() => onShowRelatedExplain(occurrence.id, segment.id)}>
                 看相关讲解
               </button>
+            ) : null}
+            {createTimingDebuggerHref ? (
+              <a href={createTimingDebuggerHref(occurrence.id)}>校准这句</a>
             ) : null}
             {onAddToQueue ? (
               <button

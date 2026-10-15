@@ -1,23 +1,35 @@
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { Catalog, CatalogEdition } from '../library/runtime-schema'
 import {
+  createContinueHref,
   createTimingDebuggerHref,
 } from '../navigation'
 import {
   createEffectiveOccurrenceTimingProvider,
   createTimingOverridesDocument,
+  getTimingOverridesStorageKey,
   readTimingOverrides,
   saveTimingOverrides,
+  serializeTimingOverrides,
   updateTimingOverride,
   type TimingOverrideIdentity,
-  type TimingOverridesDocument,
+  type TimingOverrideStorage,
+  type TimingOverridesReadResult,
 } from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import type { RuntimeSongEditionCore } from '../runtime/song-edition-loader'
 import { useSongEditionPlayback } from '../edition/use-song-edition-playback'
 import { useSongEditionCore } from '../edition/use-song-edition-core'
 import { LyricText } from '../edition/LyricText'
+import {
+  commitTimingEdit,
+  createTimingEditHistory,
+  isTimingEditDirty,
+  markTimingEditSaved,
+  redoTimingEdit,
+  undoTimingEdit,
+} from './timing-edit-history'
 
 export type TimingDebuggerCatalogState =
   | { status: 'loading' }
@@ -26,6 +38,8 @@ export type TimingDebuggerCatalogState =
 
 export interface TimingDebuggerPageProps {
   songId?: string
+  occurrenceId?: string
+  returnToEdition?: boolean
   catalogState: TimingDebuggerCatalogState
   runtimeClient: RuntimeClient
   homeHref: string
@@ -35,6 +49,8 @@ export interface TimingDebuggerPageProps {
 
 export function TimingDebuggerPage({
   songId,
+  occurrenceId,
+  returnToEdition,
   catalogState,
   runtimeClient,
   homeHref,
@@ -84,6 +100,8 @@ export function TimingDebuggerPage({
     <TimingDebuggerEdition
       key={`${catalogEdition.songId}:${catalogEdition.editionUrl}`}
       catalogEdition={catalogEdition}
+      occurrenceId={occurrenceId}
+      returnToEdition={returnToEdition}
       runtimeClient={runtimeClient}
       homeHref={homeHref}
       audioEngine={audioEngine}
@@ -93,11 +111,15 @@ export function TimingDebuggerPage({
 
 function TimingDebuggerEdition({
   catalogEdition,
+  occurrenceId,
+  returnToEdition,
   runtimeClient,
   homeHref,
   audioEngine,
 }: {
   catalogEdition: CatalogEdition
+  occurrenceId?: string
+  returnToEdition?: boolean
   runtimeClient: RuntimeClient
   homeHref: string
   audioEngine?: AudioEngine
@@ -125,7 +147,10 @@ function TimingDebuggerEdition({
 
   return (
     <TimingDebuggerReady
+      key={`${loaded.core.edition.song.songId}:${loaded.core.edition.contentHash}:${loaded.core.edition.audio.sourceHash}:${loaded.core.edition.timelineUrl}`}
       core={loaded.core}
+      occurrenceId={occurrenceId}
+      returnToEdition={returnToEdition}
       runtimeClient={runtimeClient}
       homeHref={homeHref}
       audioEngine={audioEngine}
@@ -135,11 +160,15 @@ function TimingDebuggerEdition({
 
 function TimingDebuggerReady({
   core,
+  occurrenceId,
+  returnToEdition,
   runtimeClient,
   homeHref,
   audioEngine,
 }: {
   core: RuntimeSongEditionCore
+  occurrenceId?: string
+  returnToEdition?: boolean
   runtimeClient: RuntimeClient
   homeHref: string
   audioEngine?: AudioEngine
@@ -156,23 +185,50 @@ function TimingDebuggerReady({
     }),
     [core.edition],
   )
-  const initialDocument = useMemo(
-    () => {
-      const stored = readTimingOverrides(identity, {
-        occurrences: model.timeline.occurrences,
-      })
-      return stored.kind === 'compatible'
-        ? stored.document
-        : createTimingOverridesDocument(identity)
-    }, [identity, model.timeline.occurrences])
-  const [document, setDocument] = useState<TimingOverridesDocument>(initialDocument)
-  const [selectedOccurrenceId, setSelectedOccurrenceId] = useState(
-    model.timeline.occurrences[0]?.id,
+  const initialStorageSnapshot = useMemo(
+    () => readTimingOverridesSnapshot(identity, model.timeline.occurrences),
+    [identity, model.timeline.occurrences],
   )
+  const initialDocument = initialStorageSnapshot.readResult.kind === 'compatible'
+    ? initialStorageSnapshot.readResult.document
+    : createTimingOverridesDocument(identity)
+  const [history, setHistory] = useState(() => createTimingEditHistory(initialDocument))
+  const historyRef = useRef(history)
+  const storageBaselineRef = useRef(initialStorageSnapshot.raw)
+  const [storageConflict, setStorageConflict] = useState(
+    !initialStorageSnapshot.available || isIncompatibleRead(initialStorageSnapshot.readResult),
+  )
+  const initialTargetExists = occurrenceId !== undefined &&
+    Boolean(model.occurrencesById[occurrenceId])
+  const [selectionState, setSelectionState] = useState(() => ({
+    routeTarget: occurrenceId,
+    selectedOccurrenceId: occurrenceId === undefined
+      ? model.timeline.occurrences[0]?.id
+      : initialTargetExists ? occurrenceId : undefined,
+    invalidTargetId: occurrenceId !== undefined && !initialTargetExists
+      ? occurrenceId || '（空）'
+      : undefined,
+  }))
+  if (selectionState.routeTarget !== occurrenceId) {
+    const targetExists = occurrenceId !== undefined &&
+      Boolean(model.occurrencesById[occurrenceId])
+    setSelectionState({
+      routeTarget: occurrenceId,
+      selectedOccurrenceId: occurrenceId === undefined
+        ? selectionState.selectedOccurrenceId ?? model.timeline.occurrences[0]?.id
+        : targetExists ? occurrenceId : undefined,
+      invalidTargetId: occurrenceId !== undefined && !targetExists
+        ? occurrenceId || '（空）'
+        : undefined,
+    })
+  }
+  const { selectedOccurrenceId, invalidTargetId } = selectionState
   const [message, setMessage] = useState<string>()
+  const draftDocument = history.current
+  const dirty = isTimingEditDirty(history)
   const timingProvider = useMemo(
-    () => createEffectiveOccurrenceTimingProvider(model.timeline, document),
-    [document, model.timeline],
+    () => createEffectiveOccurrenceTimingProvider(model.timeline, draftDocument),
+    [draftDocument, model.timeline],
   )
   const playback = useSongEditionPlayback(
     model,
@@ -192,26 +248,46 @@ function TimingDebuggerReady({
     : -1
 
   const selectOccurrence = (occurrenceId: string): void => {
-    setSelectedOccurrenceId(occurrenceId)
+    setSelectionState((current) => ({
+      ...current,
+      selectedOccurrenceId: occurrenceId,
+      invalidTargetId: undefined,
+    }))
     setMessage(undefined)
   }
+
+  useEffect(() => {
+    if (occurrenceId === undefined || invalidTargetId || selectedOccurrenceId !== occurrenceId) return
+    const row = window.document.getElementById(`timing-occurrence-${encodeURIComponent(occurrenceId)}`)
+    if (row && typeof row.scrollIntoView === 'function') {
+      const reducedMotion = typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      row.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' })
+    }
+  }, [invalidTargetId, occurrenceId, selectedOccurrenceId])
 
   const updateSelectedTiming = (
     field: 'startMs' | 'endMs',
     deltaMs: number,
   ): void => {
-    if (!selectedOccurrence) {
+    if (!selectedOccurrence || invalidTargetId) {
       return
     }
     try {
-      setDocument((current) =>
-        updateTimingOverride(
-          current,
-          selectedOccurrence,
-          field,
-          timingProvider.getTiming(selectedOccurrence)[field] + deltaMs,
-        ),
+      const current = historyRef.current
+      const currentProvider = createEffectiveOccurrenceTimingProvider(
+        model.timeline,
+        current.current,
       )
+      const nextDocument = updateTimingOverride(
+        current.current,
+        selectedOccurrence,
+        field,
+        currentProvider.getTiming(selectedOccurrence)[field] + deltaMs,
+      )
+      const nextHistory = commitTimingEdit(current, nextDocument)
+      historyRef.current = nextHistory
+      setHistory(nextHistory)
       setMessage(undefined)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '播放切口无效。')
@@ -219,7 +295,7 @@ function TimingDebuggerReady({
   }
 
   const previewSelectedOccurrence = (): void => {
-    if (!selectedOccurrence || !playback.engine) {
+    if (!selectedOccurrence || !playback.engine || invalidTargetId) {
       setMessage('当前环境无法播放音频。')
       return
     }
@@ -238,15 +314,72 @@ function TimingDebuggerReady({
   }
 
   const save = (): void => {
+    if (invalidTargetId || !dirty || storageConflict) {
+      return
+    }
+    let currentRaw: string | null
+    try {
+      currentRaw = window.localStorage.getItem(
+        getTimingOverridesStorageKey(identity.songId),
+      )
+    } catch {
+      setStorageConflict(true)
+      setMessage('无法确认本机微调存储状态；草稿已保留，请重新打开 Timing Debugger 后再保存。')
+      return
+    }
+    if (currentRaw !== storageBaselineRef.current) {
+      setStorageConflict(true)
+      setMessage('本机微调在页面打开后发生变化；为保护新数据，本次未覆盖保存。请重新打开 Timing Debugger。')
+      return
+    }
+    const current = historyRef.current
     if (
-      saveTimingOverrides(document, {
+      saveTimingOverrides(current.current, {
         occurrences: model.timeline.occurrences,
       })
     ) {
-      setMessage('播放切口已保存到本机。')
+      let persistedRaw: string | null
+      try {
+        persistedRaw = window.localStorage.getItem(
+          getTimingOverridesStorageKey(identity.songId),
+        )
+      } catch {
+        setStorageConflict(true)
+        setMessage('无法核验本机写入；草稿仍保留为未保存状态。')
+        return
+      }
+      const expectedRaw = Object.keys(current.current.occurrences).length === 0
+        ? null
+        : serializeTimingOverrides(current.current)
+      if (persistedRaw !== expectedRaw) {
+        setStorageConflict(true)
+        setMessage('无法核验本机微调写入；草稿仍保留为未保存状态。')
+        return
+      }
+      storageBaselineRef.current = persistedRaw
+      const savedHistory = markTimingEditSaved(current)
+      historyRef.current = savedHistory
+      setHistory(savedHistory)
+      setMessage('本机微调已保存。')
     } else {
-      setMessage('无法保存本机播放切口。')
+      setMessage('无法保存本机播放切口；未保存的草稿仍保留。')
     }
+  }
+
+  const undo = (): void => {
+    if (invalidTargetId) return
+    const nextHistory = undoTimingEdit(historyRef.current)
+    historyRef.current = nextHistory
+    setHistory(nextHistory)
+    setMessage(undefined)
+  }
+
+  const redo = (): void => {
+    if (invalidTargetId) return
+    const nextHistory = redoTimingEdit(historyRef.current)
+    historyRef.current = nextHistory
+    setHistory(nextHistory)
+    setMessage(undefined)
   }
 
   const selectRelative = (offset: -1 | 1): void => {
@@ -304,7 +437,14 @@ function TimingDebuggerReady({
             只调整每句歌词的播放起点和终点；保存后，学唱、全曲和讲解会共同消费这份本机微调。
           </p>
         </div>
-        <a className="text-link" href={homeHref}>返回曲库</a>
+        <a
+          className="text-link"
+          href={returnToEdition
+            ? createContinueHref(core.edition.song.songId, window.location)
+            : homeHref}
+        >
+          {returnToEdition ? '返回刚才的歌曲' : '返回曲库'}
+        </a>
       </header>
 
       <section className="timing-debugger-panel" aria-labelledby="timing-song-title">
@@ -341,7 +481,11 @@ function TimingDebuggerReady({
                     const isSelected = selectedOccurrenceId === occurrence.id
                     const isPrimary = playback.resolution.primaryOccurrence?.id === occurrence.id
                     return (
-                      <li key={occurrence.id} className={isPrimary ? 'is-playing' : ''}>
+                      <li
+                        key={occurrence.id}
+                        id={`timing-occurrence-${encodeURIComponent(occurrence.id)}`}
+                        className={isPrimary ? 'is-playing' : ''}
+                      >
                         <button
                           type="button"
                           className={isSelected ? 'is-selected' : ''}
@@ -378,7 +522,7 @@ function TimingDebuggerReady({
                 <span>起点</span>
                 <div>
                   {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('startMs', deltaMs)}>
+                    <button key={deltaMs} type="button" disabled={Boolean(invalidTargetId)} onClick={() => updateSelectedTiming('startMs', deltaMs)}>
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
@@ -388,19 +532,45 @@ function TimingDebuggerReady({
                 <span>终点</span>
                 <div>
                   {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" onClick={() => updateSelectedTiming('endMs', deltaMs)}>
+                    <button key={deltaMs} type="button" disabled={Boolean(invalidTargetId)} onClick={() => updateSelectedTiming('endMs', deltaMs)}>
                       {deltaMs > 0 ? '+' : ''}{deltaMs}ms
                     </button>
                   ))}
                 </div>
               </div>
               <div className="timing-debugger-console-actions">
-                <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine}>播放</button>
-                <button type="button" onClick={save}>保存本机微调</button>
+                <button type="button" onClick={undo} disabled={Boolean(invalidTargetId) || history.past.length === 0}>撤销</button>
+                <button type="button" onClick={redo} disabled={Boolean(invalidTargetId) || history.future.length === 0}>重做</button>
+                <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine || Boolean(invalidTargetId)}>播放</button>
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={!dirty || Boolean(invalidTargetId) || storageConflict}
+                >
+                  保存本机微调
+                </button>
               </div>
             </>
           ) : null}
-          {message ? <p className="timing-debugger-message" role="status">{message}</p> : null}
+          <p className="timing-debugger-save-state" role="status">
+            {dirty ? '有未保存的微调' : '没有未保存的微调'}
+          </p>
+          {invalidTargetId ? (
+            <p className="timing-debugger-message" role="alert">
+              句子链接中的 Occurrence「{invalidTargetId}」在当前 Song Edition 中不存在。请选择正确的歌词行。
+            </p>
+          ) : null}
+          {isIncompatibleRead(initialStorageSnapshot.readResult) ? (
+            <p className="timing-debugger-message" role="alert">
+              当前本机微调与此 Edition 的身份不兼容；旧数据已保留，本次不能覆盖保存。
+            </p>
+          ) : null}
+          {!initialStorageSnapshot.available ? (
+            <p className="timing-debugger-message" role="alert">
+              无法读取本机微调存储；为保护已有数据，本次不能保存。
+            </p>
+          ) : null}
+          {message ? <p className="timing-debugger-message" role="alert">{message}</p> : null}
         </aside>
       </div>
     </main>
@@ -438,6 +608,58 @@ function TimingDebuggerSelector({
       </ol>
     </main>
   )
+}
+
+function readTimingOverridesSnapshot(
+  identity: TimingOverrideIdentity,
+  occurrences: RuntimeSongEditionCore['assembled']['timeline']['occurrences'],
+): {
+  readResult: TimingOverridesReadResult
+  raw: string | null
+  available: boolean
+} {
+  let browserStorage: Storage
+  try {
+    browserStorage = window.localStorage
+  } catch {
+    return {
+      readResult: { kind: 'none' },
+      raw: null,
+      available: false,
+    }
+  }
+
+  const captured = new Map<string, string | null>()
+  let available = true
+  const storage: TimingOverrideStorage = {
+    getItem(key) {
+      if (captured.has(key)) return captured.get(key) ?? null
+      try {
+        const value = browserStorage.getItem(key)
+        captured.set(key, value)
+        return value
+      } catch (error) {
+        available = false
+        throw error
+      }
+    },
+    setItem(key, value) {
+      browserStorage.setItem(key, value)
+    },
+    removeItem(key) {
+      browserStorage.removeItem(key)
+    },
+  }
+  const readResult = readTimingOverrides(identity, { occurrences, storage })
+  return {
+    readResult,
+    raw: captured.get(getTimingOverridesStorageKey(identity.songId)) ?? null,
+    available,
+  }
+}
+
+function isIncompatibleRead(result: TimingOverridesReadResult): boolean {
+  return result.kind !== 'compatible' && result.kind !== 'none'
 }
 
 function TimingDebuggerStatus({

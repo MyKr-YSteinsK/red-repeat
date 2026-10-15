@@ -519,6 +519,19 @@ describe('FullSongWorkspace', () => {
     expect(onStartPracticeUnit).toHaveBeenCalledWith('p001', 'o002')
   })
 
+  it('adds a calibration link only to the selected Full Song line', async () => {
+    const createTimingDebuggerHref = vi.fn((occurrenceId: string) => `/timing/${occurrenceId}`)
+    renderWorkspace({ createTimingDebuggerHref })
+
+    expect(screen.queryByRole('link', { name: '校准这句' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：Stay near' }))
+    expect(screen.getByRole('link', { name: '校准这句' })).toHaveAttribute(
+      'href',
+      '/timing/o002',
+    )
+    expect(createTimingDebuggerHref).toHaveBeenCalledWith('o002')
+  })
+
   it('provides compact playback, accessible progress seeking, and shared speed controls', async () => {
     const { engine } = renderWorkspace()
     await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
@@ -851,6 +864,7 @@ describe('FullSongWorkspace', () => {
 
 function renderWorkspace(options: {
   onStartPracticeUnit?: (practiceUnitId: string) => void
+  createTimingDebuggerHref?: (occurrenceId: string) => string
   model?: typeof model
 } = {}): {
   engine: AudioEngine
@@ -867,6 +881,7 @@ function renderWorkspace(options: {
         runtimeClient={runtimeClientFor()}
         audioEngine={engine}
         onStartPracticeUnit={options.onStartPracticeUnit}
+        createTimingDebuggerHref={options.createTimingDebuggerHref}
       />
     </LyricDisplayPreferencesProvider>,
   )
