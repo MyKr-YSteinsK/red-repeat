@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.21.0',
+    date: '2026-10-15',
+    commit: 'b4d6bf2',
+    level: 'minor',
+    title: '离线下载进度与安全取消',
+    summary: '曲库展示已核验资源进度并支持取消；同曲下载、后台更新和移除由单一任务协调，只有完整快照提交后才更新离线身份。',
+    changes: [
+      '下载按阶段展示准备、资源核验进度、完整快照验证和 manifest 提交，不估计字节百分比或剩余时间。',
+      '取消和失败清理本轮新增 staging，保留最后完整的 H1；只有有效 manifest commit 决定离线可用状态。',
+      '同一 document 内离开并返回曲库仍可查看任务；硬刷新或关闭浏览器不恢复未完成的 JavaScript 任务。',
+    ],
+  },
+  {
     version: '1.20.1',
     date: '2026-10-14',
     commit: '19123e7',

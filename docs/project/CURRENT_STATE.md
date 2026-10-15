@@ -11,13 +11,15 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.20.1`. This metadata prepares the
+- Current package/ledger user version: `1.21.0`. This metadata prepares the
   authorized release; remote CI/Pages and production identity are verified at
   delivery, not asserted ahead of time by this source entry.
 - Current lifecycle stage: `Production`
-- Latest ledger/prepared tag: `1.20.1` / `v1.20.1 -> 19123e7` (product commit
-  date `2026-10-14`); the following release-metadata commit is the independent
-  build identity. Existing `v1.20.0 -> dc2dc84`, `v1.19.1 -> 40b0b73`,
+- Latest ledger product target: `1.21.0` / `b4d6bf2` (product commit date
+  `2026-10-15`); annotated `v1.21.0` identifies that product commit, while the
+  following release-metadata commit is the independent build identity.
+  Existing `v1.20.1 -> 19123e7`, `v1.20.0 -> dc2dc84`,
+  `v1.19.1 -> 40b0b73`,
   `v1.19.0 -> d8f0d5f`,
   `v1.16.0 -> a863d57`,
   `v1.15.0 -> 19e45d1`,
@@ -991,10 +993,10 @@ uses the separately authorized task-input source package.
 ## Current work / Next action
 
 - `RED-Plan-73` R1 implements per-song download progress, cancellation and
-  same-document task continuity. Its candidate gates pass; the focused product
-  commit and separate `1.21.0` release-metadata/tag closeout remain pending.
-  Push, exact-SHA CI, Pages and production identity are separate delivery
-  observations and have not yet been claimed here.
+  same-document task continuity. Its candidate gates pass. Product commit
+  `b4d6bf2` is the authorized `1.21.0` MINOR tag target; release metadata is
+  recorded separately. Push, exact-SHA CI, Pages and production identity are
+  separate delivery observations and have not yet been claimed here.
 - `RED-Plan-70` R1 was a read-only milestone checkpoint. `RED-Plan-71` R1
   completed Catalog search and offline-availability filtering as a `1.20.0`
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
