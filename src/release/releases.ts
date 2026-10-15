@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.23.1',
+    date: '2026-10-15',
+    commit: '2d000ad',
+    level: 'patch',
+    title: '恢复 Explain 中文文章的最近阅读位置',
+    summary: '修复中文 Explain Feature 标识无法保存的问题；兼容的同一 Edition 可继续上次阅读位置。',
+    changes: [
+      '最近会话按原样保留受控 Unicode Feature ID，恢复文章时继续验证 Edition 身份和目标是否存在。',
+      '身份不兼容或文章已不存在时安全回退；恢复阅读不会自动播放。',
+    ],
+  },
+  {
     version: '1.23.0',
     date: '2026-10-15',
     commit: '0974197',

@@ -11,14 +11,15 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.23.0`. This source records repository
+- Current package/ledger user version: `1.23.1`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.23.0` / `0974197` (product commit date
-  `2026-10-15`); annotated `v1.23.0` identifies that product commit, while the
+- Latest ledger product target: `1.23.1` / `2d000ad` (product commit date
+  `2026-10-15`); annotated `v1.23.1` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
-  Existing `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`, `v1.20.1 -> 19123e7`,
+  Existing `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`,
+  `v1.20.1 -> 19123e7`,
   `v1.20.0 -> dc2dc84`,
   `v1.19.1 -> 40b0b73`,
   `v1.19.0 -> d8f0d5f`,
@@ -993,6 +994,9 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-77 / R1` 的 P1 修复已形成 `1.23.1 PATCH` 产品提交；完整实现、验证
+  和仍待用户决定的数据兼容方案见本文件末尾的独立记录。P2 不改变 timing identity，
+  也不授权下一轮内容改写。
 - `RED-Plan-75` R1 已完成讲解文章内章节导航与真实歌词引用精确定位的
   局部实现和本地验证；`1.23.0 MINOR` 的产品 tag target 为 `0974197`，
   release metadata 单独提交。
@@ -1017,10 +1021,9 @@ uses the separately authorized task-input source package.
 - 重点未决风险：仅改 Feature 正文也会改变 Edition hash，前台载入可清除旧身份
   timing override；最近会话、队列、备份与普通进度/速度的规则不同。正式内容集成前
   需明确批准数据保护策略，不能把备份导出等同于可跨身份恢复。
-  另确认现有中文 Feature id 被最近会话 ASCII 校验拒绝，真实 parser 的只读复核为
-  46/46 拒绝；仅记录恢复合同缺口，未修代码或改名。
-  首选 WORK 深写仍是候选，`RED-Plan-77` 未启动或授权；A–E 其他提议不因本轮研究
-  获批，未实施迁移或新架构。
+  最近会话此前拒绝 46/46 中文 Feature id 的问题已由 RED-Plan-77 / R1 修复，未改名
+  文章或放宽其他标识符。WORK 深写仍需独立授权；A–E 其余提议不因相关研究获批，
+  未实施个人数据迁移或目标架构。
 - The RED-Plan-69 measurement details below remain historical evidence for
   `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
@@ -1537,3 +1540,22 @@ each historical task and do not replace the current repository identity above.
   lifecycle / identity 边界下的 `POST-DEPLOY OBSERVATION`。本地 build 未运行，
   避免触及已有受保护的 `public/library-runtime.tmp-*`；最终准确 SHA 的完整
   CI build / Pages / Production smoke 是发布门禁，实际结果由本任务最终回传记录。
+
+## RED-Plan-77 实施与发布状态
+
+- `1.23.1 PATCH` 产品提交为 `2d000adf177a874587ab060e7ee5037ee197ffc3`
+  （`2026-10-15`）；annotated `v1.23.1` 指向该修复，release metadata 独立提交。
+- 最近会话的 `featureId` 现在接受受控的可打印 Unicode（最多 256 UTF-16 code units），
+  并保持输入字形；song、Occurrence、Practice Unit 的 ASCII 校验和 schema v1 不变。
+  全部 46 个 tracked Feature basename 经真实保存、解析与读取逐字往返。对未知目标、
+  不兼容 Edition 仍安全回退；同 Edition 文章恢复路径不会自动播放。
+- 三个定向测试文件 `50/50`、全量 Vitest `477/477`、`npm run typecheck`、触及文件
+  ESLint 与 `git diff --check` 均通过。独立本地 browser origin 完成打开中文 Feature、
+  返回 Catalog、继续上次并恢复原文章的路径。未声称真机、听感或 installed-PWA PASS。
+- 未本地运行 build，因为它会触及可能清理 PID 专属 `public/library-runtime.tmp-*`
+  路径；该目录存在受保护未跟踪资料。发布验证以准确提交的 CI build 为准，CI、Pages
+  和 Production smoke 的状态分别由最终交付回执报告。
+- P2 的 A/B 身份保护路线仅作为待批准提案记录在
+  [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md)。没有迁移、重绑定或清理
+  用户 timing override；D-012/D-021、D-022 与 D-023 行为保持。后续内容重构前仍需用户
+  明确个人数据保全与跨 Edition 兼容边界。

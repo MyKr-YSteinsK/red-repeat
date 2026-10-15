@@ -18,10 +18,15 @@ Edition.contentHash。即使只改文章正文，新的有效 Edition 也会使�
 本轮未修改歌曲 source 或用户数据；后续内容发布应先取得明确的数据保护方案批准，
 必要时另开高风险工程任务。详见“身份传播与发布前提”。
 
-另有既存恢复缺口：现有46个中文文件名生成的Feature id均不满足最近会话的ASCII
-identifier校验。调用真实parseResumeContext/saveResumeContext的只读内存复核中，
-46/46被拒绝，保存返回false且未写入。不能把“同Feature id”当作当前Explain文章
-已可持久恢复的证明；这个缺口需另行工程修复，不通过本轮改名或放宽校验规避。
+Plan-76 调查时还发现最近会话把 Feature ID 错用 ASCII identifier 校验：当时
+46/46 个实际 basename 均无法保存。该缺口已由 RED-Plan-77 / R1 的 P1 修复：
+只对 `featureId` 接受受控、非空、可打印 Unicode（上限 256 UTF-16 code units），
+保留 schema v1 与其他稳定 ID 的 ASCII 规则，不改写 ID、不改名文章。当前 tracked
+46 个 Feature ID 均通过真实 `saveResumeContext` → `parseResumeContext` →
+`readResumeContext` 逐字回环，页面与隔离 origin 浏览器验证恢复到同一文章且无 autoplay。
+这只修复 Feature 最近会话的存取；Edition/audio/Timeline 身份门禁仍严格，目标在当前
+Edition 不存在时安全回退。它没有保护内容改版后失效的 timing override，也没有批准
+跨 Edition 数据迁移。
 
 推荐首先研究和重构 work-millennium-parade：已有官方合作、发行、作品作者访谈
 可构成较强证据链；译文存在高收益修复点，八篇文章的劳动/任务、两极/中道反复论述
@@ -418,8 +423,8 @@ D-023保护启动build和兼容本机数据，不放宽内容身份，不允许S
   稳定Occurrence/Segment时怎样证明兼容，怎样保存旧记录并让用户知情，怎样拒绝
   真实音频/timing变化，以及失败/回滚如何保全。可比较语义分离身份或精确兼容映射，
   不能在本文选定schema/API，也不能只把clear调用删除。
-- 该工程设计还应处理真实Feature id与最近会话格式的既存不兼容；不让内容作者为
-  躲避代码限制批量改名，也不以本轮静态发现冒充完整恢复功能修复/验收。
+- Feature ID 与最近会话格式的既存不兼容已由 RED-Plan-77 / R1 的 P1 修复并按全部
+  现有文件名回环验证；内容身份兼容仍未解决。不让内容作者为躲避旧校验批量改名。
 - 在旧有效身份下提前导出个人备份与Timing Correction Export有保全价值；
   但当前工具不保证跨hash重导入。手工改JSON hash、降低严格校验或先清数据再重练
   都不是本轮批准方案。公开源码已合入的历史校准不会因本机override删除而消失，
@@ -502,3 +507,37 @@ main上的文档提交仍进入现有CI→Pages，实际提交/Push/CI/Pages在�
 本基线完成的是可追溯审查与后续候选，不是“46篇全文重写完成”、
 “六曲读音/听感全部合格”或新版本发布；也不等于研究结论已被Architect正式接受、
 内容方案已批准或产品阶段已推进。
+
+## RED-Plan-77 内容身份兼容决策包（提案，未形成 Accepted Decision）
+
+本节仅为下一阶段内容集成准备数据保护方案。P1 的 Feature ID 修复不改变 D-012 / D-021，
+也不授权迁移、重绑定或清理任何真实用户校准。
+
+### 当前代码行为与变更类别
+
+| 变更 | 当前可验证后果 | 用户状态与后续限制 |
+| --- | --- | --- |
+| 只改 Feature 正文、Heading 或引用 | `compileFeatures` 以规范化 Markdown 正文计算内容 hash，生成新的 hash URL；descriptor URL 进入 Edition payload，实际变化会改变 `Edition.contentHash`。 | 音频和 Timeline 即使不变，loader 的 cold 与 warm 路径仍按新 Edition identity 判旧 timing override 为 `edition-stale`，随后清除按 songId 存放的当前值。resume 严格拒绝旧完整 identity；后续写新上下文可能覆盖唯一最近会话记录。 |
+| 只改翻译、Ruby 或 layer | 有效 lyrics JSON 变化会生成新 lyrics URL，并改变 Edition identity。 | 现有 override、resume、queue、备份导入仍按完整身份拒绝；不能因只改显示文字就宣称个人数据兼容。普通 Practice 进度按 songId/Occurrence 恢复、速度按 songId 保存，仍需确认稳定 ID 的语义未被复用。 |
+| Feature 改名、合并或删除 | basename 是 Feature ID；旧最近阅读目标不能在新 Edition 的 `features` 中命中，页面安全回退到 Practice。 | P1 validator 接受合法 Unicode 不绕过目标存在性检查；未来若需续接旧阅读目标，需明确的 old→new 映射及删除目标 fallback。queue 与 backup 也不静默重映射。 |
+| 改 Segment / Practice 映射 | lyrics 或 practice URL 进入 Edition payload；Feature 引用、Occurrence、Practice Unit 对应可能变化。 | 相同 ID 不证明同一语义。按当前 Occurrence 重新归组的普通进度可能落到不同内容；strict resume/queue/backup 会检查目标并拒绝不兼容项。 |
+| 改 Timeline 或音频 | Timeline 资源 URL、音频 hash / URL 及 Edition identity 随有效源变更。 | 旧 timing override 失效与 D-012 / D-021 一致；必须先核对旧校准是否已导出/合入，不能重绑定。resume、queue 和 backup 也不会跨完整身份自动恢复。 |
+| H1 → H2 下载 | `song-download.ts` 验证 H2 所需资源和 identity 后最后写 manifest；失败仅清理本次新增资源，保留完整 H1。 | manifest 成功切换后 H2 成为活动快照；D-022 不承诺旧 H1 校准自动应用于 H2，剩余旧资源也不是可验证的数据备份。 |
+
+证据 owner：`src/library/compiler.ts` 的 `compileFeatures` 与 `editionPayload`；
+`src/runtime/song-edition-loader.ts` 的 cold/warm timing identity 检查；
+`src/practice/practice-timing-overrides.ts` 的完整身份分类与按 songId 清理；
+`src/practice/resume-context.ts` 与 `src/edition/SongEditionPage.tsx` 的严格恢复；
+`src/practice/practice-queue.ts`、`src/practice/personal-backup.ts` 的严格目标核验；
+`src/pwa/song-download.ts` 的 manifest-last 事务。以上均为当前代码路径，不表示本轮执行过真实用户存储迁移。
+
+### 候选保护路线比较
+
+| 路线 | 做法与 owner 影响 | 优点 | 反例 / 必须覆盖的失败 | 授权边界 |
+| --- | --- | --- | --- | --- |
+| A：保留严格身份，非破坏性保全旧状态 | 为旧 Edition identity 保留可追溯的 timing / resume / queue / backup 记录；新 identity 不自动应用。需在 override 按 songId 单槽现状之外设计隔离存储、容量/配额策略、原子且幂等写入、冲突检查、隐私与显式导出/恢复预览。 | 不推断语义等价；音频、Timeline 或内容不兼容时可继续拒绝应用。 | 仅删除 loader 的 `clearTimingOverrides` 不够：旧值仍占同一 songId 单槽，保存可能覆盖；损坏、配额失败、并发 H1/H2、回滚及用户清除必须不丢原记录。 | 仍须用户决定保留哪些数据、保留期限/容量、是否提示导出及允许的显式恢复场景；不等于批准自动应用。 |
+| B：仅对可证明的 content-only 变化重绑定 | 将当前完整 Edition identity 与另一个经证明的 timing-compatibility identity 分开，或采用有限旧→新兼容映射。需逐项定义允许变化字段、稳定 Occurrence 判等和用户可见来源；还影响 loader、Timing Debugger 保存、backup、resume、queue 与 D-022 选择边界。 | 在条件严格且可验证时，可能避免纯 Feature/translation 更新打断几何未变的校准。 | 同 audio 仍可能改 Timeline、Segment 文本/映射或复用 Occurrence ID；Feature 删除也使阅读目标不存在。把“audio hash 相同”当作全 Edition 兼容会越过 D-012 / D-021。 | 必须先有针对具体字段与数据后果的用户新 Decision，并定义反例拒绝、身份来源、回滚和混合版本验收；本轮不选择、不实现。 |
+
+**建议顺序（待批准）**：先评估路线 A 的最小、可回退数据保全，维持旧值不应用于新 identity；之后再单独决定路线 B 是否有必要。发布前决策至少要回答：保留哪些数据域、旧记录能否显式导出/恢复、恢复到新 Edition 是否允许以及逐条如何证明兼容、冲突和失败如何回滚。若用户选择保持严格失效，也需明确理解未导出的稀疏 timing 可能被清除；不能从“旧文章可替换”推导此数据取舍。
+
+后续工程 Gate 应以具体样本验收：Feature-only 与 translation-only 成功更新；Timeline / audio 变化拒绝迁移；Feature 改名/删除不误恢复；cold/warm reopen；保存失败、存储配额失败和旧新文档并发；个人备份预览/恢复；queue/resume 的 stale 提示；H2 staging 失败保留 H1、完整 H2 manifest-last 后切换；回滚后不丢两侧原记录。上述都是待设计/运行的样本，本节没有把它们记为 PASS。
