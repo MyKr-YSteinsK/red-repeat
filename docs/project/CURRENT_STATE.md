@@ -11,12 +11,12 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.23.2`. This source records repository
+- Current package/ledger user version: `1.24.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.23.2` / `b020b4a` (product commit date
-  `2026-10-15`); annotated `v1.23.2` identifies that product commit, while the
+- Latest ledger product target: `1.24.0` / `c0ac7a4` (product commit date
+  `2026-10-15`); annotated `v1.24.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
   Existing `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`,
   `v1.20.1 -> 19123e7`,
@@ -994,13 +994,18 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-82 / R1` 的 WORK R3 内容集成、本地验收与 `1.24.0 MINOR` 发布源信息
+  已收口；远端 CI、Pages 与 Production smoke 仍以对应交付回执和实际部署身份为准。
+  详细源范围、H1/H2 浏览器证据及严格 identity 限制见本文件末尾的 Plan-82 记录。
+  不自动启动下一项内容改写。
 - `RED-Plan-79 / R1` 已完成 WORK 七篇候选／旧八篇、61 Segment 的独立审稿与来源复核，
   见 [WORK_CONTENT_REVIEW.md](WORK_CONTENT_REVIEW.md)。翻译处置为接受候选26／需修订20／
   保留现译7／待来源8；90处引用及27个章节目标结构有效，但候选语义／显示仍需修订。
   研究交付不等于原包获准集成；特殊读法、声部／对位未核听，完整制作名单未独立取得。
   建议七主题及旧03合入08，须用户／Architect采纳后另行冻结内容与身份／数据验收范围。
-  本轮仅研究文档和必要索引／状态／旧基线时效澄清，未改歌曲、代码、Timing或1.23.2版本，
-  不自动启动下一Plan或跨identity迁移；Git／CI／Pages结果按最终回执核验。
+  Plan-79 当时仅研究文档和必要索引／状态／旧基线时效澄清；未改歌曲、代码或当时的
+  `1.23.2` 版本。其 WORK 写作建议后来由独立 Plan-82 输入重新冻结；不授权跨 identity
+  迁移。Git／CI／Pages 结果仍按各任务最终回执核验。
 - `RED-Plan-78 / R1` 已按 D-028 完成 sparse v3 Timing 非破坏性保全与完整 identity
   选择。D-028 已 Accepted；路线 B 未批准。具体浏览器/测试证据与版本交付见本文件末尾
   的 Plan-78 记录。
@@ -1594,3 +1599,21 @@ each historical task and do not replace the current repository identity above.
   `git diff --check` 通过。未在主工作树运行 `npm run build`，以免触及受保护的
   `public/library-runtime.tmp-*`；最终精确 SHA 的 CI build、Pages 与 Production identity
   由本次交付回执分别核验。没有修改歌曲 source、Compiler/schema、PWA lifecycle 或生成产物。
+
+## RED-Plan-82 实施与发布状态
+
+- `1.24.0 MINOR` 的产品提交为 `c0ac7a454f3d2db726450a296fa88d3cc5487148`
+  （`2026-10-15`）；annotated `v1.24.0` 指向该内容提交，release metadata 独立提交。
+  七篇已批准 R3 Feature 按原 basename 集成，旧 W03 删除；61 个 Segment 中仅 46 条
+  `translation` 更新，其余 15 条及 Ruby、Romaji、Occurrence timing、Practice、Timeline、音频与 artwork 未改。
+- Work Edition identity 从 `f6078978…` 更新为 `19b42331…`；audio source SHA-256
+  仍为 `facc3031bda3d4c5588276fd33b46c9474d19af3364880f9ca1567cea4928083`，Timeline 与
+  Practice runtime URL 不变。D-028 / Plan-78 的 sparse v3 保全与严格选择证据继续适用：旧
+  override 不会跨 Edition 自动应用，resume、queue、progress/rate 与个人备份仍按原身份合同处理；没有迁移或重绑定。
+- 隔离浏览器的 H1 CacheStorage manifest 起始绑定旧 Edition 与 16 个快照 URL。对 H2 W08
+  注入 HTTP 503 后，应用显示更新失败、保留原离线版本，且旧 W03 可继续打开；恢复服务后
+  H2 以七篇目录和新译文呈现。manifest-last 事务由当前下载实现及定向测试核验；未将 UI
+  观察夸大为直接检查提交后的 manifest 字节。
+- `library:validate`、音频身份核验、`/red-repeat/` build 与 `pwa:inspect` 通过；Feature
+  parser 接受七篇文章、61 个合法引用及 24 个章节目标。9 个相关测试文件 `99/99`，release
+  ledger 测试 `1/1`。未运行真机、人工听感或 installed-PWA 验收；没有修改 timing、音频或 PWA lifecycle。

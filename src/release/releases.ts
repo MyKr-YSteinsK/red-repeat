@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.24.0',
+    date: '2026-10-15',
+    commit: 'c0ac7a454f3d2db726450a296fa88d3cc5487148',
+    level: 'minor',
+    title: '《Ｗ●ＲＫ》讲解与译文内容重构',
+    summary: '更新七篇 Explain 文章和 46 条中文译文，围绕作品证据、歌词引用与逐句理解重构阅读路径。',
+    changes: [
+      '按 R3 定稿替换七篇现有 Feature、移除旧 W03，并将旧主题中可保留的劳动鼠内容收束到 W08。',
+      '修订 61 个 Segment 中 46 条中文译文；其余 15 条、Ruby/Romaji、Timing、Practice 结构与歌曲音频保持不变。',
+    ],
+  },
+  {
     version: '1.23.2',
     date: '2026-10-15',
     commit: 'b020b4a',
