@@ -37,6 +37,144 @@ afterEach(() => {
 })
 
 describe('song download snapshot cache', () => {
+  it('reports indeterminate preparation before verified resource progress', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    const progress: Array<{
+      phase: string
+      completedResources: number
+      totalResources?: number
+    }> = []
+
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      {
+        fetchImpl: fixtureFetch(snapshotH1),
+        onProgress: (value) => progress.push(value),
+      },
+    )
+
+    expect(progress[0]).toMatchObject({
+      phase: 'preparing',
+      completedResources: 0,
+    })
+    expect(progress[0]).not.toHaveProperty('totalResources')
+    expect(progress).toContainEqual({
+      phase: 'downloading',
+      completedResources: 0,
+      totalResources: 9,
+    })
+    expect(progress.at(-2)).toMatchObject({
+      phase: 'verifying',
+      completedResources: 9,
+      totalResources: 9,
+    })
+    expect(progress.at(-1)).toMatchObject({
+      phase: 'committing',
+      completedResources: 9,
+      totalResources: 9,
+    })
+  })
+
+  it('cancels an initial download after an awaited fetch without installing partial resources', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    const controller = new AbortController()
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      controller.abort()
+      return responseForLogicalPath(runtimePath(String(input)), snapshotH1)
+    })
+
+    await expect(
+      downloadSongRuntime(
+        snapshotH1.catalogEdition,
+        runtimeClientFor(snapshotH1),
+        { fetchImpl, signal: controller.signal },
+      ),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+
+    const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
+    expect(cache.entries.size).toBe(0)
+    await expect(readSongDownloadState('first-light')).resolves.toMatchObject({
+      status: 'not-installed',
+    })
+  })
+
+  it('keeps H1 readable when H2 is cancelled after a resource has been staged', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1) },
+    )
+    const controller = new AbortController()
+    await expect(
+      downloadSongRuntime(
+        snapshotH2.catalogEdition,
+        runtimeClientFor(snapshotH2),
+        {
+          fetchImpl: fixtureFetch(snapshotH2),
+          signal: controller.signal,
+          onProgress: (progress) => {
+            if (
+              progress.phase === 'downloading' &&
+              progress.completedResources === 1
+            ) {
+              controller.abort()
+            }
+          },
+        },
+      ),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+
+    const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
+    expect(
+      [...cache.entries.keys()].some((url) =>
+        url.includes(`/songs/first-light/${HASH_B}`),
+      ),
+    ).toBe(false)
+    await expect(readDownloadedSongSnapshot('first-light')).resolves.toMatchObject({
+      contentHash: HASH_A,
+      catalogEdition: snapshotH1.catalogEdition,
+    })
+  })
+
+  it('treats a manifest write that succeeds after abort as a completed H2 commit', async () => {
+    const storage = new MemoryCacheStorage()
+    installCacheStorage(storage)
+    await downloadSongRuntime(
+      snapshotH1.catalogEdition,
+      runtimeClientFor(snapshotH1),
+      { fetchImpl: fixtureFetch(snapshotH1) },
+    )
+    const cache = storage.cacheFor(SONG_DOWNLOAD_CACHE_NAME)
+    const originalPut = cache.put.bind(cache)
+    const controller = new AbortController()
+    vi.spyOn(cache, 'put').mockImplementation(async (request, response) => {
+      if (cacheKey(request) === manifestUrl('first-light')) {
+        controller.abort()
+      }
+      await originalPut(request, response)
+    })
+
+    await expect(
+      downloadSongRuntime(
+        snapshotH2.catalogEdition,
+        runtimeClientFor(snapshotH2),
+        {
+          fetchImpl: fixtureFetch(snapshotH2),
+          signal: controller.signal,
+        },
+      ),
+    ).resolves.toMatchObject({ status: 'installed', contentHash: HASH_B })
+    await expect(readDownloadedSongSnapshot('first-light')).resolves.toMatchObject({
+      contentHash: HASH_B,
+      catalogEdition: snapshotH2.catalogEdition,
+    })
+  })
+
   it('commits a complete v2 snapshot, reads locally before network, and removes all owned resources', async () => {
     const storage = new MemoryCacheStorage()
     installCacheStorage(storage)

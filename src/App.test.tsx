@@ -26,6 +26,11 @@ const routeModuleControl = vi.hoisted(() => ({
   timingDebuggerLoads: 0,
 }))
 
+const initialCachesDescriptor = Object.getOwnPropertyDescriptor(
+  globalThis,
+  'caches',
+)
+
 vi.mock('./pwa/song-download', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./pwa/song-download')>()
   return {
@@ -206,6 +211,13 @@ beforeEach(async () => {
   vi.mocked(readSongDownloadState)
     .mockReset()
     .mockImplementation(actual.readSongDownloadState)
+  const emptyCache = {
+    match: vi.fn(async () => undefined),
+  } as unknown as Cache
+  Object.defineProperty(globalThis, 'caches', {
+    configurable: true,
+    value: { open: vi.fn(async () => emptyCache) },
+  })
   window.history.replaceState({}, '', '/')
   window.localStorage.clear()
 })
@@ -213,6 +225,11 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup()
   window.localStorage.clear()
+  if (initialCachesDescriptor) {
+    Object.defineProperty(globalThis, 'caches', initialCachesDescriptor)
+  } else {
+    delete (globalThis as { caches?: CacheStorage }).caches
+  }
 })
 
 describe('App Library consumer', () => {
@@ -502,6 +519,72 @@ describe('App Library consumer', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps one download task observable across a same-document route change and allows cancellation', async () => {
+    const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
+    const cache = {
+      match: vi.fn(async () => undefined),
+    } as unknown as Cache
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: { open: vi.fn(async () => cache) },
+    })
+    vi.mocked(downloadSongRuntime).mockImplementation(
+      (_edition, _client, options) =>
+        new Promise((_, reject) => {
+          options?.onProgress?.({ phase: 'preparing', completedResources: 0 })
+          options?.onProgress?.({
+            phase: 'downloading',
+            completedResources: 2,
+            totalResources: 9,
+          })
+          options?.signal?.addEventListener('abort', () => {
+            reject(Object.assign(new Error('cancelled'), { name: 'AbortError' }))
+          })
+        }),
+    )
+
+    try {
+      render(<App runtimeClient={clientFor(populatedCatalog)} />)
+      fireEvent.click(
+        await screen.findByRole('button', { name: '下载 First Light' }),
+      )
+      expect(
+        await screen.findByRole('button', { name: '取消下载 First Light' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('已核验 2/9 项')).toBeInTheDocument()
+      expect(downloadSongRuntime).toHaveBeenCalledOnce()
+
+      fireEvent.click(screen.getByRole('link', { name: '设置' }))
+      expect(await screen.findByRole('heading', { name: '设置' })).toBeInTheDocument()
+      fireEvent.click(
+        within(screen.getByRole('main')).getByRole('link', {
+          name: '返回曲库',
+        }),
+      )
+      expect(
+        await screen.findByRole('button', { name: '取消下载 First Light' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('已核验 2/9 项')).toBeInTheDocument()
+      expect(downloadSongRuntime).toHaveBeenCalledOnce()
+
+      fireEvent.click(
+        screen.getByRole('button', { name: '取消下载 First Light' }),
+      )
+      expect(
+        await screen.findByRole('button', { name: '下载 First Light' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('下载已取消。', { selector: '.catalog-download-error' }),
+      ).toBeInTheDocument()
+    } finally {
+      if (originalCaches) {
+        Object.defineProperty(globalThis, 'caches', originalCaches)
+      } else {
+        delete (globalThis as { caches?: CacheStorage }).caches
+      }
+    }
+  })
+
   it('keeps installed, removing, installing, and failed download states in the compact slot', async () => {
     const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
     const originalFetch = globalThis.fetch
@@ -683,15 +766,19 @@ describe('App Library consumer', () => {
         screen.getByRole('button', { name: '下载 Second Signal' }),
       )
       const installingButton = await screen.findByRole('button', {
-        name: '下载中… Second Signal',
+        name: '取消下载 Second Signal',
       })
-      expect(installingButton).toBeDisabled()
+      expect(installingButton).toBeEnabled()
 
       rejectDownload?.(new Error('offline'))
       expect(
         await screen.findByRole('button', { name: '重试 Second Signal' }),
       ).toBeInTheDocument()
-      expect(screen.getByText('下载失败，请检查网络后重试。')).toBeInTheDocument()
+      expect(
+        screen.getByText('下载失败，请检查网络后重试。', {
+          selector: '.catalog-download-error',
+        }),
+      ).toBeInTheDocument()
     } finally {
       globalThis.fetch = originalFetch
       if (originalCaches) {
@@ -896,7 +983,14 @@ describe('App Library consumer', () => {
         : { songId, status: 'not-installed' },
     )
     vi.mocked(downloadSongRuntime).mockImplementation(
-      () => new Promise<Awaited<ReturnType<typeof downloadSongRuntime>>>(() => {}),
+      (_edition, _client, options) =>
+        new Promise<Awaited<ReturnType<typeof downloadSongRuntime>>>(
+          (_resolve, reject) => {
+            options?.signal?.addEventListener('abort', () => {
+              reject(Object.assign(new Error('cancelled'), { name: 'AbortError' }))
+            })
+          },
+        ),
     )
 
     try {
@@ -914,6 +1008,20 @@ describe('App Library consumer', () => {
         screen.queryByRole('link', { name: '打开 First Light H2' }),
       ).not.toBeInTheDocument()
       expect(downloadSongRuntime).toHaveBeenCalledTimes(1)
+      fireEvent.click(
+        screen.getByRole('button', { name: '取消下载 First Light H1' }),
+      )
+      expect(
+        await screen.findByText('已取消更新，原离线版本仍可用。', {
+          selector: '.catalog-download-error',
+        }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: '打开 First Light H1' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: '下载更新 First Light H2' }),
+      ).toBeInTheDocument()
 
       fireEvent.change(
         screen.getByRole('searchbox', {
@@ -944,7 +1052,7 @@ describe('App Library consumer', () => {
     }
   })
 
-  it('reports unavailable offline verification without changing ordinary download actions', async () => {
+  it('reports unavailable offline verification and disables downloads without Cache Storage', async () => {
     const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches')
     Object.defineProperty(globalThis, 'caches', {
       configurable: true,
@@ -960,8 +1068,13 @@ describe('App Library consumer', () => {
       expect(await screen.findByText('无法确认离线状态')).toBeInTheDocument()
       fireEvent.click(offlineFilter)
       expect(
-        screen.getByRole('button', { name: '下载 First Light' }),
+        within(document.querySelector('[data-song-id="first-light"]')!).getByText(
+          '离线下载不可用',
+        ),
       ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: '下载 First Light' }),
+      ).not.toBeInTheDocument()
     } finally {
       if (originalCaches) {
         Object.defineProperty(globalThis, 'caches', originalCaches)

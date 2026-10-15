@@ -67,6 +67,13 @@ evidence only.
 
 - Local-first Catalog loading, metadata-focused Song Edition cards and
   explicit per-song identity-coherent offline snapshot install/removal.
+- Catalog download tasks expose verified resource-item progress and explicit
+  cancellation. Manual downloads and automatic H1→H2 refreshes share one
+  per-song task owner for the lifetime of the App document; leaving and
+  returning to Catalog keeps the task observable. Cancel/failure keeps the
+  last complete H1 active, while only a validated manifest defines offline
+  availability. In-flight tasks are not restored after a hard reload or
+  browser close.
 - Catalog search normalizes Unicode width, case, whitespace and songId
   separators, AND-matches title/artist/album/songId terms, and includes only
   the two traceable simplified-title aliases recorded in the search owner.
@@ -135,6 +142,10 @@ uses the separately authorized task-input source package.
   Cache Storage/Workbox owns local-first Catalog and manifest-bound Song
   Edition snapshots, including audio Range responses; no server persistence
   exists. Runtime contract version is 3.
+- `src/pwa/song-download-tasks.ts` coordinates same-song manual downloads,
+  automatic H1→H2 refreshes, cancellation and removal for one App document.
+  `src/pwa/song-download.ts` remains the snapshot transaction and offline-state
+  authority; transient task progress never marks a song installed.
 - The strict source schema validates ruby spans against canonical lyric
   positions and carries them through the compiler into Runtime. User-facing
   lyric surfaces use the shared semantic ruby renderer; pure English lines may
@@ -979,19 +990,19 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- `RED-Plan-72` R1 implements P1 route-level loading and P2 Catalog cover
-  sizing. Product commit `19123e7` is the `1.20.1` PATCH tag target; package,
-  ledger, build identity and this state are updated in the separate metadata
-  commit. Push, CI, Pages and production identity are verified separately at
-  delivery.
+- `RED-Plan-73` R1 implements per-song download progress, cancellation and
+  same-document task continuity. Its candidate gates pass; the focused product
+  commit and separate `1.21.0` release-metadata/tag closeout remain pending.
+  Push, exact-SHA CI, Pages and production identity are separate delivery
+  observations and have not yet been claimed here.
 - `RED-Plan-70` R1 was a read-only milestone checkpoint. `RED-Plan-71` R1
   completed Catalog search and offline-availability filtering as a `1.20.0`
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
   is its annotated tag target and its metadata commit is the independent build
   identity.
-- No next formal Plan is active. Future product work requires a separately
-  authorized Plan; no additional A–E proposal or architecture is implicitly
-  started by this completion.
+- No later formal Plan is active or authorized. The broader A–E proposal stays
+  separate; completing this download task does not approve or start its other
+  work packages.
 - The RED-Plan-69 measurement details below remain historical evidence for
   `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
@@ -1409,3 +1420,37 @@ each historical task and do not replace the current repository identity above.
   Browser Network timing, real iOS/Safari, installed-PWA and user-perceived
   performance were not measured; they remain separate observations, not a
   claimed PASS.
+
+## RED-Plan-73 implementation status
+
+- Catalog downloads now report an indeterminate preparation phase, then
+  verified resource-item counts, snapshot verification and manifest commit.
+  The progress total is resources, not bytes or a time estimate. Only the
+  validated manifest defines offline availability.
+- A per-App-document task owner coalesces same-target work and rejects a
+  competing Edition for the same song. Manual downloads, Catalog H1→H2 refresh
+  and removal share the owner; Catalog route unmount does not end the task.
+  Task progress is transient and is not restored after document reload/close.
+- Cancellation checks stop newly staged work at safe boundaries and clean up
+  only resources added by that attempt. The last complete H1 remains readable
+  until all H2 resources and identities validate and its manifest commits; a
+  manifest put that succeeds after cancellation is reported as completed.
+  Download manifest v2, runtime schema and PWA update lifecycle are unchanged.
+- Verification: the focused download/task/App set passed `42/42`; the full
+  Vitest suite passed `433/433` before a final test-only refinement, and the
+  focused set passed again afterward. Touched-file ESLint passed. The final
+  candidate `npm run build` passed for six editions and 95 runtime files,
+  including TypeScript and Vite; `npm run pwa:inspect` passed the static
+  artifact contract. The first build attempt hit a Windows `EPERM` at generated
+  directory rename; a retry passed, and the initial cause was not established.
+- A desktop Codex in-app browser with real local Cache Storage showed 7/15
+  verified resource items, then navigated Catalog → Settings → Catalog while
+  the task continued and completed; the downloaded-only filter and hard reload
+  retained the complete snapshot. Automated tests cover cancellation and H1
+  fallback. iOS/Safari touch feel and installed-PWA behavior were not tested;
+  they remain `POST-DEPLOY OBSERVATION`, not a blocking gate for this unchanged
+  PWA lifecycle.
+- Serial resource processing remains in place. No timing comparison showed a
+  measured benefit that would justify concurrent writes and additional cancel/
+  rollback races (`NO_MEASURED_BENEFIT`). The broader A–E proposal is not
+  approved by this implementation.

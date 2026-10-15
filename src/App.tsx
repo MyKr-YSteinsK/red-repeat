@@ -1,10 +1,12 @@
 import {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ComponentType,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -40,11 +42,13 @@ import {
   type UpdateManager,
 } from './pwa/update-manager'
 import {
-  downloadSongRuntime,
   readSongDownloadState,
-  removeSongRuntime,
   type SongDownloadState,
 } from './pwa/song-download'
+import {
+  SongDownloadTaskManager,
+  type SongDownloadTaskSnapshot,
+} from './pwa/song-download-tasks'
 
 const DevTimelineDebuggerPage = import.meta.env.DEV
   ? lazy(async () => {
@@ -95,6 +99,7 @@ function App({
   })
   const [catalogQuery, setCatalogQuery] = useState('')
   const [catalogOfflineOnly, setCatalogOfflineOnly] = useState(false)
+  const [downloadTasks] = useState(() => new SongDownloadTaskManager())
   const [preparedEntry, setPreparedEntry] = useState<PreparedSongEditionLoad>()
   const handledHrefRef = useRef(window.location.href)
   const catalogViewportRef = useRef<CatalogViewportState>({
@@ -193,6 +198,7 @@ function App({
           offlineOnly={catalogOfflineOnly}
           onOfflineOnlyChange={setCatalogOfflineOnly}
           viewportRef={catalogViewportRef}
+          downloadTasks={downloadTasks}
         />
       ) : route.kind === 'settings' ? (
         <AsyncRoutePage
@@ -251,6 +257,7 @@ function App({
           offlineOnly={catalogOfflineOnly}
           onOfflineOnlyChange={setCatalogOfflineOnly}
           viewportRef={catalogViewportRef}
+          downloadTasks={downloadTasks}
         />
       ) : (
         <EditionRoute
@@ -291,6 +298,7 @@ function SiteHeader({ homeHref, settingsHref }: { homeHref: string; settingsHref
 function LibraryRoute({
   state,
   runtimeClient,
+  downloadTasks,
   onRetry,
   query,
   onQueryChange,
@@ -300,6 +308,7 @@ function LibraryRoute({
 }: {
   state: CatalogState
   runtimeClient: RuntimeClient
+  downloadTasks: SongDownloadTaskManager
   onRetry: () => void
   query: string
   onQueryChange: (query: string) => void
@@ -351,6 +360,7 @@ function LibraryRoute({
       key={catalog.contentHash}
       catalog={catalog}
       runtimeClient={runtimeClient}
+      downloadTasks={downloadTasks}
       query={query}
       onQueryChange={onQueryChange}
       offlineOnly={offlineOnly}
@@ -389,6 +399,7 @@ function EmptyLibrary() {
 function CatalogLibrary({
   catalog,
   runtimeClient,
+  downloadTasks,
   query,
   onQueryChange,
   offlineOnly,
@@ -397,6 +408,7 @@ function CatalogLibrary({
 }: {
   catalog: Catalog
   runtimeClient: RuntimeClient
+  downloadTasks: SongDownloadTaskManager
   query: string
   onQueryChange: (query: string) => void
   offlineOnly: boolean
@@ -406,6 +418,22 @@ function CatalogLibrary({
   const [downloadBySongId, setDownloadBySongId] = useState<
     Readonly<Record<string, SongDownloadState>>
   >({})
+  const subscribeToTasks = useCallback(
+    (listener: () => void) => downloadTasks.subscribe(listener),
+    [downloadTasks],
+  )
+  const readTaskSnapshot = useCallback(
+    () => downloadTasks.getTasksSnapshot(),
+    [downloadTasks],
+  )
+  const taskBySongId = useSyncExternalStore(
+    subscribeToTasks,
+    readTaskSnapshot,
+    readTaskSnapshot,
+  )
+  const appliedTaskResultsRef = useRef(
+    new Map<string, SongDownloadTaskSnapshot>(),
+  )
   const [removingSongIds, setRemovingSongIds] = useState<ReadonlySet<string>>(
     new Set(),
   )
@@ -413,6 +441,31 @@ function CatalogLibrary({
   const [downloadStateCheckComplete, setDownloadStateCheckComplete] =
     useState(false)
   const downloadStateStorageUnavailable = typeof caches === 'undefined'
+
+  useEffect(() => {
+    const completed = Object.values(taskBySongId).flatMap((task) => {
+      if (
+        task.kind !== 'download' ||
+        task.status === 'running' ||
+        appliedTaskResultsRef.current.get(task.songId) === task
+      ) {
+        return []
+      }
+      return [task]
+    })
+    if (completed.length === 0) {
+      return
+    }
+    for (const task of completed) {
+      appliedTaskResultsRef.current.set(task.songId, task)
+    }
+    setDownloadBySongId((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        completed.map((task) => [task.songId, task.resultState]),
+      ),
+    }))
+  }, [taskBySongId])
 
   useLayoutEffect(() => {
     const saved = viewportRef.current
@@ -485,7 +538,16 @@ function CatalogLibrary({
       if (!active) {
         return
       }
-      setDownloadBySongId(Object.fromEntries(entries))
+      const initialStates = Object.fromEntries(entries) as Record<
+        string,
+        SongDownloadState
+      >
+      for (const task of Object.values(downloadTasks.getTasksSnapshot())) {
+        if (task.kind === 'download' && task.status !== 'running') {
+          initialStates[task.songId] = task.resultState
+        }
+      }
+      setDownloadBySongId(initialStates)
       setDownloadStateCheckComplete(true)
 
       entries.forEach(([songId, state]) => {
@@ -500,8 +562,13 @@ function CatalogLibrary({
           return
         }
 
-        void downloadSongRuntime(currentEdition, runtimeClient)
-          .then((refreshedState) => {
+        const refresh = downloadTasks.start(
+          currentEdition,
+          runtimeClient,
+          'catalog-refresh',
+        )
+        if (refresh.outcome === 'already-completed') {
+          void refresh.completion.then((refreshedState) => {
             if (active) {
               setDownloadBySongId((current) => ({
                 ...current,
@@ -509,45 +576,27 @@ function CatalogLibrary({
               }))
             }
           })
-          .catch(() => {
-            // A failed background refresh must leave the last complete snapshot active.
-          })
+        }
       })
     })
 
     return () => {
       active = false
     }
-  }, [catalog, runtimeClient])
+  }, [catalog, downloadTasks, runtimeClient])
 
-  const handleDownload = async (edition: CatalogEdition): Promise<void> => {
-    setDownloadBySongId((current) => ({
-      ...current,
-      [edition.songId]: { songId: edition.songId, status: 'installing' },
-    }))
+  const handleDownload = (edition: CatalogEdition): void => {
+    downloadTasks.start(edition, runtimeClient, 'manual')
+  }
 
-    try {
-      const state = await downloadSongRuntime(edition, runtimeClient)
-      setDownloadBySongId((current) => ({
-        ...current,
-        [edition.songId]: state,
-      }))
-    } catch {
-      setDownloadBySongId((current) => ({
-        ...current,
-        [edition.songId]: {
-          songId: edition.songId,
-          status: 'failed',
-          errorMessage: '下载失败，请检查网络后重试。',
-        },
-      }))
-    }
+  const handleCancelDownload = (songId: string): void => {
+    downloadTasks.cancel(songId)
   }
 
   const handleRemove = async (edition: CatalogEdition): Promise<void> => {
     setRemovingSongIds((current) => new Set(current).add(edition.songId))
     try {
-      await removeSongRuntime(edition.songId)
+      await downloadTasks.remove(edition.songId)
       setDownloadBySongId((current) => ({
         ...current,
         [edition.songId]: {
@@ -575,7 +624,11 @@ function CatalogLibrary({
   }
 
   const filteredEditions = catalog.editions.flatMap((catalogEdition, index) => {
-    const download = downloadBySongId[catalogEdition.songId]
+    const task = taskBySongId[catalogEdition.songId]
+    const taskResult = task?.kind === 'download' && task.status !== 'running'
+      ? task.resultState
+      : undefined
+    const download = taskResult ?? downloadBySongId[catalogEdition.songId]
     const snapshotEdition = downloadStateStorageUnavailable
       ? undefined
       : getInstalledSnapshotEdition(catalogEdition.songId, download)
@@ -590,7 +643,7 @@ function CatalogLibrary({
       return []
     }
 
-    return [{ catalogEdition, displayEdition, download, index }]
+    return [{ catalogEdition, displayEdition, download, task, index }]
   })
   const hasUnverifiedOfflineState = Object.values(downloadBySongId).some(
     (download) => download.status === 'failed' || download.status === 'installing',
@@ -686,27 +739,35 @@ function CatalogLibrary({
           </p>
         ) : null}
         {filteredEditions.length > 0 ? (
-          filteredEditions.map(({ catalogEdition, displayEdition, download, index }) => (
-            <CatalogEditionCard
-              key={catalogEdition.songId}
-              edition={displayEdition}
-              index={index}
-              runtimeClient={runtimeClient}
-              download={
-                download ?? {
-                  songId: catalogEdition.songId,
-                  status: 'not-installed',
+          filteredEditions.map(({ catalogEdition, displayEdition, download, task, index }) => {
+            const isRemoving = removingSongIds.has(catalogEdition.songId) ||
+              (task?.kind === 'remove' && task.status === 'running')
+            return (
+              <CatalogEditionCard
+                key={catalogEdition.songId}
+                edition={displayEdition}
+                downloadEdition={catalogEdition}
+                index={index}
+                runtimeClient={runtimeClient}
+                download={
+                  download ?? {
+                    songId: catalogEdition.songId,
+                    status: 'not-installed',
+                  }
                 }
-              }
-              isRemoving={removingSongIds.has(catalogEdition.songId)}
-              onDownload={handleDownload}
-              onRemove={handleRemove}
-              onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
-              isSwipeOpen={openSongId === catalogEdition.songId}
-              onSwipeOpen={() => setOpenSongId(catalogEdition.songId)}
-              onSwipeClose={() => setOpenSongId(null)}
-            />
-          ))
+                task={task}
+                isRemoving={isRemoving}
+                isDownloadAvailable={!downloadStateStorageUnavailable}
+                onDownload={handleDownload}
+                onCancelDownload={handleCancelDownload}
+                onRemove={handleRemove}
+                onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
+                isSwipeOpen={openSongId === catalogEdition.songId}
+                onSwipeOpen={() => setOpenSongId(catalogEdition.songId)}
+                onSwipeClose={() => setOpenSongId(null)}
+              />
+            )
+          })
         ) : (
           <div className="catalog-no-results" role="status">
             {offlineOnly ? (
@@ -765,11 +826,15 @@ function CatalogSection({
 
 function CatalogEditionCard({
   edition,
+  downloadEdition,
   index,
   runtimeClient,
   download,
+  task,
   isRemoving,
+  isDownloadAvailable,
   onDownload,
+  onCancelDownload,
   onRemove,
   onBeforeNavigate,
   isSwipeOpen,
@@ -777,11 +842,15 @@ function CatalogEditionCard({
   onSwipeClose,
 }: {
   edition: CatalogEdition
+  downloadEdition: CatalogEdition
   index: number
   runtimeClient: RuntimeClient
   download: SongDownloadState
+  task?: SongDownloadTaskSnapshot
   isRemoving: boolean
+  isDownloadAvailable: boolean
   onDownload: (edition: CatalogEdition) => void
+  onCancelDownload: (songId: string) => void
   onRemove: (edition: CatalogEdition) => void
   onBeforeNavigate: () => void
   isSwipeOpen: boolean
@@ -855,9 +924,13 @@ function CatalogEditionCard({
             </a>
             <CatalogDownloadSlot
               edition={edition}
+              downloadEdition={downloadEdition}
               download={download}
+              task={task}
               isRemoving={isRemoving}
+              isDownloadAvailable={isDownloadAvailable}
               onDownload={onDownload}
+              onCancelDownload={onCancelDownload}
             />
           </div>
         </div>
@@ -868,53 +941,176 @@ function CatalogEditionCard({
 
 function CatalogDownloadSlot({
   edition,
+  downloadEdition,
   download,
+  task,
   isRemoving,
+  isDownloadAvailable,
   onDownload,
+  onCancelDownload,
 }: {
   edition: CatalogEdition
+  downloadEdition: CatalogEdition
   download: SongDownloadState
+  task?: SongDownloadTaskSnapshot
   isRemoving: boolean
+  isDownloadAvailable: boolean
   onDownload: (edition: CatalogEdition) => void
+  onCancelDownload: (songId: string) => void
 }) {
-  const isInstalling = download.status === 'installing'
-  const isInstalled = download.status === 'installed'
-  const label = isRemoving
-    ? '移除中…'
-    : isInstalling
-      ? '下载中…'
-      : download.status === 'failed'
-        ? '重试'
-        : '下载'
+  const runningDownload = task?.kind === 'download' && task.status === 'running'
+    ? task
+    : undefined
+  const isRemovingTask = task?.kind === 'remove' && task.status === 'running'
+  const taskResult = task?.kind === 'download' && task.status !== 'running'
+    ? task.resultState
+    : undefined
+  const currentDownload = taskResult ?? download
+  const isInstalled = currentDownload.status === 'installed'
+  const label = currentDownload.status === 'failed' ||
+    (task?.kind === 'download' && task.status === 'failed')
+    ? '重试'
+    : '下载'
+  const progressMessage = runningDownload
+    ? downloadProgressMessage(runningDownload)
+    : undefined
+  const taskMessage = task?.kind === 'download' && task.status !== 'running'
+    ? task.status === 'cancelled'
+      ? task.resultState.status === 'installed'
+        ? '已取消更新，原离线版本仍可用。'
+        : '下载已取消。'
+      : task.status === 'failed'
+        ? task.message ?? '下载失败，请检查网络后重试。'
+        : undefined
+    : undefined
+  const canRetryUpdate = Boolean(
+    task?.kind === 'download' &&
+      (task.status === 'cancelled' || task.status === 'failed') &&
+      task.resultState.status === 'installed' &&
+      task.resultState.editionUrl !== task.editionUrl,
+  )
+  const announcement = isRemovingTask || isRemoving
+    ? '正在移除离线歌曲'
+    : runningDownload
+      ? downloadProgressAnnouncement(runningDownload.phase)
+      : taskMessage ?? currentDownload.errorMessage ?? ''
 
   return (
-    <div className="catalog-download-slot" aria-live="polite">
-      {isInstalled && !isRemoving ? (
-        <span
-          className="catalog-download-state"
-          aria-label={`已下载 ${edition.title}`}
-        >
-          已下载
-        </span>
-      ) : (
+    <div className="catalog-download-slot">
+      {runningDownload ? (
+        <>
+          <span className="catalog-download-state" aria-live="off">
+            {isInstalled ? `已下载 · ${progressMessage}` : progressMessage}
+          </span>
+          {runningDownload.totalResources !== undefined ? (
+            <progress
+              className="catalog-download-progress"
+              aria-label={`下载 ${edition.title} 的资源核验进度`}
+              value={runningDownload.completedResources}
+              max={runningDownload.totalResources}
+            />
+          ) : (
+            <progress
+              className="catalog-download-progress"
+              aria-label={`正在准备 ${edition.title} 的下载资源`}
+            />
+          )}
+          <button
+            className="catalog-download-button"
+            type="button"
+            aria-label={`取消下载 ${edition.title}`}
+            onClick={(event) => {
+              event.stopPropagation()
+              onCancelDownload(edition.songId)
+            }}
+          >
+            取消
+          </button>
+        </>
+      ) : isRemovingTask || isRemoving ? (
+        <span className="catalog-download-state">正在移除…</span>
+      ) : isInstalled ? (
+        <>
+          <span
+            className="catalog-download-state"
+            aria-label={`已下载 ${edition.title}`}
+          >
+            已下载
+          </span>
+          {canRetryUpdate ? (
+            <button
+              className="catalog-download-button"
+              type="button"
+              aria-label={`${task?.status === 'failed' ? '重试更新' : '下载更新'} ${downloadEdition.title}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                onDownload(downloadEdition)
+              }}
+            >
+              {task?.status === 'failed' ? '重试更新' : '下载更新'}
+            </button>
+          ) : null}
+        </>
+      ) : isDownloadAvailable ? (
         <button
           className="catalog-download-button"
           type="button"
-          disabled={isInstalling || isRemoving}
+          disabled={isRemoving}
           aria-label={`${label} ${edition.title}`}
           onClick={(event) => {
             event.stopPropagation()
-            onDownload(edition)
+            onDownload(downloadEdition)
           }}
         >
           {label}
         </button>
+      ) : (
+        <span className="catalog-download-state" aria-label="当前环境不支持离线下载">
+          离线下载不可用
+        </span>
       )}
-      {download.errorMessage ? (
-        <span className="catalog-download-error">{download.errorMessage}</span>
+      {taskMessage || currentDownload.errorMessage ? (
+        <span className="catalog-download-error">
+          {taskMessage ?? currentDownload.errorMessage}
+        </span>
+      ) : null}
+      {announcement ? (
+        <span
+          className="catalog-download-announcement"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {announcement}
+        </span>
       ) : null}
     </div>
   )
+}
+
+function downloadProgressMessage(
+  task: Extract<SongDownloadTaskSnapshot, { kind: 'download' }>,
+): string {
+  if (task.phase === 'preparing') {
+    return '正在准备资源…'
+  }
+  if (task.phase === 'downloading' && task.totalResources !== undefined) {
+    return `已核验 ${task.completedResources}/${task.totalResources} 项`
+  }
+  return task.phase === 'verifying'
+    ? '正在校验完整快照…'
+    : '正在完成离线快照…'
+}
+
+function downloadProgressAnnouncement(
+  phase: Extract<SongDownloadTaskSnapshot, { kind: 'download' }>['phase'],
+): string {
+  return phase === 'preparing'
+    ? '正在准备下载资源'
+    : phase === 'downloading'
+      ? '正在核验并下载资源'
+      : phase === 'verifying'
+        ? '正在校验完整离线快照'
+        : '正在提交完整离线快照'
 }
 
 function captureCatalogViewport(

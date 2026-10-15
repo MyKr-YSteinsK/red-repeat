@@ -36,6 +36,18 @@ export interface SongDownloadState {
   errorMessage?: string
 }
 
+export type SongDownloadProgressPhase =
+  | 'preparing'
+  | 'downloading'
+  | 'verifying'
+  | 'committing'
+
+export interface SongDownloadProgress {
+  phase: SongDownloadProgressPhase
+  completedResources: number
+  totalResources?: number
+}
+
 export interface DownloadedSongSnapshot {
   songId: string
   contentHash: string
@@ -48,6 +60,14 @@ export interface SongDownloadOptions {
   fetchImpl?: typeof fetch
   signal?: AbortSignal
   now?: () => number
+  onProgress?: (progress: SongDownloadProgress) => void
+}
+
+export class SongDownloadCancelledError extends Error {
+  constructor() {
+    super('Song download was cancelled.')
+    this.name = 'AbortError'
+  }
 }
 
 export class SongDownloadFetchError extends Error {
@@ -156,6 +176,10 @@ export async function downloadSongRuntime(
   runtimeClient: RuntimeClient,
   options: SongDownloadOptions = {},
 ): Promise<SongDownloadState> {
+  reportDownloadProgress(options.onProgress, {
+    phase: 'preparing',
+    completedResources: 0,
+  })
   const storage = getCacheStorage()
   if (!storage) {
     throw new Error('Cache Storage is unavailable in this browser.')
@@ -168,16 +192,27 @@ export async function downloadSongRuntime(
     ),
   )
 
+  let manifestCommitted = false
   try {
+    throwIfDownloadAborted(options.signal)
     const edition = await runtimeClient.loadEdition(catalogEdition.editionUrl, {
       signal: options.signal,
     })
+    throwIfDownloadAborted(options.signal)
     assertEditionIdentity(catalogEdition, edition)
 
     const urls = collectSongRuntimeUrls(catalogEdition, edition, runtimeClient)
     const fetchImpl = options.fetchImpl ?? fetchWithSongDownloadFallback
+    const totalResources = urls.length
+    let completedResources = 0
+    reportDownloadProgress(options.onProgress, {
+      phase: 'downloading',
+      completedResources,
+      totalResources,
+    })
 
     for (const url of urls) {
+      throwIfDownloadAborted(options.signal)
       const logicalPath = runtimeLogicalPathFromUrl(url)
       if (!logicalPath) {
         throw new Error(`Song resource is outside /library-runtime/: ${url}`)
@@ -193,21 +228,49 @@ export async function downloadSongRuntime(
           edition,
         ))
       ) {
+        throwIfDownloadAborted(options.signal)
         response = await fetchImpl(url, {
           method: 'GET',
           credentials: 'same-origin',
           signal: options.signal,
         })
+        throwIfDownloadAborted(options.signal)
         await assertResourceResponse(
           response,
           logicalPath,
           catalogEdition,
           edition,
         )
+        throwIfDownloadAborted(options.signal)
         await cache.put(url, response.clone())
+        throwIfDownloadAborted(options.signal)
+        const storedResponse = await cache.match(url)
+        if (!storedResponse) {
+          throw new Error('Song resource was not retained in Cache Storage.')
+        }
+        await assertResourceResponse(
+          storedResponse,
+          logicalPath,
+          catalogEdition,
+          edition,
+        )
+        throwIfDownloadAborted(options.signal)
       }
+
+      completedResources += 1
+      reportDownloadProgress(options.onProgress, {
+        phase: 'downloading',
+        completedResources,
+        totalResources,
+      })
     }
 
+    throwIfDownloadAborted(options.signal)
+    reportDownloadProgress(options.onProgress, {
+      phase: 'verifying',
+      completedResources,
+      totalResources,
+    })
     const installedAt = options.now?.() ?? Date.now()
     const manifest: SongDownloadManifestV2 = {
       schemaVersion: 2,
@@ -218,10 +281,17 @@ export async function downloadSongRuntime(
       installedAt,
     }
     const snapshot = await validateManifestSnapshot(cache, manifest)
+    throwIfDownloadAborted(options.signal)
+    reportDownloadProgress(options.onProgress, {
+      phase: 'committing',
+      completedResources,
+      totalResources,
+    })
     await cache.put(
       manifestUrl(catalogEdition.songId),
       createManifestResponse(manifest),
     )
+    manifestCommitted = true
     validatedSnapshots.set(catalogEdition.songId, {
       signature: manifestSignature(manifest),
       snapshot,
@@ -229,11 +299,30 @@ export async function downloadSongRuntime(
 
     return stateFromSnapshot(snapshot)
   } catch (error) {
-    const partialUrls = (
-      await findSongResourceUrls(cache, catalogEdition.songId)
-    ).filter((url) => !preexistingSongUrls.has(normalizeRequestUrl(url)))
-    await deleteSongResources(cache, partialUrls)
+    if (!manifestCommitted) {
+      const partialUrls = (
+        await findSongResourceUrls(cache, catalogEdition.songId)
+      ).filter((url) => !preexistingSongUrls.has(normalizeRequestUrl(url)))
+      await deleteSongResources(cache, partialUrls)
+    }
     throw error
+  }
+}
+
+function throwIfDownloadAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new SongDownloadCancelledError()
+  }
+}
+
+function reportDownloadProgress(
+  callback: SongDownloadOptions['onProgress'],
+  progress: SongDownloadProgress,
+): void {
+  try {
+    callback?.(progress)
+  } catch {
+    // Progress observers do not own the snapshot transaction.
   }
 }
 
