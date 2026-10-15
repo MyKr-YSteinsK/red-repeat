@@ -46,7 +46,7 @@ export function parseResumeContext(value: unknown): ResumeContext | undefined {
     !isTimestamp(value.updatedAt) ||
     !optionalIdentifier(value.occurrenceId) ||
     !optionalIdentifier(value.practiceUnitId) ||
-    !optionalIdentifier(value.featureId)
+    !optionalFeatureIdentifier(value.featureId)
   ) {
     return undefined
   }
@@ -112,6 +112,22 @@ function isIdentifier(value: unknown): value is string {
 
 function optionalIdentifier(value: unknown): value is string | undefined {
   return value === undefined || isIdentifier(value)
+}
+
+function optionalFeatureIdentifier(value: unknown): value is string | undefined {
+  return value === undefined || isFeatureIdentifier(value)
+}
+
+function isFeatureIdentifier(value: unknown): value is string {
+  return typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= 256 &&
+    value === value.trim() &&
+    value !== '.' &&
+    value !== '..' &&
+    !/^[a-z]:/i.test(value) &&
+    !/[\\/]/.test(value) &&
+    !/\p{C}/u.test(value)
 }
 
 function isHash(value: unknown): value is string {

@@ -354,6 +354,57 @@ describe('SongEditionPage 学唱入口', () => {
     expect(media.currentTime).toBe(0)
   })
 
+  it('restores a compatible Unicode Explain Feature ID exactly without autoplay', async () => {
+    const featureId = '01-先行单曲与《13月1日》-「あの歌」・解説'
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const props = propsFor(undefined, engine)
+    const explainEdition = {
+      ...edition,
+      features: [{ id: featureId, url: '/library-runtime/features/unicode.md' }],
+    }
+    vi.mocked(props.runtimeClient.loadEdition).mockResolvedValue(explainEdition)
+    vi.mocked(props.runtimeClient.loadFeature).mockResolvedValue('# 讲解正文\n\n恢复到了精确文章。')
+    expect(saveResumeContext({
+      schemaVersion: 1,
+      songId: 'first-light',
+      editionContentHash: explainEdition.contentHash,
+      audioSourceHash: explainEdition.audio.sourceHash,
+      timelineUrl: explainEdition.timelineUrl,
+      mode: 'explain',
+      featureId,
+      updatedAt: 127,
+    })).toBe(true)
+
+    const { container } = render(<SongEditionPage {...props} continueLastRequested />)
+
+    const workspace = await screen.findByRole('region', { name: '讲解工作台' })
+    expect(workspace).toHaveAttribute('data-current-topic-id', featureId)
+    expect(container.querySelector('.explain-topic-directory button[aria-current="page"]')).not.toBeNull()
+    expect(await screen.findByText('恢复到了精确文章。')).toBeInTheDocument()
+    expect(media.play).not.toHaveBeenCalled()
+    expect(media.currentTime).toBe(0)
+    expect(container.querySelector('.practice-workspace')).toBeNull()
+  })
+
+  it('safely falls back when a compatible saved Unicode Feature ID is absent from the Edition', async () => {
+    expect(saveResumeContext({
+      schemaVersion: 1,
+      songId: 'first-light',
+      editionContentHash: edition.contentHash,
+      audioSourceHash: edition.audio.sourceHash,
+      timelineUrl: edition.timelineUrl,
+      mode: 'explain',
+      featureId: '《已合并的旧文章》「初版」',
+      updatedAt: 128,
+    })).toBe(true)
+    render(<SongEditionPage {...propsFor()} continueLastRequested />)
+
+    expect(await screen.findByRole('region', { name: '学唱工作台' })).toBeInTheDocument()
+    expect(screen.getByText('最近的讲解主题已不在当前版本中，已安全回到学唱。')).toBeInTheDocument()
+  })
+
   it('falls back to Practice for a mismatched saved Edition identity', async () => {
     saveResumeContext({
       schemaVersion: 1,

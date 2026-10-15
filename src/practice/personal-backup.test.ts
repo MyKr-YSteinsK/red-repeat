@@ -13,6 +13,7 @@ import {
 import { getPracticeStateStorageKey } from './practice-state'
 import { getPracticeRateStorageKey } from './practice-rate'
 import { createPracticeQueueItemId } from './practice-queue'
+import { readResumeContext, RESUME_CONTEXT_STORAGE_KEY } from './resume-context'
 
 const edition: RuntimeEdition = {
   contractVersion: 3,
@@ -126,6 +127,42 @@ describe('personal backup', () => {
     expect(parsed.format).toBe('red-repeat-personal-backup')
     expect(Object.keys(parsed.payload).sort()).toEqual(['practice', 'practiceQueue', 'rates', 'timingOverrides'])
     expect(parsed.payload.practice[0].identity.songId).toBe('first-light')
+  })
+
+  it('round-trips a Unicode Explain target through backup preview and restore', () => {
+    const featureId = '01-先行单曲与《13月1日》-「あの歌」・解説'
+    const input = backup()
+    input.payload.resumeContext = {
+      schemaVersion: 1,
+      ...identity(),
+      mode: 'explain',
+      featureId,
+      updatedAt: 130,
+    }
+    const parsed = parsePersonalBackup(serializePersonalBackup(input))
+    expect(parsed.payload.resumeContext?.featureId).toBe(featureId)
+
+    const matchingEditionContext: BackupCurrentEditionContext = {
+      ...context,
+      edition: {
+        ...edition,
+        features: [{ id: featureId, url: '/library-runtime/features/unicode.md' }],
+      },
+    }
+    const storage = new MemoryStorage()
+    const preview = preparePersonalBackupImport(
+      parsed,
+      new Map([['first-light', matchingEditionContext]]),
+      storage,
+    )
+    expect(storage.setCalls).toBe(0)
+    expect(preview.candidates.map(({ domain }) => domain)).toContain('resumeContext')
+    expect(preview.skipped.resumeContext).toBeUndefined()
+
+    const result = commitPersonalBackupImport(preview, new Set(['resumeContext']), new Set(), storage)
+    expect(result).toEqual({ status: 'committed', written: 1 })
+    expect(storage.values.has(RESUME_CONTEXT_STORAGE_KEY)).toBe(true)
+    expect(readResumeContext(storage)).toEqual(input.payload.resumeContext)
   })
 
   it('accepts a timing override only with matching Edition/audio/Timeline and canonical Occurrence fields', () => {
