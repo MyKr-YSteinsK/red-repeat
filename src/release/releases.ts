@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.22.0',
+    date: '2026-10-15',
+    commit: '1a37d37',
+    level: 'minor',
+    title: '歌词句级校准与微调撤销重做',
+    summary: '从当前学唱句或全曲选句直达 production-public Timing Debugger；可在当前会话撤销、重做 timing 草稿，并通过显式保存写入经过身份核验的本机微调。',
+    changes: [
+      'Practice 当前句与 Full Song 已选句提供精确 Occurrence 深链接；无效目标明确提示且不会静默选中其他句子，歌曲上下文入口安全返回同一 Song Edition。',
+      'Timing Debugger 对成功的 startMs/endMs 调整提供有限的会话内撤销与重做，并显示草稿状态。',
+      '仅显式保存到现有 identity-bound sparse v3 override；保存前检查存储值是否变化，写入后核验结果。',
+    ],
+  },
+  {
     version: '1.21.0',
     date: '2026-10-15',
     commit: 'b4d6bf2',

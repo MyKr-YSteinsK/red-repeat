@@ -11,14 +11,15 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.21.0`. This metadata prepares the
-  authorized release; remote CI/Pages and production identity are verified at
-  delivery, not asserted ahead of time by this source entry.
+- Current package/ledger user version: `1.22.0`. This source records repository
+  release metadata; remote CI/Pages and Production identity remain separate
+  delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.21.0` / `b4d6bf2` (product commit date
-  `2026-10-15`); annotated `v1.21.0` identifies that product commit, while the
+- Latest ledger product target: `1.22.0` / `1a37d37` (product commit date
+  `2026-10-15`); annotated `v1.22.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
-  Existing `v1.20.1 -> 19123e7`, `v1.20.0 -> dc2dc84`,
+  Existing `v1.21.0 -> b4d6bf2`, `v1.20.1 -> 19123e7`,
+  `v1.20.0 -> dc2dc84`,
   `v1.19.1 -> 40b0b73`,
   `v1.19.0 -> d8f0d5f`,
   `v1.16.0 -> a863d57`,
@@ -992,19 +993,20 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- `RED-Plan-73` R1 implements per-song download progress, cancellation and
-  same-document task continuity. Its candidate gates pass. Product commit
-  `b4d6bf2` is the authorized `1.21.0` MINOR tag target; release metadata is
-  recorded separately. Push, exact-SHA CI, Pages and production identity are
-  separate delivery observations and have not yet been claimed here.
+- `RED-Plan-74` R1 implements explicit Practice/Full Song Occurrence links to
+  the production-public Timing Debugger, bounded session-local Undo/Redo and
+  explicit identity-checked v3 override saving. Product commit `1a37d37` is
+  the `1.22.0` MINOR tag target; release metadata is recorded separately.
+  Focused/local browser evidence is recorded below; CI, Pages and Production
+  identity remain separate delivery evidence.
 - `RED-Plan-70` R1 was a read-only milestone checkpoint. `RED-Plan-71` R1
   completed Catalog search and offline-availability filtering as a `1.20.0`
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
   is its annotated tag target and its metadata commit is the independent build
   identity.
 - No later formal Plan is active or authorized. The broader A–E proposal stays
-  separate; completing this download task does not approve or start its other
-  work packages.
+  separate; Plan-74 covers only the scoped sentence-level Timing workflow and
+  does not approve or start its other work packages.
 - The RED-Plan-69 measurement details below remain historical evidence for
   `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
@@ -1456,3 +1458,31 @@ each historical task and do not replace the current repository identity above.
   measured benefit that would justify concurrent writes and additional cancel/
   rollback races (`NO_MEASURED_BENEFIT`). The broader A–E proposal is not
   approved by this implementation.
+
+## RED-Plan-74 implementation and release status
+
+- Practice's current row and Full Song's selected row now open the public
+  Timing Debugger with the exact `songId` and `OccurrenceId`. The debugger
+  validates the target after the current Edition loads; an invalid or empty
+  target shows an error without selecting a substitute row or enabling edits.
+  A song-context link returns to that same Edition through the existing
+  compatible resume route, which remains paused on entry.
+- Valid `startMs/endMs` edits create a bounded 40-entry in-session history.
+  Undo/Redo updates the effective timing provider and displayed interval
+  together; invalid adjustments do not enter history. Draft state is visible,
+  and only explicit save writes through the existing identity-bound sparse v3
+  override owner. Saving rejects an existing value changed during the editing
+  session and verifies the persisted result; failure keeps the draft.
+- Verification: six focused test files passed `90/90`; `tsc -b`, touched-file
+  ESLint and `git diff --check` passed. A desktop browser at a 390×844 viewport
+  exercised the Full Song selected-row link, exact `o002` deep link, timing
+  adjustment, Undo/Redo, explicit save, refresh persistence and return to the
+  same Full Song selection paused. The test then saved the canonical `9820 ms`
+  start back through the Debugger. The Practice entry and same-song paused
+  return were also exercised. No real-device, audible-calibration or
+  installed-PWA PASS is claimed.
+- Local `npm run build` was not run because the compiler removes its
+  PID-specific `public/library-runtime.tmp-${process.pid}` directory, and the
+  worktree contains protected untracked temp directories. The final exact-SHA
+  CI build is the build/release oracle; the protected directories remain
+  untouched.
