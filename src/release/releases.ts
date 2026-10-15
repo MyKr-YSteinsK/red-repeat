@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.25.0',
+    date: '2026-10-15',
+    commit: '71d2becde685d6cfde5d78936c311db6ecab8726',
+    level: 'minor',
+    title: '《NIGHT DANCER》讲解与译文内容重构',
+    summary: '按审稿定稿集成七篇 Explain 文章和 25 条中文译文，并移除已由新 N07 承接的旧 N08；四条 HOLD 保持原样，Edition identity 继续严格隔离。',
+    changes: [
+      '将 NIGHT DANCER 的 Explain Feature 从八篇调整为七篇，采用经批准的最终稿，并移除已由新 N07 承接的旧 N08。',
+      '在 34 个 Segment 中仅更新 25 条 translation；保留 5 条 KEEP、4 条 HOLD，以及 Ruby、Romaji、Occurrence timing、Practice、Timeline、音频和 artwork。',
+    ],
+  },
+  {
     version: '1.24.0',
     date: '2026-10-15',
     commit: 'c0ac7a454f3d2db726450a296fa88d3cc5487148',

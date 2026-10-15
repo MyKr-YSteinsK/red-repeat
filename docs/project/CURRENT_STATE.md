@@ -11,14 +11,15 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.24.0`. This source records repository
+- Current package/ledger user version: `1.25.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.24.0` / `c0ac7a4` (product commit date
-  `2026-10-15`); annotated `v1.24.0` identifies that product commit, while the
+- Latest ledger product target: `1.25.0` / `71d2bec` (product commit date
+  `2026-10-15`); annotated `v1.25.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
-  Existing `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`,
+  Existing `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`,
+  `v1.21.0 -> b4d6bf2`,
   `v1.20.1 -> 19123e7`,
   `v1.20.0 -> dc2dc84`,
   `v1.19.1 -> 40b0b73`,
@@ -1617,3 +1618,25 @@ each historical task and do not replace the current repository identity above.
 - `library:validate`、音频身份核验、`/red-repeat/` build 与 `pwa:inspect` 通过；Feature
   parser 接受七篇文章、61 个合法引用及 24 个章节目标。9 个相关测试文件 `99/99`，release
   ledger 测试 `1/1`。未运行真机、人工听感或 installed-PWA 验收；没有修改 timing、音频或 PWA lifecycle。
+
+## RED-Plan-84 实施与发布状态
+
+- `1.25.0 MINOR` 产品提交为 `71d2becde685d6cfde5d78936c311db6ecab8726`
+  （`2026-10-15`）；annotated `v1.25.0` 指向该产品提交，版本元数据采用独立提交。
+- NIGHT DANCER Explain 从八篇调整为七篇，按 R3 定稿更新七篇文章并删除已由新 N07
+  承接的旧 N08。34 个 Segment 中仅 25 条 `translation` 改动；5 条 KEEP、4 条 HOLD，
+  其余歌词字段、Ruby、Romaji、Occurrence timing、Practice、Timeline、音频与 artwork 均保留。
+- Edition content hash 从 H1 `3229711e723d0028607a48dc98a7561cf1787cb57c8798c45f6b98602f948ba3`
+  更新为 H2 `3732e41df623b7df8291d6734dee509434ad7a902531d3cf758757356e4b3bcd`；
+  audio SHA-256 `373393efa184640fab23dee91bc1a691094003f6ac42bb082bf21d0de29dc9e3` 不变，
+  Timeline 与 Practice runtime URL 不变。D-028 H1 sparse v3 记录仍按完整身份归档；H2 不应用
+  H1 override，重新激活 H1 后原值可恢复。
+- 在隔离浏览器的原生 CacheStorage/localStorage 中验证 H1 离线快照、H1→H2 成功更新、
+  唯一新 Feature 请求失败时保留完整 H1，以及恢复网络后成功切换至完整 H2。H1 有 8 篇/16 个
+  快照资源，H2 有 7 篇/15 个资源；离线打开 H1 内容成功。合成的 `o001` +20 ms 仅为身份测试，
+  不是人工校准或听感 PASS。
+- 六曲 `library:validate`、NIGHT DANCER 音频身份检查、八个受影响测试文件 `70/70`、
+  H1/H2 `npm run build`、`/red-repeat/` build 与对应 `pwa:inspect` 均通过。真实 Feature parser
+  接受 7 篇文章、34 个引用、21 个章节目标，引用均可解析，引用卡连续密度最多为 2；本地浏览器
+  验证了 Catalog、Practice、Explain 与 Full Song 导航。静态与本地证据不代表真实设备、人工听感
+  或 installed-PWA PASS；远端 CI、Pages 与 Production identity 仍分别以实际交付核验为准。
