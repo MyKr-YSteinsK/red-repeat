@@ -6,9 +6,11 @@ import {
 } from '../library/runtime-schema'
 import {
   getTimingOverridesStorageKey,
-  clearTimingOverrides,
   isTimingOverridesEmpty,
+  listTimingOverrideArchive,
   readTimingOverrides,
+  serializeTimingOverrideArchiveExport,
+  type TimingOverrideArchiveListing,
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
 import { buildInfo } from '../release/build-info'
@@ -112,6 +114,10 @@ export function SettingsPage({
   const [backupBusy, setBackupBusy] = useState(false)
   const [backupMessage, setBackupMessage] = useState<string>()
   const [backupImport, setBackupImport] = useState<BackupImportUiState>()
+  const [timingArchiveListing, setTimingArchiveListing] = useState<TimingOverrideArchiveListing>(
+    () => listTimingOverrideArchive(),
+  )
+  const [timingArchiveMessage, setTimingArchiveMessage] = useState<string>()
   const catalog = catalogState.status === 'ready' ? catalogState.catalog : undefined
   const settingsLocation = window.location
   const timingDebuggerHref = createTimingDebuggerHref(undefined, settingsLocation)
@@ -138,6 +144,15 @@ export function SettingsPage({
   const backupDomainSummary = backupImport
     ? summarizeBackupDomains(backupImport.preview)
     : []
+
+  useEffect(() => {
+    const refreshArchiveListing = (): void => {
+      setTimingArchiveListing(listTimingOverrideArchive())
+    }
+    refreshArchiveListing()
+    window.addEventListener('storage', refreshArchiveListing)
+    return () => window.removeEventListener('storage', refreshArchiveListing)
+  }, [])
 
   const selectedEdition = useMemo(
     () =>
@@ -206,11 +221,36 @@ export function SettingsPage({
       const skipped = result.skipped.length > 0
         ? `跳过 ${result.skipped.length} 项无法通过当前身份或格式核验的数据：${result.skipped.slice(0, 4).join('；')}${result.skipped.length > 4 ? '…' : ''}`
         : '所有已发现的数据域均通过当前可用身份核验。'
-      setBackupMessage(`已下载 ${filename}。${skipped} 备份仅包含用户状态，不包含歌曲资源、下载快照或未知本机数据。`)
+      setBackupMessage(`已下载 ${filename}。${skipped} 备份仅包含当前兼容的白名单用户状态，不包含历史 Timing 保留记录；历史记录需单独导出，也不包含歌曲资源、下载快照或未知本机数据。`)
     } catch (error) {
       setBackupMessage(`无法生成个人备份：${describeBackupError(error)}`)
     } finally {
       setBackupBusy(false)
+    }
+  }
+
+  const handleTimingArchiveExport = (): void => {
+    const listing = listTimingOverrideArchive()
+    setTimingArchiveListing(listing)
+    if (listing.status !== 'available') {
+      setTimingArchiveMessage('无法读取本机 Timing 保留记录；没有生成导出文件。')
+      return
+    }
+    if (listing.entries.length === 0) {
+      setTimingArchiveMessage(listing.invalidCount > 0
+        ? `没有可核验的 Timing 保留记录；发现 ${listing.invalidCount} 条无法核验数据，已原样留在本机。`
+        : '当前没有可导出的 Timing 保留记录。')
+      return
+    }
+    try {
+      const filename = `red-repeat-timing-archive-${new Date().toISOString().slice(0, 10)}.json`
+      const content = serializeTimingOverrideArchiveExport(listing)
+      downloadJsonFile(filename, content)
+      setTimingArchiveMessage(
+        `已下载 ${filename}，包含 ${listing.entries.length} 条可核验的保留记录。旧 identity 不会自动应用于其他 Edition，也不能直接作为当前版 Timing Correction Export 合入。${listing.invalidCount > 0 ? `另有 ${listing.invalidCount} 条无法核验数据未导出，仍保留在本机。` : ''}`,
+      )
+    } catch (error) {
+      setTimingArchiveMessage(`无法导出 Timing 保留记录：${describeBackupError(error)}`)
     }
   }
 
@@ -414,12 +454,49 @@ export function SettingsPage({
           ) : null}
         </section>
 
+        <section className="settings-card settings-timing-archive" aria-labelledby="timing-archive-title">
+          <div className="settings-card-heading">
+            <p className="eyebrow">仅本机文件</p>
+            <h2 id="timing-archive-title">Timing 保留记录</h2>
+          </div>
+          <p>旧 Edition 的微调会按完整 song、Edition、audio 与 Timeline identity 保留，不会仅凭同一首歌自动应用于新版；只有活动 Edition 完整匹配时才参与播放。此导出不能直接作为当前版 Timing Correction Export 合入。</p>
+          {timingArchiveListing.status === 'unavailable' ? (
+            <p className="settings-inline-error" role="alert">无法读取本机 Timing 保留记录。</p>
+          ) : timingArchiveListing.entries.length > 0 ? (
+            <ul className="settings-timing-archive-list">
+              {timingArchiveListing.entries.map((entry, index) => (
+                <li key={`${entry.identity.songId}-${entry.identity.editionContentHash}-${index}`}>
+                  <strong>{entry.identity.songId}</strong>
+                  <small>
+                    Edition {entry.identity.editionContentHash.slice(0, 12)} · audio {entry.identity.audioSourceHash.slice(0, 12)} · {Object.keys(entry.document.occurrences).length} 个 Occurrence · {entry.source === 'archive' ? '已保留' : '旧版 v3 槽'}
+                  </small>
+                  <small>Timeline: {entry.identity.baseTimelineUrl}</small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="settings-muted">当前没有可核验的 Timing 保留记录。</p>
+          )}
+          {timingArchiveListing.invalidCount > 0 ? (
+            <p className="settings-muted">发现 {timingArchiveListing.invalidCount} 条无法核验的本机记录；它们未被应用或导出，仍留在本机。</p>
+          ) : null}
+          <button
+            className="control-button control-button--quiet"
+            type="button"
+            disabled={timingArchiveListing.status !== 'available' || timingArchiveListing.entries.length === 0}
+            onClick={handleTimingArchiveExport}
+          >
+            导出保留的 Timing JSON
+          </button>
+          {timingArchiveMessage ? <p className="settings-export-message" role="status">{timingArchiveMessage}</p> : null}
+        </section>
+
         <section className="settings-card settings-personal-backup" aria-labelledby="personal-backup-title">
           <div className="settings-card-heading">
             <p className="eyebrow">仅本机文件</p>
             <h2 id="personal-backup-title">个人状态备份</h2>
           </div>
-          <p>导出或恢复经过身份核验的进度、速度、歌词显示偏好、最近位置、待练队列和兼容 timing overrides。文件只由浏览器下载或读取；不含音频、歌曲 Runtime、离线下载记录、cookie 或未知本机数据。</p>
+          <p>导出或恢复经过身份核验的进度、速度、歌词显示偏好、最近位置、待练队列和兼容 timing overrides。历史 Timing 保留记录不包含在此备份中，需使用单独导出。文件只由浏览器下载或读取；不含音频、歌曲 Runtime、离线下载记录、cookie 或未知本机数据。</p>
           <div className="personal-backup-actions">
             <button
               className="control-button control-button--primary"
@@ -442,7 +519,7 @@ export function SettingsPage({
               />
             </label>
           </div>
-          <p className="personal-backup-safety-note">导入预览和确认前不会写入状态。默认保留现有值；覆盖冲突需为对应数据域单独勾选。多键写入失败时会尝试逐键补偿回滚并核验。浏览器 localStorage 不提供跨标签页或断电原子事务。</p>
+          <p className="personal-backup-safety-note">导入预览和确认前不会写入状态。默认保留现有值；覆盖冲突需为对应数据域单独勾选。多键写入失败时会尝试逐键补偿回滚并核验。浏览器 localStorage 不提供跨键断电原子事务。</p>
           {backupMessage ? <p className="personal-backup-message" role="status">{backupMessage}</p> : null}
           {backupImport ? (
             <div className="personal-backup-preview" aria-label="个人备份导入预览">
@@ -575,6 +652,15 @@ async function collectPersonalBackup(
 ): Promise<{ document: PersonalBackupDocument; skipped: string[] }> {
   const payload = emptyBackupPayload()
   const skipped: string[] = []
+  const timingArchive = listTimingOverrideArchive(storage)
+  if (timingArchive.status !== 'available') {
+    skipped.push('无法枚举本机 Timing 归档；本次未核验该数据域')
+  }
+  const timingArchiveSongIds = new Set(
+    timingArchive.status === 'available'
+      ? timingArchive.entries.map(({ identity }) => identity.songId)
+      : [],
+  )
   const preferenceRaw = storage.getItem(LYRIC_DISPLAY_PREFERENCES_STORAGE_KEY)
   if (preferenceRaw !== null) {
     const value = parseJson(preferenceRaw)
@@ -593,7 +679,8 @@ async function collectPersonalBackup(
     if (
       storage.getItem(getPracticeStateStorageKey(edition.songId)) !== null ||
       storage.getItem(getPracticeRateStorageKey(edition.songId)) !== null ||
-      storage.getItem(getTimingOverridesStorageKey(edition.songId)) !== null
+      storage.getItem(getTimingOverridesStorageKey(edition.songId)) !== null ||
+      timingArchiveSongIds.has(edition.songId)
     ) candidateIds.add(edition.songId)
   }
   if (resumeContext) candidateIds.add(resumeContext.songId)
@@ -884,9 +971,6 @@ async function loadTimingExportSong(
   }
   const stored = readTimingOverrides(identity, { occurrences: timeline.occurrences })
   if (stored.kind !== 'compatible') {
-    if (stored.kind !== 'none') {
-      clearTimingOverrides(identity)
-    }
     return undefined
   }
   if (Object.keys(stored.document.occurrences).length === 0) {

@@ -1,15 +1,37 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AudioEngine } from '../audio/audio-engine'
 import type { Catalog, CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { LyricsDocument, PracticeDocument, TimelineDocument } from '../library/schema'
-import { getTimingOverridesStorageKey } from '../practice/practice-timing-overrides'
+import {
+  getTimingOverridesStorageKey,
+  listTimingOverrideArchive,
+} from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { TimingDebuggerPage } from './TimingDebuggerPage'
+
+const originalLocksDescriptor = Object.getOwnPropertyDescriptor(navigator, 'locks')
+const testLocks = {
+  request<T>(_name: string, callback: () => Promise<T> | T): Promise<T> {
+    return Promise.resolve(callback())
+  },
+}
+
+beforeEach(() => {
+  Object.defineProperty(navigator, 'locks', {
+    configurable: true,
+    value: testLocks,
+  })
+})
 
 afterEach(() => {
   cleanup()
   window.localStorage.clear()
+  if (originalLocksDescriptor) {
+    Object.defineProperty(navigator, 'locks', originalLocksDescriptor)
+  } else {
+    Reflect.deleteProperty(navigator, 'locks')
+  }
 })
 
 const catalogEdition: CatalogEdition = {
@@ -157,16 +179,15 @@ describe('TimingDebuggerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
 
     await waitFor(() => {
-      const raw = window.localStorage.getItem(
-        getTimingOverridesStorageKey('first-light'),
+      expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            songId: 'first-light',
+            editionContentHash: edition.contentHash,
+          }),
+          document: expect.objectContaining({ occurrences: { o001: { startMs: 70 } } }),
+        }),
       )
-      expect(raw).not.toBeNull()
-      expect(JSON.parse(raw ?? '{}')).toMatchObject({
-        schemaVersion: 3,
-        songId: 'first-light',
-        editionContentHash: edition.contentHash,
-        occurrences: { o001: { startMs: 70 } },
-      })
     })
   })
 
@@ -317,11 +338,11 @@ describe('TimingDebuggerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
 
     await waitFor(() => {
-      expect(JSON.parse(window.localStorage.getItem(
-        getTimingOverridesStorageKey('first-light'),
-      ) ?? '{}')).toMatchObject({
-        occurrences: { o002: { startMs: 470 } },
-      })
+      expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+        expect.objectContaining({
+          document: expect.objectContaining({ occurrences: { o002: { startMs: 470 } } }),
+        }),
+      )
     })
   })
 
@@ -359,9 +380,6 @@ describe('TimingDebuggerPage', () => {
       occurrences: { o001: { startMs: 40 } },
     })
     window.localStorage.setItem(storageKey, previousRaw)
-    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
-      throw new Error('storage full')
-    })
     const view = render(
       <TimingDebuggerPage
         songId="first-light"
@@ -373,6 +391,9 @@ describe('TimingDebuggerPage', () => {
     )
 
     await waitFor(() => expect(screen.getByText('40 ms')).toBeInTheDocument())
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      throw new Error('storage full')
+    })
     expect(screen.getByRole('button', { name: '撤销' })).toBeDisabled()
     fireEvent.click(screen.getAllByRole('button', { name: '+20ms' })[0])
     expect(screen.getByText('60 ms')).toBeInTheDocument()
@@ -384,15 +405,15 @@ describe('TimingDebuggerPage', () => {
     expect(screen.getByText('60 ms')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
 
-    expect(await screen.findByText(/无法保存本机播放切口/)).toBeInTheDocument()
+    expect(await screen.findByText(/无法验证本机播放切口写入/)).toBeInTheDocument()
     expect(window.localStorage.getItem(storageKey)).toBe(previousRaw)
     expect(screen.getByRole('status')).toHaveTextContent('有未保存的微调')
 
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
     await waitFor(() => {
-      expect(JSON.parse(window.localStorage.getItem(storageKey) ?? '{}')).toMatchObject({
-        occurrences: { o001: { startMs: 60 } },
-      })
+      expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+        expect.objectContaining({ document: expect.objectContaining({ occurrences: { o001: { startMs: 60 } } }) }),
+      )
     })
     expect(screen.getByText('本机微调已保存。')).toBeInTheDocument()
 
@@ -400,9 +421,9 @@ describe('TimingDebuggerPage', () => {
     expect(screen.getByText('40 ms')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
     await waitFor(() => {
-      expect(JSON.parse(window.localStorage.getItem(storageKey) ?? '{}')).toMatchObject({
-        occurrences: { o001: { startMs: 40 } },
-      })
+      expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+        expect.objectContaining({ document: expect.objectContaining({ occurrences: { o001: { startMs: 40 } } }) }),
+      )
     })
 
     view.unmount()
@@ -441,18 +462,27 @@ describe('TimingDebuggerPage', () => {
     )
 
     await screen.findByRole('heading', { name: '播放切口调试' })
-    // Runtime loading applies D-021's existing invalidation rule before the Debugger reads overrides.
-    expect(window.localStorage.getItem(storageKey)).toBeNull()
+    // The old identity remains preserved, but only the current Edition is editable and applied.
+    expect(window.localStorage.getItem(storageKey)).toBe(staleRaw)
+    expect(screen.getByText(/其他完整 identity 的微调记录/)).toBeInTheDocument()
     expect(screen.getByText('50 ms')).toBeInTheDocument()
     fireEvent.click(screen.getAllByRole('button', { name: '+20ms' })[0])
     expect(screen.getByText('70 ms')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
     await waitFor(() => {
-      expect(JSON.parse(window.localStorage.getItem(storageKey) ?? '{}')).toMatchObject({
-        editionContentHash: edition.contentHash,
-        occurrences: { o001: { startMs: 70 } },
-      })
+      expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+        expect.objectContaining({
+          identity: expect.objectContaining({ editionContentHash: edition.contentHash }),
+          document: expect.objectContaining({ occurrences: { o001: { startMs: 70 } } }),
+        }),
+      )
     })
+    expect(listTimingOverrideArchive(window.localStorage).entries).toContainEqual(
+      expect.objectContaining({
+        identity: expect.objectContaining({ editionContentHash: 'd'.repeat(64) }),
+        document: expect.objectContaining({ occurrences: { o001: { startMs: 40 } } }),
+      }),
+    )
   })
 
   it('detects a stored-value change made after the editing session opened', async () => {
@@ -480,7 +510,7 @@ describe('TimingDebuggerPage', () => {
     window.localStorage.setItem(storageKey, externalRaw)
 
     fireEvent.click(screen.getByRole('button', { name: '保存本机微调' }))
-    expect(await screen.findByText(/页面打开后发生变化/)).toBeInTheDocument()
+    expect(await screen.findByText(/本机微调或其他标签页的数据已变化/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '保存本机微调' })).toBeDisabled()
     expect(window.localStorage.getItem(storageKey)).toBe(externalRaw)
     expect(screen.getByText('70 ms')).toBeInTheDocument()

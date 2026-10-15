@@ -8,13 +8,13 @@ import {
 import {
   createEffectiveOccurrenceTimingProvider,
   createTimingOverridesDocument,
-  getTimingOverridesStorageKey,
+  readTimingOverrideStorageSnapshot,
   readTimingOverrides,
   saveTimingOverrides,
-  serializeTimingOverrides,
   updateTimingOverride,
   type TimingOverrideIdentity,
   type TimingOverrideStorage,
+  type TimingOverrideStorageSnapshot,
   type TimingOverridesReadResult,
 } from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from '../runtime/runtime-client'
@@ -194,9 +194,9 @@ function TimingDebuggerReady({
     : createTimingOverridesDocument(identity)
   const [history, setHistory] = useState(() => createTimingEditHistory(initialDocument))
   const historyRef = useRef(history)
-  const storageBaselineRef = useRef(initialStorageSnapshot.raw)
+  const storageBaselineRef = useRef(initialStorageSnapshot.snapshot)
   const [storageConflict, setStorageConflict] = useState(
-    !initialStorageSnapshot.available || isIncompatibleRead(initialStorageSnapshot.readResult),
+    !initialStorageSnapshot.available || isBlockingRead(initialStorageSnapshot.readResult),
   )
   const initialTargetExists = occurrenceId !== undefined &&
     Boolean(model.occurrencesById[occurrenceId])
@@ -313,56 +313,39 @@ function TimingDebuggerReady({
       })
   }
 
-  const save = (): void => {
+  const save = async (): Promise<void> => {
     if (invalidTargetId || !dirty || storageConflict) {
       return
     }
-    let currentRaw: string | null
-    try {
-      currentRaw = window.localStorage.getItem(
-        getTimingOverridesStorageKey(identity.songId),
-      )
-    } catch {
-      setStorageConflict(true)
-      setMessage('无法确认本机微调存储状态；草稿已保留，请重新打开 Timing Debugger 后再保存。')
-      return
-    }
-    if (currentRaw !== storageBaselineRef.current) {
-      setStorageConflict(true)
-      setMessage('本机微调在页面打开后发生变化；为保护新数据，本次未覆盖保存。请重新打开 Timing Debugger。')
-      return
-    }
     const current = historyRef.current
-    if (
-      saveTimingOverrides(current.current, {
-        occurrences: model.timeline.occurrences,
-      })
-    ) {
-      let persistedRaw: string | null
-      try {
-        persistedRaw = window.localStorage.getItem(
-          getTimingOverridesStorageKey(identity.songId),
-        )
-      } catch {
+    const result = await saveTimingOverrides(current.current, {
+      occurrences: model.timeline.occurrences,
+      expectedSnapshot: storageBaselineRef.current,
+    })
+    if (result.status === 'saved') {
+      const persisted = readTimingOverrideStorageSnapshot(identity)
+      if (persisted.status !== 'available') {
         setStorageConflict(true)
-        setMessage('无法核验本机写入；草稿仍保留为未保存状态。')
+        setMessage('本机记录已写入，但无法重新核验存储；草稿保留为未确认状态。')
         return
       }
-      const expectedRaw = Object.keys(current.current.occurrences).length === 0
-        ? null
-        : serializeTimingOverrides(current.current)
-      if (persistedRaw !== expectedRaw) {
-        setStorageConflict(true)
-        setMessage('无法核验本机微调写入；草稿仍保留为未保存状态。')
-        return
-      }
-      storageBaselineRef.current = persistedRaw
+      storageBaselineRef.current = persisted
       const savedHistory = markTimingEditSaved(current)
       historyRef.current = savedHistory
       setHistory(savedHistory)
       setMessage('本机微调已保存。')
     } else {
-      setMessage('无法保存本机播放切口；未保存的草稿仍保留。')
+      if (result.status === 'conflict') {
+        setStorageConflict(true)
+        setMessage('本机微调或其他标签页的数据已变化；本次未切换活动记录，草稿仍保留。请先导出保留记录并重新打开 Timing Debugger。')
+      } else if (result.status === 'unavailable') {
+        setMessage('本机存储或多标签页安全锁不可用；未保存，草稿仍保留。')
+      } else if (result.status === 'invalid') {
+        setStorageConflict(true)
+        setMessage('检测到无法核验的本机 Timing 记录；未保存，草稿仍保留。')
+      } else {
+        setMessage('无法验证本机播放切口写入；未保存确认状态，草稿仍保留。')
+      }
     }
   }
 
@@ -560,9 +543,14 @@ function TimingDebuggerReady({
               句子链接中的 Occurrence「{invalidTargetId}」在当前 Song Edition 中不存在。请选择正确的歌词行。
             </p>
           ) : null}
-          {isIncompatibleRead(initialStorageSnapshot.readResult) ? (
+          {isDormantRead(initialStorageSnapshot.readResult) ? (
+            <p className="timing-debugger-message" role="status">
+              检测到其他完整 identity 的微调记录；它不会自动应用于当前 Edition，可在设置中单独查看和导出。
+            </p>
+          ) : null}
+          {isBlockingRead(initialStorageSnapshot.readResult) ? (
             <p className="timing-debugger-message" role="alert">
-              当前本机微调与此 Edition 的身份不兼容；旧数据已保留，本次不能覆盖保存。
+              本机 Timing 记录无法安全核验；当前不会应用，也不能保存覆盖。可先在设置中导出可核验的保留记录。
             </p>
           ) : null}
           {!initialStorageSnapshot.available ? (
@@ -615,7 +603,7 @@ function readTimingOverridesSnapshot(
   occurrences: RuntimeSongEditionCore['assembled']['timeline']['occurrences'],
 ): {
   readResult: TimingOverridesReadResult
-  raw: string | null
+  snapshot: TimingOverrideStorageSnapshot
   available: boolean
 } {
   let browserStorage: Storage
@@ -623,8 +611,14 @@ function readTimingOverridesSnapshot(
     browserStorage = window.localStorage
   } catch {
     return {
-      readResult: { kind: 'none' },
-      raw: null,
+      readResult: { kind: 'storage-error' },
+      snapshot: {
+        status: 'unavailable',
+        archiveActiveRaw: null,
+        archiveRecordRaws: [],
+        legacyV3Raw: null,
+        legacySchemaRaws: [],
+      },
       available: false,
     }
   }
@@ -649,17 +643,30 @@ function readTimingOverridesSnapshot(
     removeItem(key) {
       browserStorage.removeItem(key)
     },
+    get length() {
+      return browserStorage.length
+    },
+    key(index) {
+      return browserStorage.key(index)
+    },
   }
+  const snapshot = readTimingOverrideStorageSnapshot(identity, storage)
   const readResult = readTimingOverrides(identity, { occurrences, storage })
   return {
     readResult,
-    raw: captured.get(getTimingOverridesStorageKey(identity.songId)) ?? null,
-    available,
+    snapshot,
+    available: available && snapshot.status === 'available',
   }
 }
 
-function isIncompatibleRead(result: TimingOverridesReadResult): boolean {
-  return result.kind !== 'compatible' && result.kind !== 'none'
+function isBlockingRead(result: TimingOverridesReadResult): boolean {
+  return result.kind === 'invalid' || result.kind === 'conflict' || result.kind === 'storage-error'
+}
+
+function isDormantRead(result: TimingOverridesReadResult): boolean {
+  return result.kind === 'edition-stale' ||
+    result.kind === 'audio-stale' ||
+    result.kind === 'timeline-stale'
 }
 
 function TimingDebuggerStatus({

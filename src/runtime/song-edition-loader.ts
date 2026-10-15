@@ -11,8 +11,9 @@ import {
 } from './runtime-client'
 import { assembleRuntimeSongEdition, type AssembledSongEdition } from './song-edition'
 import {
-  clearTimingOverrides,
+  clearLegacyTimingOverrides,
   createEffectiveOccurrenceTimingProvider,
+  preserveLegacyTimingOverrides,
   readTimingOverrides,
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
@@ -87,11 +88,12 @@ export async function loadRuntimeSongEditionCore(
     audioSourceHash: edition.audio.sourceHash,
     baseTimelineUrl: edition.timelineUrl,
   }
+  await preserveLegacyTimingOverrides(timingIdentity.songId)
   const storedTiming = readTimingOverrides(timingIdentity, {
     occurrences: timeline.occurrences,
   })
-  if (storedTiming.kind !== 'none' && storedTiming.kind !== 'compatible') {
-    clearTimingOverrides(timingIdentity)
+  if (storedTiming.kind === 'invalid' && storedTiming.source === 'legacy') {
+    clearLegacyTimingOverrides(timingIdentity.songId)
   }
   const timingProvider = createEffectiveOccurrenceTimingProvider(
     timeline,
@@ -188,20 +190,21 @@ function hasMatchingEditionContentUrl(
   return path.endsWith(`.${contentHash}.json`)
 }
 
-function refreshCoreTimingProvider(
+async function refreshCoreTimingProvider(
   core: RuntimeSongEditionCore,
-): RuntimeSongEditionCore {
+): Promise<RuntimeSongEditionCore> {
   const identity: TimingOverrideIdentity = {
     songId: core.edition.song.songId,
     editionContentHash: core.edition.contentHash,
     audioSourceHash: core.edition.audio.sourceHash,
     baseTimelineUrl: core.edition.timelineUrl,
   }
+  await preserveLegacyTimingOverrides(identity.songId)
   const storedTiming = readTimingOverrides(identity, {
     occurrences: core.timeline.occurrences,
   })
-  if (storedTiming.kind !== 'none' && storedTiming.kind !== 'compatible') {
-    clearTimingOverrides(identity)
+  if (storedTiming.kind === 'invalid' && storedTiming.source === 'legacy') {
+    clearLegacyTimingOverrides(identity.songId)
   }
   const timingProvider = createEffectiveOccurrenceTimingProvider(
     core.timeline,

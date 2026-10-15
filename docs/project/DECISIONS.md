@@ -377,3 +377,24 @@ Song Edition snapshot 必须跨 App shell 更新保留。D-013、D-016、D-022 �
 本决定不扩大任何任务的 commit/push/version/tag 权限；未归属修改、远端分歧、
 必要 Gate、正常推送和禁止 force 的现有保护继续有效。成功推送 main 仍会进入
 既有 CI quality → Pages deploy 边界，Push、CI、Deploy 和生产身份分别核验。
+
+## D-028｜严格身份下非破坏性保全 Timing 微调｜Preserve Timing Overrides Without Relaxing Identity
+
+- Status: Accepted
+- Source: `USER_DECISION` (2026-10-15)
+- Implementation: Implemented under `RED-Plan-78 / R1`.
+
+本决定仅适用于有效 sparse v3 personal Timing override。完整 identity 由
+`songId`、`editionContentHash`、`audioSourceHash` 与 `baseTimelineUrl` 组成；记录可按
+原身份保留、查看或显式导出，但只有四项 identity 完整匹配且当前 Occurrence 校验通过时
+才能参与 effective timing。不同 Edition 的记录即使音频或 Timeline 相同，也不得自动
+应用、重绑定或合入当前版 correction。
+
+旧 v3 单槽值在保全副本写入并读回核验前不得被覆盖或删除。归档/活动记录冲突、存储
+不可用、写入失败或身份无法核实时应 fail closed，保留旧值并给出可恢复状态。用户可单独
+导出身份明确的保留记录；普通个人状态备份不代表包含该归档。
+
+这只补充 D-012 与 D-021 的“不兼容数据不得应用”边界，不改变其历史语义，不恢复
+legacy v1/v2 playback-only 数据或旧 timing 字段。Practice resume、queue、progress/rate
+及备份仍依各自 owner 严格核验；本决定不授权任何跨 identity 自动兼容，也不规定新的
+Repository、Session、Scheduler 或迁移架构。

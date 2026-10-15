@@ -1,8 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CatalogEdition } from '../library/runtime-schema'
 import {
   createTimingOverridesDocument,
   getTimingOverridesStorageKey,
+  readTimingOverrideStorageSnapshot,
+  serializeTimingOverrides,
   saveTimingOverrides,
 } from '../practice/practice-timing-overrides'
 import type { RuntimeClient } from './runtime-client'
@@ -49,7 +51,28 @@ const edition = {
   },
 }
 
-afterEach(() => window.localStorage.clear())
+const originalLocksDescriptor = Object.getOwnPropertyDescriptor(navigator, 'locks')
+const testLocks = {
+  request<T>(_name: string, callback: () => Promise<T> | T): Promise<T> {
+    return Promise.resolve(callback())
+  },
+}
+
+beforeEach(() => {
+  Object.defineProperty(navigator, 'locks', {
+    configurable: true,
+    value: testLocks,
+  })
+})
+
+afterEach(() => {
+  window.localStorage.clear()
+  if (originalLocksDescriptor) {
+    Object.defineProperty(navigator, 'locks', originalLocksDescriptor)
+  } else {
+    Reflect.deleteProperty(navigator, 'locks')
+  }
+})
 
 describe('runtime Song Edition loader', () => {
   it('loads edition metadata and core reading resources', async () => {
@@ -160,7 +183,10 @@ describe('runtime Song Edition loader', () => {
       baseTimelineUrl: edition.timelineUrl,
     })
     override.occurrences = { o001: { startMs: 120 } }
-    expect(saveTimingOverrides(override)).toBe(true)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(override.songId),
+      serializeTimingOverrides(override),
+    )
 
     const first = await loadRuntimeSongEditionCore(client, catalogEdition)
     expect(first.timingProvider.getTiming(occurrence)).toEqual({
@@ -169,7 +195,9 @@ describe('runtime Song Edition loader', () => {
     })
 
     override.occurrences = { o001: { startMs: 180 } }
-    expect(saveTimingOverrides(override)).toBe(true)
+    expect(await saveTimingOverrides(override, {
+      expectedSnapshot: readTimingOverrideStorageSnapshot(override),
+    })).toEqual({ status: 'saved' })
     const reopened = await loadRuntimeSongEditionCore(client, catalogEdition)
 
     expect(reopened.timingProvider.getTiming(occurrence)).toEqual({
@@ -195,7 +223,10 @@ describe('runtime Song Edition loader', () => {
       baseTimelineUrl: edition.timelineUrl,
     })
     incompatible.occurrences = { o001: { startMs: 20 } }
-    expect(saveTimingOverrides(incompatible)).toBe(true)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(incompatible.songId),
+      serializeTimingOverrides(incompatible),
+    )
     const controller = new AbortController()
     controller.abort()
     await expect(loadRuntimeSongEditionCore(client, catalogEdition, { signal: controller.signal }))
@@ -204,7 +235,7 @@ describe('runtime Song Edition loader', () => {
     expect(window.localStorage.getItem(getTimingOverridesStorageKey(edition.song.songId))).not.toBeNull()
   })
 
-  it('retains same-edition timing overrides and clears only the changed edition', async () => {
+  it('retains H1 timing across H2 selection and restores it only for the exact H1 identity', async () => {
     let currentEdition = edition
     const occurrence = {
       id: 'o001',
@@ -232,7 +263,10 @@ describe('runtime Song Edition loader', () => {
       baseTimelineUrl: edition.timelineUrl,
     })
     firstDocument.occurrences = { o001: { startMs: 20 } }
-    expect(saveTimingOverrides(firstDocument)).toBe(true)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(firstDocument.songId),
+      serializeTimingOverrides(firstDocument),
+    )
 
     const otherDocument = createTimingOverridesDocument({
       songId: 'second-signal',
@@ -241,7 +275,10 @@ describe('runtime Song Edition loader', () => {
       baseTimelineUrl: '/library-runtime/songs/second-signal/timeline.json',
     })
     otherDocument.occurrences = { o002: { startMs: 30 } }
-    expect(saveTimingOverrides(otherDocument)).toBe(true)
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(otherDocument.songId),
+      serializeTimingOverrides(otherDocument),
+    )
 
     const firstCore = await loadRuntimeSongEditionCore(client, catalogEdition)
     expect(firstCore.timingProvider.getTiming(occurrence)).toEqual({
@@ -264,7 +301,13 @@ describe('runtime Song Edition loader', () => {
       startMs: 10,
       endMs: 300,
     })
-    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).toBeNull()
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey('first-light'))).not.toBeNull()
     expect(window.localStorage.getItem(getTimingOverridesStorageKey('second-signal'))).not.toBeNull()
+
+    const restoredH1 = await loadRuntimeSongEditionCore(client, catalogEdition)
+    expect(restoredH1.timingProvider.getTiming(occurrence)).toEqual({
+      startMs: 20,
+      endMs: 300,
+    })
   })
 })

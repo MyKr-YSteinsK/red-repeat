@@ -6,6 +6,7 @@ import { buildInfo } from '../release/build-info'
 import { createUpdateManager } from '../pwa/update-manager'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { getPracticeRateStorageKey } from '../practice/practice-rate'
+import { getTimingOverridesStorageKey } from '../practice/practice-timing-overrides'
 import { SettingsPage } from './SettingsPage'
 
 const newerVersion = nextPatchVersion(buildInfo.version)
@@ -120,6 +121,44 @@ describe('SettingsPage', () => {
     expect(onePointZero.open).toBe(true)
     expect(onePointZero.querySelectorAll('[data-release-milestone]').length).toBe(0)
     expect(onePointZero.querySelectorAll('[data-release-entry]').length).toBe(2)
+  })
+
+  it('shows and exports an old identity record independently of the current Edition', async () => {
+    const oldIdentity = {
+      songId: 'first-light',
+      editionContentHash: 'd'.repeat(64),
+      audioSourceHash: edition.audio.sourceHash,
+      baseTimelineUrl: '/library-runtime/songs/first-light/timeline.old.json',
+    }
+    window.localStorage.setItem(
+      getTimingOverridesStorageKey(oldIdentity.songId),
+      JSON.stringify({
+        schemaVersion: 3,
+        ...oldIdentity,
+        occurrences: { o001: { startMs: 40 } },
+      }),
+    )
+    const downloadClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+
+    render(
+      <SettingsPage
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={runtimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Timing 保留记录' })).toBeInTheDocument()
+    expect(screen.getByText(/Edition dddddddddddd/)).toBeInTheDocument()
+    expect(screen.getByText(/不会仅凭同一首歌自动应用于新版/)).toBeInTheDocument()
+    expect(screen.getByText(/历史 Timing 保留记录不包含在此备份中/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '导出保留的 Timing JSON' }))
+    expect(await screen.findByText(/包含 1 条可核验的保留记录/)).toBeInTheDocument()
+    expect(downloadClick).toHaveBeenCalledOnce()
+    expect(window.localStorage.getItem(getTimingOverridesStorageKey(oldIdentity.songId))).not.toBeNull()
+    downloadClick.mockRestore()
   })
 
   it('reports that there is nothing to export when no local override exists', async () => {

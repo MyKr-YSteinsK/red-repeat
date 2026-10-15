@@ -10,13 +10,12 @@
 发现的主要问题是译文的主客体、否定和跨行语法，以及文章重复和来源定位不足；
 不是 46 篇均无价值，也不是全部语言、读音或事实已经通过专家验收。
 
-**内容发布前必须先处理身份风险。** 当前 Compiler 把 Feature 的 hash URL 纳入
-Edition.contentHash。即使只改文章正文，新的有效 Edition 也会使旧 timing override
-被判 edition-stale；前台 loader 的新载入和 warm-core 刷新均会清除该歌曲旧记录。
-个人备份的当前导入规则也拒绝跨 Edition 恢复，更新后再导出还可能跳过旧记录。
-所以“先备份再改文章”只是保留证据，不能保证按现有产品无损恢复。
-本轮未修改歌曲 source 或用户数据；后续内容发布应先取得明确的数据保护方案批准，
-必要时另开高风险工程任务。详见“身份传播与发布前提”。
+**内容发布前仍须按数据域核对身份风险。** Compiler 把 Feature hash URL 纳入
+Edition.contentHash，因此只改文章正文也会产生新 Edition identity。RED-Plan-78
+依据 D-028 为有效 sparse v3 Timing override 实施非破坏性保全：原始 v3 值保留，
+可按完整身份查看/导出；只有活动 Edition identity 完整匹配且 Occurrence 校验通过时
+才应用。H1/H2 快照切换不重绑定 Timing。该保护不扩展到 resume、queue、progress/rate
+或个人备份；它们仍按各自身份和目标合同处理。路线 B（跨身份自动兼容）未获批准。
 
 Plan-76 调查时还发现最近会话把 Feature ID 错用 ASCII identifier 校验：当时
 46/46 个实际 basename 均无法保存。该缺口已由 RED-Plan-77 / R1 的 P1 修复：
@@ -25,8 +24,8 @@ Plan-76 调查时还发现最近会话把 Feature ID 错用 ASCII identifier 校
 46 个 Feature ID 均通过真实 `saveResumeContext` → `parseResumeContext` →
 `readResumeContext` 逐字回环，页面与隔离 origin 浏览器验证恢复到同一文章且无 autoplay。
 这只修复 Feature 最近会话的存取；Edition/audio/Timeline 身份门禁仍严格，目标在当前
-Edition 不存在时安全回退。它没有保护内容改版后失效的 timing override，也没有批准
-跨 Edition 数据迁移。
+Edition 不存在时安全回退。RED-Plan-78 后，sparse v3 Timing 由 D-028 保全并仍按严格
+身份使用；最近会话等其他数据域仍不跨 Edition 自动迁移。
 
 推荐首先研究和重构 work-millennium-parade：已有官方合作、发行、作品作者访谈
 可构成较强证据链；译文存在高收益修复点，八篇文章的劳动/任务、两极/中道反复论述
@@ -508,12 +507,13 @@ main上的文档提交仍进入现有CI→Pages，实际提交/Push/CI/Pages在�
 “六曲读音/听感全部合格”或新版本发布；也不等于研究结论已被Architect正式接受、
 内容方案已批准或产品阶段已推进。
 
-## RED-Plan-77 内容身份兼容决策包（提案，未形成 Accepted Decision）
+## RED-Plan-77 内容身份兼容决策包（提案时点的历史记录）
 
-本节仅为下一阶段内容集成准备数据保护方案。P1 的 Feature ID 修复不改变 D-012 / D-021，
-也不授权迁移、重绑定或清理任何真实用户校准。
+本节记录 RED-Plan-77 时点的代码行为、路线比较与未批准状态。P1 的 Feature ID 修复
+不改变 D-012 / D-021。后续 D-028 / RED-Plan-78 已批准并实施路线 A；当前事实见本节后
+的实施更新。下方旧表格与候选措辞不应被当作当前代码状态。
 
-### 当前代码行为与变更类别
+### 截至 RED-Plan-77 的代码行为与变更类别（历史快照）
 
 | 变更 | 当前可验证后果 | 用户状态与后续限制 |
 | --- | --- | --- |
@@ -540,4 +540,11 @@ main上的文档提交仍进入现有CI→Pages，实际提交/Push/CI/Pages在�
 
 **建议顺序（待批准）**：先评估路线 A 的最小、可回退数据保全，维持旧值不应用于新 identity；之后再单独决定路线 B 是否有必要。发布前决策至少要回答：保留哪些数据域、旧记录能否显式导出/恢复、恢复到新 Edition 是否允许以及逐条如何证明兼容、冲突和失败如何回滚。若用户选择保持严格失效，也需明确理解未导出的稀疏 timing 可能被清除；不能从“旧文章可替换”推导此数据取舍。
 
-后续工程 Gate 应以具体样本验收：Feature-only 与 translation-only 成功更新；Timeline / audio 变化拒绝迁移；Feature 改名/删除不误恢复；cold/warm reopen；保存失败、存储配额失败和旧新文档并发；个人备份预览/恢复；queue/resume 的 stale 提示；H2 staging 失败保留 H1、完整 H2 manifest-last 后切换；回滚后不丢两侧原记录。上述都是待设计/运行的样本，本节没有把它们记为 PASS。
+后续工程 Gate 应以具体样本验收：Feature-only 与 translation-only 成功更新；Timeline / audio 变化拒绝迁移；Feature 改名/删除不误恢复；cold/warm reopen；保存失败、存储配额失败和旧新文档并发；个人备份预览/恢复；queue/resume 的 stale 提示；H2 staging 失败保留 H1、完整 H2 manifest-last 后切换；回滚后不丢两侧原记录。上述都是 RED-Plan-77 时待设计/运行的样本；本节当时没有把它们记为 PASS。
+
+## RED-Plan-78 / D-028 当前实施状态
+
+- D-028 已接受并在 RED-Plan-78 / R1 实施，只覆盖有效 sparse v3 Timing override。单槽旧值在身份归档写后读核验前不被覆盖；归档记录按完整 identity 选择，H2 不应用 H1 数值，完整 H1 活动快照可精确恢复 H1 值。无 TTL 或静默淘汰；冲突、存储异常与失败路径 fail closed。
+- Settings 提供身份标识清晰的单独归档查看/导出；常规个人备份仍只涵盖当前兼容白名单数据，不宣称包含历史 Timing。用户导出的 archive 不等于当前版 correction，也不授权跨 identity 合并。
+- Route B 未批准。resume、queue、普通 progress/rate、备份导入的现有严格行为没有迁移或放宽；新内容批次仍应逐域审查这些后果与稳定 ID 的语义。
+- Plan-78 的浏览器 Gate 使用隔离的 localhost origin、合成 H1/H2 完整 Runtime 快照和原生 localStorage/CacheStorage；覆盖 H1→H2、H2 不应用、Settings 导出、H1 硬刷新恢复、staging 失败回退及双标签保存冲突。它不是生产用户数据迁移、installed-PWA、真机或听感验收。
