@@ -1553,8 +1553,12 @@ each historical task and do not replace the current repository identity above.
   ESLint 与 `git diff --check` 均通过。独立本地 browser origin 完成打开中文 Feature、
   返回 Catalog、继续上次并恢复原文章的路径。未声称真机、听感或 installed-PWA PASS。
 - 未本地运行 build，因为它会触及可能清理 PID 专属 `public/library-runtime.tmp-*`
-  路径；该目录存在受保护未跟踪资料。发布验证以准确提交的 CI build 为准，CI、Pages
-  和 Production smoke 的状态分别由最终交付回执报告。
+  路径；该目录存在受保护未跟踪资料。release metadata 提交
+  `35990ca8efd0be6c831273c1ba6c3090281bb563` 的 CI run `38702445897`
+  quality、Pages deploy 和 workflow production identity 均成功；本地
+  `npm run release:smoke` 也确认 `1.23.1 / 35990ca8efd0`，`builtAt` 为
+  `2026-10-15T08:02:00.255Z`。这些仍是该准确 SHA 的部署证据，不声称真机、听感或
+  installed-PWA PASS。
 - P2 的 A/B 身份保护路线仅作为待批准提案记录在
   [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md)。没有迁移、重绑定或清理
   用户 timing override；D-012/D-021、D-022 与 D-023 行为保持。后续内容重构前仍需用户
