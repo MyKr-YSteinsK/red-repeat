@@ -1009,8 +1009,18 @@ uses the separately authorized task-input source package.
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
   is its annotated tag target and its metadata commit is the independent build
   identity.
-- 当前未启动或授权 `RED-Plan-76`。A–E 其余提议保持独立；Plan-75 仅覆盖
-  本次讲解阅读导航，不授权其他内容生成、索引或播放架构。
+- `RED-Plan-76 / R1` 已完成六曲内容研究基线：46 篇 Feature、240 个 Segment
+  的首轮筛查、逐篇处置、公开来源分级和内容身份传播分析，见
+  [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md)。
+  仅新增研究文档、局部内容规范及 owner/状态索引；未修改歌曲、代码、timing或版本。
+  文档 Git/CI/Pages 交付按最终回执的准确 SHA 分别核验，未新增真人/听感 PASS。
+- 重点未决风险：仅改 Feature 正文也会改变 Edition hash，前台载入可清除旧身份
+  timing override；最近会话、队列、备份与普通进度/速度的规则不同。正式内容集成前
+  需明确批准数据保护策略，不能把备份导出等同于可跨身份恢复。
+  另确认现有中文 Feature id 被最近会话 ASCII 校验拒绝，真实 parser 的只读复核为
+  46/46 拒绝；仅记录恢复合同缺口，未修代码或改名。
+  首选 WORK 深写仍是候选，`RED-Plan-77` 未启动或授权；A–E 其他提议不因本轮研究
+  获批，未实施迁移或新架构。
 - The RED-Plan-69 measurement details below remain historical evidence for
   `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
