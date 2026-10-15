@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { AudioEngine } from '../audio/audio-engine'
 import type { Catalog, CatalogEdition, RuntimeEdition } from '../library/runtime-schema'
 import type { LyricsDocument, PracticeDocument, TimelineDocument } from '../library/schema'
 import { getTimingOverridesStorageKey } from '../practice/practice-timing-overrides'
@@ -166,6 +167,68 @@ describe('TimingDebuggerPage', () => {
         editionContentHash: edition.contentHash,
         occurrences: { o001: { startMs: 70 } },
       })
+    })
+  })
+
+  it('previews the same effective range shown after edit, undo and redo', async () => {
+    const audioState = {
+      status: 'idle' as const,
+      intent: 'continuous' as const,
+      playbackRate: 1,
+      currentTimeMs: 0,
+    }
+    const audioEngine = {
+      getState: vi.fn(() => audioState),
+      subscribe: vi.fn((listener: (state: typeof audioState) => void) => {
+        listener(audioState)
+        return () => undefined
+      }),
+      loadSource: vi.fn(),
+      setPlaybackRate: vi.fn(),
+      pause: vi.fn(),
+      playRangeUntilComplete: vi.fn(async () => ({ status: 'completed' as const })),
+    } as unknown as AudioEngine
+
+    render(
+      <TimingDebuggerPage
+        songId="first-light"
+        catalogState={{ status: 'ready', catalog }}
+        runtimeClient={createRuntimeClient()}
+        homeHref="/red-repeat/"
+        onRetryCatalog={vi.fn()}
+        audioEngine={audioEngine}
+      />,
+    )
+
+    await screen.findByRole('heading', { name: '播放切口调试' })
+    fireEvent.click(screen.getAllByRole('button', { name: '+20ms' })[0])
+    expect(screen.getByText('70 ms')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => {
+      expect(audioEngine.playRangeUntilComplete).toHaveBeenLastCalledWith(
+        { startMs: 70, endMs: 350 },
+        'o001',
+      )
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '撤销' }))
+    expect(screen.getByText('50 ms')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => {
+      expect(audioEngine.playRangeUntilComplete).toHaveBeenLastCalledWith(
+        { startMs: 50, endMs: 350 },
+        'o001',
+      )
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '重做' }))
+    expect(screen.getByText('70 ms')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '播放' }))
+    await waitFor(() => {
+      expect(audioEngine.playRangeUntilComplete).toHaveBeenLastCalledWith(
+        { startMs: 70, endMs: 350 },
+        'o001',
+      )
     })
   })
 

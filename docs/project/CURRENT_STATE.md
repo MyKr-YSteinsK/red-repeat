@@ -1473,8 +1473,10 @@ each historical task and do not replace the current repository identity above.
   and only explicit save writes through the existing identity-bound sparse v3
   override owner. Saving rejects an existing value changed during the editing
   session and verifies the persisted result; failure keeps the draft.
-- Verification: six focused test files passed `90/90`; `tsc -b`, touched-file
-  ESLint and `git diff --check` passed. A desktop browser at a 390×844 viewport
+- Verification: six focused test files passed `91/91`, including an assertion
+  that preview receives the same effective timing range shown after edit,
+  Undo and Redo; `tsc -b`, touched-file ESLint and `git diff --check` passed. A
+  desktop browser at a 390×844 viewport
   exercised the Full Song selected-row link, exact `o002` deep link, timing
   adjustment, Undo/Redo, explicit save, refresh persistence and return to the
   same Full Song selection paused. The test then saved the canonical `9820 ms`
