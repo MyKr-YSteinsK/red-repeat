@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.23.2',
+    date: '2026-10-15',
+    commit: 'b020b4a',
+    level: 'patch',
+    title: '按严格身份保全 Timing 微调',
+    summary: '保留不同 Edition 的有效本机 Timing 微调，并仅在完整身份匹配时使用。',
+    changes: [
+      '旧版 sparse v3 微调在身份校验并成功保全后不会因新版 Edition 自动清除；重新打开仍可验证的旧快照时按原身份恢复。',
+      'Settings 可单独查看和导出带完整身份的保留记录；这些记录不会跨 Edition 自动应用，也不包含在普通个人状态备份中。',
+    ],
+  },
+  {
     version: '1.23.1',
     date: '2026-10-15',
     commit: '2d000ad',

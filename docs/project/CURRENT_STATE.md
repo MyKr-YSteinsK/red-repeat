@@ -11,12 +11,12 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.23.1`. This source records repository
+- Current package/ledger user version: `1.23.2`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.23.1` / `2d000ad` (product commit date
-  `2026-10-15`); annotated `v1.23.1` identifies that product commit, while the
+- Latest ledger product target: `1.23.2` / `b020b4a` (product commit date
+  `2026-10-15`); annotated `v1.23.2` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
   Existing `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`,
   `v1.20.1 -> 19123e7`,
@@ -994,9 +994,12 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- `RED-Plan-77 / R1` 的 P1 修复已形成 `1.23.1 PATCH` 产品提交；完整实现、验证
-  和仍待用户决定的数据兼容方案见本文件末尾的独立记录。P2 不改变 timing identity，
-  也不授权下一轮内容改写。
+- `RED-Plan-78 / R1` 已按 D-028 完成 sparse v3 Timing 非破坏性保全与完整 identity
+  选择。D-028 已 Accepted；路线 B 未批准。具体浏览器/测试证据与版本交付见本文件末尾
+  的 Plan-78 记录。
+- `RED-Plan-77 / R1` 的 P1 修复已形成 `1.23.1 PATCH` 产品提交；其当时身份风险分析
+  保留在 [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md) 中，并由 D-028 /
+  Plan-78 后续更新当前处置状态。P2 不改变 Timing identity，也不授权下一轮内容改写。
 - `RED-Plan-75` R1 已完成讲解文章内章节导航与真实歌词引用精确定位的
   局部实现和本地验证；`1.23.0 MINOR` 的产品 tag target 为 `0974197`，
   release metadata 单独提交。
@@ -1018,9 +1021,9 @@ uses the separately authorized task-input source package.
   [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md)。
   仅新增研究文档、局部内容规范及 owner/状态索引；未修改歌曲、代码、timing或版本。
   文档 Git/CI/Pages 交付按最终回执的准确 SHA 分别核验，未新增真人/听感 PASS。
-- 重点未决风险：仅改 Feature 正文也会改变 Edition hash，前台载入可清除旧身份
-  timing override；最近会话、队列、备份与普通进度/速度的规则不同。正式内容集成前
-  需明确批准数据保护策略，不能把备份导出等同于可跨身份恢复。
+- 内容身份风险已按数据域区分：仅改 Feature 正文仍会改变 Edition hash；D-028 / Plan-78
+  现在保全 sparse v3 Timing，但不会跨身份应用。最近会话、队列、普通进度/速度与备份
+  仍按各自 owner 核验；导出普通备份不等于跨身份恢复，也不自动迁移这些数据。
   最近会话此前拒绝 46/46 中文 Feature id 的问题已由 RED-Plan-77 / R1 修复，未改名
   文章或放宽其他标识符。WORK 深写仍需独立授权；A–E 其余提议不因相关研究获批，
   未实施个人数据迁移或目标架构。
@@ -1563,3 +1566,24 @@ each historical task and do not replace the current repository identity above.
   [CONTENT_QUALITY_BASELINE.md](CONTENT_QUALITY_BASELINE.md)。没有迁移、重绑定或清理
   用户 timing override；D-012/D-021、D-022 与 D-023 行为保持。后续内容重构前仍需用户
   明确个人数据保全与跨 Edition 兼容边界。
+
+## RED-Plan-78 实施与发布状态
+
+- `1.23.2 PATCH` 产品提交为 `b020b4a4501fbe33d114a4171429b52523efc58c`
+  （`2026-10-15`）；annotated `v1.23.2` 指向该产品提交，版本元数据与产品实现
+  分开提交。D-028 仅批准路线 A；没有跨 Edition 自动重绑定。
+- 有效 sparse v3 Timing 记录按 `songId`、Edition content hash、audio source hash 和
+  base Timeline URL 完整 identity 保全。原单槽值在 archive 写后读核验前不被覆盖；归档
+  仅在完整 identity 匹配、Occurrence 校验通过时参与有效 timing。不同身份并存，失败、
+  冲突或存储不可用时 fail closed，不设静默 TTL/淘汰。Settings 提供独立查看/导出；常规
+  个人状态备份明确不包含该历史归档。resume、queue、progress/rate、下载及其他数据域
+  仍依各自原身份合同处理。
+- 隔离浏览器使用合成 H1/H2 与浏览器原生 localStorage/CacheStorage：H1 原始 v3 字节可核验
+  保留；完整 H2 提交后不使用 H1 override；重新激活 H1 并硬刷新后按原 identity 恢复；
+  H2 staging 失败保留 H1；Settings 导出包含 H1 完整 identity 和稀疏值；两标签同一时点
+  保存为一成功、一冲突，未覆盖原值。此证据不代表真实用户资料迁移、installed-PWA、
+  iOS 真机或人工听感验收。
+- 8 个受影响测试文件 `89/89`、`npm run typecheck`、触及文件 ESLint 与
+  `git diff --check` 通过。未在主工作树运行 `npm run build`，以免触及受保护的
+  `public/library-runtime.tmp-*`；最终精确 SHA 的 CI build、Pages 与 Production identity
+  由本次交付回执分别核验。没有修改歌曲 source、Compiler/schema、PWA lifecycle 或生成产物。
