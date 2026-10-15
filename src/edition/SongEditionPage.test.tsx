@@ -288,12 +288,47 @@ describe('SongEditionPage 学唱入口', () => {
     expect(await screen.findByRole('region', { name: '讲解工作台' })).toBeInTheDocument()
     await waitFor(() => expect(props.runtimeClient.loadFeature).toHaveBeenCalledOnce())
     expect(container.querySelector('.explain-workspace')).toHaveAttribute('data-current-topic-id', 'note')
+    expect(container.querySelector('.feature-markdown-block--lyric-reference.is-related-target')).not.toBeNull()
     expect(container.querySelector('[data-selected-occurrence-id="o001"]')).not.toBeNull()
     expect(media.play).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole('button', { name: '返回来源位置' }))
     expect(await screen.findByRole('region', { name: '学唱工作台' })).toHaveAttribute('data-current-occurrence-id', 'o001')
     expect(media.play).not.toHaveBeenCalled()
+  })
+
+  it('locates the exact Feature quote from Full Song and returns without autoplay', async () => {
+    const media = new FakeMedia()
+    const engine = createAudioEngine(media)
+    activeEngine = engine
+    const props = propsFor(undefined, engine)
+    vi.mocked(props.runtimeClient.loadFeature).mockResolvedValue('# Quote\n\n[[segment:s001]]')
+    const { container } = render(<SongEditionPage {...props} />)
+
+    await screen.findByRole('heading', { name: 'First Light' })
+    fireEvent.click(screen.getByRole('button', { name: '全曲' }))
+    expect(screen.getByRole('region', { name: '全曲歌词' })).toBeInTheDocument()
+    expect(props.runtimeClient.loadFeature).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：First line' }))
+    await waitFor(() => expect(media.play).toHaveBeenCalledOnce())
+    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
+    await waitFor(() => expect(media.paused).toBe(true))
+    const playCountBeforeExplain = media.play.mock.calls.length
+    fireEvent.click(screen.getByRole('button', { name: '看相关讲解' }))
+
+    expect(await screen.findByRole('region', { name: '讲解工作台' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(container.querySelector('.feature-markdown-block--lyric-reference.is-related-target')).not.toBeNull()
+    })
+    expect(container.querySelector('.explain-lyric-quote'))
+      .toHaveAttribute('data-selected-occurrence-id', 'o001')
+    expect(media.play).toHaveBeenCalledTimes(playCountBeforeExplain)
+
+    fireEvent.click(screen.getByRole('button', { name: '返回来源位置' }))
+    expect(await screen.findByRole('region', { name: '全曲歌词' })).toBeInTheDocument()
+    expect(container.querySelector('.full-song-workspace'))
+      .toHaveAttribute('data-selected-occurrence-id', 'o001')
+    expect(media.play).toHaveBeenCalledTimes(playCountBeforeExplain)
   })
 
   it('continues a compatible saved Full Song position on the startup build without autoplay', async () => {

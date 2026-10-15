@@ -1191,6 +1191,55 @@
   line-height: 1.05;
 }
 
+.explain-chapter-navigation {
+  max-width: 45rem;
+  margin-top: 1rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.explain-chapter-navigation > summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.explain-chapter-navigation > nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.explain-chapter-navigation button {
+  min-height: 2.25rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: inherit;
+  text-align: left;
+}
+
+.explain-chapter-navigation button:hover {
+  border-color: var(--color-red);
+}
+
+.feature-markdown-block--lyric-reference {
+  scroll-margin-block-start: 7rem;
+}
+
+.feature-markdown-block--lyric-reference.is-related-target .explain-lyric-quote,
+.feature-markdown-block--lyric-reference.is-related-target .feature-lyric-reference {
+  border-color: var(--color-red);
+  box-shadow: 0 0 0 1px var(--color-red);
+}
+
+.feature-markdown-block--lyric-reference:focus {
+  outline: 2px solid var(--color-red);
+  outline-offset: 3px;
+}
+
 .explain-article .feature-markdown {
   margin-top: 2.25rem;
 }

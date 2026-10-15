@@ -3,6 +3,7 @@ import type {
   AssembledSongEdition,
   RuntimeFeatureContent,
 } from '../runtime/song-edition'
+import { explainArticleBlockDomId } from './explain-article-navigation'
 import { LyricText } from './LyricText'
 
 export type ExplainBlock =
@@ -20,6 +21,7 @@ export interface ExplainArticle {
 export interface ExplainArticleBodyProps {
   article: ExplainArticle
   model: AssembledSongEdition
+  relatedTarget?: { blockIndex: number; segmentId: string }
   renderLyricReference?: (
     segmentId: string,
     referenceIndex: number,
@@ -29,6 +31,7 @@ export interface ExplainArticleBodyProps {
 export function ExplainArticleBody({
   article,
   model,
+  relatedTarget,
   renderLyricReference,
 }: ExplainArticleBodyProps) {
   return (
@@ -36,7 +39,11 @@ export function ExplainArticleBody({
       {article.blocks.map((block, index) => {
         if (block.kind === 'heading') {
           return (
-            <ExplainHeading key={`heading-${index}`} level={block.level}>
+            <ExplainHeading
+              key={`heading-${index}`}
+              id={explainArticleBlockDomId(article.id, index)}
+              level={block.level}
+            >
               <InlineMarkdown text={block.text} />
             </ExplainHeading>
           )
@@ -61,7 +68,17 @@ export function ExplainArticleBody({
         }
 
         return (
-          <div key={`lyric-reference-${index}`}>
+          <div
+            key={`lyric-reference-${index}`}
+            id={explainArticleBlockDomId(article.id, index)}
+            className={`feature-markdown-block feature-markdown-block--lyric-reference${
+              relatedTarget?.blockIndex === index &&
+              relatedTarget.segmentId === block.segmentId
+                ? ' is-related-target'
+                : ''
+            }`}
+            tabIndex={-1}
+          >
             {renderLyricReference?.(block.segmentId, index) ?? (
               <DefaultLyricReference model={model} segmentId={block.segmentId} />
             )}
@@ -208,14 +225,16 @@ function featureDescriptorTitle(id: string): string {
 }
 
 function ExplainHeading({
+  id,
   level,
   children,
 }: {
+  id: string
   level: number
   children: ReactNode
 }) {
   const Heading = `h${Math.min(6, Math.max(3, level + 1))}` as ElementType
-  return <Heading>{children}</Heading>
+  return <Heading id={id} tabIndex={-1}>{children}</Heading>
 }
 
 function InlineMarkdown({ text }: { text: string }) {

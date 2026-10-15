@@ -7,6 +7,10 @@ import {
   parseFeatureArticle,
   type ExplainArticle,
 } from './FeatureMarkdown'
+import {
+  explainArticleBlockDomId,
+  getExplainArticleHeadingTargets,
+} from './explain-article-navigation'
 import { ExplainLyricQuote } from './ExplainLyricQuote'
 import { useSongEditionPlayback } from './use-song-edition-playback'
 import { useSessionViewState } from './song-playback-context'
@@ -45,6 +49,12 @@ type ExplainFeatureLoadState =
   | { status: 'ready'; article: ExplainArticle }
   | { status: 'error'; error: unknown }
 
+type RelatedLookupResult =
+  | { status: 'found'; featureId: string; blockIndex: number }
+  | { status: 'not-found' }
+  | { status: 'unavailable' }
+  | { status: 'dismissed' }
+
 type ExplainNavigationSource = 'directory' | 'select' | 'previous' | 'next'
 
 export function ExplainWorkspace({
@@ -66,11 +76,16 @@ export function ExplainWorkspace({
   const [retryByUrl, setRetryByUrl] = useState<Readonly<Record<string, number>>>({})
   const [relatedLookup, setRelatedLookup] = useState<{
     key: string
-    result: { status: 'found'; featureId: string } | { status: 'not-found' } | { status: 'unavailable' }
+    result: RelatedLookupResult
   }>()
   const relatedLookupKeyRef = useRef<string | undefined>(undefined)
+  const relatedLookupRequestRef = useRef(0)
+  const relatedLookupControllerRef = useRef<AbortController | undefined>(undefined)
   const startedRequestsRef = useRef(new Set<string>())
-  const featureLoadPromisesRef = useRef(new Map<string, Promise<ExplainArticle>>())
+  const featureLoadPromisesRef = useRef(new Map<string, {
+    promise: Promise<ExplainArticle>
+    signal: AbortSignal
+  }>())
   const featureStatesRef = useRef(featureStates)
   const updateFeatureState = useCallback(
     (url: string, state: ExplainFeatureLoadState): void => {
@@ -85,19 +100,20 @@ export function ExplainWorkspace({
     signal: AbortSignal,
   ): Promise<ExplainArticle> => {
     const existing = featureLoadPromisesRef.current.get(descriptor.url)
-    if (existing) return existing
+    if (existing && !existing.signal.aborted) return existing.promise
     const request = runtimeClient
       .loadFeature(descriptor, { signal })
       .then((content) => parseFeatureArticle({ descriptor, content }))
-    featureLoadPromisesRef.current.set(descriptor.url, request)
+    const requestEntry = { promise: request, signal }
+    featureLoadPromisesRef.current.set(descriptor.url, requestEntry)
     void request.then(
       () => {
-        if (featureLoadPromisesRef.current.get(descriptor.url) === request) {
+        if (featureLoadPromisesRef.current.get(descriptor.url) === requestEntry) {
           featureLoadPromisesRef.current.delete(descriptor.url)
         }
       },
       () => {
-        if (featureLoadPromisesRef.current.get(descriptor.url) === request) {
+        if (featureLoadPromisesRef.current.get(descriptor.url) === requestEntry) {
           featureLoadPromisesRef.current.delete(descriptor.url)
         }
       },
@@ -115,97 +131,98 @@ export function ExplainWorkspace({
     ? retryByUrl[selectedFeatureUrl] ?? 0
     : 0
   const relatedLookupKey = relatedContext
-    ? `${relatedContext.segmentId}\u0000${relatedContext.occurrenceId}`
+    ? `${model.edition.contentHash}\u0000${relatedContext.segmentId}\u0000${relatedContext.occurrenceId}`
     : undefined
   const activeRelatedLookup = useMemo(() => {
     if (relatedLookup && relatedLookup.key === relatedLookupKey) return relatedLookup.result
     return relatedContext ? { status: 'loading' as const } : undefined
   }, [relatedContext, relatedLookup, relatedLookupKey])
+  const selectedArticle = selectedTopic?.article
+  const chapterTargets = selectedArticle
+    ? getExplainArticleHeadingTargets(selectedArticle)
+    : []
+  const relatedTargetBlockIndex = relatedContext &&
+    activeRelatedLookup?.status === 'found' &&
+    activeRelatedLookup.featureId === selectedTopic?.id &&
+    selectedArticle
+    ? resolveRelatedReferenceBlockIndex(
+        selectedArticle,
+        relatedContext.segmentId,
+        activeRelatedLookup.blockIndex,
+      )
+    : undefined
   const topicHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const pendingTopicNavigationRef = useRef<{
     anchor: ReturnType<typeof captureScrollAnchor>
     policy: TransitionPolicy
   } | undefined>(undefined)
+  const lastRelatedScrollKeyRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!relatedContext) {
       relatedLookupKeyRef.current = undefined
+      relatedLookupRequestRef.current += 1
       return
     }
-    const lookupKey = `${relatedContext.segmentId}\u0000${relatedContext.occurrenceId}`
+    const lookupKey = relatedLookupKey
+    if (!lookupKey) return
     if (relatedLookupKeyRef.current === lookupKey) return
     relatedLookupKeyRef.current = lookupKey
-    if (model.edition.features.length === 0) {
-      void Promise.resolve().then(() => {
-        if (relatedLookupKeyRef.current === lookupKey) {
-          setRelatedLookup({ key: lookupKey, result: { status: 'not-found' } })
-        }
-      })
-      return
-    }
+    const requestId = relatedLookupRequestRef.current + 1
+    relatedLookupRequestRef.current = requestId
     const controller = new AbortController()
+    relatedLookupControllerRef.current = controller
     let active = true
-    const descriptors = model.edition.features
-    const readyTopics = descriptors.flatMap((descriptor) => {
-      const state = featureStatesRef.current[descriptor.url]
-      return state?.status === 'ready'
-        ? [{ descriptor, article: state.article }]
-        : []
-    })
-    const readyMatch = readyTopics.find(({ article }) => article.blocks.some(
-      (block) => block.kind === 'lyric-reference' && block.segmentId === relatedContext.segmentId,
-    ))
-    if (readyMatch) {
-      void Promise.resolve().then(() => {
-        if (!active) return
-        setSelectedTopicId(readyMatch.descriptor.id)
-        setRelatedLookup({
-          key: lookupKey,
-          result: { status: 'found', featureId: readyMatch.descriptor.id },
-        })
-      })
-      return () => {
-        active = false
-        controller.abort()
-      }
-    }
+    const isCurrentRequest = (): boolean =>
+      active && relatedLookupRequestRef.current === requestId &&
+      relatedLookupKeyRef.current === lookupKey
 
-    void Promise.all(descriptors.map(async (descriptor) => {
-      const cached = featureStatesRef.current[descriptor.url]
-      if (cached?.status === 'ready') return { descriptor, article: cached.article }
-      const article = await loadFeatureArticle(descriptor, controller.signal)
-      return { descriptor, article }
-    })).then((loaded) => {
-      if (!active) return
-      for (const { descriptor, article } of loaded) {
-        updateFeatureState(descriptor.url, { status: 'ready', article })
+    void (async () => {
+      for (const descriptor of model.edition.features) {
+        if (!isCurrentRequest()) return
+        const cached = featureStatesRef.current[descriptor.url]
+        const article = cached?.status === 'ready'
+          ? cached.article
+          : await loadFeatureArticle(descriptor, controller.signal)
+        if (!isCurrentRequest()) return
+        if (cached?.status !== 'ready') {
+          updateFeatureState(descriptor.url, { status: 'ready', article })
+        }
+        const blockIndex = article.blocks.findIndex(
+          (block) => block.kind === 'lyric-reference' && block.segmentId === relatedContext.segmentId,
+        )
+        if (blockIndex >= 0) {
+          setSelectedTopicId(descriptor.id)
+          setRelatedLookup({
+            key: lookupKey,
+            result: { status: 'found', featureId: descriptor.id, blockIndex },
+          })
+          return
+        }
       }
-      const match = loaded.find(({ article }) => article.blocks.some(
-        (block) => block.kind === 'lyric-reference' && block.segmentId === relatedContext.segmentId,
-      ))
-      if (match) {
-        setSelectedTopicId(match.descriptor.id)
-        setRelatedLookup({
-          key: lookupKey,
-          result: { status: 'found', featureId: match.descriptor.id },
-        })
-      } else {
+      if (isCurrentRequest()) {
         setRelatedLookup({ key: lookupKey, result: { status: 'not-found' } })
       }
-    }).catch((error: unknown) => {
-      if (active && !(error instanceof RuntimeClientError && error.kind === 'abort')) {
+    })().catch((error: unknown) => {
+      if (isCurrentRequest() && !(error instanceof RuntimeClientError && error.kind === 'abort')) {
         setRelatedLookup({ key: lookupKey, result: { status: 'unavailable' } })
       }
     })
     return () => {
       active = false
       controller.abort()
+      if (relatedLookupControllerRef.current === controller) {
+        relatedLookupControllerRef.current = undefined
+      }
+      if (relatedLookupRequestRef.current === requestId) {
+        relatedLookupKeyRef.current = undefined
+      }
     }
-  }, [loadFeatureArticle, model.edition.features, relatedContext, setSelectedTopicId, updateFeatureState])
+  }, [loadFeatureArticle, model.edition.features, relatedContext, relatedLookupKey, setSelectedTopicId, updateFeatureState])
 
   useEffect(() => {
     if (!selectedTopic) return
-    if (relatedContext && (
+    if (relatedContext && activeRelatedLookup?.status !== 'dismissed' && (
       activeRelatedLookup?.status !== 'found' || activeRelatedLookup.featureId !== selectedTopic.id
     )) return
     onResumeFeature?.(selectedTopic.id)
@@ -267,10 +284,18 @@ export function ExplainWorkspace({
     updateFeatureState,
   ])
 
+  const dismissRelatedNavigation = (): void => {
+    if (!relatedLookupKey) return
+    relatedLookupRequestRef.current += 1
+    relatedLookupControllerRef.current?.abort()
+    setRelatedLookup({ key: relatedLookupKey, result: { status: 'dismissed' } })
+  }
+
   const navigateExplainTopic = (
     nextTopicId: string,
     source: ExplainNavigationSource,
   ): void => {
+    dismissRelatedNavigation()
     if (nextTopicId === selectedTopic?.id) {
       return
     }
@@ -297,6 +322,41 @@ export function ExplainWorkspace({
       96,
     )
   }, [selectedTopic?.id])
+
+  useLayoutEffect(() => {
+    if (!relatedContext) {
+      lastRelatedScrollKeyRef.current = undefined
+      return
+    }
+    if (
+      activeRelatedLookup?.status !== 'found' ||
+      activeRelatedLookup.featureId !== selectedTopic?.id ||
+      !selectedArticle
+    ) return
+
+    const blockIndex = resolveRelatedReferenceBlockIndex(
+      selectedArticle,
+      relatedContext.segmentId,
+      activeRelatedLookup.blockIndex,
+    )
+    if (blockIndex === undefined) return
+    const scrollKey = `${relatedLookupKey}\u0000${activeRelatedLookup.featureId}\u0000${blockIndex}`
+    if (lastRelatedScrollKeyRef.current === scrollKey) return
+
+    const target = document.getElementById(
+      explainArticleBlockDomId(selectedArticle.id, blockIndex),
+    )
+    if (!(target instanceof HTMLElement)) return
+
+    lastRelatedScrollKeyRef.current = scrollKey
+    revealExplainTarget(target)
+  }, [
+    activeRelatedLookup,
+    relatedContext,
+    relatedLookupKey,
+    selectedArticle,
+    selectedTopic?.id,
+  ])
 
   if (topics.length === 0) {
     return (
@@ -383,9 +443,36 @@ export function ExplainWorkspace({
             <article className="explain-article">
               <p className="feature-label">主题 {String(selectedTopicIndex + 1).padStart(2, '0')}</p>
               <h3 ref={topicHeadingRef}>{selectedTopic.article.title}</h3>
+              {chapterTargets.length > 0 ? (
+                <details className="explain-chapter-navigation">
+                  <summary>本篇章节</summary>
+                  <nav aria-label="本篇章节">
+                    {chapterTargets.map((heading) => (
+                      <button
+                        key={heading.id}
+                        type="button"
+                        aria-label={chapterNavigationLabel(heading, chapterTargets)}
+                        style={{
+                          paddingInlineStart: `${Math.max(0, heading.level - 2) * 0.65}rem`,
+                        }}
+                        onClick={() => {
+                          dismissRelatedNavigation()
+                          const target = document.getElementById(heading.id)
+                          if (target instanceof HTMLElement) revealExplainTarget(target)
+                        }}
+                      >
+                        {heading.text}
+                      </button>
+                    ))}
+                  </nav>
+                </details>
+              ) : null}
               <ExplainArticleBody
                 article={selectedTopic.article}
                 model={model}
+                relatedTarget={relatedTargetBlockIndex === undefined || !relatedContext
+                  ? undefined
+                  : { blockIndex: relatedTargetBlockIndex, segmentId: relatedContext.segmentId }}
                 renderLyricReference={(segmentId, referenceIndex) => (
                   <ExplainLyricQuote
                     key={`${selectedTopic.id}-${referenceIndex}-${segmentId}`}
@@ -430,7 +517,10 @@ export function ExplainWorkspace({
             >
               ← 上一篇
             </button>
-            <button className="control-button control-button--quiet explain-scroll-top" type="button" onClick={scrollExplainToTop}>
+            <button className="control-button control-button--quiet explain-scroll-top" type="button" onClick={() => {
+              dismissRelatedNavigation()
+              scrollExplainToTop()
+            }}>
               回到顶部
             </button>
             <button
@@ -453,6 +543,40 @@ function scrollExplainToTop(): void {
     top: 0,
     behavior: prefersReducedMotion() ? 'auto' : 'smooth',
   })
+}
+
+function chapterNavigationLabel(
+  target: ReturnType<typeof getExplainArticleHeadingTargets>[number],
+  targets: ReturnType<typeof getExplainArticleHeadingTargets>,
+): string {
+  const duplicateTargets = targets.filter(({ text }) => text === target.text)
+  const duplicateIndex = duplicateTargets.findIndex(({ id }) => id === target.id)
+  const duplicateLabel = duplicateTargets.length > 1
+    ? `（第${duplicateIndex + 1}处）`
+    : ''
+  return `跳转到章节：${target.text}${duplicateLabel}`
+}
+
+function resolveRelatedReferenceBlockIndex(
+  article: ExplainArticle,
+  segmentId: string,
+  preferredBlockIndex: number,
+): number | undefined {
+  const preferredBlock = article.blocks[preferredBlockIndex]
+  if (
+    preferredBlock?.kind === 'lyric-reference' &&
+    preferredBlock.segmentId === segmentId
+  ) return preferredBlockIndex
+
+  const currentMatch = article.blocks.findIndex(
+    (block) => block.kind === 'lyric-reference' && block.segmentId === segmentId,
+  )
+  return currentMatch >= 0 ? currentMatch : undefined
+}
+
+function revealExplainTarget(target: HTMLElement): void {
+  restoreScrollPolicy('reveal-content-start', undefined, target, 112)
+  target.focus({ preventScroll: true })
 }
 
 function TopicDirectoryItem({

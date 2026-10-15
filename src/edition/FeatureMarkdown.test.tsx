@@ -138,6 +138,27 @@ describe('Feature Markdown baseline', () => {
     expect(screen.queryByRole('script')).not.toBeInTheDocument()
   })
 
+  it('renders stable unique DOM targets for repeated headings and lyric references', () => {
+    const article = parseFeatureArticle({
+      descriptor: { ...featureDescriptor, id: '章节/二重' },
+      content: '# Context\n\n## 重複\n\nFirst section.\n\n## 重複\n\n[[segment:s021]]',
+    })
+    const { container, rerender } = render(
+      <ExplainArticleBody article={article} model={model} />,
+    )
+    const targetIds = [...container.querySelectorAll('.feature-markdown [id]')]
+      .map((element) => element.id)
+
+    expect(targetIds).toHaveLength(3)
+    expect(targetIds.every(Boolean)).toBe(true)
+    expect(new Set(targetIds).size).toBe(targetIds.length)
+
+    rerender(<ExplainArticleBody article={article} model={model} />)
+    expect(
+      [...container.querySelectorAll('.feature-markdown [id]')].map((element) => element.id),
+    ).toEqual(targetIds)
+  })
+
   it('turns single and multiple Segment references into ordered block references', () => {
     const article = parseFeatureArticle({
       descriptor: featureDescriptor,

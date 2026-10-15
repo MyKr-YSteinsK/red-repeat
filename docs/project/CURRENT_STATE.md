@@ -993,6 +993,10 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
+- `RED-Plan-75` R1 已完成讲解文章内章节导航与真实歌词引用精确定位的
+  局部实现和本地验证，正在按授权进行 `1.23.0 MINOR` 发布收口。
+  实施与浏览器证据见下方独立记录；CI、Pages、Production identity
+  仍按最终准确 SHA 分别核验。
 - `RED-Plan-74` R1 implements explicit Practice/Full Song Occurrence links to
   the production-public Timing Debugger, bounded session-local Undo/Redo and
   explicit identity-checked v3 override saving. Product commit `1a37d37` is
@@ -1004,9 +1008,8 @@ uses the separately authorized task-input source package.
   MINOR release; product commit `dc2dc841c6d1deb7835523123309cc03f39d3a0d`
   is its annotated tag target and its metadata commit is the independent build
   identity.
-- No later formal Plan is active or authorized. The broader A–E proposal stays
-  separate; Plan-74 covers only the scoped sentence-level Timing workflow and
-  does not approve or start its other work packages.
+- 当前未启动或授权 `RED-Plan-76`。A–E 其余提议保持独立；Plan-75 仅覆盖
+  本次讲解阅读导航，不授权其他内容生成、索引或播放架构。
 - The RED-Plan-69 measurement details below remain historical evidence for
   `1.19.1`, not current work.
 - `AGENTS.md` now defaults user-facing reports and Plan/report headings to
@@ -1488,3 +1491,34 @@ each historical task and do not replace the current repository identity above.
   worktree contains protected untracked temp directories. The final exact-SHA
   CI build is the build/release oracle; the protected directories remain
   untouched.
+
+## RED-Plan-75 实施与发布状态
+
+- Practice / Full Song 的“看相关讲解”依据当前 Feature 顺序、文章 block
+  顺序选取首个真实 Segment 引用，并保留来源 preferred Occurrence。
+  引用节点 ready 后只定位一次，焦点与克制的边框提示指向该引用块。
+  无精确引用、加载失败仍显示非破坏性状态，普通入歌不会加载全部讲解。
+- 已加载文章含正文 Heading 时提供折叠的“本篇章节”；目标 id 由编码后的
+  Feature id 与原 block index 派生，重复标题、中文/日文及符号可独立定位。
+  没有正文 Heading 时不显示目录。2026-10-15 核对的 46 篇公开 Feature
+  均只有文章标题，因此现有原文下该目录保持隐藏；未为展示目录改写内容。
+- 查找与 Edition content hash、Segment / Occurrence 及当前请求绑定。
+  已取消读取不复用为新请求，旧响应不能覆盖新上下文；用户手动切文章、
+  章节或回到顶部会结束自动定位。StrictMode 重放挂载 effect 时会释放旧
+  查找标记，避免取消后永远停在加载状态。没有新增持久化字段或播放 owner。
+- 本地验证：四个相关 Vitest 文件合计 `55/55`，覆盖引用块顺序、重复标题、
+  preferred Occurrence、StrictMode、取消重启、跨 Edition 晚到响应、手动导航、
+  重复入句、无关联及 Practice / Full Song 返回与 preview 回归。
+  `tsc -b`、触及文件 ESLint 和 `git diff --check` 通过；ESLint 仍有该模块
+  原有的两条 Fast Refresh 非组件导出 warning。
+- Codex In-app Browser / Chromium 155 在独立本地 origin 走过真实深海少女
+  `o001` → 相关讲解 → 引用焦点 → 返回同句。配置 `390×844`，宿主实际
+  CSS 视口为 `390×845`；引用顶部约 `112px`，sticky 导航底部约 `48px`。
+  因正式文章无正文 Heading，章节浏览额外使用仅限当前浏览器响应的、明确
+  标为“测试数据”的临时 Heading，核对折叠目录、两级章节、焦点和可读区，
+  随后解除拦截、重载并关闭测试标签；未写入 canonical 或 generated 文件。
+  整条路径音频保持 `paused`、`0ms`、`1.0x`，路由与来源 `o001` 保留。
+- 未执行 iOS/Safari 真机、installed-PWA 或人工听感；这些仍是当前未改变
+  lifecycle / identity 边界下的 `POST-DEPLOY OBSERVATION`。本地 build 未运行，
+  避免触及已有受保护的 `public/library-runtime.tmp-*`；最终准确 SHA 的完整
+  CI build / Pages / Production smoke 是发布门禁，实际结果由本任务最终回传记录。
