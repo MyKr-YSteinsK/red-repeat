@@ -11,14 +11,14 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.22.0`. This source records repository
+- Current package/ledger user version: `1.23.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.22.0` / `1a37d37` (product commit date
-  `2026-10-15`); annotated `v1.22.0` identifies that product commit, while the
+- Latest ledger product target: `1.23.0` / `0974197` (product commit date
+  `2026-10-15`); annotated `v1.23.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
-  Existing `v1.21.0 -> b4d6bf2`, `v1.20.1 -> 19123e7`,
+  Existing `v1.22.0 -> 1a37d37`, `v1.21.0 -> b4d6bf2`, `v1.20.1 -> 19123e7`,
   `v1.20.0 -> dc2dc84`,
   `v1.19.1 -> 40b0b73`,
   `v1.19.0 -> d8f0d5f`,
@@ -994,7 +994,8 @@ uses the separately authorized task-input source package.
 ## Current work / Next action
 
 - `RED-Plan-75` R1 已完成讲解文章内章节导航与真实歌词引用精确定位的
-  局部实现和本地验证，正在按授权进行 `1.23.0 MINOR` 发布收口。
+  局部实现和本地验证；`1.23.0 MINOR` 的产品 tag target 为 `0974197`，
+  release metadata 单独提交。
   实施与浏览器证据见下方独立记录；CI、Pages、Production identity
   仍按最终准确 SHA 分别核验。
 - `RED-Plan-74` R1 implements explicit Practice/Full Song Occurrence links to
@@ -1494,6 +1495,10 @@ each historical task and do not replace the current repository identity above.
 
 ## RED-Plan-75 实施与发布状态
 
+- `1.23.0 MINOR` 产品提交为 `097419785905e57f39689d7aeb2451760140c3a9`
+  （`2026-10-15`）；annotated `v1.23.0` 指向该实现，package / lock、ledger
+  与 build-info 同步于后续独立 metadata commit。发布是否完成仍以最终
+  exact-SHA CI、Pages 与 Production identity / smoke 的实际证据为准。
 - Practice / Full Song 的“看相关讲解”依据当前 Feature 顺序、文章 block
   顺序选取首个真实 Segment 引用，并保留来源 preferred Occurrence。
   引用节点 ready 后只定位一次，焦点与克制的边框提示指向该引用块。

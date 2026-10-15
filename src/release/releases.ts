@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.23.0',
+    date: '2026-10-15',
+    commit: '0974197',
+    level: 'minor',
+    title: '讲解章节直达与歌词引用定位',
+    summary: '从学唱或全曲选句定位到真实讲解引用，并为含正文标题的文章提供本篇章节导航。',
+    changes: [
+      '看相关讲解会定位并标记文章内首个真实引用，保留来源演唱位置和返回入口；没有精确引用时明确提示。',
+      '含正文标题的讲解提供可折叠的章节目录，同名章节也能独立跳转；没有正文标题时不显示目录。',
+      '手动切换文章或章节后，迟到的相关查找不会抢回阅读位置；导航保持当前音频状态。',
+    ],
+  },
+  {
     version: '1.22.0',
     date: '2026-10-15',
     commit: '1a37d37',
