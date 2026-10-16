@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.26.0',
+    date: '2026-10-16',
+    commit: 'c8cddbe',
+    level: 'minor',
+    title: '《千本桜》讲解与译文内容重构',
+    summary: '集成六篇经审定的 Explain 文章并修订 16 条中文译文，收紧创作史、历史意象与宗教词语的证据边界。',
+    changes: [
+      '以锁定的最终候选替换六篇 Explain 文章，保持原有文件名与 Feature 身份。',
+      '在 30 个 Segment 中更新 16 条 translation；保留其余 14 条及所有原文、Ruby、Romaji、Timing、Practice、Timeline、音频和 artwork。',
+    ],
+  },
+  {
     version: '1.25.0',
     date: '2026-10-15',
     commit: '71d2becde685d6cfde5d78936c311db6ecab8726',

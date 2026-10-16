@@ -11,14 +11,15 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.25.0`. This source records repository
+- Current package/ledger user version: `1.26.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.25.0` / `71d2bec` (product commit date
-  `2026-10-15`); annotated `v1.25.0` identifies that product commit, while the
+- Latest ledger product target: `1.26.0` / `c8cddbe` (product commit date
+  `2026-10-16`); annotated `v1.26.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
-  Existing `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`, `v1.22.0 -> 1a37d37`,
+  Existing `v1.25.0 -> 71d2bec`, `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`,
+  `v1.22.0 -> 1a37d37`,
   `v1.21.0 -> b4d6bf2`,
   `v1.20.1 -> 19123e7`,
   `v1.20.0 -> dc2dc84`,
@@ -1640,3 +1641,22 @@ each historical task and do not replace the current repository identity above.
   接受 7 篇文章、34 个引用、21 个章节目标，引用均可解析，引用卡连续密度最多为 2；本地浏览器
   验证了 Catalog、Practice、Explain 与 Full Song 导航。静态与本地证据不代表真实设备、人工听感
   或 installed-PWA PASS；远端 CI、Pages 与 Production identity 仍分别以实际交付核验为准。
+
+## RED-Plan-86 实施与发布状态
+
+- `1.26.0 MINOR` 内容实现提交为 `c8cddbefc55e4eed029b21d53fec23afb407bc2e`
+  （`2026-10-16`）；六篇 Explain 使用锁定的原 basename，30 个 Segment 中仅 16 条
+  `translation` 更新，其余 14 条及原文、Ruby、Romaji、Timing、Practice、Timeline、
+  音频和 artwork 保持不变。
+- 千本桜 Edition identity 从 H1 `9447e3664c93e740b23d1c3a659e1253753494a1820e4f48b0c1c82b2314c640`
+  更新为 H2 `546ddb9d0308fea87cfea3e8fd72634c029958d2c5712e1f8b53a830c52e54e7`；音频
+  SHA-256 `5c806cf0a1ea702d6a0e4d76b4df443ac999ffc9c1192b7a5d36ca9f3ff33e19`、Timeline 与
+  Practice runtime URL 不变。D-028 的合成 H1 `o001` 微调仅在 H1 身份生效；H2 使用其
+  canonical `32580 ms`，重新激活完整 H1 后旧值 `32600 ms` 恢复。本证据不代表用户数据迁移。
+- 独立浏览器验证 H1 离线可打开；H2 Feature 请求失败时旧完整 H1 仍可用；恢复后加载 H2
+  新译文。当前下载 owner 和 `song-download.test.ts` 核验 manifest-last 事务；浏览器 UI
+  观察不等于直接检查 manifest 字节。H2 Explain 目录列出 6 篇文章，实际打开首篇并核对
+  了歌词引用卡片；Practice → 相关讲解引用 → Full Song 导航可用。未报告人工听感或真实设备 PASS。
+- `library:validate`、音频身份核验、锁定候选逐字比对、6 个受影响测试文件 `69/69`、隔离
+  `/red-repeat/` build 与静态 `pwa:inspect` 通过；release tag、远端 CI/Pages 与 Production
+  identity 以本次交付的独立核验结果为准。
