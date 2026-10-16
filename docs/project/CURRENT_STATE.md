@@ -11,12 +11,12 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.26.0`. This source records repository
+- Current package/ledger user version: `1.27.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.26.0` / `c8cddbe` (product commit date
-  `2026-10-16`); annotated `v1.26.0` identifies that product commit, while the
+- Latest ledger product target: `1.27.0` / `e2c3084` (product commit date
+  `2026-10-16`); annotated `v1.27.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
   Existing `v1.25.0 -> 71d2bec`, `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`,
   `v1.22.0 -> 1a37d37`,
@@ -1660,3 +1660,11 @@ each historical task and do not replace the current repository identity above.
 - `library:validate`、音频身份核验、锁定候选逐字比对、6 个受影响测试文件 `69/69`、隔离
   `/red-repeat/` build 与静态 `pwa:inspect` 通过；release tag、远端 CI/Pages 与 Production
   identity 以本次交付的独立核验结果为准。
+
+## RED-Plan-88 / R2 深海少女内容集成状态
+
+- 1.27.0 MINOR 的产品内容提交为 e2c308418bf10b6c2447835595eb3bcdbf2fe1f2（2026-10-16）。已按锁定并逐项验签的最终审稿包替换全部八篇原 basename Explain；43 个 Segment 仅更新获批的 32 条 translation，11 条保持原值。s016 / s042 最终译文一致；s003、s023、s032 的 READING_HOLD 保留，未改 Ruby、Romaji/layers、Occurrence、Section、Practice、Timeline、音频、artwork、其他歌曲或共享实现。
+- Edition identity 从 H1 756bf3674d474bde8da5173cc2e69d0313d634504b21fbc222ce8a98a97cd2f8 更新为 H2 887ff15ba2e83dba7811dba7260ef740b6b2bbf6793a81a99f34e9e58904aba3。H2 lyrics 与八篇 Feature 使用新内容哈希 URL；audio SHA-256 41c513556401f1b75f2accfd44cb955ed44a845b3e7dbab18a13e72d0fd308d7、Timeline URL timeline.fd4f7ee34cf877cecf44f11b0abd1bbc5bab8cefcbb949c1927f8a10acd90264.json、Practice URL practice.9c62326d1e897ebeb95fb4e9f3abf91db468aad4a266c3ce275bde3af8bfd678.json 保持不变。
+- 受控浏览器使用合成 H1/H2 与原生 CacheStorage/localStorage：H1 manifest 绑定旧 Edition 和 16 个完整资源；对 H2 lyrics 注入一次 HTTP 503 后 manifest 仍为 H1，离线打开 Practice 显示 H1 内容。恢复网络后 H2 的 16 项快照全部下载，manifest 切换至 H2；打开页面显示新译文。此为本地合成故障与快照证据，不代表真实用户数据迁移。
+- D-028 检查保留匹配 H1 完整 identity 的 sparse v3 o001 +20ms 合成记录；H2 Timing Debugger 显示 canonical 6580/9680 ms，提示发现不同完整 identity 的微调且不应用。匹配身份归档恢复、冲突与失败关闭继续由 practice-timing-overrides.test.ts 的定向测试覆盖；没有对真实用户数据做迁移，也没有人耳校准。
+- library:validate、source audio hash、11 个匹配测试文件（98/98）、隔离 /red-repeat/ 构建、静态 pwa:inspect 与 H1/H2 浏览器快照链路通过。仍不据此宣称真实设备、听感或 installed-PWA PASS；远端 CI、Pages 与 Production smoke 以发布回执为准。

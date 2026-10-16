@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.27.0',
+    date: '2026-10-16',
+    commit: 'e2c3084',
+    level: 'minor',
+    title: '《深海少女》讲解与译文内容重构',
+    summary: '集成八篇经审定的 Explain 文章并修订 32 条中文译文；保留 11 条现行译文及三处读音待审标记。',
+    changes: [
+      '按已锁定的最终审稿稿件集成八篇 Explain 文章，保留原 basename 与 Feature 身份。',
+      '43 个 Segment 中仅更新 32 条 translation；其余 11 条及原文、Ruby、Romaji/layers、Timing、Practice、Timeline、音频和 artwork 保持不变。',
+    ],
+  },
+  {
     version: '1.26.0',
     date: '2026-10-16',
     commit: 'c8cddbe',
