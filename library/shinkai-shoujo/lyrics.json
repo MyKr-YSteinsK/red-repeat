@@ -41,7 +41,7 @@
     {
       "id": "s002",
       "lyrics": "目を開けるのも億劫",
-      "translation": "连睁开双眼都像经历万般劫难",
+      "translation": "连睁开眼睛都觉得麻烦",
       "ruby": [
         {
           "start": 0,
@@ -79,7 +79,7 @@
     {
       "id": "s003",
       "lyrics": "このままどこまでも堕ちて行き",
-      "translation": "从这一刻起我将坠向何方",
+      "translation": "就这样一直坠落下去",
       "ruby": [
         {
           "start": 9,
@@ -105,7 +105,7 @@
     {
       "id": "s004",
       "lyrics": "誰にも見つけられないのかな",
-      "translation": "无论是谁也都找不到吗",
+      "translation": "是不是谁也找不到我呢",
       "ruby": [
         {
           "start": 0,
@@ -131,7 +131,7 @@
     {
       "id": "s005",
       "lyrics": "どこへ向かい、何をすれば",
-      "translation": "向着什么方向 又将做些什么",
+      "translation": "该去哪里，又该做些什么",
       "ruby": [
         {
           "start": 3,
@@ -189,7 +189,7 @@
     {
       "id": "s007",
       "lyrics": "手を伸ばせば届きそうだけど",
-      "translation": "仿佛伸手便可触及",
+      "translation": "如果伸出手，似乎就能触到，可是……",
       "ruby": [
         {
           "start": 0,
@@ -221,7 +221,7 @@
     {
       "id": "s008",
       "lyrics": "波に拐われて見失った",
-      "translation": "我却突然被暗流裹挟迷失方向",
+      "translation": "被浪卷走，便看不见了",
       "ruby": [
         {
           "start": 0,
@@ -259,7 +259,7 @@
     {
       "id": "s009",
       "lyrics": "あれは一体なんだったのかな",
-      "translation": "那些到底是怎样的存在",
+      "translation": "那究竟是什么呢",
       "ruby": [
         {
           "start": 3,
@@ -279,7 +279,7 @@
     {
       "id": "s010",
       "lyrics": "あたたかくて眩しかったの",
-      "translation": "如此温暖又是如此令人目盲",
+      "translation": "那么温暖，又那么耀眼",
       "ruby": [
         {
           "start": 6,
@@ -299,7 +299,7 @@
     {
       "id": "s011",
       "lyrics": "無意識のカウンターイルミネーション",
-      "translation": "却无意识地用自我防御隐藏自己",
+      "translation": "无意识的逆照明伪装",
       "ruby": [
         {
           "start": 0,
@@ -357,7 +357,7 @@
     {
       "id": "s013",
       "lyrics": "深海少女 まだまだ沈む",
-      "translation": "深海少女 依然持续在沉降",
+      "translation": "深海少女，还在不断下沉",
       "ruby": [
         {
           "start": 0,
@@ -383,7 +383,7 @@
     {
       "id": "s014",
       "lyrics": "暗闇の彼方へ閉じこもる",
-      "translation": "沉入那闭锁着的阴暗彼方",
+      "translation": "把自己封闭在黑暗的彼方",
       "ruby": [
         {
           "start": 0,
@@ -415,7 +415,7 @@
     {
       "id": "s015",
       "lyrics": "深海少女 だけど知りたい",
-      "translation": "深海少女 但却还是有所盼望",
+      "translation": "深海少女，可还是想知道",
       "ruby": [
         {
           "start": 0,
@@ -441,7 +441,7 @@
     {
       "id": "s016",
       "lyrics": "心惹かれるあの人を見つけたから",
-      "translation": "因为发现了那个令人心动的对象",
+      "translation": "因为找到了那个令我心动的人",
       "ruby": [
         {
           "start": 0,
@@ -479,7 +479,7 @@
     {
       "id": "s017",
       "lyrics": "昼も夜も無かったこの場所",
-      "translation": "在这个无法定义昼夜的世界里",
+      "translation": "这个没有白天与黑夜的地方",
       "ruby": [
         {
           "start": 0,
@@ -517,7 +517,7 @@
     {
       "id": "s018",
       "lyrics": "なのに眠れない夜は続く",
-      "translation": "为何无法入眠的黑暗永无尽头",
+      "translation": "然而，难眠的夜晚仍在持续",
       "ruby": [
         {
           "start": 3,
@@ -613,7 +613,7 @@
     {
       "id": "s021",
       "lyrics": "そしてまた光は降りそそぐ",
-      "translation": "然后光芒再次突然降下",
+      "translation": "然后光再次倾洒而下",
       "ruby": [
         {
           "start": 5,
@@ -671,7 +671,7 @@
     {
       "id": "s023",
       "lyrics": "気付いてこっちを振り返るあなたに",
-      "translation": "注意到这一切的你回身望向这里",
+      "translation": "注意到后，回头望向这里的你",
       "ruby": [
         {
           "start": 0,
@@ -697,7 +697,7 @@
     {
       "id": "s024",
       "lyrics": "嘘つきな私…",
-      "translation": "说谎的我却……",
+      "translation": "说谎的我……",
       "ruby": [
         {
           "start": 0,
@@ -723,7 +723,7 @@
     {
       "id": "s025",
       "lyrics": "深海少女 わざわざ沈む",
-      "translation": "深海少女 放任自我在沉降",
+      "translation": "深海少女，偏偏还要往下沉",
       "ruby": [
         {
           "start": 0,
@@ -781,7 +781,7 @@
     {
       "id": "s027",
       "lyrics": "深海少女 ハダカの心を見せる勇気",
-      "translation": "深海少女 单纯的心展露的勇气",
+      "translation": "深海少女，袒露赤裸内心的勇气",
       "ruby": [
         {
           "start": 0,
@@ -831,7 +831,7 @@
     {
       "id": "s028",
       "lyrics": "黒い海がまだ許さない",
-      "translation": "却还没被漆黑的海域所认同",
+      "translation": "可漆黑的海仍不肯原谅",
       "ruby": [
         {
           "start": 0,
@@ -889,7 +889,7 @@
     {
       "id": "s030",
       "lyrics": "笑顔も醜くゆがんでいった",
-      "translation": "连笑容也开始丑陋扭曲了模样",
+      "translation": "连笑容也渐渐扭曲得难看",
       "ruby": [
         {
           "start": 0,
@@ -953,7 +953,7 @@
     {
       "id": "s032",
       "lyrics": "もう放っておいてよ",
-      "translation": "不要再来管我了呀",
+      "translation": "别再管我了",
       "ruby": [
         {
           "start": 2,
@@ -973,7 +973,7 @@
     {
       "id": "s033",
       "lyrics": "声にならない気持ちが溢れてとけた",
-      "translation": "无法用言语表达的心意渐渐满溢消解",
+      "translation": "无法化作声音的心意满溢而出，融化开来",
       "ruby": [
         {
           "start": 0,
@@ -1005,7 +1005,7 @@
     {
       "id": "s034",
       "lyrics": "次の瞬間、君が突然姿を消した",
-      "translation": "在下一个瞬间 你的身影如泡沫般突然消散",
+      "translation": "下一瞬间，你的身影突然消失了",
       "ruby": [
         {
           "start": 0,
@@ -1055,7 +1055,7 @@
     {
       "id": "s035",
       "lyrics": "心配性の彼女は焦る",
-      "translation": "习惯了担心 那个少女是如此的慌张",
+      "translation": "爱操心的她慌了起来",
       "ruby": [
         {
           "start": 0,
@@ -1087,7 +1087,7 @@
     {
       "id": "s036",
       "lyrics": "闇が彼を隠しひとりきり",
-      "translation": "黑暗只将他一人隐藏",
+      "translation": "黑暗藏起了他，只剩她孤身一人",
       "ruby": [
         {
           "start": 0,
@@ -1119,7 +1119,7 @@
     {
       "id": "s037",
       "lyrics": "限界少女 その手を伸ばす",
-      "translation": "界限中的少女 终于伸出自己的手",
+      "translation": "已到极限的少女，伸出了手",
       "ruby": [
         {
           "start": 0,
@@ -1201,7 +1201,7 @@
     {
       "id": "s039",
       "lyrics": "深海少女 腕を引かれる",
-      "translation": "深海少女 被谁牵住了手腕",
+      "translation": "深海少女，手腕被拉住了",
       "ruby": [
         {
           "start": 0,
@@ -1233,7 +1233,7 @@
     {
       "id": "s040",
       "lyrics": "歌う祝福のマリンスノー",
-      "translation": "在充满祝福的海之雪中放声歌唱",
+      "translation": "吟唱着祝福的海洋雪",
       "ruby": [
         {
           "start": 0,
@@ -1271,7 +1271,7 @@
     {
       "id": "s041",
       "lyrics": "深海少女 もっと知りたい",
-      "translation": "深海少女 变得更加有所盼望",
+      "translation": "深海少女，还想了解更多",
       "ruby": [
         {
           "start": 0,
@@ -1297,7 +1297,7 @@
     {
       "id": "s042",
       "lyrics": "心惹かれるあの人を見つけたから",
-      "translation": "因为终于寻见了那个令人倾心的对象",
+      "translation": "因为找到了那个令我心动的人",
       "ruby": [
         {
           "start": 0,
