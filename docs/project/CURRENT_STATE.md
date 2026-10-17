@@ -11,13 +11,14 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.28.0`. This source records repository
+- Current package/ledger user version: `1.29.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.28.0` / `1214291` (product commit date
-  `2026-10-17`); annotated `v1.28.0` identifies that product commit, while the
-  following release-metadata commit is the independent build identity.
+- Latest ledger product target: `1.29.0` / `a57bc49` (product commit date
+  `2026-10-17`). The release tag for this version must identify that product
+  commit; the following release-metadata commit is the independent build
+  identity.
   Existing `v1.25.0 -> 71d2bec`, `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`,
   `v1.22.0 -> 1a37d37`,
   `v1.21.0 -> b4d6bf2`,
@@ -1676,3 +1677,11 @@ each historical task and do not replace the current repository identity above.
 - 受控 loopback 浏览器原生 CacheStorage 验证 H1 16 项完整离线快照；对 H2 hash-addressed lyrics 注入一次 503 后，active manifest 保持 H1，离线 Practice 仍显示旧译文。恢复后 H2 16 项资源齐全且缺失数为 0，manifest 指向 H2；Practice 显示新译文，Explain 目录加载八篇并打开首篇，Full Song 正常渲染。`song-download.ts` 的资源/身份验证后写 manifest 顺序与 owner tests 一致。
 - D-028 合成 H1 sparse v3 `o001` `+20ms` 记录按完整 H1 identity 保存为 `7660 ms`；H2 Timing Debugger 使用 canonical `7640 ms`，未套用 H1 override；恢复完整 H1 后原值 `7660 ms` 再次生效。只使用隔离浏览器 profile，不涉及用户数据，也不构成人耳校准。
 - 最终稿 checksum 清单自身 SHA-256 为 `2e98d089833328aba3a0db7d8cb214aa60e897e4b5868c809912a73a895597fa`，31 个登记文件均已验签；真实 Feature parser/heading 校验为 47 引用、24 个 H2。`library:validate`、音频身份、7 个匹配测试文件（90/90）、隔离 `/red-repeat/` build 与静态 `pwa:inspect` 通过。浏览器为本地合成环境，不代表真机、installed-PWA 或人耳 PASS；远端 CI、Pages 与 Production smoke 单独核验。
+
+## RED-Plan-92 《どうして》内容集成状态
+
+- `1.29.0 MINOR` 产品内容提交为 `a57bc4918b8d73fe5814aa32bb2fb5187916c79b`（2026-10-17）。按最终审稿稿件完整替换八篇 Explain 原 basename；26 个 Segment 仅修改 `s015`、`s016` 两条 `translation`，其余 24 条（含 `s011`、`s018`、`s025` HOLD）及原文、Ruby、Romaji/layers、Occurrence、Section、Practice、Timeline、音频、artwork 均保持不变。
+- Edition identity 从 H1 `69481ba68f8d09a48ba05c7d387b15593e5873f7ec00423fab02e25fbd7b6b98` 更新为 H2 `9489b5bf605042870286970fa0c7166eb8417ecbc38469b6f34a1938a1a0dbf7`；`audioSourceHash` `4188d8d45621169cae7f3be03b63ed7e26ed423194f06e55bcbaf8a3b077cfdb`、Timeline URL `timeline.30202e3ed8f425fe831eda07714a23d1f73f289bfae7dac92f7f61ea416608ce.json`、Practice URL `practice.522dd289bc8ef90fbb210165f28afa57f3490fe6d9c9a6b28dd303dca080d799.json` 不变。Timing 未校准或修改，仍按原证据状态记录。
+- 实际 Feature Markdown parser 接受八篇文章、24 个 H2、46 个 Segment 引用，所有引用均解析至本曲 Segment。隔离浏览器原生 CacheStorage 验证 H1 完整快照；对 H2 lyrics 注入 HTTP 503 后 active manifest 保持 H1，离线 Practice、Explain 与 Full Song 仍可用；成功重试后 H2 16 项资源完整并 manifest-last 切换，三主模式对应 H2 数据可离线读取。该合成环境未使用真实用户浏览器资料。
+- 隔离浏览器的 D-028 稀疏 v3 测试显示 H1 override 在 H2 下为 `edition-stale` 且不应用；重新激活 H1 后原值按 identity 恢复。未进行用户数据迁移、真机、installed-PWA 或人耳验收。
+- `library:validate` 验证六个 Edition（六条均为既有可选 hero artwork 警告），本曲音频 SHA-256 与 Timeline 一致；`library:compile` 生成 93 个 Runtime 文件。11 个匹配测试文件 `125/125` 通过。

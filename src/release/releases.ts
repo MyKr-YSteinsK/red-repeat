@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.29.0',
+    date: '2026-10-17',
+    commit: 'a57bc49',
+    level: 'minor',
+    title: '《どうして》讲解与译文内容重构',
+    summary: '按最终审稿稿件替换八篇 Explain，修订两条中文译文；三条 HOLD 保持原值。',
+    changes: [
+      '完整替换八篇 Explain 同 basename 文件；实际 Markdown parser 验证 24 个 H2 与 46 个有效 Segment 引用。',
+      '26 个 Segment 中仅更新 s015、s016 的 translation；其余 24 条及日文原文、Ruby、Romaji/layers、Occurrence timing、Practice、Timeline、音频和 artwork 保持不变。',
+    ],
+  },
+  {
     version: '1.28.0',
     date: '2026-10-17',
     commit: '1214291',
