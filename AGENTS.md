@@ -206,6 +206,19 @@ runtime Skills and should not be duplicated here.
   New Plan filenames and numbering stay unchanged. Explicit user or quotation-
   format requirements take precedence.
 
+## Task artifact hygiene
+
+- Treat `D:\CS\temp\Red-Repeat\` as user-owned historical input. Do not
+  create, modify, move, rename or delete files there unless the current task
+  explicitly authorizes that exact operation.
+- Keep task-owned temporary work (including browser profiles, detached
+  worktrees, builds and logs) under one unique `$env:TEMP\red-repeat-<task-id>-<unique>\`
+  root. Keep durable evidence minimal and avoid duplicate reports or packages.
+- Clean only artifacts proven to be created by the current task. If cleanup is
+  impossible, preserve only this task's residue under
+  `D:\CS\temp\RED-REPEAT-CODEX-RESIDUALS\<task-id>` and report its path and
+  reason; never clean another task's leftovers.
+
 ## Stop conditions
 
 Stop and record the blocker rather than guessing when migration edits overlap
