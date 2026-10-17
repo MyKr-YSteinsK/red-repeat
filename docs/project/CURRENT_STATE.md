@@ -11,12 +11,12 @@ evidence only.
   not part of the migration contract.
 - Remote: `origin = https://github.com/MyKr-YSteinsK/red-repeat.git`
 - Branch: `main`, tracking `origin/main`
-- Current package/ledger user version: `1.27.0`. This source records repository
+- Current package/ledger user version: `1.28.0`. This source records repository
   release metadata; remote CI/Pages and Production identity remain separate
   delivery evidence.
 - Current lifecycle stage: `Production`
-- Latest ledger product target: `1.27.0` / `e2c3084` (product commit date
-  `2026-10-16`); annotated `v1.27.0` identifies that product commit, while the
+- Latest ledger product target: `1.28.0` / `1214291` (product commit date
+  `2026-10-17`); annotated `v1.28.0` identifies that product commit, while the
   following release-metadata commit is the independent build identity.
   Existing `v1.25.0 -> 71d2bec`, `v1.24.0 -> c0ac7a4`, `v1.23.0 -> 0974197`,
   `v1.22.0 -> 1a37d37`,
@@ -996,10 +996,10 @@ uses the separately authorized task-input source package.
 
 ## Current work / Next action
 
-- `RED-Plan-82 / R1` 的 WORK R3 内容集成、本地验收与 `1.24.0 MINOR` 发布源信息
-  已收口；远端 CI、Pages 与 Production smoke 仍以对应交付回执和实际部署身份为准。
-  详细源范围、H1/H2 浏览器证据及严格 identity 限制见本文件末尾的 Plan-82 记录。
-  不自动启动下一项内容改写。
+- `RED-Plan-90 / R1` 已完成《妄想感傷代償連盟》八篇 Explain 与八条译文的精确集成及本地验收，
+  产品提交为 `1214291`，版本源信息更新为 `1.28.0 MINOR`。H1/H2、D-022、D-028、验证范围与限制
+  见本文件末尾的 Plan-90 记录；tag、远端 CI、Pages 与 Production smoke 以独立交付核验为准。
+  不自动启动下一首歌的内容改写。
 - `RED-Plan-79 / R1` 已完成 WORK 七篇候选／旧八篇、61 Segment 的独立审稿与来源复核，
   见 [WORK_CONTENT_REVIEW.md](WORK_CONTENT_REVIEW.md)。翻译处置为接受候选26／需修订20／
   保留现译7／待来源8；90处引用及27个章节目标结构有效，但候选语义／显示仍需修订。
@@ -1668,3 +1668,11 @@ each historical task and do not replace the current repository identity above.
 - 受控浏览器使用合成 H1/H2 与原生 CacheStorage/localStorage：H1 manifest 绑定旧 Edition 和 16 个完整资源；对 H2 lyrics 注入一次 HTTP 503 后 manifest 仍为 H1，离线打开 Practice 显示 H1 内容。恢复网络后 H2 的 16 项快照全部下载，manifest 切换至 H2；打开页面显示新译文。此为本地合成故障与快照证据，不代表真实用户数据迁移。
 - D-028 检查保留匹配 H1 完整 identity 的 sparse v3 o001 +20ms 合成记录；H2 Timing Debugger 显示 canonical 6580/9680 ms，提示发现不同完整 identity 的微调且不应用。匹配身份归档恢复、冲突与失败关闭继续由 practice-timing-overrides.test.ts 的定向测试覆盖；没有对真实用户数据做迁移，也没有人耳校准。
 - library:validate、source audio hash、11 个匹配测试文件（98/98）、隔离 /red-repeat/ 构建、静态 pwa:inspect 与 H1/H2 浏览器快照链路通过。仍不据此宣称真实设备、听感或 installed-PWA PASS；远端 CI、Pages 与 Production smoke 以发布回执为准。
+
+## RED-Plan-90 / R1 妄想感傷代償連盟内容集成状态
+
+- 产品提交 `1214291bfb7b710ddc7fc463e58a20e5520ac127`（2026-10-17）按最终验签稿替换八篇原 basename Explain；46 个 Segment 仅修订 `s003,s008,s014,s017,s024,s028,s029,s040` 的 `translation`。其余 38 条（37 KEEP 与 `s038` HOLD）保留；原文、Ruby、Romaji/layers、Occurrence、Section、Practice、Timeline、音频、artwork、其他歌曲和实现代码均未改。
+- Edition identity 从 H1 `4fddb2fbba0f9075e56e6783adaf6f09d4e2a0ad491df841795c4b46ee356ce5` 更新为 H2 `1751934cc739caa406a67b2418652284bbd6f6107d7805ca772bdc556120f66f`；音频 SHA-256 `419ab1b13e38781c7fb534c365de117d17cf821d8644a578e3e0203c9bf56358`、Timeline URL `timeline.2ed1ecf79755b28be077f1b98eeca2faae2ba3ad67f21ec777000cb14582d5d5.json` 与 Practice URL `practice.94590cb9879673e5bb0ee8b31678e4f952b0b5642cd97506026d524dff4771c3.json` 不变。
+- 受控 loopback 浏览器原生 CacheStorage 验证 H1 16 项完整离线快照；对 H2 hash-addressed lyrics 注入一次 503 后，active manifest 保持 H1，离线 Practice 仍显示旧译文。恢复后 H2 16 项资源齐全且缺失数为 0，manifest 指向 H2；Practice 显示新译文，Explain 目录加载八篇并打开首篇，Full Song 正常渲染。`song-download.ts` 的资源/身份验证后写 manifest 顺序与 owner tests 一致。
+- D-028 合成 H1 sparse v3 `o001` `+20ms` 记录按完整 H1 identity 保存为 `7660 ms`；H2 Timing Debugger 使用 canonical `7640 ms`，未套用 H1 override；恢复完整 H1 后原值 `7660 ms` 再次生效。只使用隔离浏览器 profile，不涉及用户数据，也不构成人耳校准。
+- 最终稿 checksum 清单自身 SHA-256 为 `2e98d089833328aba3a0db7d8cb214aa60e897e4b5868c809912a73a895597fa`，31 个登记文件均已验签；真实 Feature parser/heading 校验为 47 引用、24 个 H2。`library:validate`、音频身份、7 个匹配测试文件（90/90）、隔离 `/red-repeat/` build 与静态 `pwa:inspect` 通过。浏览器为本地合成环境，不代表真机、installed-PWA 或人耳 PASS；远端 CI、Pages 与 Production smoke 单独核验。

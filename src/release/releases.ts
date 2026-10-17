@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.28.0',
+    date: '2026-10-17',
+    commit: '1214291',
+    level: 'minor',
+    title: '《妄想感傷代償連盟》讲解与译文内容重构',
+    summary: '整合八篇经独立审稿的歌曲讲解，修正八条中文译文，保留其余三十八条原译（其中 s038 仍为待证来源 HOLD）。',
+    changes: [
+      '按锁定的最终审稿稿件替换八篇 Explain 文章，保留原 basename 与 Feature 身份。',
+      '在 46 个 Segment 中仅更新 8 条 translation；其余 38 条及原文、Ruby、Romaji/layers、Timing、Practice、Timeline、音频和 artwork 保持不变。',
+    ],
+  },
+  {
     version: '1.27.0',
     date: '2026-10-16',
     commit: 'e2c3084',
