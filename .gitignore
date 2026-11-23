@@ -12,6 +12,8 @@ node_modules
 dist
 dist-ssr
 public/library-runtime/
+/public/library-runtime.tmp-*/
+/docs/delete/
 .cache/
 *.local
 
