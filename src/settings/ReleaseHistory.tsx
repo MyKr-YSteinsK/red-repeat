@@ -15,7 +15,6 @@ export function ReleaseHistory({ highlightVersion }: { highlightVersion?: string
     <section className="settings-changelog" aria-labelledby="changelog-title">
       <div className="settings-changelog-heading">
         <div className="settings-card-heading">
-          <p className="eyebrow">历史</p>
           <h2 id="changelog-title">更新日志</h2>
         </div>
         <p className="settings-current-version">
@@ -25,7 +24,6 @@ export function ReleaseHistory({ highlightVersion }: { highlightVersion?: string
       {releaseGrouping.pendingVersions.length > 0 ? (
         <section className="settings-pending-releases" aria-labelledby="pending-releases-title">
           <div className="settings-release-section-heading">
-            <p className="eyebrow">尚未进入下一个里程碑</p>
             <h3 id="pending-releases-title">开发中的小版本</h3>
           </div>
           <div className="settings-release-entry-list">

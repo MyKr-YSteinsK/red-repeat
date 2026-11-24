@@ -10,6 +10,10 @@ const fullSongCss = readFileSync(
   path.join(process.cwd(), 'src', 'edition', 'full-song-reader.css'),
   'utf8',
 )
+const timingCss = readFileSync(
+  path.join(process.cwd(), 'src', 'debugger', 'timing-debugger.css'),
+  'utf8',
+)
 const indexCss = readFileSync(
   path.join(process.cwd(), 'src', 'index.css'),
   'utf8',
@@ -55,7 +59,7 @@ describe('mobile player layout contracts', () => {
     expect(fullSongCss).toMatch(
       /\.full-song-player\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
-    expect(appCss).toMatch(
+    expect(timingCss).toMatch(
       /\.timing-debugger-console\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
     expect(appCss).not.toContain(
@@ -89,14 +93,14 @@ describe('mobile player layout contracts', () => {
   })
 
   it('makes the mobile Timing Debugger console an edge-to-edge safe-area sheet', () => {
-    expect(appCss).toMatch(
+    expect(timingCss).toMatch(
       /\.timing-debugger-console\s*\{[^}]*left: 0;[^}]*right: 0;[^}]*bottom: 0;/s,
     )
-    expect(appCss).toContain(
-      'calc(var(--control-sheet-padding-block) + env(safe-area-inset-bottom))',
-    )
-    expect(appCss).toContain('border-inline: 0;')
-    expect(appCss).toContain(
+    expect(timingCss).toContain('calc(.6rem + env(safe-area-inset-bottom))')
+    expect(timingCss).toContain('border-inline: 0;')
+    expect(timingCss).toMatch(/\.timing-debugger-console-body\s*\{[^}]*min-height: 0;[^}]*overflow: auto;/s)
+    expect(timingCss).toContain('padding-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);')
+    expect(timingCss).toContain(
       'border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;',
     )
   })
