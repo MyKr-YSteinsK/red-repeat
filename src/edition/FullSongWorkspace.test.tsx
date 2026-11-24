@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
@@ -245,17 +245,10 @@ describe('FullSongWorkspace', () => {
 
     expect(screen.getByText('Repeat me')).toBeInTheDocument()
     expect(screen.getByText('再来一次')).toBeInTheDocument()
-    expect(screen.getByText('器乐段')).toBeInTheDocument()
-    expect(
-      document.querySelectorAll(
-        '.full-song-instrumental-marker-signal',
-      ),
-    ).toHaveLength(1)
-    expect(
-      document.querySelectorAll(
-        '.full-song-instrumental-marker > span:not(.full-song-instrumental-marker-signal)',
-      ),
-    ).toHaveLength(3)
+    expect(screen.getByRole('heading', { name: 'Instrumental' })).toBeInTheDocument()
+    const instrumental = screen.getByRole('button', { name: '播放器乐段：Instrumental' })
+    expect(within(instrumental).getByText('试听器乐段')).toBeInTheDocument()
+    expect(instrumental.querySelectorAll('.full-song-instrumental-marker-signal')).toHaveLength(1)
     expect(document.querySelectorAll('.full-song-lyric-cluster')).toHaveLength(4)
     expect(screen.queryByText('Only a private note.')).not.toBeInTheDocument()
     expect(screen.getByText('リピート・ミー')).toBeInTheDocument()
