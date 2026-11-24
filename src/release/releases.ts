@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.30.0',
+    date: '2026-11-24',
+    commit: '3ff793e',
+    level: 'minor',
+    title: '重新设计手机曲库与学唱工作台',
+    summary: '搜索时优先展示匹配的歌曲，学唱时突出当前段、歌词和播放键，选段后可以继续原位阅读。',
+    changes: [
+      '新曲库用专辑封面辨认歌曲，搜索可一键清除。下载按钮与进歌入口分开，返回时恢复搜索、离线筛选及列表位置。',
+      '学唱把日文原文、注音、译文和读音分层排版。选段面板标出当前段和句数，播放器保留单句、连续播放、速度与渐速设置。',
+    ],
+  },
+  {
     version: '1.29.1',
     date: '2026-11-24',
     commit: '2c3a965',
