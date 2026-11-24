@@ -7,8 +7,10 @@
 首轮构建恢复提交为 `93e2c33`，此前的接手维护基线 `97ac404` 已纳入发布历史。
 [生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45328106762) · [发布记录](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.29.1)
 
-**1.30.0 MINOR 候选**。分支 `codex/iphone-library-practice` 从上述 main 分出，产品提交 `3ff793e`，
-候选元数据 `e481906`。曲库搜索、学习段与当前句、选段面板和播放控件现已作为一条路径重设计。
+**1.30.0 MINOR 候选**。分支 `codex/iphone-library-practice` 从上述 main 分出，界面改造由
+`3ff793e` 引入，版本账本指向补齐导航行为的最终产品提交 `fffb19f`。曲库搜索、学习段与当前句、
+选段面板和播放控件现已作为一条路径重设计。返回期间若离线核验延迟，搜索、清空、筛选或主动
+滚动会取消旧位置恢复。无新操作时核验完成后恢复歌曲锚点。继续学唱时从当前曲库位置重新取样。
 Runtime contract 为 3。Edge 已验证短句、长句、密集 Ruby 末句、播放、断网三模式和两种返回方式。
 Windows WebKit 已验证选段、减少动态效果及窄屏和横屏布局。iPhone 14 Pro 实机反馈与生产发布待审阅。
 实际交付 SHA、CI、手机检查入口与结果见 [RED-Plan-95](https://github.com/MyKr-YSteinsK/red-repeat/issues/5)。
