@@ -1,10 +1,18 @@
 # 当前状态
 
-维护基线为 `97ac404`，其父提交为生产分支基线 `cfa91fb`。升级分支
-`codex/upgrade-foundation` 按 93 → 94 集成，Runtime contract 为 `3`。
-93 的构建修复为 `93e2c33`（no-version），94 的产品提交为 `2c3a965`（2026-11-24）。
-分支 package 和 ledger 已准备 **1.29.1 PATCH 候选**，已有产品 tag `v1.29.0` 指向 `a57bc49`。
-生产发布待用户决定。
+## 生产与审阅候选
+
+**已发布 1.29.1**。2026-11-24 已核对线上 `version.json` 为 `1.29.1 / 381f815cf803`，远端
+`main` 指向 `381f815cf803db7a9ad6cbf3dd98b61e4e8c18e0`，`v1.29.1` 指向产品提交 `2c3a965`。
+首轮构建恢复提交为 `93e2c33`，此前的接手维护基线 `97ac404` 已纳入发布历史。
+[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45328106762) · [发布记录](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.29.1)
+
+**1.30.0 MINOR 候选**。分支 `codex/iphone-library-practice` 从上述 main 分出，产品提交 `3ff793e`，
+候选元数据 `e481906`。曲库搜索、学习段与当前句、选段面板和播放控件现已作为一条路径重设计。
+Runtime contract 为 3。Edge 已验证短句、长句、密集 Ruby 末句、播放、断网三模式和两种返回方式。
+Windows WebKit 已验证选段、减少动态效果及窄屏和横屏布局。iPhone 14 Pro 实机反馈与生产发布待审阅。
+实际交付 SHA、CI、手机检查入口与结果见 [RED-Plan-95](https://github.com/MyKr-YSteinsK/red-repeat/issues/5)。
+[前后对照与设备验收](../plan95/README.md)
 
 六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
 [升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
@@ -20,8 +28,7 @@ Edge 158.0.4370.33（390×844）在本地子路径验证六曲曲库、下载 NI
 并用错误歌词响应检验格式提示与重试恢复。真实 Windows 文件占用及跨盘自定义输出也已验收。
 Ubuntu 首轮 quality 通过，部署 job 跳过。[首轮 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45322064113)
 
-最终 PR 的质量结果与实际合并测试 SHA 见上述 Issue 回执。iPhone 真机、已安装客户端跨版本接管和线上
-构建身份留待对应平台任务或经授权的发布验收。
+93／94 的 PR 质量结果见上述 Issue 回执。1.29.1 线上身份已在发布时核实，已安装客户端跨版本接管按实际设备记录。
 
 ## 现行能力
 
