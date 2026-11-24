@@ -99,6 +99,7 @@ export function PracticeWorkspace({
   const [message, setMessage] = useState<string>()
   const [completedQueueItemId, setCompletedQueueItemId] = useState<string>()
   const workspaceRef = useRef<HTMLElement | null>(null)
+  const pickerTriggerRef = useRef<HTMLButtonElement>(null)
   const dockRef = useRef<HTMLElement | null>(null)
   const lyricsAnchorRef = useRef<HTMLElement | null>(null)
   const pendingNavigationRef = useRef(Boolean(initialPracticeTarget))
@@ -490,8 +491,8 @@ export function PracticeWorkspace({
         <div className="practice-lyrics-column">
           <section className="practice-lyrics" aria-labelledby="practice-unit-title">
             <header className="practice-unit-heading" ref={lyricsAnchorRef}>
-              <div>
-                <p className="eyebrow">当前学习段 / {String(unitIndex + 1).padStart(2, '0')}</p>
+              <div className="practice-unit-label">
+                <p className="eyebrow">学习段 {unitIndex + 1} / {practiceIndex.units.length}</p>
                 <h2 id="practice-unit-title">{currentUnit.label}</h2>
               </div>
               <div className="practice-unit-heading-tools">
@@ -538,9 +539,11 @@ export function PracticeWorkspace({
             onClick={() => changeUnit('previous')}
             disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'previous')}
           >
-            ← 上一段
+            ‹
           </button>
           <button
+            ref={pickerTriggerRef}
+            aria-haspopup="dialog"
             className="practice-dock-context"
             type="button"
             aria-label={`选择学习段：${currentUnit.label}`}
@@ -558,7 +561,7 @@ export function PracticeWorkspace({
             onClick={() => changeUnit('next')}
             disabled={!getAdjacentPracticeUnit(practiceIndex, currentUnit.id, 'next')}
           >
-            下一段 →
+            ›
           </button>
         </div>
         <div className="practice-dock-primary">
@@ -568,6 +571,7 @@ export function PracticeWorkspace({
             onClick={togglePlayback}
             disabled={!playback.engine}
           >
+            <span aria-hidden="true" className={playback.audioState.status === 'playing' ? 'transport-pause' : 'transport-play'} />
             {playback.audioState.status === 'playing' ? '暂停' : '播放'}
           </button>
           <button
@@ -578,7 +582,7 @@ export function PracticeWorkspace({
             aria-label={`更多控制，当前速度 ${playbackRate.toFixed(2)} 倍，连续播放${continuousPlayback ? '开启' : '关闭'}，渐速练习${rampPractice ? '开启' : '关闭'}`}
             onClick={() => setMoreControlsExpanded((value) => !value)}
           >
-            <span>更多</span>
+            <span>播放设置</span>
             <span className="practice-dock-more-status" aria-hidden="true">
               {playbackRate.toFixed(2)}× · {continuousPlayback ? '连续' : '单句'}{rampPractice ? ' · 渐速' : ''}
             </span>
@@ -647,8 +651,14 @@ export function PracticeWorkspace({
         units={practiceIndex.units}
         currentUnitId={currentUnit.id}
         open={pickerOpen}
-        onSelect={navigatePracticeUnit}
-        onClose={() => setPickerOpen(false)}
+        onSelect={(unitId) => {
+          navigatePracticeUnit(unitId)
+          pickerTriggerRef.current?.focus({ preventScroll: true })
+        }}
+        onClose={() => {
+          setPickerOpen(false)
+          pickerTriggerRef.current?.focus({ preventScroll: true })
+        }}
       />
     </section>
   )
@@ -681,9 +691,11 @@ function PracticeLyricRow({
   return (
     <li
       className={`practice-lyric-row${isCurrent ? ' is-current' : ''}`}
+      aria-current={isCurrent ? 'true' : undefined}
       data-occurrence-id={occurrence.id}
       data-reading-anchor-id={occurrence.id}
     >
+      <span className="practice-line-index" aria-hidden="true">{String(lyricNumber).padStart(2, '0')}</span>
       <div className="practice-lyric-cluster">
         <button
           className="practice-original"

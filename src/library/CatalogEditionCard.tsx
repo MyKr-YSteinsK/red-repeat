@@ -8,7 +8,6 @@ import { useSwipeReveal } from './use-swipe-reveal'
 export function CatalogEditionCard({
   edition,
   downloadEdition,
-  index,
   runtimeClient,
   download,
   task,
@@ -24,7 +23,6 @@ export function CatalogEditionCard({
 }: {
   edition: CatalogEdition
   downloadEdition: CatalogEdition
-  index: number
   runtimeClient: RuntimeClient
   download: SongDownloadState
   task?: SongDownloadTaskSnapshot
@@ -75,9 +73,6 @@ export function CatalogEditionCard({
           className="catalog-entry-surface"
           {...swipe}
         >
-          <span className="catalog-index" aria-hidden="true">
-            {String(index + 1).padStart(2, '0')}
-          </span>
           <div className="catalog-entry-main">
             <a
               className="catalog-entry-link"

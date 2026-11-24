@@ -1161,6 +1161,19 @@ describe('App Library consumer', () => {
     }
   })
 
+  it('clears a catalog search and keeps focus in the search field', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => responseForResumeUrl(input))
+    render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
+    await screen.findByRole('link', { name: '打开 Second Signal' })
+    const search = screen.getByRole('searchbox')
+    fireEvent.change(search, { target: { value: 'first' } })
+    expect(screen.queryByRole('link', { name: '打开 Second Signal' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '清除搜索' }))
+    expect(search).toHaveValue('')
+    expect(search).toHaveFocus()
+    expect(screen.getByRole('link', { name: '打开 Second Signal' })).toBeInTheDocument()
+  })
+
   it('keeps catalog search and its visible anchor across same-document edition navigation', async () => {
     const fetchImpl = vi.fn<typeof fetch>(async (input) => responseForResumeUrl(input))
     const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')

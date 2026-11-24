@@ -39,6 +39,7 @@ export function LyricText({ segment, className }: LyricTextProps) {
   return (
     <span
       className={['lyric-ruby-text', className].filter(Boolean).join(' ')}
+      lang="ja"
       aria-label={segment.lyrics}
       data-canonical-lyric={segment.lyrics}
     >

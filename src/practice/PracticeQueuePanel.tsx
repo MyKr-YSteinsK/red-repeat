@@ -83,7 +83,6 @@ export function PracticeQueuePanel({
     <section className="practice-queue-panel" aria-labelledby="practice-queue-title">
       <div className="practice-queue-heading">
         <div>
-          <p className="eyebrow">本地 / 手动</p>
           <h2 id="practice-queue-title">待练队列</h2>
         </div>
         <button
@@ -119,11 +118,7 @@ export function PracticeQueuePanel({
             />
           ))}
         </ol>
-      ) : (
-        <p className="practice-queue-status">
-          手动保存想稍后练习的句子。进入队列时会按当前有效 Song Edition 核验目标。
-        </p>
-      )}
+      ) : null}
     </section>
   )
 }

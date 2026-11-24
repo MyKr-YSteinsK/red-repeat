@@ -67,6 +67,8 @@ export function CatalogLibrary({
   const [removingSongIds, setRemovingSongIds] = useState<ReadonlySet<string>>(
     new Set(),
   )
+  const searchRef = useRef<HTMLInputElement>(null)
+  const pendingReturn = useRef<CatalogViewportState | null>(null)
   const [openSongId, setOpenSongId] = useState<string | null>(null)
   const [downloadStateCheckComplete, setDownloadStateCheckComplete] =
     useState(false)
@@ -98,8 +100,12 @@ export function CatalogLibrary({
   }, [taskBySongId])
 
   useLayoutEffect(() => {
-    const saved = viewportRef.current
-    if (!saved.hasPosition) {
+    pendingReturn.current = viewportRef.current.hasPosition ? { ...viewportRef.current } : null
+  }, [viewportRef])
+
+  useLayoutEffect(() => {
+    const saved = pendingReturn.current
+    if (!saved || (offlineOnly && !downloadStateStorageUnavailable && !downloadStateCheckComplete)) {
       return
     }
 
@@ -107,6 +113,7 @@ export function CatalogLibrary({
       ? [...document.querySelectorAll<HTMLElement>('.catalog-entry[data-song-id]')]
           .find((entry) => entry.dataset.songId === saved.anchorSongId)
       : undefined
+    pendingReturn.current = null
     const anchorOffset = saved.anchorTop ?? 0
     const targetScrollY = anchor
       ? window.scrollY + anchor.getBoundingClientRect().top - anchorOffset
@@ -115,7 +122,7 @@ export function CatalogLibrary({
     if (Math.abs(nextScrollY - window.scrollY) > 1) {
       window.scrollTo({ top: nextScrollY, behavior: 'auto' })
     }
-  }, [viewportRef])
+  }, [downloadStateCheckComplete, downloadStateStorageUnavailable, offlineOnly])
 
   useEffect(() => {
     const captureViewport = (): void => captureCatalogViewport(viewportRef)
@@ -253,7 +260,7 @@ export function CatalogLibrary({
     }
   }
 
-  const filteredEditions = catalog.editions.flatMap((catalogEdition, index) => {
+  const filteredEditions = catalog.editions.flatMap((catalogEdition) => {
     const task = taskBySongId[catalogEdition.songId]
     const taskResult = task?.kind === 'download' && task.status !== 'running'
       ? task.resultState
@@ -273,7 +280,7 @@ export function CatalogLibrary({
       return []
     }
 
-    return [{ catalogEdition, displayEdition, download, task, index }]
+    return [{ catalogEdition, displayEdition, download, task }]
   })
   const hasUnverifiedOfflineState = Object.values(downloadBySongId).some(
     (download) => download.status === 'failed' || download.status === 'installing',
@@ -302,53 +309,46 @@ export function CatalogLibrary({
 
   return (
     <main className="library library-populated" aria-labelledby="library-title">
-      <div className="library-heading">
-        <h1 id="library-title">曲库</h1>
-        <p className="library-lede">选择一首歌，开始阅读与学唱。</p>
-        <label className="library-search">
-          <span>搜索歌曲、歌手、专辑或罗马字</span>
+      <header className="library-heading" data-searching={Boolean(query.trim())}>
+        <div className="collection-jacket">
+          <div>
+            <h1 id="library-title">曲库</h1>
+            <p>{catalog.editions.length} 首歌曲</p>
+          </div>
+          <div className="collection-sleeves" aria-hidden="true">
+            {catalog.editions.slice(0, 3).map((edition) => (
+              <img key={edition.songId} alt="" src={runtimeClient.resolveAsset(edition.coverUrl)} />
+            ))}
+          </div>
+        </div>
+        <form className="library-search" role="search" onSubmit={(event) => {
+          event.preventDefault()
+          searchRef.current?.blur()
+        }}>
+          <span className="search-lens" aria-hidden="true" />
           <input
+            ref={searchRef}
+            aria-label="搜索歌曲、歌手、专辑或罗马字"
             type="search"
+            enterKeyHint="search"
             value={query}
             placeholder="搜索歌曲、歌手、专辑或罗马字"
             onChange={(event) => onQueryChange(event.target.value)}
           />
-        </label>
-        <label className="catalog-offline-filter">
-          <input
-            type="checkbox"
-            checked={offlineOnly}
-            onChange={(event) => onOfflineOnlyChange(event.target.checked)}
-          />
-          <span>仅显示离线可用</span>
-        </label>
-      </div>
-
-      {lastContext && lastEdition ? (
-        <section className="catalog-continue" aria-label="继续上次学习">
-          <div>
-            <p className="eyebrow">最近学习</p>
-            <h2>继续上次：{lastEdition.title}</h2>
-            <p>{resumeModeLabel(lastContext.mode)} · {lastContext.occurrenceId ?? '恢复到安全位置'}</p>
-          </div>
-          <a
-            className="catalog-continue-link"
-            href={createContinueHref(lastContext.songId, window.location)}
-            onClick={() => captureCatalogViewport(viewportRef)}
-          >
-            继续上次 →
-          </a>
-        </section>
-      ) : null}
-
-      <PracticeQueuePanel
-        catalog={catalog}
-        runtimeClient={runtimeClient}
-        onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
-      />
+          {query && <button type="button" aria-label="清除搜索" onClick={() => {
+            onQueryChange('')
+            searchRef.current?.focus()
+          }}>×</button>}
+        </form>
+      </header>
 
       <CatalogSection
-        title={offlineOnly ? '离线可用歌曲' : '全部歌曲'}
+        title={query.trim() ? '搜索结果' : offlineOnly ? '离线可用歌曲' : '全部歌曲'}
+        filter={<label className="catalog-offline-filter">
+          <input type="checkbox" checked={offlineOnly}
+            onChange={(event) => onOfflineOnlyChange(event.target.checked)} />
+          <span>仅显示离线可用</span>
+        </label>}
         onClick={(event) => {
           const target = event.target
           if (
@@ -369,7 +369,7 @@ export function CatalogLibrary({
           </p>
         ) : null}
         {filteredEditions.length > 0 ? (
-          filteredEditions.map(({ catalogEdition, displayEdition, download, task, index }) => {
+          filteredEditions.map(({ catalogEdition, displayEdition, download, task }) => {
             const isRemoving = removingSongIds.has(catalogEdition.songId) ||
               (task?.kind === 'remove' && task.status === 'running')
             return (
@@ -377,7 +377,6 @@ export function CatalogLibrary({
                 key={catalogEdition.songId}
                 edition={displayEdition}
                 downloadEdition={catalogEdition}
-                index={index}
                 runtimeClient={runtimeClient}
                 download={
                   download ?? {
@@ -427,6 +426,28 @@ export function CatalogLibrary({
           </div>
         )}
       </CatalogSection>
+      {lastContext && lastEdition ? (
+        <section className="catalog-continue" aria-label="继续上次学习">
+          <div>
+            <p className="eyebrow">最近学习</p>
+            <h2>继续上次：{lastEdition.title}</h2>
+            <p>{resumeModeLabel(lastContext.mode)} · {lastContext.occurrenceId ?? '恢复到安全位置'}</p>
+          </div>
+          <a
+            className="catalog-continue-link"
+            href={createContinueHref(lastContext.songId, window.location)}
+            onClick={() => captureCatalogViewport(viewportRef)}
+          >
+            继续上次 →
+          </a>
+        </section>
+      ) : null}
+
+      <PracticeQueuePanel
+        catalog={catalog}
+        runtimeClient={runtimeClient}
+        onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
+      />
     </main>
   )
 }
@@ -437,16 +458,18 @@ function resumeModeLabel(mode: 'practice' | 'all' | 'explain'): string {
 
 function CatalogSection({
   title,
+  filter,
   children,
   onClick,
 }: {
   title: string
+  filter: ReactNode
   children: ReactNode
   onClick?: (event: ReactMouseEvent<HTMLDivElement>) => void
 }) {
   return (
     <section className="catalog-section">
-      <h2>{title}</h2>
+      <div className="catalog-section-heading"><h2>{title}</h2>{filter}</div>
       <div className="catalog-list" aria-label={title} onClick={onClick}>
         {children}
       </div>
