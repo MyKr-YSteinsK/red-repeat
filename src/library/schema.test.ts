@@ -58,6 +58,24 @@ describe('Song Edition source schemas', () => {
     expect(PracticeSchema.safeParse(validPractice).success).toBe(true)
   })
 
+  it('normalizes accepted text and preserves absent optional fields', () => {
+    expect(ManifestSchema.parse({ ...validManifest, title: '  First Light  ' })).toEqual(validManifest)
+  })
+
+  it('reports the strict object and nested field locations used by callers', () => {
+    const result = LyricsSchema.safeParse({
+      segments: [{ ...validLyrics.segments[0], extra: true, translation: 3 }],
+    })
+    expect(result.success).toBe(false)
+    if (result.success) throw new Error('Expected an invalid segment')
+    expect(result.error.issues.map(({ code, path }) => ({ code, path }))).toEqual(
+      expect.arrayContaining([
+        { code: 'invalid_type', path: ['segments', 0, 'translation'] },
+        { code: 'unrecognized_keys', path: ['segments', 0] },
+      ]),
+    )
+  })
+
   it('requires stable Practice Unit fields', () => {
     expect(
       PracticeSchema.safeParse({
