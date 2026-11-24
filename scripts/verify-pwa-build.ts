@@ -1,6 +1,8 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { rejectCompilerResidue, verifyRuntimeArtifact } from '../src/library/runtime-artifact'
+
 const base = normalizeBase(process.argv[2] ?? '/')
 const distRoot = resolve(process.cwd(), 'dist')
 const packageMetadata = JSON.parse(
@@ -10,6 +12,8 @@ const requireProductionIdentity =
   process.argv.includes('--require-production') ||
   process.env.CI === 'true' ||
   Boolean(process.env.RED_REPEAT_BUILD_SHA?.trim())
+rejectCompilerResidue(distRoot)
+verifyRuntimeArtifact(resolve(distRoot, 'library-runtime'))
 const indexHtml = readText('index.html')
 const versionProbe = JSON.parse(readText('version.json')) as {
   version?: unknown

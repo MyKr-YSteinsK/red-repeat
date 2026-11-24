@@ -4,6 +4,7 @@ const ignoredPaths = [
   '.private/library/work-millennium-parade/audio/source.mp3',
   'public/library-runtime/catalog.json',
   'public/library-runtime.tmp-123/catalog.json',
+  '.red-repeat-compiler/output.sqlite',
   'dist/index.html',
   'docs/delete/src/obsolete.ts',
 ]

@@ -59,8 +59,12 @@ npm run dev
 ## 常见定位
 
 - 曲库在 dev 为空或报缺失，先看 `public/library-runtime/catalog.json` 和当前源根，再运行
-  `library:compile`。编译或中断遗留 `public/library-runtime.tmp-*` 时，先移走已确认的旧临时目录。
-  Vite 将 `public/` 复制到产物，本地 Git 忽略规则对这步无效。
+  `library:compile`。Compiler 使用输出所在文件系统的 `.red-repeat-compiler/`，默认在项目根、公共目录外。
+  Node 24 的 SQLite 写锁由操作系统在进程结束时释放。相同输出竞争时等待当前任务结束后重试。
+  旧 Runtime 保留至完整 staging 通过引用、文件集合和内容校验。两次 rename 之间最终路径可能短时缺失；
+  Windows 占用时释放文件句柄，重跑原命令会先恢复上一份备份，再验证输入。请保留事务目录直到恢复完成。
+  遇到旧式 `public/library-runtime.tmp-*`，先确认归属并移出 public，再重建；
+  `pwa:inspect` 在交付目录重新校验 Runtime。不同输出可以位于不同盘，单个事务的 staging、备份与目标需同文件系统。
 - 线上显示旧版本，先核对 `version.json` 的版本与 SHA，接着按客户端区分当前 document 和等待 worker。
   检查实际 CI 记录与自然重开结果。保留本机 Cache Storage 和 localStorage 以便验证。
 - 发现同曲 Timing 未套用，先对照完整 song／Edition／audio／Timeline 与当前 Occurrence，

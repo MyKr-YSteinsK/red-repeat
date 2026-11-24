@@ -38,6 +38,7 @@ import {
   type JsonSourceFile,
 } from './source-package'
 import { resolveLibrarySourceRoot } from './source-root'
+import { withRuntimeOutput } from './runtime-output'
 import { validateLibrary } from './validator'
 
 export const DEFAULT_RUNTIME_OUTPUT_ROOT = path.resolve(
@@ -74,6 +75,18 @@ export async function compileLibrary(
     options.outputRoot ?? DEFAULT_RUNTIME_OUTPUT_ROOT,
   )
   const cacheRoot = path.resolve(options.cacheRoot ?? DEFAULT_CACHE_ROOT)
+  return withRuntimeOutput(outputRoot, (stage, publish) =>
+    compileIntoStage(sourceRoot, outputRoot, cacheRoot, stage, publish),
+  )
+}
+
+async function compileIntoStage(
+  sourceRoot: string,
+  outputRoot: string,
+  cacheRoot: string,
+  temporaryOutputRoot: string,
+  publish: () => void,
+): Promise<CompileLibraryResult> {
   const validation = validateLibrary(sourceRoot)
 
   if (!validation.valid) {
@@ -85,12 +98,8 @@ export async function compileLibrary(
   }
 
   const songPackages = discoverSongPackages(sourceRoot)
-  const temporaryOutputRoot = `${outputRoot}.tmp-${process.pid}`
   const compileDiagnostics: Diagnostic[] = []
   const compiledSongs: CompiledSong[] = []
-
-  removeDirectory(temporaryOutputRoot)
-  fs.mkdirSync(temporaryOutputRoot, { recursive: true })
 
   for (const songPackage of songPackages) {
     try {
@@ -108,7 +117,6 @@ export async function compileLibrary(
   }
 
   if (compileDiagnostics.length > 0) {
-    removeDirectory(temporaryOutputRoot)
     return {
       ...createValidationResult(
         [...validation.diagnostics, ...compileDiagnostics],
@@ -132,7 +140,6 @@ export async function compileLibrary(
   const catalogValidation = CatalogSchema.safeParse(catalog)
 
   if (!catalogValidation.success) {
-    removeDirectory(temporaryOutputRoot)
     const diagnostics: Diagnostic[] = catalogValidation.error.issues.map(
       (issue) => ({
         severity: 'error',
@@ -155,7 +162,7 @@ export async function compileLibrary(
     path.join(temporaryOutputRoot, 'catalog.json'),
     stableJsonBuffer(catalog),
   )
-  replaceGeneratedOutput(temporaryOutputRoot, outputRoot)
+  publish()
 
   return {
     ...validation,
@@ -402,24 +409,6 @@ function createCompileDiagnostic(
     sourcePath: toSourcePath(sourceRoot, songPackage.directoryPath),
     message: error instanceof Error ? error.message : String(error),
   }
-}
-
-function replaceGeneratedOutput(
-  temporaryOutputRoot: string,
-  outputRoot: string,
-): void {
-  fs.mkdirSync(path.dirname(outputRoot), { recursive: true })
-  removeDirectory(outputRoot)
-  fs.renameSync(temporaryOutputRoot, outputRoot)
-}
-
-function removeDirectory(directoryPath: string): void {
-  fs.rmSync(directoryPath, {
-    recursive: true,
-    force: true,
-    maxRetries: 8,
-    retryDelay: 100,
-  })
 }
 
 function listGeneratedFiles(outputRoot: string): string[] {

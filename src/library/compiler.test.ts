@@ -16,7 +16,7 @@ afterEach(() => {
 describe('Library Compiler foundation', () => {
   it('generates a valid empty catalog without a source Library', async () => {
     const sourceRoot = createTemporaryRoot()
-    const outputRoot = createTemporaryRoot()
+    const outputRoot = path.join(createTemporaryRoot(), 'runtime')
     fs.rmSync(sourceRoot, { recursive: true, force: true })
 
     const result = await compileLibrary({ sourceRoot, outputRoot })
