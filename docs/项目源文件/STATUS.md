@@ -2,23 +2,20 @@
 
 ## 生产与审阅候选
 
-**已发布 1.29.1**。2026-11-24 已核对线上 `version.json` 为 `1.29.1 / 381f815cf803`，远端
-`main` 指向 `381f815cf803db7a9ad6cbf3dd98b61e4e8c18e0`，`v1.29.1` 指向产品提交 `2c3a965`。
-首轮构建恢复提交为 `93e2c33`，此前的接手维护基线 `97ac404` 已纳入发布历史。
-[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45328106762) · [发布记录](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.29.1)
+**已发布 1.30.0**。2026-11-25 线上 `version.json` 核对为 `1.30.0 / a3600ff679bf`。
+PR #6 合并后修复了 Pages 重试产物识别，正式部署来自 `main@a3600ff`。发布 tag `v1.30.0`
+指向曲库与学唱的最终产品提交 `fffb19f`，Plan-95 已关闭。此前的 1.29.1 为构建可靠性与解析器安全修复。
+[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45438007440) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.30.0) · [Plan-95 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/5#issuecomment-7137927156)
 
-**1.30.0 MINOR 候选**。分支 `codex/iphone-library-practice` 从上述 main 分出，界面改造由
-`3ff793e` 引入，版本账本指向补齐导航行为的最终产品提交 `fffb19f`。曲库搜索、学习段与当前句、
-选段面板和播放控件现已作为一条路径重设计。返回期间若离线核验延迟，搜索、清空、筛选或主动
-滚动会取消旧位置恢复。无新操作时核验完成后恢复歌曲锚点。继续学唱时从当前曲库位置重新取样。
-Runtime contract 为 3。Edge 已验证短句、长句、密集 Ruby 末句、播放、断网三模式和两种返回方式。
-Windows WebKit 已验证选段、减少动态效果及窄屏和横屏布局。iPhone 14 Pro 实机反馈与生产发布待审阅。
-实际交付 SHA、CI、手机检查入口与结果见 [RED-Plan-95](https://github.com/MyKr-YSteinsK/red-repeat/issues/5)。
-[前后对照与设备验收](../plan95/README.md)
+**1.31.0 MINOR 候选**。分支 `codex/iphone-full-song-explain` 从 `a3600ff` 分出，版本账本指向产品提交
+`2265cef`。全曲重排段落、活跃歌词和播放器，自由浏览时可从底栏回到当前句。讲解提供更清楚的章节、
+引用试听和可随滚动触达的来源返回，浏览器验收覆盖同曲播放连贯性及歌词原位恢复。
+iPhone 14 Pro 的常规体验检查延期至后续集中反馈。候选 PR、实际构建与验收见
+[RED-Plan-96](https://github.com/MyKr-YSteinsK/red-repeat/issues/7) · [对照与设计说明](../plan96/README.md)。
 
 六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
 [升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
-候选 PR、本地与 Ubuntu 实测提交、完整验收及发布决定从两份 Issue 的交付回执恢复。
+初次工程升级的本地与 Ubuntu 证据见历史回执。
 [RED-Plan-93](https://github.com/MyKr-YSteinsK/red-repeat/issues/2) · [RED-Plan-94](https://github.com/MyKr-YSteinsK/red-repeat/issues/3)
 
 ### 1.29.1 候选实测
