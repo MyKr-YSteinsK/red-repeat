@@ -40,6 +40,11 @@ interface RelatedExplainIntent {
   occurrenceId: string
 }
 
+interface RelatedLyricAnchor {
+  occurrenceId: string
+  top: number
+}
+
 interface ResumePracticeTarget {
   practiceUnitId: string
   occurrenceId: string
@@ -196,7 +201,10 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
       timingRef.current = core.timingProvider
     }
   }, [core.timingProvider, session])
+  const pageRef = useRef<HTMLElement>(null)
   const scrollByMode = useRef(new Map<SongEditionTab, number>())
+  const explainSourceAnchor = useRef<RelatedLyricAnchor | undefined>(undefined)
+  const pendingSourceReturn = useRef<RelatedLyricAnchor | undefined>(undefined)
   const saveResume = (mode: ResumeMode, target: Partial<Pick<ResumeContext, 'occurrenceId' | 'practiceUnitId' | 'featureId'>> = {}): void => {
     saveResumeContext({
       schemaVersion: 1,
@@ -240,6 +248,8 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
     })
   }
   const showRelatedExplain = (mode: Exclude<SongEditionTab, 'explain'>, occurrenceId: string, segmentId: string): void => {
+    const row = findReadingRow(pageRef.current, occurrenceId)
+    explainSourceAnchor.current = row ? { occurrenceId, top: row.getBoundingClientRect().top } : undefined
     setExplainSourceMode(mode)
     setRelatedExplainIntent({ occurrenceId, segmentId })
     changeTab('explain')
@@ -248,19 +258,27 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
     if (!explainSourceMode) return
     setRelatedExplainIntent(undefined)
     const sourceMode = explainSourceMode
+    pendingSourceReturn.current = explainSourceAnchor.current
     setExplainSourceMode(undefined)
     changeTab(sourceMode)
   }
   useLayoutEffect(() => {
     if (scrollByMode.current.size === 0) return
-    const top = scrollByMode.current.get(tab) ?? 0
+    const anchor = pendingSourceReturn.current
+    pendingSourceReturn.current = undefined
+    const row = anchor ? findReadingRow(pageRef.current, anchor.occurrenceId) : undefined
+    const top = row && anchor
+      ? Math.max(0, window.scrollY + row.getBoundingClientRect().top - anchor.top)
+      : scrollByMode.current.get(tab) ?? 0
     if (Math.abs(window.scrollY - top) > 0.5) window.scrollTo({ top, behavior: 'auto' })
+    row?.querySelector<HTMLElement>('.full-song-original, .practice-original')?.focus({ preventScroll: true })
   }, [tab])
   const song = core.edition.song
   return (
     <SongPlaybackContext.Provider value={context}>
       <LyricDisplayPreferencesProvider>
         <main
+          ref={pageRef}
           className="song-edition is-practice-page"
           aria-labelledby="song-title"
           data-mode={tab}
@@ -299,7 +317,7 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
               </button>
             </div>
           </header>
-          <div className="practice-page-tools">
+          <div className="practice-page-tools" data-source-return={tab === 'explain' && !!explainSourceMode}>
             <nav className="edition-task-nav" aria-label="歌曲任务">
               <button
                 type="button"
@@ -331,6 +349,11 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
                 讲解
               </button>
             </nav>
+            {tab === 'explain' && explainSourceMode ? (
+              <button className="explain-return-source" type="button" onClick={returnToExplainSource}>
+                <span aria-hidden="true">‹</span> 返回来源位置
+              </button>
+            ) : null}
           </div>
 
           {entryMessage ? <p className="song-entry-message" role="status">{entryMessage}</p> : null}
@@ -375,7 +398,6 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
               audioEngine={audioEngine}
               initialFeatureId={initialExplainFeatureId}
               relatedContext={relatedExplainIntent}
-              onReturnToSource={explainSourceMode ? returnToExplainSource : undefined}
               onResumeFeature={(featureId) => saveResume('explain', { featureId })}
             />
           )}
@@ -422,6 +444,11 @@ function SongEditionStatus({
       </a>
     </main>
   )
+}
+
+function findReadingRow(page: HTMLElement | null, occurrenceId: string): HTMLElement | undefined {
+  return Array.from(page?.querySelectorAll<HTMLElement>('[data-reading-anchor-id]') ?? [])
+    .find((row) => row.dataset.readingAnchorId === occurrenceId)
 }
 
 function describeEditionError(error: unknown): string {

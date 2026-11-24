@@ -1,0 +1,449 @@
+.full-song-workspace {
+  --full-song-accent: #a82a30;
+  --full-song-quiet: #625b54;
+  --lyric-original-size: clamp(1.27rem, 1.9vw, 1.62rem);
+  margin-top: 1.1rem;
+}
+
+.full-song-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-bottom: .9rem;
+}
+
+.full-song-heading h2 {
+  margin: 0;
+  font: 720 clamp(1.35rem, 3vw, 2rem)/1.2 var(--font-sans);
+  letter-spacing: -.035em;
+}
+
+.full-song-reading-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin: .4rem 0 0;
+  color: #842a30;
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.full-song-reading-mode::before {
+  width: .5rem;
+  height: .5rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.full-song-workspace[data-follow-lyrics='false'] .full-song-reading-mode {
+  color: var(--full-song-quiet);
+}
+
+.full-song-workspace[data-follow-lyrics='false'] .full-song-reading-mode::before {
+  background: transparent;
+}
+
+.full-song-workspace .lyric-display-preferences summary {
+  min-height: 44px;
+  font: 600 .85rem/1.5 var(--font-sans);
+  white-space: nowrap;
+}
+
+.full-song-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem);
+  align-items: start;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.full-song-lyrics-stream {
+  min-width: 0;
+  overflow-anchor: none;
+}
+
+.full-song-section {
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: .82rem;
+  background: var(--color-surface);
+}
+
+.full-song-section-heading {
+  padding: .72rem .95rem;
+  border-bottom: 1px solid #e6ddd2;
+  background: #eee8df;
+}
+
+.full-song-section-heading h3 {
+  margin: 0;
+  color: #544944;
+  font: 680 .84rem/1.4 var(--font-sans);
+  overflow-wrap: anywhere;
+}
+
+.full-song-section.is-section-playing .full-song-section-heading {
+  background: #f2dad1;
+}
+
+.full-song-occurrence {
+  padding: .86rem .9rem .94rem;
+  border-inline-start: 3px solid transparent;
+}
+
+.full-song-occurrence + .full-song-occurrence {
+  border-block-start: 1px solid #ebe5dc;
+}
+
+.full-song-occurrence.is-secondary-active {
+  background: #f7f0e8;
+}
+
+.full-song-occurrence.is-selected {
+  border-inline-start-color: #ba827a;
+  background: #f6eee7;
+}
+
+.full-song-occurrence.is-primary-active {
+  border-inline-start-color: var(--full-song-accent);
+  background: #f7e4db;
+}
+
+.full-song-original {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  color: var(--color-ink);
+  background: transparent;
+  cursor: pointer;
+  font: var(--lyric-original-size)/1.78 "Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", var(--font-display);
+  letter-spacing: .005em;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.full-song-original:hover,
+.full-song-original:focus-visible {
+  color: #88222a;
+}
+
+.full-song-original rt {
+  color: #66574e;
+}
+
+.full-song-translation {
+  margin: .15rem 0 0;
+  color: #514c46;
+  font-size: var(--lyric-translation-size);
+  line-height: 1.65;
+}
+
+.full-song-reading {
+  min-width: 0;
+  margin-top: .38rem;
+  color: var(--full-song-quiet);
+  font: var(--lyric-reading-size)/1.55 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.full-song-reading p {
+  margin: 0;
+}
+
+.full-song-reading span {
+  margin-inline-end: .5em;
+  color: #8b3b40;
+}
+
+.full-song-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .15rem .5rem;
+  margin-top: .55rem;
+  padding-top: .2rem;
+  border-top: 1px solid #dbb8a9;
+}
+
+.full-song-quick-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .18rem .36rem;
+  border: 0;
+  border-radius: .4rem;
+  color: #78252c;
+  background: transparent;
+  cursor: pointer;
+  font: 620 .8rem/1.4 var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: .18em;
+}
+
+.full-song-quick-action:hover,
+.full-song-quick-action:active {
+  background: #f0d3c7;
+}
+
+.full-song-instrumental-marker {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 44px;
+  width: 100%;
+  padding: .55rem .9rem;
+  border: 0;
+  color: var(--full-song-quiet);
+  background: var(--color-surface);
+  font: 600 .85rem/1.4 var(--font-sans);
+  text-align: start;
+  cursor: pointer;
+}
+
+.full-song-instrumental-marker:is(.is-playing, .is-selected, :hover) {
+  color: #842a30;
+  background: #f7e4db;
+}
+
+.full-song-instrumental-marker-signal {
+  width: .45rem;
+  height: .45rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--full-song-accent);
+}
+
+.full-song-player {
+  --player-glass-bg: color-mix(in srgb, var(--color-surface) 84%, transparent);
+  --player-glass-blur: blur(10px) saturate(115%);
+  position: sticky;
+  top: calc(3.75rem + env(safe-area-inset-top));
+  z-index: var(--z-player);
+  display: grid;
+  gap: .35rem;
+  padding: .8rem .9rem;
+  border: 1px solid var(--player-glass-border);
+  border-radius: var(--radius-control-lg);
+  background: var(--player-glass-bg);
+  box-shadow: 0 .65rem 1.6rem rgb(43 28 27 / .14);
+  backdrop-filter: var(--player-glass-blur);
+  -webkit-backdrop-filter: var(--player-glass-blur);
+}
+
+.full-song-player-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .65rem;
+}
+
+.full-song-player-section {
+  min-width: 0;
+  overflow: hidden;
+  color: #463b37;
+  font-size: .82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.full-song-player-time {
+  flex: 0 0 auto;
+  color: var(--color-ink);
+  font: .78rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.full-song-player-progress {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 38px;
+  margin: 0;
+  border-radius: .4rem;
+  background: transparent;
+  accent-color: var(--full-song-accent);
+  touch-action: none;
+  cursor: pointer;
+}
+
+.full-song-player-progress::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 100px;
+  background: linear-gradient(to right, var(--full-song-accent) var(--full-song-progress), #c8bbb0 var(--full-song-progress));
+}
+
+.full-song-player-progress::-webkit-slider-thumb {
+  appearance: none;
+  width: 19px;
+  height: 19px;
+  margin-top: -7px;
+  border: 2px solid #fff6ec;
+  border-radius: 50%;
+  background: var(--full-song-accent);
+  box-shadow: 0 0 0 1px var(--full-song-accent);
+}
+
+.full-song-player-progress::-moz-range-track {
+  height: 5px;
+  border-radius: 100px;
+  background: #c8bbb0;
+}
+
+.full-song-player-progress::-moz-range-progress {
+  height: 5px;
+  border-radius: 100px;
+  background: var(--full-song-accent);
+}
+
+.full-song-player-progress::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff6ec;
+  border-radius: 50%;
+  background: var(--full-song-accent);
+}
+
+.full-song-player-speed {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(5.4rem, 5.4rem);
+  gap: .3rem;
+}
+
+.full-song-player-speed-button,
+.full-song-player-toggle,
+.full-song-player-action {
+  min-width: 0;
+  min-height: 44px;
+  padding: .22rem .3rem;
+  border: 1px solid #b9ada4;
+  border-radius: .53rem;
+  color: #372c2b;
+  background: var(--player-glass-control-bg);
+  cursor: pointer;
+  font: 650 .83rem/1.3 var(--font-sans);
+}
+
+.full-song-player-speed-button[aria-pressed='true'] {
+  color: #fff6eb;
+  border-color: #3b2e30;
+  background: #3b2e30;
+}
+
+.full-song-player-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .36rem;
+  min-width: 5.4rem;
+  min-height: 44px;
+  color: #fff;
+  border-color: var(--full-song-accent);
+  background: var(--full-song-accent);
+}
+
+.full-song-player button:disabled,
+.full-song-player input:disabled {
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.full-song-player button:not(:disabled):is(:hover, :active) {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.full-song-player-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 8.5rem));
+  justify-content: center;
+  gap: .3rem;
+}
+
+.full-song-player-actions[data-manual-browse='true'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.full-song-player-action {
+  border-color: transparent;
+  color: #685852;
+  background: transparent;
+  font-size: .77rem;
+}
+
+.full-song-player-action.full-song-return-current {
+  border-color: #d7a299;
+  color: #752128;
+  background: #f3dfd7;
+}
+
+.full-song-message {
+  margin: 0;
+  padding: .45rem .6rem;
+  color: #78252c;
+  background: #f5e6dd;
+  border-radius: .4rem;
+  font-size: .88rem;
+}
+
+@media (min-width: 900px) {
+  .full-song-layout {
+    display: block;
+    padding-right: calc(18rem + clamp(2rem, 6vw, 5rem));
+  }
+
+  .full-song-heading,
+  .song-edition[data-mode='all'] .practice-page-header {
+    padding-right: min(calc(18rem + clamp(2rem, 6vw, 5rem)), 45vw);
+  }
+
+  .full-song-player {
+    position: fixed;
+    top: clamp(5rem, 12vh, 7rem);
+    right: calc(clamp(1.25rem, 5vw, 5rem) + max(0px, (100vw - 74rem) / 2));
+    width: 18rem;
+    max-height: calc(100dvh - clamp(5rem, 12vh, 7rem) - 1rem);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .full-song-layout {
+    display: block;
+    padding-bottom: calc(var(--full-song-dock-height, 13rem) + .75rem);
+  }
+
+  .full-song-player {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 64dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: .64rem
+      calc(.9rem + env(safe-area-inset-right))
+      calc(0.95rem + env(safe-area-inset-bottom))
+      calc(.9rem + env(safe-area-inset-left));
+    border-inline: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    box-shadow: 0 -.55rem 1.6rem rgb(43 28 27 / .15);
+  }
+}
+
+@media (min-width: 641px) and (max-height: 480px) {
+  .full-song-player {
+    top: calc(3.75rem + env(safe-area-inset-top));
+    max-height: calc(100dvh - 4.5rem - env(safe-area-inset-top));
+    overflow-y: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  .full-song-player-progress {
+    appearance: auto;
+  }
+}

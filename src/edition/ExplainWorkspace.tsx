@@ -31,7 +31,6 @@ export interface ExplainWorkspaceProps {
   audioEngine?: AudioEngine
   initialFeatureId?: string
   relatedContext?: { segmentId: string; occurrenceId: string }
-  onReturnToSource?: () => void
   onResumeFeature?: (featureId: string) => void
 }
 
@@ -63,7 +62,6 @@ export function ExplainWorkspace({
   audioEngine,
   initialFeatureId,
   relatedContext,
-  onReturnToSource,
   onResumeFeature,
 }: ExplainWorkspaceProps) {
   const playback = useSongEditionPlayback(model, runtimeClient, audioEngine)
@@ -151,7 +149,7 @@ export function ExplainWorkspace({
         activeRelatedLookup.blockIndex,
       )
     : undefined
-  const topicHeadingRef = useRef<HTMLHeadingElement | null>(null)
+  const topicStartRef = useRef<HTMLDivElement | null>(null)
   const pendingTopicNavigationRef = useRef<{
     anchor: ReturnType<typeof captureScrollAnchor>
     policy: TransitionPolicy
@@ -300,7 +298,7 @@ export function ExplainWorkspace({
       return
     }
     pendingTopicNavigationRef.current = {
-      anchor: captureScrollAnchor(topicHeadingRef.current),
+      anchor: captureScrollAnchor(topicStartRef.current),
       policy:
         source === 'previous' || source === 'next'
           ? 'reveal-content-start'
@@ -318,8 +316,8 @@ export function ExplainWorkspace({
     restoreScrollPolicy(
       pendingNavigation.policy,
       pendingNavigation.anchor,
-      topicHeadingRef.current,
-      96,
+      topicStartRef.current,
+      explainRevealOffset(topicStartRef.current, 96),
     )
   }, [selectedTopic?.id])
 
@@ -388,14 +386,9 @@ export function ExplainWorkspace({
     >
       <header className="explain-workspace-heading">
         <div>
-          <p className="eyebrow">讲解</p>
-          <h2>从作品里听见更多。</h2>
+          <h2>歌曲讲解</h2>
+          <p className="explain-topic-count">{topics.length} 篇</p>
         </div>
-        {onReturnToSource ? (
-          <button className="explain-return-source" type="button" onClick={onReturnToSource}>
-            返回来源位置
-          </button>
-        ) : null}
         {topics.length > 1 ? (
           <label className="explain-topic-select">
             <span>选择主题</span>
@@ -438,14 +431,17 @@ export function ExplainWorkspace({
           ))}
         </nav>
 
-        <div className="explain-current-topic">
+        <div className="explain-current-topic" ref={topicStartRef}>
           {selectedTopic?.status === 'ready' && selectedTopic.article ? (
-            <article className="explain-article">
-              <p className="feature-label">主题 {String(selectedTopicIndex + 1).padStart(2, '0')}</p>
-              <h3 ref={topicHeadingRef}>{selectedTopic.article.title}</h3>
+            <article className="explain-article" aria-labelledby="explain-reading-title">
+              <p className="explain-reading-position">第 {selectedTopicIndex + 1} 篇 / 共 {topics.length} 篇</p>
+              <h3 id="explain-reading-title">{selectedTopic.article.title}</h3>
               {chapterTargets.length > 0 ? (
                 <details className="explain-chapter-navigation">
-                  <summary>本篇章节</summary>
+                  <summary>
+                    <span>本篇章节</span>
+                    <span className="explain-chapter-count">{chapterTargets.length} 节</span>
+                  </summary>
                   <nav aria-label="本篇章节">
                     {chapterTargets.map((heading) => (
                       <button
@@ -455,8 +451,10 @@ export function ExplainWorkspace({
                         style={{
                           paddingInlineStart: `${Math.max(0, heading.level - 2) * 0.65}rem`,
                         }}
-                        onClick={() => {
+                        onClick={(event) => {
                           dismissRelatedNavigation()
+                          const directory = event.currentTarget.closest('details')
+                          if (directory) directory.open = false
                           const target = document.getElementById(heading.id)
                           if (target instanceof HTMLElement) revealExplainTarget(target)
                         }}
@@ -574,8 +572,15 @@ function resolveRelatedReferenceBlockIndex(
   return currentMatch >= 0 ? currentMatch : undefined
 }
 
+function explainRevealOffset(target: HTMLElement | null, minimum: number): number {
+  const tools = target?.closest('.song-edition')?.querySelector<HTMLElement>('.practice-page-tools')
+  if (!tools) return minimum
+  const safeTop = Number.parseFloat(getComputedStyle(tools).top) || 0
+  return Math.max(minimum, safeTop + tools.offsetHeight + 12)
+}
+
 function revealExplainTarget(target: HTMLElement): void {
-  restoreScrollPolicy('reveal-content-start', undefined, target, 112)
+  restoreScrollPolicy('reveal-content-start', undefined, target, explainRevealOffset(target, 112))
   target.focus({ preventScroll: true })
 }
 

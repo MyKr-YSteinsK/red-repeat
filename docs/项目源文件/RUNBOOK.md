@@ -34,7 +34,9 @@ npm run dev
 
 ## iPhone 体验验收
 
-RED-Plan-95 的设备检查从[手机候选与代表操作](../plan95/README.md)进入。现有界面以用户的 iPhone 14 Pro 为目标，分别记录 Safari 和主屏幕 PWA。
+iPhone 14 Pro 是实际体验目标。95／96 的常规真机检查按批准延期，累计数轮后在 Safari 和主屏幕 PWA
+分入口记录。适用的高风险数据、身份、音频及 Worker 协议验收按工程约定执行。
+[曲库和学唱代表操作](../plan95/README.md) · [全曲和讲解代表操作](../plan96/README.md)
 每次记录实际使用入口、iOS 版本与构建号、视口、显示／文字大小、减少动态效果设置与应用 build。
 检查曲库搜索时的键盘、学唱选句与底部控件、长歌词及 Ruby、讲解滚动和返回。覆盖工具栏伸缩、
 顶部灵动岛和底部安全区。播放或更新路径受影响时，实测切后台、离线重开或下一次自然启动。
@@ -73,6 +75,9 @@ RED-Plan-95 的设备检查从[手机候选与代表操作](../plan95/README.md)
   Windows 占用时释放文件句柄，重跑原命令会先恢复上一份备份，再验证输入。请保留事务目录直到恢复完成。
   遇到旧式 `public/library-runtime.tmp-*`，先确认归属并移出 public，再重建；
   `pwa:inspect` 在交付目录重新校验 Runtime。不同输出可以位于不同盘，单个事务的 staging、备份与目标需同文件系统。
+- Pages 在同一流水线重试时按尝试编号命名产物。若上传后部署无法识别，检查
+  `Wait for Pages artifact metadata` 的唯一产物 ID、Actions 运行和 Pages 部署状态，再读线上身份。
+  1.30.0 的修复与发布证据在 [Plan-95 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/5#issuecomment-7137927156)。
 - 线上显示旧版本，先核对 `version.json` 的版本与 SHA，接着按客户端区分当前 document 和等待 worker。
   检查实际 CI 记录与自然重开结果。保留本机 Cache Storage 和 localStorage 以便验证。
 - 发现同曲 Timing 未套用，先对照完整 song／Edition／audio／Timeline 与当前 Occurrence，

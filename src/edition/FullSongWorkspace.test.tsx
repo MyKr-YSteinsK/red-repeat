@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createAudioEngine,
@@ -245,17 +245,10 @@ describe('FullSongWorkspace', () => {
 
     expect(screen.getByText('Repeat me')).toBeInTheDocument()
     expect(screen.getByText('再来一次')).toBeInTheDocument()
-    expect(screen.getByText('器乐段')).toBeInTheDocument()
-    expect(
-      document.querySelectorAll(
-        '.full-song-instrumental-marker-signal',
-      ),
-    ).toHaveLength(1)
-    expect(
-      document.querySelectorAll(
-        '.full-song-instrumental-marker > span:not(.full-song-instrumental-marker-signal)',
-      ),
-    ).toHaveLength(3)
+    expect(screen.getByRole('heading', { name: 'Instrumental' })).toBeInTheDocument()
+    const instrumental = screen.getByRole('button', { name: '播放器乐段：Instrumental' })
+    expect(within(instrumental).getByText('试听器乐段')).toBeInTheDocument()
+    expect(instrumental.querySelectorAll('.full-song-instrumental-marker-signal')).toHaveLength(1)
     expect(document.querySelectorAll('.full-song-lyric-cluster')).toHaveLength(4)
     expect(screen.queryByText('Only a private note.')).not.toBeInTheDocument()
     expect(screen.getByText('リピート・ミー')).toBeInTheDocument()
@@ -543,8 +536,8 @@ describe('FullSongWorkspace', () => {
     expect(player.querySelectorAll('.control-button')).toHaveLength(0)
     expect(player.querySelectorAll('.full-song-player-speed-button')).toHaveLength(3)
     expect(player.querySelector('.full-song-player-speed > span')).toBeNull()
-    expect(player.querySelector('.full-song-player-context')).toHaveTextContent('当前段：Verse')
-    expect(player.querySelectorAll('.full-song-player-context > span')).toHaveLength(1)
+    expect(player.querySelector('.full-song-player-topline')).toHaveTextContent('Verse')
+    expect(progress).toHaveAttribute('aria-valuetext', '00:00 / 00:02')
     expect(player.querySelector('[aria-live]')).toBeNull()
     expect(player).not.toHaveTextContent('当前句：')
     expect(screen.getByRole('button', { name: '播放' })).toHaveClass('full-song-player-toggle')
@@ -714,7 +707,8 @@ describe('FullSongWorkspace', () => {
     const callsBeforeManualBrowse = scrollTo.mock.calls.length
 
     fireEvent.wheel(screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!)
-    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: '全曲播放器' }))
+      .toContainElement(screen.getByRole('button', { name: '回到当前句' }))
 
     await act(async () => {
       mediaFor(engine).currentTime = 0.75

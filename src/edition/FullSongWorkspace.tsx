@@ -1,10 +1,13 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type FormEvent,
+  type RefObject,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import {
@@ -71,6 +74,31 @@ export function FullSongWorkspace({
   const [pendingPlaybackStartOccurrenceId, setPendingPlaybackStartOccurrenceId] =
     useState<string>()
   const workspaceRef = useRef<HTMLElement | null>(null)
+  const playerRef = useRef<HTMLElement | null>(null)
+
+  useLayoutEffect(() => {
+    const workspace = workspaceRef.current
+    const player = playerRef.current
+    if (!workspace || !player) return
+
+    const measurePlayer = () => {
+      workspace.style.setProperty(
+        '--full-song-dock-height',
+        `${Math.ceil(player.getBoundingClientRect().height)}px`,
+      )
+    }
+    measurePlayer()
+    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measurePlayer)
+    observer?.observe(player)
+    window.addEventListener('resize', measurePlayer)
+    window.visualViewport?.addEventListener('resize', measurePlayer)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', measurePlayer)
+      window.visualViewport?.removeEventListener('resize', measurePlayer)
+    }
+  }, [])
+
   const { preferences } = useLyricDisplayPreferences()
   const preserveLyricAnchor = useLyricAnchorPreservation(
     workspaceRef,
@@ -283,6 +311,16 @@ export function FullSongWorkspace({
       })
     }
   }, [])
+  const returnToCurrentLine = (): void => {
+    setSkipAutoFollowOccurrenceId(undefined)
+    setPendingPlaybackStartOccurrenceId(undefined)
+    setFollowLyrics(true)
+    if (!primaryOccurrenceId) return
+
+    const rows = workspaceRef.current?.querySelectorAll<HTMLElement>('[data-occurrence-id]')
+    const current = Array.from(rows ?? []).find((row) => row.dataset.occurrenceId === primaryOccurrenceId)
+    current?.querySelector<HTMLButtonElement>('.full-song-original')?.focus({ preventScroll: true })
+  }
   const resetPlayback = useCallback((): void => {
     setSelectedOccurrenceId(undefined)
     setSelectedSectionId(undefined)
@@ -308,30 +346,13 @@ export function FullSongWorkspace({
       data-selected-section-id={visibleSelectedSectionId}
       data-follow-lyrics={followLyrics}
     >
-      <div className="full-song-heading">
+      <header className="full-song-heading">
         <div>
-          <p className="eyebrow">全曲</p>
-          <h2>跟着整首歌走。</h2>
+          <h2>全曲歌词</h2>
+          <p className="full-song-reading-mode">{followLyrics ? '跟随播放' : '自由浏览'}</p>
         </div>
-        <div className="full-song-heading-actions">
-          <LyricDisplayPreferencesControls
-            onBeforeChange={preserveLyricAnchor}
-          />
-          {!followLyrics ? (
-            <button
-              className="full-song-return-current"
-              type="button"
-              onClick={() => {
-                setSkipAutoFollowOccurrenceId(undefined)
-                setPendingPlaybackStartOccurrenceId(undefined)
-                setFollowLyrics(true)
-              }}
-            >
-              回到当前句
-            </button>
-          ) : null}
-        </div>
-      </div>
+        <LyricDisplayPreferencesControls onBeforeChange={preserveLyricAnchor} />
+      </header>
 
       <div className="full-song-layout">
         <FullSongLyrics
@@ -366,19 +387,17 @@ export function FullSongWorkspace({
           } : undefined}
         />
         <FullSongPlayer
+          playerRef={playerRef}
           model={model}
           engine={playback.engine}
           session={playback.session}
           sectionLabel={playback.resolution.currentSection?.label ?? '间奏 / 空白'}
+          message={message}
+          onReturnToCurrent={followLyrics ? undefined : returnToCurrentLine}
           onScrollToTop={scrollToTop}
           onReset={resetPlayback}
         />
       </div>
-      {message ? (
-        <p className="full-song-message" role="status">
-          {message}
-        </p>
-      ) : null}
     </section>
   )
 }
@@ -457,7 +476,7 @@ function FullSongLyrics({
 
     const rect = element.getBoundingClientRect()
     if (rect.height <= 0) return
-    const readable = getReadableViewport()
+    const readable = getReadableViewport(rect)
     const margin = 16
     if (
       rect.top >= readable.top + margin &&
@@ -480,7 +499,7 @@ function FullSongLyrics({
       onWheel={onManualBrowse}
       onTouchMove={onManualBrowse}
     >
-      {model.sections.map(({ section, occurrences }, sectionIndex) => (
+      {model.sections.map(({ section, occurrences }) => (
         <section
           className={`full-song-section${selectedSectionId === section.id ? ' is-section-selected' : ''}${playingSectionId === section.id ? ' is-section-playing' : ''}`}
           key={section.id}
@@ -488,9 +507,6 @@ function FullSongLyrics({
           data-section-id={section.id}
         >
           <div className="full-song-section-heading">
-            <span className="full-song-section-index" aria-hidden="true">
-              {String(sectionIndex + 1).padStart(2, '0')}
-            </span>
             <h3 id={`full-song-section-${section.id}`}>{section.label}</h3>
           </div>
 
@@ -503,9 +519,7 @@ function FullSongLyrics({
               onClick={() => onSelectSection(section)}
             >
               <span className="full-song-instrumental-marker-signal" aria-hidden="true" />
-              <span>器乐段</span>
-              <span aria-hidden="true"> / </span>
-              <span>{section.label}</span>
+              <span>{playingSectionId === section.id ? '正在播放器乐段' : '试听器乐段'}</span>
             </button>
           ) : (
             <div className="full-song-occurrence-list">
@@ -684,17 +698,23 @@ function queueResultLabel(result: 'added' | 'duplicate' | 'full' | 'unavailable'
 }
 
 function FullSongPlayer({
+  playerRef,
   model,
   engine,
   session,
   sectionLabel,
+  message,
+  onReturnToCurrent,
   onScrollToTop,
   onReset,
 }: {
+  playerRef: RefObject<HTMLElement | null>
   model: AssembledSongEdition
   engine: AudioEngine | null
   session: SongPlaybackSession | null
   sectionLabel: string
+  message?: string
+  onReturnToCurrent?: () => void
   onScrollToTop: () => void
   onReset: () => void
 }) {
@@ -711,6 +731,8 @@ function FullSongPlayer({
     durationMs,
   )
   const displayedTimeMs = scrubDraftMs ?? currentTimeMs
+  const position = durationMs > 0 ? (displayedTimeMs / durationMs) * 100 : 0
+  const timeLabel = `${formatPlayerTime(displayedTimeMs)} / ${formatPlayerTime(durationMs)}`
   const isPlaying = progress.status === 'playing'
 
   const togglePlayback = (): void => {
@@ -788,12 +810,10 @@ function FullSongPlayer({
   }
 
   return (
-    <aside className="full-song-player" aria-label="全曲播放器">
+    <aside ref={playerRef} className="full-song-player" aria-label="全曲播放器">
       <div className="full-song-player-topline">
-        <span>全曲播放</span>
-        <span>
-          {formatPlayerTime(displayedTimeMs)} / {formatPlayerTime(durationMs)}
-        </span>
+        <span className="full-song-player-section" title={sectionLabel}>{sectionLabel}</span>
+        <span className="full-song-player-time">{timeLabel}</span>
       </div>
       <input
         className="full-song-player-progress"
@@ -803,15 +823,14 @@ function FullSongPlayer({
         step="100"
         value={displayedTimeMs}
         aria-label="播放进度"
+        aria-valuetext={timeLabel}
+        style={{ '--full-song-progress': `${position}%` } as CSSProperties}
         disabled={!engine || durationMs <= 0}
         onInput={updateProgressInput}
         onPointerDown={beginPointerScrub}
         onPointerUp={finishPointerScrub}
         onPointerCancel={finishPointerScrub}
       />
-      <div className="full-song-player-context">
-        <span>当前段：{sectionLabel}</span>
-      </div>
       <div className="full-song-player-speed" aria-label="播放速度">
         {PRACTICE_PLAYBACK_RATES.map((rate) => (
           <button
@@ -832,10 +851,16 @@ function FullSongPlayer({
           onClick={togglePlayback}
           disabled={!engine}
         >
+          <span aria-hidden="true" className={isPlaying ? 'transport-pause' : 'transport-play'} />
           {isPlaying ? '暂停' : '播放'}
         </button>
       </div>
-      <div className="full-song-player-actions">
+      <div className="full-song-player-actions" data-manual-browse={Boolean(onReturnToCurrent)}>
+        {onReturnToCurrent ? (
+          <button className="full-song-player-action full-song-return-current" type="button" onClick={onReturnToCurrent}>
+            回到当前句
+          </button>
+        ) : null}
         <button className="full-song-player-action" type="button" onClick={onScrollToTop}>
           回到顶部
         </button>
@@ -843,30 +868,34 @@ function FullSongPlayer({
           重置
         </button>
       </div>
+      {message ? <p className="full-song-message" role="status">{message}</p> : null}
     </aside>
   )
 }
 
-function getReadableViewport(): { top: number; bottom: number } {
-  const visualHeight = Math.min(
+function getReadableViewport(lyric: DOMRect): { top: number; bottom: number } {
+  const visualTop = window.visualViewport?.offsetTop ?? 0
+  const visualBottom = Math.min(
     window.innerHeight,
-    window.visualViewport?.height ?? window.innerHeight,
+    visualTop + (window.visualViewport?.height ?? window.innerHeight),
   )
-  let top = 0
+  let top = visualTop
   const nav = document.querySelector<HTMLElement>('.practice-page-tools')
   if (nav) {
     const rect = nav.getBoundingClientRect()
     const stickyTop = Number.parseFloat(getComputedStyle(nav).top) || 0
     if (rect.top <= stickyTop + 1 && rect.bottom > 0) {
-      top = Math.max(0, rect.bottom)
+      top = Math.max(top, rect.bottom)
     }
   }
 
-  let bottom = visualHeight
+  let bottom = visualBottom
   const player = document.querySelector<HTMLElement>('.full-song-player')
   if (player && getComputedStyle(player).position === 'fixed') {
-    const playerTop = player.getBoundingClientRect().top
-    if (playerTop > 0) bottom = Math.min(bottom, playerTop)
+    const rect = player.getBoundingClientRect()
+    if (rect.left < lyric.right && rect.right > lyric.left) {
+      bottom = Math.min(bottom, rect.top)
+    }
   }
   return { top, bottom: Math.max(top, bottom) }
 }
