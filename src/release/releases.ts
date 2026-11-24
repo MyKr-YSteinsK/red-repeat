@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.31.0',
+    date: '2026-11-25',
+    commit: '2265cef',
+    level: 'minor',
+    title: '全曲歌词和讲解更适合手机阅读',
+    summary: '全曲让当前歌词、时间和播放键更容易看清。讲解把章节与歌词试听排得更清楚，从歌词进来的读者可以随时回到原句。',
+    changes: [
+      '全曲按段落组织歌词，突出正在播放的句子。自由浏览时，底栏提供回到当前句。进度条在拖动时显示目标时间。',
+      '讲解用独立卡片显示歌词引用和试听按钮，目录选中章节后直接跳到正文。从歌词进入时，返回入口跟随模式栏。',
+    ],
+  },
+  {
     version: '1.30.0',
     date: '2026-11-24',
     commit: 'fffb19f',
