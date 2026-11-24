@@ -1,10 +1,15 @@
 # 当前状态
 
-以当前检出的 Git 状态和可执行代码为准。本轮接手基线为
-`main@cfa91fb4a7b062feac725ba9c1d82b545fa4059b`，开工时已核实该提交与 `origin/main` 一致。
-应用处于 **Production**，仓库 package/ledger 为 `1.29.0`，Runtime contract version 为 `3`。
-远端 `v1.29.0` 的产品目标为 `a57bc4918b8d73fe5814aa32bb2fb5187916c79b`。
-本轮是 `no-version` 维护，版本、tag 和生产部署各按对应证据核对。
+维护基线为 `97ac404`，其父提交为生产分支基线 `cfa91fb`。升级分支
+`codex/upgrade-foundation` 按 93 → 94 集成，Runtime contract 为 `3`。
+93 的构建修复为 `93e2c33`（no-version），94 的产品提交为 `2c3a965`（2026-11-24）。
+分支 package 和 ledger 已准备 **1.29.1 PATCH 候选**，已有产品 tag `v1.29.0` 指向 `a57bc49`。
+生产发布待用户决定。
+
+六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
+[升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
+候选 PR、本地与 Ubuntu 实测提交、完整验收及发布决定从两份 Issue 的交付回执恢复。
+[RED-Plan-93](https://github.com/MyKr-YSteinsK/red-repeat/issues/2) · [RED-Plan-94](https://github.com/MyKr-YSteinsK/red-repeat/issues/3)
 
 ## 现行能力
 
@@ -35,7 +40,7 @@
 `Ｗ●ＲＫ` 和 `千本桜` 的历史校准覆盖与适用身份见[历史归档摘要](HISTORY.md)。
 NIGHT DANCER、深海少女、妄想感傷代償連盟、どうして仍按现有记录为 Provisional Timing。
 
-## 接手交付与本地证据
+## 维护基线 97ac404 的历史验收
 
 本轮把孵化入口、仓库运维和历史证据整理为本目录，退役无活动入口的旧 Practice、Catalog resume、
 预热和旧范围辅助模块及其专用测试。曲库主体与卡片、设置更新日志已从页面拆出。歌曲源、Runtime schema、
@@ -49,5 +54,5 @@ NIGHT DANCER、深海少女、妄想感傷代償連盟、どうして仍按现�
   三种模式、回曲库保存筛选、设置日志与 Timing Debugger 入口。iOS 真机、installed-PWA 跨版本激活、
   新的听感校准及生产部署验收本轮未执行。
 
-接手维护走 `codex/incubator-refresh`。待确认的成批重构、产品和数据路线见
+接手维护已随 `codex/incubator-refresh` 纳入升级分支历史。下一轮现有功能的 UI 与交互设计见
 [升级审查与路线](升级审查与路线.md)。历史审稿中的 HOLD 和旧验证结论按对应快照使用。
