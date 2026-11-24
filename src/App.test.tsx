@@ -1256,6 +1256,175 @@ describe('App Library consumer', () => {
   })
 })
 
+describe('returning to the catalog during offline verification', () => {
+  const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')!
+  const originalRect = HTMLElement.prototype.getBoundingClientRect
+  let scrollY: number
+  let entryTop: number
+  let finishRead: (() => void) | undefined
+  const scrollTo = vi.fn()
+  const offlineFilter = () => screen.getByRole('checkbox', { name: '仅显示离线可用' })
+  const songLink = (title: string) => screen.findByRole('link', { name: `打开 ${title}` })
+
+  beforeEach(() => {
+    scrollY = 420
+    entryTop = 60
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => scrollY })
+    vi.spyOn(window, 'scrollTo').mockImplementation(scrollTo)
+    scrollTo.mockClear()
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.songId === 'first-light') {
+        return { top: entryTop, bottom: entryTop + 100 } as DOMRect
+      }
+      return originalRect.call(this)
+    })
+  })
+
+  afterEach(() => {
+    finishRead?.()
+    finishRead = undefined
+    Object.defineProperty(window, 'scrollY', originalScrollY)
+    vi.restoreAllMocks()
+  })
+
+  async function returnWithVerificationPending() {
+    const firstEdition = populatedCatalog.editions[0]
+    const editionUrl = firstEdition.editionUrl.replace('edition.a.json', `edition.${runtimeEditionForApp.contentHash}.json`)
+    const catalog = {
+      ...populatedCatalog,
+      editions: [{ ...firstEdition, editionUrl }, ...populatedCatalog.editions.slice(1)],
+    }
+    const installed = (songId: string): Awaited<ReturnType<typeof readSongDownloadState>> => {
+      const snapshotEdition = catalog.editions.find((edition) => edition.songId === songId)!
+      return { songId, status: 'installed', editionUrl: snapshotEdition.editionUrl, snapshotEdition }
+    }
+    vi.mocked(readSongDownloadState).mockImplementation(async (songId) => installed(songId))
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input)
+      if (url.endsWith('/catalog.json')) return jsonResponse(catalog)
+      if (url.endsWith(editionUrl)) return jsonResponse(runtimeEditionForApp)
+      return responseForResumeUrl(input)
+    })
+    render(<App runtimeClient={createRuntimeClient({ fetchImpl })} />)
+    await screen.findByLabelText('已下载 First Light')
+    fireEvent.click(offlineFilter())
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'first' } })
+    fireEvent.click(await songLink('First Light'))
+    await screen.findByRole('heading', { name: 'First Light' })
+
+    const pending = new Promise<void>((resolve) => { finishRead = resolve })
+    vi.mocked(readSongDownloadState).mockImplementation(async (songId) => {
+      await pending
+      return installed(songId)
+    })
+    scrollY = 0
+    entryTop = 180
+    fireEvent.click(within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }))
+    const search = await screen.findByRole('searchbox')
+    expect(search).toHaveValue('first')
+    expect(offlineFilter()).toBeChecked()
+    expect(screen.getByText('正在核验离线状态')).toBeInTheDocument()
+    scrollTo.mockClear()
+    return search
+  }
+
+  it('restores the song anchor when verification finishes without a new user action', async () => {
+    await returnWithVerificationPending()
+    fireEvent.scroll(window)
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    await act(async () => { finishRead?.() })
+    await songLink('First Light')
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ behavior: 'auto', top: 120 })
+  })
+
+  it('does not restore an obsolete catalog position after the returning user changes the query', async () => {
+    const search = await returnWithVerificationPending()
+    fireEvent.change(search, { target: { value: 'second' } })
+
+    await act(async () => { finishRead?.() })
+    await songLink('Second Signal')
+    expect(screen.queryByRole('link', { name: '打开 First Light' })).not.toBeInTheDocument()
+    expect(search).toHaveValue('second')
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('keeps the new results and focus after clearing a query during verification', async () => {
+    const search = await returnWithVerificationPending()
+    fireEvent.click(screen.getByRole('button', { name: '清除搜索' }))
+
+    await act(async () => { finishRead?.() })
+    await songLink('First Light')
+    await songLink('Second Signal')
+    expect(search).toHaveValue('')
+    expect(search).toHaveFocus()
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('keeps the new filter when the offline filter is turned off during verification', async () => {
+    await returnWithVerificationPending()
+    fireEvent.click(offlineFilter())
+    await songLink('First Light')
+    expect(offlineFilter()).not.toBeChecked()
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    await act(async () => { finishRead?.() })
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['mouse wheel', () => fireEvent.wheel(window, { deltaY: 200 })],
+    ['touch scroll', () => fireEvent.touchMove(window, { touches: [{}] })],
+    ['PageDown', () => fireEvent.keyDown(document.body, { key: 'PageDown' })],
+  ] as const)('keeps the new viewport after %s during verification', async (_, move) => {
+    await returnWithVerificationPending()
+    move()
+    scrollY = 48
+    fireEvent.scroll(window)
+
+    await act(async () => { finishRead?.() })
+    await songLink('First Light')
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('saves a fresh position when continuing while verification is pending', async () => {
+    await returnWithVerificationPending()
+    const delayedEntry = delayManifestRead()
+    try {
+      scrollY = 80
+      fireEvent.click(await screen.findByRole('link', { name: '继续上次 →' }))
+      await waitFor(() => expect(delayedEntry.open).toHaveBeenCalled())
+      await act(async () => { finishRead?.() })
+      await songLink('First Light')
+      expect(scrollTo).not.toHaveBeenCalled()
+    } finally {
+      await act(async () => delayedEntry.resolve())
+      delayedEntry.restore()
+    }
+
+    await screen.findByRole('heading', { name: 'First Light' })
+    scrollTo.mockClear()
+    scrollY = 0
+    fireEvent.click(within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }))
+    await songLink('First Light')
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ behavior: 'auto', top: 80 })
+  })
+
+  it('does not revive a cancelled return after navigating away before verification finishes', async () => {
+    const search = await returnWithVerificationPending()
+    fireEvent.change(search, { target: { value: 'second' } })
+    fireEvent.click(screen.getByRole('link', { name: '设置' }))
+    await screen.findByRole('heading', { name: '设置' })
+
+    await act(async () => { finishRead?.() })
+    fireEvent.click(within(screen.getByRole('main')).getByRole('link', { name: '返回曲库' }))
+    await songLink('Second Signal')
+    expect(screen.getByRole('searchbox')).toHaveValue('second')
+    expect(offlineFilter()).toBeChecked()
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+})
+
 function clientFor(payload: unknown): RuntimeClient {
   return createRuntimeClient({
     fetchImpl: vi.fn(async (input) => responseForAppUrl(input, payload)),
