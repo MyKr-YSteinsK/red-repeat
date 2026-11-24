@@ -7,6 +7,8 @@ import {
   type ComponentType,
 } from 'react'
 import './App.css'
+import './library/collection.css'
+import './edition/practice-reader.css'
 import { CatalogLibrary, type CatalogViewportState } from './library/CatalogLibrary'
 import type { Catalog } from './library/runtime-schema'
 import {

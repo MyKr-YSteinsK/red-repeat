@@ -19,6 +19,8 @@ import { CatalogEditionCard } from './CatalogEditionCard'
 import { getInstalledSnapshotEdition, matchesCatalogSearch } from './catalog-search'
 import type { Catalog, CatalogEdition } from './runtime-schema'
 
+const pageScrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '])
+
 export interface CatalogViewportState {
   hasPosition: boolean
   scrollY: number
@@ -67,10 +69,18 @@ export function CatalogLibrary({
   const [removingSongIds, setRemovingSongIds] = useState<ReadonlySet<string>>(
     new Set(),
   )
+  const searchRef = useRef<HTMLInputElement>(null)
+  const pendingReturn = useRef<CatalogViewportState | null>(null)
   const [openSongId, setOpenSongId] = useState<string | null>(null)
   const [downloadStateCheckComplete, setDownloadStateCheckComplete] =
     useState(false)
   const downloadStateStorageUnavailable = typeof caches === 'undefined'
+
+  const cancelPendingReturn = useCallback(() => {
+    if (!pendingReturn.current) return
+    pendingReturn.current = null
+    viewportRef.current = { hasPosition: false, scrollY: 0 }
+  }, [viewportRef])
 
   useEffect(() => {
     const completed = Object.values(taskBySongId).flatMap((task) => {
@@ -98,8 +108,12 @@ export function CatalogLibrary({
   }, [taskBySongId])
 
   useLayoutEffect(() => {
-    const saved = viewportRef.current
-    if (!saved.hasPosition) {
+    pendingReturn.current = viewportRef.current.hasPosition ? { ...viewportRef.current } : null
+  }, [viewportRef])
+
+  useLayoutEffect(() => {
+    const saved = pendingReturn.current
+    if (!saved || (offlineOnly && !downloadStateStorageUnavailable && !downloadStateCheckComplete)) {
       return
     }
 
@@ -107,6 +121,7 @@ export function CatalogLibrary({
       ? [...document.querySelectorAll<HTMLElement>('.catalog-entry[data-song-id]')]
           .find((entry) => entry.dataset.songId === saved.anchorSongId)
       : undefined
+    pendingReturn.current = null
     const anchorOffset = saved.anchorTop ?? 0
     const targetScrollY = anchor
       ? window.scrollY + anchor.getBoundingClientRect().top - anchorOffset
@@ -115,13 +130,39 @@ export function CatalogLibrary({
     if (Math.abs(nextScrollY - window.scrollY) > 1) {
       window.scrollTo({ top: nextScrollY, behavior: 'auto' })
     }
-  }, [viewportRef])
+  }, [downloadStateCheckComplete, downloadStateStorageUnavailable, offlineOnly])
 
   useEffect(() => {
     const captureViewport = (): void => captureCatalogViewport(viewportRef)
+    // Route changes can clamp the viewport and emit scroll while the list is still loading.
+    const onWheel = (event: WheelEvent): void => {
+      if (event.deltaY && !event.ctrlKey && !event.defaultPrevented) cancelPendingReturn()
+    }
+    const onTouchMove = (event: TouchEvent): void => {
+      if (event.touches.length === 1 && !event.defaultPrevented) cancelPendingReturn()
+    }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (!pageScrollKeys.has(event.key) || event.defaultPrevented ||
+          event.ctrlKey || event.altKey || event.metaKey) return
+      const target = event.target
+      if (target instanceof HTMLElement && (
+        target.isContentEditable || target.closest('input, textarea, select') ||
+        (event.key === ' ' && target.closest('button, summary'))
+      )) return
+      cancelPendingReturn()
+    }
+
     window.addEventListener('scroll', captureViewport, { passive: true })
-    return () => window.removeEventListener('scroll', captureViewport)
-  }, [viewportRef])
+    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('scroll', captureViewport)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [cancelPendingReturn, viewportRef])
 
   useEffect(() => {
     let active = true
@@ -215,6 +256,16 @@ export function CatalogLibrary({
     }
   }, [catalog, downloadTasks, runtimeClient])
 
+  const changeQuery = (value: string): void => {
+    cancelPendingReturn()
+    onQueryChange(value)
+  }
+
+  const captureBeforeNavigation = (): void => {
+    pendingReturn.current = null
+    captureCatalogViewport(viewportRef)
+  }
+
   const handleDownload = (edition: CatalogEdition): void => {
     downloadTasks.start(edition, runtimeClient, 'manual')
   }
@@ -253,7 +304,7 @@ export function CatalogLibrary({
     }
   }
 
-  const filteredEditions = catalog.editions.flatMap((catalogEdition, index) => {
+  const filteredEditions = catalog.editions.flatMap((catalogEdition) => {
     const task = taskBySongId[catalogEdition.songId]
     const taskResult = task?.kind === 'download' && task.status !== 'running'
       ? task.resultState
@@ -273,7 +324,7 @@ export function CatalogLibrary({
       return []
     }
 
-    return [{ catalogEdition, displayEdition, download, task, index }]
+    return [{ catalogEdition, displayEdition, download, task }]
   })
   const hasUnverifiedOfflineState = Object.values(downloadBySongId).some(
     (download) => download.status === 'failed' || download.status === 'installing',
@@ -302,53 +353,49 @@ export function CatalogLibrary({
 
   return (
     <main className="library library-populated" aria-labelledby="library-title">
-      <div className="library-heading">
-        <h1 id="library-title">曲库</h1>
-        <p className="library-lede">选择一首歌，开始阅读与学唱。</p>
-        <label className="library-search">
-          <span>搜索歌曲、歌手、专辑或罗马字</span>
+      <header className="library-heading" data-searching={Boolean(query.trim())}>
+        <div className="collection-jacket">
+          <div>
+            <h1 id="library-title">曲库</h1>
+            <p>{catalog.editions.length} 首歌曲</p>
+          </div>
+          <div className="collection-sleeves" aria-hidden="true">
+            {catalog.editions.slice(0, 3).map((edition) => (
+              <img key={edition.songId} alt="" src={runtimeClient.resolveAsset(edition.coverUrl)} />
+            ))}
+          </div>
+        </div>
+        <form className="library-search" role="search" onSubmit={(event) => {
+          event.preventDefault()
+          searchRef.current?.blur()
+        }}>
+          <span className="search-lens" aria-hidden="true" />
           <input
+            ref={searchRef}
+            aria-label="搜索歌曲、歌手、专辑或罗马字"
             type="search"
+            enterKeyHint="search"
             value={query}
             placeholder="搜索歌曲、歌手、专辑或罗马字"
-            onChange={(event) => onQueryChange(event.target.value)}
+            onChange={(event) => changeQuery(event.currentTarget.value)}
           />
-        </label>
-        <label className="catalog-offline-filter">
-          <input
-            type="checkbox"
-            checked={offlineOnly}
-            onChange={(event) => onOfflineOnlyChange(event.target.checked)}
-          />
-          <span>仅显示离线可用</span>
-        </label>
-      </div>
-
-      {lastContext && lastEdition ? (
-        <section className="catalog-continue" aria-label="继续上次学习">
-          <div>
-            <p className="eyebrow">最近学习</p>
-            <h2>继续上次：{lastEdition.title}</h2>
-            <p>{resumeModeLabel(lastContext.mode)} · {lastContext.occurrenceId ?? '恢复到安全位置'}</p>
-          </div>
-          <a
-            className="catalog-continue-link"
-            href={createContinueHref(lastContext.songId, window.location)}
-            onClick={() => captureCatalogViewport(viewportRef)}
-          >
-            继续上次 →
-          </a>
-        </section>
-      ) : null}
-
-      <PracticeQueuePanel
-        catalog={catalog}
-        runtimeClient={runtimeClient}
-        onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
-      />
+          {query && <button type="button" aria-label="清除搜索" onClick={() => {
+            changeQuery('')
+            searchRef.current?.focus()
+          }}>×</button>}
+        </form>
+      </header>
 
       <CatalogSection
-        title={offlineOnly ? '离线可用歌曲' : '全部歌曲'}
+        title={query.trim() ? '搜索结果' : offlineOnly ? '离线可用歌曲' : '全部歌曲'}
+        filter={<label className="catalog-offline-filter">
+          <input type="checkbox" checked={offlineOnly}
+            onChange={(event) => {
+              cancelPendingReturn()
+              onOfflineOnlyChange(event.currentTarget.checked)
+            }} />
+          <span>仅显示离线可用</span>
+        </label>}
         onClick={(event) => {
           const target = event.target
           if (
@@ -369,7 +416,7 @@ export function CatalogLibrary({
           </p>
         ) : null}
         {filteredEditions.length > 0 ? (
-          filteredEditions.map(({ catalogEdition, displayEdition, download, task, index }) => {
+          filteredEditions.map(({ catalogEdition, displayEdition, download, task }) => {
             const isRemoving = removingSongIds.has(catalogEdition.songId) ||
               (task?.kind === 'remove' && task.status === 'running')
             return (
@@ -377,7 +424,6 @@ export function CatalogLibrary({
                 key={catalogEdition.songId}
                 edition={displayEdition}
                 downloadEdition={catalogEdition}
-                index={index}
                 runtimeClient={runtimeClient}
                 download={
                   download ?? {
@@ -391,7 +437,7 @@ export function CatalogLibrary({
                 onDownload={handleDownload}
                 onCancelDownload={handleCancelDownload}
                 onRemove={handleRemove}
-                onBeforeNavigate={() => captureCatalogViewport(viewportRef)}
+                onBeforeNavigate={captureBeforeNavigation}
                 isSwipeOpen={openSongId === catalogEdition.songId}
                 onSwipeOpen={() => setOpenSongId(catalogEdition.songId)}
                 onSwipeClose={() => setOpenSongId(null)}
@@ -427,6 +473,28 @@ export function CatalogLibrary({
           </div>
         )}
       </CatalogSection>
+      {lastContext && lastEdition ? (
+        <section className="catalog-continue" aria-label="继续上次学习">
+          <div>
+            <p className="eyebrow">最近学习</p>
+            <h2>继续上次：{lastEdition.title}</h2>
+            <p>{resumeModeLabel(lastContext.mode)} · {lastContext.occurrenceId ?? '恢复到安全位置'}</p>
+          </div>
+          <a
+            className="catalog-continue-link"
+            href={createContinueHref(lastContext.songId, window.location)}
+            onClick={captureBeforeNavigation}
+          >
+            继续上次 →
+          </a>
+        </section>
+      ) : null}
+
+      <PracticeQueuePanel
+        catalog={catalog}
+        runtimeClient={runtimeClient}
+        onBeforeNavigate={captureBeforeNavigation}
+      />
     </main>
   )
 }
@@ -437,16 +505,18 @@ function resumeModeLabel(mode: 'practice' | 'all' | 'explain'): string {
 
 function CatalogSection({
   title,
+  filter,
   children,
   onClick,
 }: {
   title: string
+  filter: ReactNode
   children: ReactNode
   onClick?: (event: ReactMouseEvent<HTMLDivElement>) => void
 }) {
   return (
     <section className="catalog-section">
-      <h2>{title}</h2>
+      <div className="catalog-section-heading"><h2>{title}</h2>{filter}</div>
       <div className="catalog-list" aria-label={title} onClick={onClick}>
         {children}
       </div>

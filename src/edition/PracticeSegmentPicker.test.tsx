@@ -57,6 +57,12 @@ describe('PracticeSegmentPicker', () => {
         'true',
       )
 
+      fireEvent.keyDown(selectedOption, { key: 'Tab' })
+      const close = screen.getByRole('button', { name: '关闭学习段选择' })
+      expect(document.activeElement).toBe(close)
+      fireEvent.keyDown(close, { key: 'Tab', shiftKey: true })
+      expect(document.activeElement).toBe(selectedOption)
+
       fireEvent.click(screen.getByRole('option', { name: /Verse/ }))
       expect(onSelect).toHaveBeenCalledWith('p001')
     } finally {

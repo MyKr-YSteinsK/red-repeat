@@ -16,6 +16,7 @@ export function PracticeSegmentPicker({
   onSelect,
   onClose,
 }: PracticeSegmentPickerProps) {
+  const dialogRef = useRef<HTMLElement | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef(new Map<string, HTMLButtonElement>())
 
@@ -24,6 +25,8 @@ export function PracticeSegmentPicker({
       return
     }
 
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     const timeoutId = globalThis.setTimeout(() => {
       const list = listRef.current
       const item = itemRefs.current.get(currentUnitId)
@@ -35,7 +38,10 @@ export function PracticeSegmentPicker({
       }
     }, 0)
 
-    return () => globalThis.clearTimeout(timeoutId)
+    return () => {
+      globalThis.clearTimeout(timeoutId)
+      document.body.style.overflow = previousOverflow
+    }
   }, [currentUnitId, open])
 
   useEffect(() => {
@@ -47,6 +53,17 @@ export function PracticeSegmentPicker({
       if (event.key === 'Escape') {
         event.preventDefault()
         onClose()
+      }
+      if (event.key === 'Tab') {
+        const controls = dialogRef.current?.querySelectorAll<HTMLButtonElement>('button')
+        if (!controls?.length) return
+        const first = controls[0]
+        const last = controls[controls.length - 1]
+        const target = event.shiftKey ? last : first
+        if (document.activeElement === (event.shiftKey ? first : last)) {
+          event.preventDefault()
+          target.focus()
+        }
       }
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -68,6 +85,7 @@ export function PracticeSegmentPicker({
       }}
     >
       <section
+        ref={dialogRef}
         className="practice-segment-picker"
         role="dialog"
         aria-modal="true"
@@ -75,7 +93,7 @@ export function PracticeSegmentPicker({
       >
         <header className="practice-segment-picker-header">
           <div>
-            <p className="eyebrow">学唱段落</p>
+            <p className="eyebrow">共 {units.length} 段</p>
             <h2>选择学习段</h2>
           </div>
           <button
@@ -92,7 +110,7 @@ export function PracticeSegmentPicker({
           className="practice-segment-picker-list"
           role="listbox"
           aria-label="学习段"
-          tabIndex={0}
+          tabIndex={-1}
         >
           {units.map((unit, index) => {
             const selected = unit.id === currentUnitId
@@ -116,6 +134,7 @@ export function PracticeSegmentPicker({
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="practice-segment-picker-label">{unit.label}</span>
+                <small>{unit.occurrenceIds.length} 句</small>
                 <span className="practice-segment-picker-state" aria-hidden="true">
                   {selected ? '✓' : ''}
                 </span>
