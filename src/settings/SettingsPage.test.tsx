@@ -233,7 +233,10 @@ describe('SettingsPage', () => {
     await screen.findByRole('heading', { name: '导入预览' })
 
     fireEvent.click(screen.getByLabelText(/^播放速度/))
+    fireEvent.click(screen.getByRole('button', { name: '确认导入所选数据域' }))
+    expect(screen.getByText(/没有可写入的已选择条目/)).toBeInTheDocument()
     fireEvent.click(screen.getByLabelText('明确覆盖该域中身份相同的已有值'))
+    expect(screen.queryByText(/没有可写入的已选择条目/)).not.toBeInTheDocument()
     fireEvent.click(screen.getByLabelText(/^播放速度/))
     fireEvent.click(screen.getByLabelText(/^播放速度/))
     expect(screen.getByLabelText('明确覆盖该域中身份相同的已有值')).not.toBeChecked()

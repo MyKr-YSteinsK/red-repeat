@@ -15,7 +15,7 @@ import { getUpdateManager, type UpdateManager } from '../pwa/update-manager'
 import { createTimingDebuggerHref } from '../navigation'
 import { ReleaseHistory } from './ReleaseHistory'
 import { SystemSettings } from './SystemSettings'
-import { PersonalBackupPanel, type BackupImportUiState } from './PersonalBackupPanel'
+import { PersonalBackupPanel, type BackupFeedback, type BackupImportUiState } from './PersonalBackupPanel'
 import './settings-page.css'
 import {
   createTimingExportFilename,
@@ -89,7 +89,7 @@ export function SettingsPage({
   const [selection, setSelection] = useState<ExportSelection>('all')
   const [exportState, setExportState] = useState<ExportState>({ status: 'idle' })
   const [backupBusy, setBackupBusy] = useState(false)
-  const [backupMessage, setBackupMessage] = useState<string>()
+  const [backupMessage, setBackupMessage] = useState<BackupFeedback>()
   const [backupImport, setBackupImport] = useState<BackupImportUiState>()
   const [timingArchiveListing, setTimingArchiveListing] = useState<TimingOverrideArchiveListing>(
     () => listTimingOverrideArchive(),
@@ -161,7 +161,7 @@ export function SettingsPage({
 
   const handlePersonalBackupExport = async (): Promise<void> => {
     if (!catalog) {
-      setBackupMessage('曲库尚未就绪，暂时无法核验个人状态。')
+      setBackupMessage({ kind: 'error', text: '曲库尚未就绪，暂时无法核验个人状态。' })
       return
     }
     setBackupBusy(true)
@@ -174,9 +174,9 @@ export function SettingsPage({
       const skipped = result.skipped.length > 0
         ? `跳过 ${result.skipped.length} 项无法通过当前身份或格式核验的数据：${result.skipped.slice(0, 4).join('；')}${result.skipped.length > 4 ? '…' : ''}`
         : '所有已发现的数据域均通过当前可用身份核验。'
-      setBackupMessage(`已下载 ${filename}。${skipped} 备份仅包含当前兼容的白名单用户状态，不包含历史 Timing 保留记录；历史记录需单独导出，也不包含歌曲资源、下载快照或未知本机数据。`)
+      setBackupMessage({ kind: 'notice', text: `已下载 ${filename}。${skipped} 备份仅包含当前兼容的白名单用户状态，不包含历史 Timing 保留记录；历史记录需单独导出，也不包含歌曲资源、下载快照或未知本机数据。` })
     } catch (error) {
-      setBackupMessage(`无法生成个人备份：${describeBackupError(error)}`)
+      setBackupMessage({ kind: 'error', text: `无法生成个人备份：${describeBackupError(error)}` })
     } finally {
       setBackupBusy(false)
     }
@@ -212,11 +212,11 @@ export function SettingsPage({
     setBackupMessage(undefined)
     if (!file) return
     if (file.size > 1_000_000) {
-      setBackupMessage('备份文件超过 1 MB，已拒绝读取。')
+      setBackupMessage({ kind: 'error', text: '备份文件超过 1 MB，已拒绝读取。' })
       return
     }
     if (!catalog) {
-      setBackupMessage('曲库尚未就绪；请等待曲库完成加载后再预览导入。')
+      setBackupMessage({ kind: 'error', text: '曲库尚未就绪；请等待曲库完成加载后再预览导入。' })
       return
     }
     setBackupBusy(true)
@@ -232,9 +232,9 @@ export function SettingsPage({
         selectedDomains: [],
         overwriteDomains: [],
       })
-      setBackupMessage('预览已完成。无法确认身份的条目会跳过，确认前本机数据保持原样。')
+      setBackupMessage({ kind: 'notice', text: '预览已完成。无法确认身份的条目会跳过，确认前本机数据保持原样。' })
     } catch (error) {
-      setBackupMessage(`无法预览个人备份：${describeBackupError(error)}`)
+      setBackupMessage({ kind: 'error', text: `无法预览个人备份：${describeBackupError(error)}` })
     } finally {
       setBackupBusy(false)
     }
@@ -250,23 +250,23 @@ export function SettingsPage({
     )
     if (result.status === 'committed') {
       setBackupImport(undefined)
-      setBackupMessage(`已恢复 ${result.written} 项本机状态。返回曲库或重新打开歌曲后将读取更新后的值。`)
+      setBackupMessage({ kind: 'notice', text: `已恢复 ${result.written} 项本机状态。返回曲库或重新打开歌曲后将读取更新后的值。` })
       return
     }
     if (result.status === 'unchanged') {
-      setBackupMessage('没有可写入的已选择条目；本机数据未改变。')
+      setBackupMessage({ kind: 'unchanged', text: '没有可写入的已选择条目；本机数据未改变。' })
       return
     }
     if (result.status === 'changed-since-preview') {
       setBackupImport(undefined)
-      setBackupMessage('预览后本机状态发生变化，已取消写入。请重新选择文件并核对新预览。')
+      setBackupMessage({ kind: 'error', text: '预览后本机状态发生变化，已取消写入。请重新选择文件并核对新预览。' })
       return
     }
     if (result.status === 'rolled-back') {
-      setBackupMessage(`写入失败，已逐项回滚并核验原值：${result.error}`)
+      setBackupMessage({ kind: 'error', text: `写入失败，已逐项回滚并核验原值：${result.error}` })
       return
     }
-    setBackupMessage(`严重：写入失败且至少一个回滚值无法验证。不要继续覆盖导入。错误：${result.error}；${result.rollbackErrors.join('；')}`)
+    setBackupMessage({ kind: 'error', text: `严重：写入失败且至少一个回滚值无法验证。不要继续覆盖导入。错误：${result.error}；${result.rollbackErrors.join('；')}` })
   }
 
   return (
@@ -297,6 +297,7 @@ export function SettingsPage({
           onExport={() => void handlePersonalBackupExport()}
           onFile={(file) => void handlePersonalBackupFile(file)}
           onSelectDomain={(domain, checked) => {
+            setBackupMessage((current) => current?.kind === 'unchanged' ? undefined : current)
             setBackupImport((current) => current ? {
               ...current,
               selectedDomains: toggleDomain(current.selectedDomains, domain, checked),
@@ -306,6 +307,7 @@ export function SettingsPage({
             } : current)
           }}
           onOverwriteDomain={(domain, checked) => {
+            setBackupMessage((current) => current?.kind === 'unchanged' ? undefined : current)
             setBackupImport((current) => current ? {
               ...current,
               overwriteDomains: toggleDomain(current.overwriteDomains, domain, checked),
@@ -314,7 +316,7 @@ export function SettingsPage({
           onConfirm={confirmPersonalBackupImport}
           onCancel={() => {
             setBackupImport(undefined)
-            setBackupMessage('已取消导入。本机数据保持原样。')
+            setBackupMessage({ kind: 'notice', text: '已取消导入。本机数据保持原样。' })
           }}
         />
 

@@ -13,10 +13,15 @@ export interface BackupImportUiState {
   overwriteDomains: PersonalBackupDomain[]
 }
 
+export interface BackupFeedback {
+  kind: 'notice' | 'unchanged' | 'error'
+  text: string
+}
+
 interface PersonalBackupPanelProps {
   ready: boolean
   busy: boolean
-  message?: string
+  message?: BackupFeedback
   backup?: BackupImportUiState
   onExport: () => void
   onFile: (file: File | undefined) => void
@@ -91,7 +96,11 @@ export function PersonalBackupPanel({
       </div>
       {!ready ? <p className="settings-muted">曲库就绪后可核验备份身份。</p> : null}
       {message && !backup ? (
-        <p className="personal-backup-message" ref={feedback} role="status" tabIndex={-1}>{message}</p>
+        <p className="personal-backup-message" ref={feedback} tabIndex={-1}
+          role={message.kind === 'error' ? 'alert' : 'status'}
+        >
+          {message.text}
+        </p>
       ) : null}
       {backup ? (
         <div className="personal-backup-preview" aria-labelledby="backup-preview-title">
@@ -108,7 +117,11 @@ export function PersonalBackupPanel({
           <div className="personal-backup-confirm">
             <BackupWriteSummary backup={backup} />
             {message ? (
-              <p className="personal-backup-message" ref={feedback} role="status" tabIndex={-1}>{message}</p>
+              <p className="personal-backup-message" ref={feedback} tabIndex={-1}
+                role={message.kind === 'error' ? 'alert' : 'status'}
+              >
+                {message.text}
+              </p>
             ) : null}
             <div className="personal-backup-confirm-actions">
               <button

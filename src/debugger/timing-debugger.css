@@ -152,7 +152,7 @@
 
 .timing-debugger-section li[id^='timing-occurrence-'] {
   scroll-margin-top: 1rem;
-  scroll-margin-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
+  scroll-margin-bottom: 1rem;
 }
 
 .timing-debugger-section li button {
@@ -202,7 +202,7 @@
 }
 
 .timing-debugger-console {
-  --player-glass-bg: color-mix(in srgb, var(--color-surface) 91%, transparent);
+  --player-glass-bg: color-mix(in srgb, var(--color-surface) 95%, transparent);
   --player-glass-blur: blur(12px) saturate(108%);
   position: sticky;
   top: 1rem;
@@ -214,7 +214,7 @@
   padding: .62rem;
   border: 1px solid var(--player-glass-border);
   border-radius: var(--radius-control-lg);
-  background: rgb(251 250 246 / .91);
+  background: rgb(251 250 246 / .95);
   background: var(--player-glass-bg);
   backdrop-filter: var(--player-glass-blur);
   -webkit-backdrop-filter: var(--player-glass-blur);
@@ -418,6 +418,10 @@
 }
 
 @media (max-width: 760px), (max-width: 980px) and (max-height: 520px) {
+  .timing-debugger-section li[id^='timing-occurrence-'] {
+    scroll-margin-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
+  }
+
   .timing-debugger[data-debugger-state='ready'] {
     padding-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
   }

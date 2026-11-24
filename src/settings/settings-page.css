@@ -369,6 +369,11 @@
   background: var(--settings-warm);
 }
 
+.settings .personal-backup-message[role='alert'] {
+  color: var(--settings-red);
+  background: #f5dfdc;
+}
+
 .personal-backup-preview {
   display: grid;
   min-width: 0;
