@@ -543,8 +543,8 @@ describe('FullSongWorkspace', () => {
     expect(player.querySelectorAll('.control-button')).toHaveLength(0)
     expect(player.querySelectorAll('.full-song-player-speed-button')).toHaveLength(3)
     expect(player.querySelector('.full-song-player-speed > span')).toBeNull()
-    expect(player.querySelector('.full-song-player-context')).toHaveTextContent('当前段：Verse')
-    expect(player.querySelectorAll('.full-song-player-context > span')).toHaveLength(1)
+    expect(player.querySelector('.full-song-player-topline')).toHaveTextContent('Verse')
+    expect(progress).toHaveAttribute('aria-valuetext', '00:00 / 00:02')
     expect(player.querySelector('[aria-live]')).toBeNull()
     expect(player).not.toHaveTextContent('当前句：')
     expect(screen.getByRole('button', { name: '播放' })).toHaveClass('full-song-player-toggle')
@@ -714,7 +714,8 @@ describe('FullSongWorkspace', () => {
     const callsBeforeManualBrowse = scrollTo.mock.calls.length
 
     fireEvent.wheel(screen.getByText('Counterpoint line').closest('.full-song-lyrics-stream')!)
-    expect(screen.getByRole('button', { name: '回到当前句' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: '全曲播放器' }))
+      .toContainElement(screen.getByRole('button', { name: '回到当前句' }))
 
     await act(async () => {
       mediaFor(engine).currentTime = 0.75

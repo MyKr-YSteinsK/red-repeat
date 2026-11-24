@@ -64,6 +64,7 @@ export function ExplainLyricQuote({
     occurrences.find(({ occurrence }) => occurrence.id === selectedOccurrenceId) ??
     occurrences[0]
   const reading = segment.layers?.[0]?.text
+  const previewing = Boolean(playingOccurrenceId && playingOccurrenceId === selectedOccurrence?.occurrence.id)
 
   const playSelectedOccurrence = (): void => {
     if (!selectedOccurrence) {
@@ -119,9 +120,11 @@ export function ExplainLyricQuote({
       className="explain-lyric-quote"
       role="group"
       aria-label="歌词引用"
+      data-previewing={previewing}
       data-selected-occurrence-id={selectedOccurrence?.occurrence.id}
     >
       <div className="explain-lyric-quote-copy">
+        <p className="explain-quote-label" aria-hidden="true">歌词引用</p>
         <p className="explain-lyric-quote-original">
           <LyricText segment={segment} />
         </p>
@@ -150,10 +153,9 @@ export function ExplainLyricQuote({
               </select>
             </label>
           ) : null}
-          <button className="control-button control-button--quiet control-button--sm" type="button" onClick={playSelectedOccurrence}>
-            {playingOccurrenceId === selectedOccurrence?.occurrence.id
-              ? '取消试听'
-              : '试听这句'}
+          <button className="control-button explain-quote-audition" type="button" onClick={playSelectedOccurrence}>
+            <span aria-hidden="true" className={previewing ? 'transport-pause' : 'transport-play'} />
+            {previewing ? '取消试听' : '试听这句'}
           </button>
         </div>
       ) : (

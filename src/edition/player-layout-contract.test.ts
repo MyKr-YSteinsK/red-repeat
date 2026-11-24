@@ -6,6 +6,10 @@ const appCss = readFileSync(
   path.join(process.cwd(), 'src', 'App.css'),
   'utf8',
 )
+const fullSongCss = readFileSync(
+  path.join(process.cwd(), 'src', 'edition', 'full-song-reader.css'),
+  'utf8',
+)
 const indexCss = readFileSync(
   path.join(process.cwd(), 'src', 'index.css'),
   'utf8',
@@ -48,7 +52,7 @@ describe('mobile player layout contracts', () => {
     expect(appCss).toMatch(
       /\.practice-controls\.practice-dock\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
-    expect(appCss).toMatch(
+    expect(fullSongCss).toMatch(
       /\.full-song-player\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
     )
     expect(appCss).toMatch(
@@ -73,19 +77,15 @@ describe('mobile player layout contracts', () => {
     )
   })
 
-  it('keeps the Full Song play control on the speed row and raises centered actions', () => {
-    expect(appCss).toContain(
-      'grid-template-columns: repeat(2, minmax(6rem, 8.5rem));',
-    )
-    expect(appCss).toContain(
+  it('keeps the Full Song play button beside speeds and reserves the measured safe-area dock', () => {
+    expect(fullSongCss).toContain(
       'grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(5.4rem, 5.4rem);',
     )
-    expect(appCss).toMatch(
-      /\.full-song-player-toggle\s*\{[^}]*min-width: 5\.4rem;[^}]*min-height: 2\.5rem;/s,
+    expect(fullSongCss).toMatch(
+      /\.full-song-player-toggle\s*\{[^}]*min-width: 5\.4rem;[^}]*min-height: 44px;/s,
     )
-    expect(appCss).toContain(
-      'calc(0.95rem + env(safe-area-inset-bottom))',
-    )
+    expect(fullSongCss).toContain('calc(0.95rem + env(safe-area-inset-bottom))')
+    expect(fullSongCss).toContain('padding-bottom: calc(var(--full-song-dock-height, 13rem) + .75rem)')
   })
 
   it('makes the mobile Timing Debugger console an edge-to-edge safe-area sheet', () => {

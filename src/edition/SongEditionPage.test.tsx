@@ -328,6 +328,7 @@ describe('SongEditionPage 学唱入口', () => {
     expect(await screen.findByRole('region', { name: '全曲歌词' })).toBeInTheDocument()
     expect(container.querySelector('.full-song-workspace'))
       .toHaveAttribute('data-selected-occurrence-id', 'o001')
+    expect(screen.getByRole('button', { name: '从这里连续播放：First line' })).toHaveFocus()
     expect(media.play).toHaveBeenCalledTimes(playCountBeforeExplain)
   })
 

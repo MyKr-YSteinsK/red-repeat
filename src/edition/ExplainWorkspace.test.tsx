@@ -79,6 +79,7 @@ describe('ExplainWorkspace', () => {
       fireEvent.click(screen.getByRole('button', { name: '跳转到章节：重複（第2处）' }))
       expect(scrollTo).toHaveBeenCalledWith({ top: 388, behavior: 'auto' })
       expect(document.activeElement).toBe(headings[1])
+      expect(container.querySelector('.explain-chapter-navigation')).not.toHaveAttribute('open')
       expect(container.querySelectorAll('.explain-chapter-navigation button')).toHaveLength(3)
     } finally {
       rect.mockRestore()
@@ -467,7 +468,7 @@ describe('ExplainWorkspace', () => {
     const rect = vi
       .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
       .mockImplementation(function (this: HTMLElement) {
-        if (this.tagName === 'H3') {
+        if (this.classList.contains('explain-current-topic')) {
           return { top: 420, bottom: 500 } as DOMRect
         }
         return { top: 0, bottom: 0 } as DOMRect
