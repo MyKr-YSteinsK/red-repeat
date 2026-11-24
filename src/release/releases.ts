@@ -17,7 +17,7 @@ export const RELEASES: readonly ReleaseNote[] = [
   {
     version: '1.32.0',
     date: '2026-11-25',
-    commit: '34c6c22',
+    commit: 'c285a20',
     level: 'minor',
     title: '手机设置和逐句微调更好操作',
     summary: '设置优先显示当前版本、更新和个人备份。逐句试听时，可以在底栏看清歌词、起止时间和改动，保存后有明确反馈。',
