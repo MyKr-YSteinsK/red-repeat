@@ -68,8 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RED_REPEAT_BUILD_SHA: ${{ github.sha }}
+      PAGES_ARTIFACT: github-pages-${{ github.run_attempt }}
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -107,13 +109,34 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        id: upload
         uses: actions/upload-pages-artifact@v4
         with:
+          name: ${{ env.PAGES_ARTIFACT }}
           path: dist
+
+      - name: Wait for Pages artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+        run: |
+          for attempt in {1..10}; do
+            if ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$PAGES_ARTIFACT" \
+              --jq '.artifacts | map(select(.expired == false).id) | join(",")')" &&
+                [[ -n "$ARTIFACT_ID" && "$ids" == "$ARTIFACT_ID" ]]; then
+              echo "Pages artifact is visible for this attempt: $ARTIFACT_ID"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::Pages artifact $PAGES_ARTIFACT ($ARTIFACT_ID) was not uniquely visible after upload"
+          exit 1
 
       - name: Deploy Pages artifact
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT }}
 
       - name: Read package version
         id: package-version
