@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.32.0',
+    date: '2026-11-25',
+    commit: '34c6c22',
+    level: 'minor',
+    title: '手机设置和逐句微调更好操作',
+    summary: '设置优先显示当前版本、更新和个人备份。逐句试听时，可以在底栏看清歌词、起止时间和改动，保存后有明确反馈。',
+    changes: [
+      '设置将当前版本与线上更新分开显示。检查失败可以重试，构建详情、微调归档和完整日志可展开查看。',
+      '个人备份显示将恢复的数据域和覆盖数量，可在确认前取消。已有值默认保留。',
+      '播放切口调试把选中的歌词、相邻句、有效起止点和改动值放到一起。短屏保留试听、撤销和保存入口。',
+    ],
+  },
+  {
     version: '1.31.0',
     date: '2026-11-25',
     commit: '2265cef',
