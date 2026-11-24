@@ -15,6 +15,18 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.29.1',
+    date: '2026-11-24',
+    commit: '2c3a965',
+    level: 'patch',
+    title: '修复歌曲数据解析器的安全问题',
+    summary: '更新曲库和歌曲共用的数据校验依赖，现有六首歌和已下载歌曲继续沿用原有内容标识。',
+    changes: [
+      '修复处理异常数据时可能过度消耗资源的问题。',
+      '保留曲库、学唱、全曲和讲解对有效歌曲的读取，以及数据格式错误时的重试提示。',
+    ],
+  },
+  {
     version: '1.29.0',
     date: '2026-10-17',
     commit: 'a57bc49',

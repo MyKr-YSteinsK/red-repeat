@@ -1,18 +1,6 @@
-# RED:REPEAT Project Context
+# 项目资料入口
 
-These files are the repository's canonical project-state entry point. They
-summarize durable intent and current adoption-time facts; detailed contracts
-remain with the executable or domain-specific owners listed in the manifest.
-
-- [Project Brief](PROJECT_BRIEF.md) — product identity, core loop, boundaries,
-  invariants and stable UX baselines.
-- [Decisions](DECISIONS.md) — durable product and architecture decisions,
-  including deliberate legacy retirements and their rationale.
-- [Current State](CURRENT_STATE.md) — current repository identity, capabilities,
-  risks, unknowns and the next lifecycle action.
-- [Supporting Docs Manifest](SUPPORTING_DOCS_MANIFEST.md) — one canonical owner
-  for each detailed source, runtime, UI, PWA, release and provenance contract.
-
-Historical Plans, Handoffs and forensic reports are preserved only as clearly
-labeled evidence under `docs/archive/` when they are retained. They are not
-active execution instructions.
+项目接手、当前状态、运行手册和 GPT Project 指令集中维护于[项目源文件](../项目源文件/00-START_HERE.md)。
+旧项目简报、状态纪要和决策记录的去向见[历史归档摘要](../项目源文件/HISTORY.md)。
+[《Ｗ●ＲＫ》候选内容独立审稿](WORK_CONTENT_REVIEW.md)保留为历史审稿证据，当前歌曲以
+`library/work-millennium-parade/` 及已验签的集成提交为准。

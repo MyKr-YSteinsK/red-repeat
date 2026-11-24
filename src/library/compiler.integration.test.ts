@@ -292,6 +292,22 @@ describe('Library Compiler media pipeline', () => {
     )
   }, 30_000)
 
+  it('keeps the complete previous Runtime on validation and media failure', async () => {
+    const fixture = await createFixture()
+    expect((await compileLibrary(fixture.options)).valid).toBe(true)
+    const previous = snapshotFiles(fixture.outputRoot)
+    const timelinePath = path.join(fixture.songRoot, 'timeline.json')
+    const timeline = JSON.parse(fs.readFileSync(timelinePath, 'utf8'))
+    writeJson(timelinePath, { ...timeline, audioSourceHash: '0'.repeat(64) })
+    expect((await compileLibrary(fixture.options)).valid).toBe(false)
+    expect(snapshotFiles(fixture.outputRoot)).toEqual(previous)
+    timeline.sections[0].endMs = 999999
+    writeJson(timelinePath, timeline)
+    const result = await compileLibrary(fixture.options)
+    expect(result.diagnostics.map(issue => issue.code)).toContain('TIMELINE_EXCEEDS_AUDIO_DURATION')
+    expect(snapshotFiles(fixture.outputRoot)).toEqual(previous)
+  }, 30000)
+
   it('blocks compilation when Timeline audio identity is stale', async () => {
     const fixture = await createFixture()
     const timelinePath = path.join(fixture.songRoot, 'timeline.json')

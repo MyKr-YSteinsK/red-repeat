@@ -3,7 +3,10 @@ import { execFileSync } from 'node:child_process'
 const ignoredPaths = [
   '.private/library/work-millennium-parade/audio/source.mp3',
   'public/library-runtime/catalog.json',
+  'public/library-runtime.tmp-123/catalog.json',
+  '.red-repeat-compiler/output.sqlite',
   'dist/index.html',
+  'docs/delete/src/obsolete.ts',
 ]
 
 for (const candidate of ignoredPaths) {
@@ -17,5 +20,5 @@ for (const candidate of ignoredPaths) {
 }
 
 console.log(
-  `Repository hygiene passed: ${ignoredPaths.length} private/generated path patterns are ignored.`,
+  `Repository hygiene passed: ${ignoredPaths.length} local-only path patterns are ignored.`,
 )
