@@ -2,16 +2,15 @@
 
 ## 生产与审阅候选
 
-**已发布 1.30.0**。2026-11-25 线上 `version.json` 核对为 `1.30.0 / a3600ff679bf`。
-PR #6 合并后修复了 Pages 重试产物识别，正式部署来自 `main@a3600ff`。发布 tag `v1.30.0`
-指向曲库与学唱的最终产品提交 `fffb19f`，Plan-95 已关闭。此前的 1.29.1 为构建可靠性与解析器安全修复。
-[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45438007440) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.30.0) · [Plan-95 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/5#issuecomment-7137927156)
+**已发布 1.31.0**。2026-11-25 线上 `version.json` 核对为 `1.31.0 / ec7f277d3674`。
+PR #8 合并至 `main@ec7f277`。生产质量检查和第二次 Pages 部署通过，远端 `v1.31.0` 指向产品提交
+`2265cef`。全曲当前句、自由浏览和底栏动作，以及讲解目录、引用试听和来源返回均已上线。Plan-96 已关闭。
+[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45456245992/attempts/2) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.31.0) · [Plan-96 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/7#issuecomment-7140470790)
 
-**1.31.0 MINOR 候选**。分支 `codex/iphone-full-song-explain` 从 `a3600ff` 分出，版本账本指向产品提交
-`2265cef`。全曲重排段落、活跃歌词和播放器，自由浏览时可从底栏回到当前句。讲解提供更清楚的章节、
-引用试听和可随滚动触达的来源返回，浏览器验收覆盖同曲播放连贯性及歌词原位恢复。
-iPhone 14 Pro 的常规体验检查延期至后续集中反馈。候选 PR、实际构建与验收见
-[RED-Plan-96](https://github.com/MyKr-YSteinsK/red-repeat/issues/7) · [对照与设计说明](../plan96/README.md)。
+**1.32.0 MINOR 候选**。Plan-97 分支 `codex/iphone-settings-timing` 从 `ec7f277` 分出，版本账本指向
+产品提交 `c285a20`。设置区分当前构建和后台更新，个人备份预览明确列出所选数据域及覆盖数量。播放切口
+调试在通宽底栏显示当前句、有效起止点、差值与保存状态。常规 iPhone 14 Pro 体验按约延期集中观察。
+[RED-Plan-97 与验收](https://github.com/MyKr-YSteinsK/red-repeat/issues/9) · [前后对照](../plan97/README.md)
 
 六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
 [升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
