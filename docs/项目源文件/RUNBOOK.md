@@ -34,9 +34,10 @@ npm run dev
 
 ## iPhone 体验验收
 
-iPhone 14 Pro 是实际体验目标。95–97 的常规真机检查按批准延期，累计数轮后在 Safari 和主屏幕 PWA
+iPhone 14 Pro 是实际体验目标。95–98 的常规真机检查按批准延期，累计数轮后在 Safari 和主屏幕 PWA
 分入口记录。适用的高风险数据、身份、音频及 Worker 协议验收按工程约定执行。
-[曲库和学唱代表操作](../plan95/README.md) · [全曲和讲解代表操作](../plan96/README.md) · [设置和播放切口代表操作](../plan97/README.md)
+[曲库和学唱代表操作](../plan95/README.md) · [全曲和讲解代表操作](../plan96/README.md) · [设置和播放切口代表操作](../plan97/README.md) · [跨页与性能测量](../plan98/README.md)
+
 每次记录实际使用入口、iOS 版本与构建号、视口、显示／文字大小、减少动态效果设置与应用 build。
 检查曲库搜索时的键盘、学唱选句与底部控件、长歌词及 Ruby、讲解滚动和返回。覆盖工具栏伸缩、
 顶部灵动岛和底部安全区。设置与调试可用合成备份检查原生文件选择、确认区和大字号下的独立底栏滚动。
@@ -77,10 +78,8 @@ iPhone 14 Pro 是实际体验目标。95–97 的常规真机检查按批准延�
   Windows 占用时释放文件句柄，重跑原命令会先恢复上一份备份，再验证输入。请保留事务目录直到恢复完成。
   遇到旧式 `public/library-runtime.tmp-*`，先确认归属并移出 public，再重建；
   `pwa:inspect` 在交付目录重新校验 Runtime。不同输出可以位于不同盘，单个事务的 staging、备份与目标需同文件系统。
-- Pages 在同一流水线重试时按尝试编号命名产物。若上传后部署无法识别，检查
-  `Wait for Pages artifact metadata` 的唯一产物 ID、Actions 运行和 Pages 部署状态，再读线上身份。
-  仓库 REST 已列出唯一产物时，`deploy-pages` 的内部产物索引仍可能暂时查不到。1.31.0 核对
-  正确产物和现网状态后，仅在同一 SHA 重跑失败的部署 job，第二次成功。[Plan-96 发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/7#issuecomment-7140470790)
+- 若 Pages 上传成功但 `deploy-pages` 报找不到本次名称，先核对 run、尝试编号、上传名称与 ID、实际 `main` SHA、部署状态及线上 `version.json`。1.32.0 的前两次尝试在 REST 已列出正确产物时失败，第三次在同一 SHA 成功。[1.32.0 生产记录](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45529735640/attempts/3)
+- Plan-98 分支将构建上传与部署拆为两个 job。恢复时核对 `pages_artifact` 成功，`deploy` 消费其输出，产物未过期且主线仍等于本次 SHA。确认错误发生在创建 Pages 部署前后，仅对可恢复的失败执行一次 `gh run rerun <run-id> --failed`，然后查询新尝试和线上身份。只重跑部署时沿用成功上传的确切名称与 ID。若产物过期、名称重复、主线已前进或部署结果不明，先核对当前状态，再决定是否为获批主线重新构建。PR 只跑质量门槛。[GitHub 重跑语义](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
 - 线上显示旧版本，先核对 `version.json` 的版本与 SHA，接着按客户端区分当前 document 和等待 worker。
   检查实际 CI 记录与自然重开结果。保留本机 Cache Storage 和 localStorage 以便验证。
 - 发现同曲 Timing 未套用，先对照完整 song／Edition／audio／Timeline 与当前 Occurrence，

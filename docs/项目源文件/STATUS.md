@@ -2,15 +2,11 @@
 
 ## 生产与审阅候选
 
-**已发布 1.31.0**。2026-11-25 线上 `version.json` 核对为 `1.31.0 / ec7f277d3674`。
-PR #8 合并至 `main@ec7f277`。生产质量检查和第二次 Pages 部署通过，远端 `v1.31.0` 指向产品提交
-`2265cef`。全曲当前句、自由浏览和底栏动作，以及讲解目录、引用试听和来源返回均已上线。Plan-96 已关闭。
-[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45456245992/attempts/2) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.31.0) · [Plan-96 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/7#issuecomment-7140470790)
+**已发布 1.32.0**。PR #10 合入 `main@eb42e35e6a38`，线上 `version.json` 为 `1.32.0 / eb42e35e6a38`，远端 `v1.32.0` 和版本账本指向产品提交 `c285a20`。quality 通过，第三次尝试的 Pages 部署 `8046264463` 成功。设置、备份预览和逐句微调升级已上线。Plan-97 已关闭。[发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/9#issuecomment-7150439143) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.32.0)
 
-**1.32.0 MINOR 候选**。Plan-97 分支 `codex/iphone-settings-timing` 从 `ec7f277` 分出，版本账本指向
-产品提交 `c285a20`。设置区分当前构建和后台更新，个人备份预览明确列出所选数据域及覆盖数量。播放切口
-调试在通宽底栏显示当前句、有效起止点、差值与保存状态。常规 iPhone 14 Pro 体验按约延期集中观察。
-[RED-Plan-97 与验收](https://github.com/MyKr-YSteinsK/red-repeat/issues/9) · [前后对照](../plan97/README.md)
+**1.32.1 PATCH 候选**。升级分支 `codex/site-polish-performance` 从上述发布主线分出，产品提交 `7c5521c`。讲解的来源返回随可用宽度排布，短屏优先留出歌词阅读区，全曲选句复用状态相同的歌词行。Pages 上传与部署拆分在独立工程提交 `e585d76`，远端实际部署验收随下次获批发布进行。常规 iPhone 14 Pro Safari／主屏幕体验延期集中观察。[Plan-98](https://github.com/MyKr-YSteinsK/red-repeat/issues/11) · [截图、测量与复跑入口](../plan98/README.md)
+
+候选浏览器构建为 `b314e4899f8d`。Windows 全量 54 文件、475 项通过，六曲 93 个产物逐路径 SHA-256 相同，根与 Pages 子路径的构建及 PWA 检查通过。393×570 样本的讲解返回栏减少 48 px，微调底栏减少 53 px。十轮密集歌词四次选播和暂停的脚本时间中位数由 174.5 ms 降至 100.3 ms。
 
 六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
 [升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
