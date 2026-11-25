@@ -163,7 +163,7 @@ function App({
 
   return (
     <div className="app-shell">
-      <SiteHeader homeHref={homeHref} settingsHref={settingsHref} />
+      <SiteHeader homeHref={homeHref} settingsHref={settingsHref} routeKind={route.kind} />
       {route.kind === 'library' ? (
         <LibraryRoute
           state={catalogState}
@@ -252,10 +252,10 @@ function App({
   )
 }
 
-function SiteHeader({ homeHref, settingsHref }: { homeHref: string; settingsHref: string }) {
+function SiteHeader({ homeHref, settingsHref, routeKind }: { homeHref: string; settingsHref: string; routeKind: AppRoute['kind'] }) {
   return (
     <header className="site-header">
-      <a className="brand-lockup" href={homeHref} aria-label="返回曲库">
+      <a className="brand-lockup" href={homeHref} aria-current={routeKind === 'library' ? 'page' : undefined} aria-label="返回曲库">
         <span className="brand-signal" aria-hidden="true" />
         <span className="brand-wordmark">
           <span>RED</span>
@@ -267,7 +267,7 @@ function SiteHeader({ homeHref, settingsHref }: { homeHref: string; settingsHref
       </a>
       <div className="site-header-actions">
         <p className="imprint">Curated by MyKr</p>
-        <a className="site-settings-link" href={settingsHref}>设置</a>
+        <a className="site-settings-link" href={settingsHref} aria-current={routeKind === 'settings' ? 'page' : undefined}>设置</a>
       </div>
     </header>
   )

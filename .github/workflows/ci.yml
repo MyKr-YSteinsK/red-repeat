@@ -62,21 +62,21 @@ jobs:
       - name: Verify subpath PWA artifact
         run: npm run pwa:inspect -- /red-repeat/
 
-  deploy:
+  pages_artifact:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
     env:
       RED_REPEAT_BUILD_SHA: ${{ github.sha }}
       PAGES_ARTIFACT: github-pages-${{ github.run_attempt }}
-    permissions:
-      contents: read
-      actions: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact_id }}
+      artifact_name: ${{ steps.identity.outputs.name }}
+      sha: ${{ steps.identity.outputs.sha }}
+      version: ${{ steps.identity.outputs.version }}
     steps:
       - name: Check out the tested commit
         uses: actions/checkout@v4
@@ -115,22 +115,43 @@ jobs:
           name: ${{ env.PAGES_ARTIFACT }}
           path: dist
 
-      - name: Wait for Pages artifact metadata
+      - name: Record uploaded build identity
+        id: identity
+        run: |
+          echo "name=$PAGES_ARTIFACT" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: pages_artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      PAGES_ARTIFACT: ${{ needs.pages_artifact.outputs.artifact_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Verify the successful upload and current main
         env:
           GH_TOKEN: ${{ github.token }}
-          ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
-        run: |
-          for attempt in {1..10}; do
-            if ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$PAGES_ARTIFACT" \
-              --jq '.artifacts | map(select(.expired == false).id) | join(",")')" &&
-                [[ -n "$ARTIFACT_ID" && "$ids" == "$ARTIFACT_ID" ]]; then
-              echo "Pages artifact is visible for this attempt: $ARTIFACT_ID"
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "::error::Pages artifact $PAGES_ARTIFACT ($ARTIFACT_ID) was not uniquely visible after upload"
-          exit 1
+          UPLOAD_SHA: ${{ needs.pages_artifact.outputs.sha }}
+          ARTIFACT_ID: ${{ needs.pages_artifact.outputs.artifact_id }}
+        run: bash scripts/verify-pages-upload.sh
 
       - name: Deploy Pages artifact
         id: deployment
@@ -138,15 +159,9 @@ jobs:
         with:
           artifact_name: ${{ env.PAGES_ARTIFACT }}
 
-      - name: Read package version
-        id: package-version
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Verify production build identity
         env:
           DEPLOYMENT_URL: ${{ steps.deployment.outputs.page_url }}
-          EXPECTED_VERSION: ${{ steps.package-version.outputs.version }}
+          EXPECTED_VERSION: ${{ needs.pages_artifact.outputs.version }}
           EXPECTED_COMMIT: ${{ github.sha }}
-        run: npm run release:smoke -- --url "$DEPLOYMENT_URL" --version "$EXPECTED_VERSION" --commit "$EXPECTED_COMMIT"
+        run: node scripts/verify-deployed-version.ts --url "$DEPLOYMENT_URL" --version "$EXPECTED_VERSION" --commit "$EXPECTED_COMMIT"

@@ -15,6 +15,19 @@ export interface ReleaseNote {
 // while user-visible fixes can have their own patch node.
 export const RELEASES: readonly ReleaseNote[] = [
   {
+    version: '1.32.1',
+    date: '2026-11-25',
+    commit: '7c5521c',
+    level: 'patch',
+    title: '给手机歌词多留一点空间',
+    summary: '从歌词进入讲解后，返回键在空间足够时和模式按钮并排。短屏调试把起止时间与步进按钮并排，查歌词时能多看几行。',
+    changes: [
+      '全曲连续选播时只更新状态有变化的歌词行，保留当前句高亮和手动浏览位置。',
+      '设置和播放切口调试的返回入口更容易辨认。当前选择、播放按钮和保存反馈沿用一致的颜色提示。',
+      '调试底栏采用实色背景。文字较大或窗口较窄时，时间和调整按钮自动分行。',
+    ],
+  },
+  {
     version: '1.32.0',
     date: '2026-11-25',
     commit: 'c285a20',

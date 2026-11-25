@@ -1,7 +1,7 @@
 
 .timing-debugger {
   --timing-border: #d8cfc2;
-  --timing-red: #8d2429;
+  --timing-red: var(--color-accent-ink);
   --timing-warm: #f2eae1;
   width: min(100%, 67rem);
   margin-inline: auto;
@@ -60,7 +60,7 @@
   border: 1px solid var(--timing-border);
   border-radius: var(--radius-control-lg);
   color: #f9f2e9;
-  background: #30292a;
+  background: var(--color-utility-ink);
 }
 
 .timing-debugger-song-heading h2 {
@@ -177,7 +177,7 @@
 .timing-debugger-section li .is-selected {
   border-color: #c58c82;
   border-inline-start-color: var(--timing-red);
-  background: #f5e3dc;
+  background: var(--color-selected);
 }
 
 .timing-debugger-section li.is-playing button {
@@ -202,8 +202,6 @@
 }
 
 .timing-debugger-console {
-  --player-glass-bg: color-mix(in srgb, var(--color-surface) 95%, transparent);
-  --player-glass-blur: blur(12px) saturate(108%);
   position: sticky;
   top: 1rem;
   display: flex;
@@ -214,10 +212,7 @@
   padding: .62rem;
   border: 1px solid var(--player-glass-border);
   border-radius: var(--radius-control-lg);
-  background: rgb(251 250 246 / .95);
-  background: var(--player-glass-bg);
-  backdrop-filter: var(--player-glass-blur);
-  -webkit-backdrop-filter: var(--player-glass-blur);
+  background: var(--color-surface);
 }
 
 .timing-debugger-console-body {
@@ -344,9 +339,9 @@
 }
 
 .timing-debugger button.timing-debugger-save:not(:disabled) {
-  border-color: #9d2930;
+  border-color: var(--color-red);
   color: white;
-  background: #a2222a;
+  background: var(--color-red);
 }
 
 .timing-debugger-message {
@@ -365,12 +360,12 @@
 }
 
 .timing-debugger-message[data-tone='error'] {
-  color: #7a2026;
-  background: #f5dfdc;
+  color: var(--color-error);
+  background: var(--color-error-surface);
 }
 
 .timing-debugger-message[data-tone='success'] {
-  color: #285841;
+  color: var(--color-success);
   background: #e4eee6;
 }
 
@@ -426,6 +421,10 @@
     padding-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
   }
 
+  .timing-debugger-adjustments {
+    container-type: inline-size;
+  }
+
   .timing-debugger-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -451,5 +450,29 @@
 @media (min-width: 640px) and (max-width: 980px) and (max-height: 520px) {
   .timing-debugger-adjustments {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Budget space for four full-size step buttons. Large text falls back to stacked labels. */
+@media (max-width: 760px) and (max-height: 650px) {
+  .timing-debugger-console {
+    max-height: min(60dvh, 31rem);
+  }
+
+  @container (min-width: 21rem) {
+    .timing-debugger-adjustment-group {
+      grid-template-columns: minmax(6.2rem, .9fr) minmax(0, 2fr);
+      align-items: center;
+      padding: .25rem .35rem;
+    }
+
+    .timing-debugger-values {
+      display: grid;
+      line-height: 1.18;
+    }
+
+    .timing-debugger-adjustment-buttons button {
+      min-width: var(--touch-target);
+    }
   }
 }

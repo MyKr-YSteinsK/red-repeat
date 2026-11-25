@@ -95,7 +95,7 @@ export function SongEditionPage({
             >
               重试
             </button>
-            <a className="text-link" href={homeHref}>
+            <a className="text-link return-link" href={homeHref}>
               返回曲库
             </a>
           </div>
@@ -285,7 +285,7 @@ function ReadySongEdition({ core, runtimeClient, homeHref, audioEngine, initialT
         >
           <header className="practice-page-header">
             <div className="practice-page-identity">
-              <a className="text-link" href={homeHref}>
+              <a className="text-link return-link" href={homeHref}>
                 返回曲库
               </a>
               <div className="practice-page-song">
@@ -439,7 +439,7 @@ function SongEditionStatus({
       <p className="eyebrow">歌曲 / 打开中</p>
       <h1 id="song-title">正在打开歌曲…</h1>
       <p className="song-status-copy">正在读取歌曲内容。</p>
-      <a className="text-link" href={homeHref}>
+      <a className="text-link return-link" href={homeHref}>
         返回曲库
       </a>
     </main>

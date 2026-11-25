@@ -273,7 +273,7 @@ export function SettingsPage({
     <main className="settings" aria-labelledby="settings-title">
       <header className="settings-header">
         <h1 id="settings-title">设置</h1>
-        <a className="text-link settings-back" href={homeHref}>返回曲库</a>
+        <a className="text-link return-link settings-back" href={homeHref}>返回曲库</a>
       </header>
 
       <SystemSettings

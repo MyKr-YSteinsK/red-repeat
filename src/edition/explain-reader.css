@@ -1,6 +1,6 @@
 .explain-workspace {
-  --explain-accent: #8b252d;
-  --explain-muted: #635750;
+  --explain-accent: var(--color-accent-ink);
+  --explain-muted: var(--color-reading-muted);
   margin-top: 1rem;
 }
 
@@ -76,8 +76,8 @@
   padding: .35rem .75rem;
   border: 1px solid #d1a399;
   border-radius: .55rem;
-  color: #732129;
-  background: #f3dfd7;
+  color: var(--color-accent-ink);
+  background: var(--color-selected);
   font: 680 .85rem/1.35 var(--font-sans);
   cursor: pointer;
 }
@@ -418,7 +418,13 @@
   }
 
   .practice-page-tools[data-source-return='true'] .edition-task-nav {
-    flex-basis: 100%;
+    /* Three touch targets and a return link share a row when text size permits. */
+    flex: 1 1 11.5rem;
+  }
+
+  .practice-page-tools[data-source-return='true'] .edition-task-nav button {
+    min-width: var(--touch-target);
+    padding-inline: .3rem;
   }
 
   .explain-lyric-quote-controls .explain-quote-audition {

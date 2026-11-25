@@ -15,6 +15,7 @@ import { createEffectiveOccurrenceTimingProvider } from '../practice/practice-ti
 import { assembleRuntimeSongEdition } from '../runtime/song-edition'
 import type { RuntimeClient } from '../runtime/runtime-client'
 import { FullSongWorkspace } from './FullSongWorkspace'
+import * as lyricPreferences from './LyricDisplayPreferences'
 import { LyricDisplayPreferencesProvider } from './LyricDisplayPreferences'
 
 const engines: AudioEngine[] = []
@@ -252,6 +253,23 @@ describe('FullSongWorkspace', () => {
     expect(document.querySelectorAll('.full-song-lyric-cluster')).toHaveLength(4)
     expect(screen.queryByText('Only a private note.')).not.toBeInTheDocument()
     expect(screen.getByText('リピート・ミー')).toBeInTheDocument()
+  })
+
+  it('preserves untouched reading layers when another lyric starts playing', async () => {
+    const layers = vi.spyOn(lyricPreferences, 'visibleLyricLayers')
+    try {
+      const { engine } = renderWorkspace()
+      await waitFor(() => expect(engine.getState().sourceUrl).toBeTruthy())
+      const firstLineLayers = model.segmentsById.s001.layers
+      expect(layers.mock.calls.some(([value]) => value === firstLineLayers)).toBe(true)
+      layers.mockClear()
+      fireEvent.click(screen.getByRole('button', { name: '从这里连续播放：One more light' }))
+      await waitFor(() => expect(document.querySelector('[data-occurrence-id="o004"]')).toHaveClass('is-primary-active'))
+      expect(layers.mock.calls.some(([value]) => value === firstLineLayers)).toBe(false)
+      expect(screen.getByText('リピート・ミー')).toBeVisible()
+    } finally {
+      layers.mockRestore()
+    }
   })
 
   it('uses Resolver primary and secondary active states without merging selection into activity', async () => {

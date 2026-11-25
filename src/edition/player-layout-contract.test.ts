@@ -46,25 +46,13 @@ describe('mobile player layout contracts', () => {
     )
   })
 
-  it('shares a translucent player glass material with explicit backdrop filters', () => {
-    expect(indexCss).toContain(
-      '--player-glass-bg: color-mix(in srgb, var(--color-surface) 38%, transparent);',
-    )
-    expect(indexCss).toContain(
-      '--player-glass-control-bg: color-mix(in srgb, var(--color-surface) 46%, transparent);',
-    )
-    expect(appCss).toMatch(
-      /\.practice-controls\.practice-dock\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
-    )
-    expect(fullSongCss).toMatch(
-      /\.full-song-player\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
-    )
-    expect(timingCss).toMatch(
-      /\.timing-debugger-console\s*\{[^}]*background: var\(--player-glass-bg\);[^}]*backdrop-filter: var\(--player-glass-blur\);[^}]*-webkit-backdrop-filter: var\(--player-glass-blur\);/s,
-    )
-    expect(appCss).not.toContain(
-      'background: color-mix(in srgb, var(--color-surface) 92%, transparent);',
-    )
+  it('keeps the Full Song rail translucent and Timing values on opaque paper', () => {
+    expect(fullSongCss).toContain('--player-glass-bg: color-mix(in srgb, var(--color-surface) 94%, transparent)')
+    expect(fullSongCss).toContain('backdrop-filter: var(--player-glass-blur)')
+    const timingConsole = timingCss.match(/\.timing-debugger-console\s*\{([^}]+)\}/)?.[1]
+    expect(timingConsole).toContain('background: var(--color-surface)')
+    expect(timingConsole).not.toContain('backdrop-filter')
+    expect(indexCss).toContain('--color-surface:')
   })
 
   it('keeps the Practice mobile dock edge-to-edge with safe-area padding inside', () => {

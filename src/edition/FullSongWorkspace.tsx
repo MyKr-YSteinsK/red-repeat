@@ -1,4 +1,5 @@
 import {
+  memo,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -108,6 +109,7 @@ export function FullSongWorkspace({
     () => createPracticeIndex(model.practice, model.timeline),
     [model.practice, model.timeline],
   )
+  const { playOccurrenceContinuously } = playback
   const handleSelectOccurrence = useCallback(
     (assembledOccurrence: AssembledOccurrence): void => {
       setSelectedOccurrenceId(assembledOccurrence.occurrence.id)
@@ -117,9 +119,9 @@ export function FullSongWorkspace({
       setPendingPlaybackStartOccurrenceId(assembledOccurrence.occurrence.id)
       setFollowLyrics(true)
       setMessage(undefined)
-      playback.playOccurrenceContinuously?.(assembledOccurrence)
+      playOccurrenceContinuously?.(assembledOccurrence)
     },
-    [onResumeOccurrence, playback, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
+    [onResumeOccurrence, playOccurrenceContinuously, setFollowLyrics, setSelectedOccurrenceId, setSelectedSectionId],
   )
 
   const primaryOccurrenceId = playback.resolution.primaryOccurrence?.id
@@ -260,6 +262,12 @@ export function FullSongWorkspace({
     [onStartPracticeUnit, practiceIndex],
   )
 
+  const handleAddToQueue = useCallback((occurrence: AssembledOccurrence) => {
+    const result = onAddToQueue?.(occurrence) ?? 'unavailable'
+    setMessage(queueResultLabel(result))
+    return result
+  }, [onAddToQueue])
+
   const activeOccurrenceIds = useMemo(
     () => new Set(playback.resolution.activeOccurrences.map(({ id }) => id)),
     [playback.resolution.activeOccurrences],
@@ -380,11 +388,7 @@ export function FullSongWorkspace({
           }
           onShowRelatedExplain={onShowRelatedExplain}
           createTimingDebuggerHref={createTimingDebuggerHref}
-          onAddToQueue={onAddToQueue ? (occurrence) => {
-            const result = onAddToQueue(occurrence)
-            setMessage(queueResultLabel(result))
-            return result
-          } : undefined}
+          onAddToQueue={onAddToQueue ? handleAddToQueue : undefined}
         />
         <FullSongPlayer
           playerRef={playerRef}
@@ -446,6 +450,10 @@ function FullSongLyrics({
   onAddToQueue,
 }: FullSongLyricsProps) {
   const occurrenceElements = useRef(new Map<string, HTMLElement>())
+  const registerRow = useCallback((id: string, element: HTMLElement | null) => {
+    if (element) occurrenceElements.current.set(id, element)
+    else occurrenceElements.current.delete(id)
+  }, [])
   const pendingScrollSuppressionRef = useRef<string | undefined>(undefined)
   const lastScrollSuppressionRequestRef = useRef<string | undefined>(undefined)
 
@@ -527,26 +535,15 @@ function FullSongLyrics({
                 <FullSongOccurrence
                   key={assembledOccurrence.occurrence.id}
                   assembledOccurrence={assembledOccurrence}
-                  activeOccurrenceIds={activeOccurrenceIds}
-                  primaryOccurrenceId={primaryOccurrenceId}
-                  selectedOccurrenceId={selectedOccurrenceId}
+                  isActive={activeOccurrenceIds.has(assembledOccurrence.occurrence.id)}
+                  isPrimary={primaryOccurrenceId === assembledOccurrence.occurrence.id}
+                  isSelected={selectedOccurrenceId === assembledOccurrence.occurrence.id}
                   translationVisible={translationVisible}
                   romajiVisible={romajiVisible}
                   hasPracticeUnit={practiceIndex.unitIdByOccurrenceId.has(
                     assembledOccurrence.occurrence.id,
                   )}
-                  refCallback={(element) => {
-                    if (element) {
-                      occurrenceElements.current.set(
-                        assembledOccurrence.occurrence.id,
-                        element,
-                      )
-                    } else {
-                      occurrenceElements.current.delete(
-                        assembledOccurrence.occurrence.id,
-                      )
-                    }
-                  }}
+                  registerRow={registerRow}
                   onSelect={onSelectOccurrence}
                   onReplay={onReplayOccurrence}
                   onStartPractice={onStartPracticeUnit}
@@ -563,15 +560,15 @@ function FullSongLyrics({
   )
 }
 
-function FullSongOccurrence({
+const FullSongOccurrence = memo(function FullSongOccurrence({
   assembledOccurrence,
-  activeOccurrenceIds,
-  primaryOccurrenceId,
-  selectedOccurrenceId,
+  isActive,
+  isPrimary,
+  isSelected,
   translationVisible,
   romajiVisible,
   hasPracticeUnit,
-  refCallback,
+  registerRow,
   onSelect,
   onReplay,
   onStartPractice,
@@ -580,13 +577,13 @@ function FullSongOccurrence({
   onAddToQueue,
 }: {
   assembledOccurrence: AssembledOccurrence
-  activeOccurrenceIds: ReadonlySet<string>
-  primaryOccurrenceId?: string
-  selectedOccurrenceId?: string
+  isActive: boolean
+  isPrimary: boolean
+  isSelected: boolean
   translationVisible: boolean
   romajiVisible: boolean
   hasPracticeUnit: boolean
-  refCallback: (element: HTMLElement | null) => void
+  registerRow: (id: string, element: HTMLElement | null) => void
   onSelect: (occurrence: AssembledOccurrence) => void
   onReplay: (occurrence: AssembledOccurrence) => void
   onStartPractice?: (occurrence: AssembledOccurrence) => void
@@ -596,9 +593,10 @@ function FullSongOccurrence({
 }) {
   const { occurrence, segment } = assembledOccurrence
   const visibleLayers = visibleLyricLayers(segment.layers, romajiVisible)
-  const isActive = activeOccurrenceIds.has(occurrence.id)
-  const isPrimary = primaryOccurrenceId === occurrence.id
-  const isSelected = selectedOccurrenceId === occurrence.id
+  const refCallback = useCallback(
+    (element: HTMLElement | null) => registerRow(occurrence.id, element),
+    [occurrence.id, registerRow],
+  )
   const className = [
     'full-song-occurrence',
     isActive ? 'is-active' : '',
@@ -685,7 +683,7 @@ function FullSongOccurrence({
       ) : null}
     </article>
   )
-}
+})
 
 function queueResultLabel(result: 'added' | 'duplicate' | 'full' | 'unavailable'): string {
   return result === 'added'

@@ -2,7 +2,7 @@
 .settings {
   --settings-border: #d8cfc2;
   --settings-warm: #f0e9df;
-  --settings-red: #8d2429;
+  --settings-red: var(--color-accent-ink);
   width: min(100%, 66rem);
   margin-inline: auto;
   padding: clamp(1.25rem, 4vw, 3rem)
@@ -73,7 +73,7 @@
 }
 
 .settings p {
-  color: #615a53;
+  color: var(--color-reading-muted);
   font-size: .91rem;
   line-height: 1.6;
 }
@@ -107,7 +107,7 @@
   padding: .7rem .85rem;
   border-radius: var(--radius-control-md);
   color: #fbf5ed;
-  background: #30292a;
+  background: var(--color-utility-ink);
 }
 
 .settings-installed-build dt {
@@ -166,7 +166,7 @@
 }
 
 .settings-facts dt {
-  color: #615a53;
+  color: var(--color-reading-muted);
   font-size: .79rem;
 }
 
@@ -217,12 +217,12 @@
 
 .settings-update-panel[data-status='ready-next-launch'] .settings-update-status,
 .settings-update-panel[data-status='up-to-date'] .settings-update-status {
-  color: #38634f;
+  color: var(--color-success);
 }
 
 .settings-update-panel[data-status='ready-next-launch'] .settings-update-status::before,
 .settings-update-panel[data-status='up-to-date'] .settings-update-status::before {
-  background: #38634f;
+  background: var(--color-success);
 }
 
 .settings-update-panel[data-status='installing'] .settings-update-status {
@@ -236,7 +236,7 @@
 .settings-update-panel[data-status='error'] .settings-update-status,
 .settings .settings-update-error,
 .settings .settings-inline-error {
-  color: var(--settings-red);
+  color: var(--color-error);
 }
 
 .settings-update-panel[data-status='error'] .settings-update-status::before {
@@ -371,7 +371,7 @@
 
 .settings .personal-backup-message[role='alert'] {
   color: var(--settings-red);
-  background: #f5dfdc;
+  background: var(--color-error-surface);
 }
 
 .personal-backup-preview {
@@ -441,7 +441,7 @@
 .personal-backup-domain small {
   display: block;
   margin-top: .2rem;
-  color: #615a53;
+  color: var(--color-reading-muted);
   font-size: .77rem;
 }
 
@@ -452,7 +452,7 @@
 }
 
 .personal-backup-overwrite:has(input:disabled) {
-  color: #615a53;
+  color: var(--color-reading-muted);
   cursor: default;
 }
 
@@ -521,7 +521,7 @@
 
 .settings-release-list summary span:last-of-type {
   text-align: right;
-  color: #615a53;
+  color: var(--color-reading-muted);
   font-family: var(--font-mono);
   font-size: .73rem;
 }
@@ -585,7 +585,7 @@
 .settings-release-entry > ul {
   margin: 0;
   padding-inline-start: 1.15rem;
-  color: #615a53;
+  color: var(--color-reading-muted);
   font-size: .86rem;
   line-height: 1.55;
 }
