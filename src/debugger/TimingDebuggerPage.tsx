@@ -420,7 +420,7 @@ function TimingDebuggerReady({
           <p className="timing-debugger-lede">试听每句的起点和终点。保存后，学唱、全曲和讲解使用这份本机微调。</p>
         </div>
         <a
-          className="text-link"
+          className="text-link return-link"
           href={returnToEdition
             ? createContinueHref(core.edition.song.songId, window.location)
             : homeHref}
@@ -635,7 +635,7 @@ function TimingDebuggerSelector({
           <h1>选择一首歌</h1>
           <p className="timing-debugger-lede">打开一首歌，试听并微调每句歌词的播放起止点。</p>
         </div>
-        <a className="text-link" href={homeHref}>返回曲库</a>
+        <a className="text-link return-link" href={homeHref}>返回曲库</a>
       </header>
       <ol className="timing-debugger-song-list">
         {editions.map((edition) => (
@@ -742,7 +742,7 @@ function TimingDebuggerStatus({
       <h1 id="timing-status-title">{title}</h1>
       <p>{detail}</p>
       {children}
-      <a className="text-link" href={homeHref}>返回曲库</a>
+      <a className="text-link return-link" href={homeHref}>返回曲库</a>
     </main>
   )
 }
