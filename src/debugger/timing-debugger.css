@@ -1,0 +1,455 @@
+
+.timing-debugger {
+  --timing-border: #d8cfc2;
+  --timing-red: #8d2429;
+  --timing-warm: #f2eae1;
+  width: min(100%, 67rem);
+  margin-inline: auto;
+  padding: clamp(1.1rem, 3vw, 2.45rem)
+    max(1rem, env(safe-area-inset-right))
+    3rem
+    max(1rem, env(safe-area-inset-left));
+  overflow-wrap: anywhere;
+}
+
+.timing-debugger :is(h1, h2, h3, p, ol, dl) {
+  margin: 0;
+}
+
+.timing-debugger-header,
+.timing-debugger-song-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .55rem 1rem;
+}
+
+.timing-debugger-header h1,
+.timing-debugger-status h1 {
+  font-size: clamp(1.9rem, 5vw, 3.5rem);
+  letter-spacing: -.045em;
+  line-height: 1.12;
+}
+
+.timing-debugger-header .text-link,
+.timing-debugger-status .text-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-weight: 650;
+}
+
+.timing-debugger-header .timing-debugger-lede {
+  margin-top: .45rem;
+  color: #615a53;
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+.timing-debugger .timing-debugger-context {
+  margin-bottom: .2rem;
+  color: var(--timing-red);
+  font-size: .84rem;
+  font-weight: 650;
+}
+
+.timing-debugger-panel {
+  margin-top: .8rem;
+  padding: .85rem;
+  border: 1px solid var(--timing-border);
+  border-radius: var(--radius-control-lg);
+  color: #f9f2e9;
+  background: #30292a;
+}
+
+.timing-debugger-song-heading h2 {
+  font-size: clamp(1.15rem, 4vw, 1.55rem);
+}
+
+.timing-debugger-song-heading p,
+.timing-debugger-identity {
+  margin-top: .2rem;
+  color: #e1d2ca;
+  font-size: .8rem;
+}
+
+.timing-debugger-identity {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: .25rem .65rem;
+  font-family: var(--font-mono);
+}
+
+.timing-debugger button,
+.timing-debugger-song-list a {
+  min-height: 44px;
+  min-width: 0;
+  padding: .45rem .55rem;
+  border: 1px solid #cfc3b7;
+  border-radius: .66rem;
+  color: var(--color-ink);
+  background: #fffaf3;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.timing-debugger button:disabled {
+  color: #6f665c;
+  background: #eee8df;
+  opacity: .75;
+  cursor: default;
+}
+
+.timing-debugger button:not(:disabled):hover,
+.timing-debugger-song-list a:hover {
+  border-color: var(--timing-red);
+}
+
+.timing-debugger-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(21rem, 1fr);
+  align-items: start;
+  gap: .85rem;
+  margin-top: .85rem;
+}
+
+.timing-debugger-lyrics,
+.timing-debugger-selector .timing-debugger-song-list {
+  display: grid;
+  min-width: 0;
+  gap: .65rem;
+}
+
+.timing-debugger-section {
+  min-width: 0;
+  padding: .65rem;
+  border: 1px solid var(--timing-border);
+  border-radius: var(--radius-control-lg);
+  background: var(--color-surface);
+}
+
+.timing-debugger-section h3 {
+  margin: 0 .45rem .42rem;
+  color: #62544b;
+  font-size: .85rem;
+}
+
+.timing-debugger-section ol,
+.timing-debugger-song-list {
+  padding: 0;
+  list-style: none;
+}
+
+.timing-debugger-section ol {
+  display: grid;
+  gap: .3rem;
+}
+
+.timing-debugger-section li[id^='timing-occurrence-'] {
+  scroll-margin-top: 1rem;
+  scroll-margin-bottom: 1rem;
+}
+
+.timing-debugger-section li button {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .6rem .7rem;
+  border-inline-start: 3px solid transparent;
+  background: transparent;
+  text-align: left;
+}
+
+.timing-debugger .lyric-ruby-text {
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.timing-debugger-section li .is-selected {
+  border-color: #c58c82;
+  border-inline-start-color: var(--timing-red);
+  background: #f5e3dc;
+}
+
+.timing-debugger-section li.is-playing button {
+  box-shadow: inset 3px 0 #bf3d3e;
+}
+
+.timing-debugger-section li button small {
+  flex: 0 0 auto;
+}
+
+.timing-debugger-section small,
+.timing-debugger-position {
+  color: #695b52;
+  font-family: var(--font-mono);
+  font-size: .74rem;
+}
+
+.timing-debugger-section .timing-debugger-gap {
+  padding-inline: .45rem;
+  color: #695b52;
+  font-size: .86rem;
+}
+
+.timing-debugger-console {
+  --player-glass-bg: color-mix(in srgb, var(--color-surface) 95%, transparent);
+  --player-glass-blur: blur(12px) saturate(108%);
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  min-width: 0;
+  max-height: calc(100dvh - 2rem);
+  flex-direction: column;
+  gap: .45rem;
+  padding: .62rem;
+  border: 1px solid var(--player-glass-border);
+  border-radius: var(--radius-control-lg);
+  background: rgb(251 250 246 / .95);
+  background: var(--player-glass-bg);
+  backdrop-filter: var(--player-glass-blur);
+  -webkit-backdrop-filter: var(--player-glass-blur);
+}
+
+.timing-debugger-console-body {
+  display: grid;
+  min-height: 0;
+  gap: .42rem;
+  padding: .24rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scroll-padding: .3rem;
+}
+
+.timing-debugger-console-body:focus-visible {
+  outline-offset: -2px;
+}
+
+.timing-debugger-console-heading,
+.timing-debugger-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .35rem .65rem;
+}
+
+.timing-debugger-console-heading h2 {
+  font-size: 1.12rem;
+}
+
+.timing-debugger-save-state {
+  max-width: 100%;
+  padding: .26rem .5rem;
+  border-radius: .45rem;
+  color: #635951;
+  background: #eee8df;
+  font-size: .8rem;
+  font-weight: 650;
+}
+
+.timing-debugger-save-state[data-dirty='true'] {
+  color: #7b4416;
+  background: #f5e5cf;
+}
+
+.timing-debugger-selection {
+  align-items: end;
+}
+
+.timing-debugger-selection p {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 9rem;
+  padding: .15rem .2rem;
+}
+
+.timing-debugger-transport {
+  display: flex;
+  gap: .3rem;
+}
+
+.timing-debugger-adjustments {
+  display: grid;
+  min-width: 0;
+  gap: .4rem;
+}
+
+.timing-debugger-adjustment-group {
+  display: grid;
+  min-width: 0;
+  gap: .35rem;
+  padding: .4rem .45rem;
+  border: 1px solid var(--timing-border);
+  border-radius: .7rem;
+  background: var(--timing-warm);
+}
+
+.timing-debugger-values {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 .5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timing-debugger-values dt {
+  color: #5c5149;
+  font-size: .86rem;
+  font-weight: 650;
+}
+
+.timing-debugger-values dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.timing-debugger-values .timing-debugger-difference {
+  color: var(--timing-red);
+  font-size: .78rem;
+}
+
+.timing-debugger-adjustment-buttons,
+.timing-debugger-console-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .3rem;
+}
+
+.timing-debugger-adjustment-buttons button {
+  padding-inline: .1rem;
+  font-family: var(--font-mono);
+}
+
+.timing-debugger-console-actions {
+  grid-template-columns: repeat(3, minmax(0, .78fr)) minmax(0, 1.66fr);
+  padding-top: .4rem;
+  border-top: 1px solid var(--timing-border);
+}
+
+.timing-debugger-console-actions button {
+  padding-inline: .2rem;
+}
+
+.timing-debugger button.timing-debugger-save:not(:disabled) {
+  border-color: #9d2930;
+  color: white;
+  background: #a2222a;
+}
+
+.timing-debugger-message {
+  padding: .46rem .55rem;
+  border-radius: .52rem;
+  color: #635951;
+  background: #eee8df;
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.timing-debugger-feedback {
+  max-height: min(5rem, 18dvh);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.timing-debugger-message[data-tone='error'] {
+  color: #7a2026;
+  background: #f5dfdc;
+}
+
+.timing-debugger-message[data-tone='success'] {
+  color: #285841;
+  background: #e4eee6;
+}
+
+.timing-debugger-selector .timing-debugger-song-list {
+  max-width: 43rem;
+  margin-top: .9rem;
+}
+
+.timing-debugger-song-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .7rem;
+  padding: .65rem .85rem;
+  background: var(--color-surface);
+}
+
+.timing-debugger-song-link-copy {
+  display: grid;
+  min-width: 0;
+  gap: .12rem;
+}
+
+.timing-debugger-song-link-copy strong {
+  font-size: 1rem;
+}
+
+.timing-debugger-song-link-copy small {
+  color: #695b52;
+  font-size: .85rem;
+  font-weight: 500;
+}
+
+.timing-debugger-chevron {
+  color: var(--timing-red);
+  font-size: 1.45rem;
+}
+
+.timing-debugger-status {
+  display: grid;
+  min-height: 50vh;
+  align-content: start;
+  justify-items: start;
+  gap: .7rem;
+}
+
+@media (max-width: 760px), (max-width: 980px) and (max-height: 520px) {
+  .timing-debugger-section li[id^='timing-occurrence-'] {
+    scroll-margin-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
+  }
+
+  .timing-debugger[data-debugger-state='ready'] {
+    padding-bottom: calc(var(--timing-debugger-dock-occlusion, 0px) + .75rem);
+  }
+
+  .timing-debugger-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .timing-debugger-console {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-player);
+    max-height: min(67dvh, 31rem);
+    padding: .52rem
+      calc(.75rem + env(safe-area-inset-right))
+      calc(.6rem + env(safe-area-inset-bottom))
+      calc(.75rem + env(safe-area-inset-left));
+    border-inline: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    box-shadow: var(--control-sheet-shadow);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 980px) and (max-height: 520px) {
+  .timing-debugger-adjustments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

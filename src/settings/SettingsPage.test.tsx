@@ -218,18 +218,32 @@ describe('SettingsPage', () => {
     fireEvent.change(screen.getByLabelText('选择本机 JSON 备份'), {
       target: { files: [backupFile] },
     })
-    expect(await screen.findByText(/预览已完成；当前尚未写入/)).toBeInTheDocument()
+    expect(await screen.findByText(/预览已完成。无法确认身份/)).toBeInTheDocument()
     expect(window.localStorage.getItem(rateKey)).toBe('1')
-    expect(screen.getByText(/播放速度：新增 0，已有冲突 1/)).toBeInTheDocument()
+    expect(screen.getByText(/新增 0 · 已有冲突 1/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByLabelText(/播放速度：/))
+    fireEvent.click(screen.getByRole('button', { name: '取消导入' }))
+    expect(screen.queryByRole('heading', { name: '导入预览' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('选择本机 JSON 备份')).toHaveFocus()
+    expect(window.localStorage.getItem(rateKey)).toBe('1')
+
+    fireEvent.change(screen.getByLabelText('选择本机 JSON 备份'), {
+      target: { files: [backupFile] },
+    })
+    await screen.findByRole('heading', { name: '导入预览' })
+
+    fireEvent.click(screen.getByLabelText(/^播放速度/))
+    fireEvent.click(screen.getByRole('button', { name: '确认导入所选数据域' }))
+    expect(screen.getByText(/没有可写入的已选择条目/)).toBeInTheDocument()
     fireEvent.click(screen.getByLabelText('明确覆盖该域中身份相同的已有值'))
-    fireEvent.click(screen.getByLabelText(/播放速度：/))
-    fireEvent.click(screen.getByLabelText(/播放速度：/))
+    expect(screen.queryByText(/没有可写入的已选择条目/)).not.toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText(/^播放速度/))
+    fireEvent.click(screen.getByLabelText(/^播放速度/))
     expect(screen.getByLabelText('明确覆盖该域中身份相同的已有值')).not.toBeChecked()
     fireEvent.click(screen.getByLabelText('明确覆盖该域中身份相同的已有值'))
     const confirm = screen.getByRole('button', { name: '确认导入所选数据域' })
     expect(confirm).toBeEnabled()
+    expect(screen.getByText(/确认后会新增 0 项、覆盖 1 项/)).toBeInTheDocument()
     expect(window.localStorage.getItem(rateKey)).toBe('1')
     fireEvent.click(confirm)
 

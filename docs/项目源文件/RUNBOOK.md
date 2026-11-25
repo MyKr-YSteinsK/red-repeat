@@ -34,12 +34,14 @@ npm run dev
 
 ## iPhone 体验验收
 
-iPhone 14 Pro 是实际体验目标。95／96 的常规真机检查按批准延期，累计数轮后在 Safari 和主屏幕 PWA
+iPhone 14 Pro 是实际体验目标。95–97 的常规真机检查按批准延期，累计数轮后在 Safari 和主屏幕 PWA
 分入口记录。适用的高风险数据、身份、音频及 Worker 协议验收按工程约定执行。
-[曲库和学唱代表操作](../plan95/README.md) · [全曲和讲解代表操作](../plan96/README.md)
+[曲库和学唱代表操作](../plan95/README.md) · [全曲和讲解代表操作](../plan96/README.md) · [设置和播放切口代表操作](../plan97/README.md)
 每次记录实际使用入口、iOS 版本与构建号、视口、显示／文字大小、减少动态效果设置与应用 build。
 检查曲库搜索时的键盘、学唱选句与底部控件、长歌词及 Ruby、讲解滚动和返回。覆盖工具栏伸缩、
-顶部灵动岛和底部安全区。播放或更新路径受影响时，实测切后台、离线重开或下一次自然启动。
+顶部灵动岛和底部安全区。设置与调试可用合成备份检查原生文件选择、确认区和大字号下的独立底栏滚动。
+保存微调时使用隔离浏览器状态和安全 origin，普通局域网 HTTP 仅用于界面和播放预览。
+播放或更新路径受影响时，实测切后台、离线重开或下一次自然启动。
 实际设备记录与桌面 Edge 窄屏 smoke 分开保存。[升级路线与代表场景](升级审查与路线.md)
 
 ## 数据地图与恢复
@@ -62,7 +64,7 @@ iPhone 14 Pro 是实际体验目标。95／96 的常规真机检查按批准延�
 | Catalog、Runtime 和 Edition 加载 | `src/runtime/runtime-client.ts`、`song-edition-loader.ts`、`song-edition.ts`、`src/library/runtime-schema.ts`、`src/edition/use-song-edition-core.ts`。 |
 | 三模式、歌词和过渡 | `src/edition/SongEditionPage.tsx`、各 Workspace、`FeatureMarkdown.tsx`、`LyricDisplayPreferences.tsx`、`src/navigation/stable-context-transition.ts`、`src/App.css`。 |
 | 音频生命期与有效区间 | `src/audio/audio-engine.ts`、`src/edition/song-playback-session.ts`、`use-song-edition-playback.ts`、`src/timeline/`。 |
-| 本机状态、Timing、备份 | `src/practice/` 中各域 owner、`src/settings/SettingsPage.tsx`、`timing-export.ts`、`src/debugger/TimingDebuggerPage.tsx`。 |
+| 本机状态、Timing、备份 | `src/practice/` 中各域 owner、`src/settings/SettingsPage.tsx`、`PersonalBackupPanel.tsx`、`timing-export.ts`、`src/debugger/TimingDebuggerPage.tsx`。 |
 | 离线下载和后台更新 | `src/pwa/song-download.ts` 负责事务，`song-download-tasks.ts` 管当前 document 的任务；`cache-routes.ts`、`catalog-cache.ts`、`update-manager.ts`、`register-service-worker-options.ts`、`vite.config.ts` 管缓存与 Worker。 |
 | 版本与部署 | `src/settings/ReleaseHistory.tsx` 展示日志，`src/release/` 管账本与分组，`scripts/` 管检查，`.github/workflows/ci.yml` 管质量与 Pages 部署。 |
 
@@ -77,7 +79,8 @@ iPhone 14 Pro 是实际体验目标。95／96 的常规真机检查按批准延�
   `pwa:inspect` 在交付目录重新校验 Runtime。不同输出可以位于不同盘，单个事务的 staging、备份与目标需同文件系统。
 - Pages 在同一流水线重试时按尝试编号命名产物。若上传后部署无法识别，检查
   `Wait for Pages artifact metadata` 的唯一产物 ID、Actions 运行和 Pages 部署状态，再读线上身份。
-  1.30.0 的修复与发布证据在 [Plan-95 回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/5#issuecomment-7137927156)。
+  仓库 REST 已列出唯一产物时，`deploy-pages` 的内部产物索引仍可能暂时查不到。1.31.0 核对
+  正确产物和现网状态后，仅在同一 SHA 重跑失败的部署 job，第二次成功。[Plan-96 发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/7#issuecomment-7140470790)
 - 线上显示旧版本，先核对 `version.json` 的版本与 SHA，接着按客户端区分当前 document 和等待 worker。
   检查实际 CI 记录与自然重开结果。保留本机 Cache Storage 和 localStorage 以便验证。
 - 发现同曲 Timing 未套用，先对照完整 song／Edition／audio／Timeline 与当前 Occurrence，

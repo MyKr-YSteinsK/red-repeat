@@ -30,6 +30,7 @@ import {
   redoTimingEdit,
   undoTimingEdit,
 } from './timing-edit-history'
+import './timing-debugger.css'
 
 export type TimingDebuggerCatalogState =
   | { status: 'loading' }
@@ -223,7 +224,8 @@ function TimingDebuggerReady({
     })
   }
   const { selectedOccurrenceId, invalidTargetId } = selectionState
-  const [message, setMessage] = useState<string>()
+  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string }>()
+  const [saving, setSaving] = useState(false)
   const draftDocument = history.current
   const dirty = isTimingEditDirty(history)
   const timingProvider = useMemo(
@@ -240,9 +242,9 @@ function TimingDebuggerReady({
     () => [...model.timeline.occurrences].sort((left, right) => left.startMs - right.startMs),
     [model.timeline.occurrences],
   )
-  const selectedOccurrence = selectedOccurrenceId
-    ? model.occurrencesById[selectedOccurrenceId]?.occurrence
-    : undefined
+  const selectedRow = selectedOccurrenceId ? model.occurrencesById[selectedOccurrenceId] : undefined
+  const selectedOccurrence = selectedRow?.occurrence
+  const displayedTiming = selectedOccurrence ? timingProvider.getTiming(selectedOccurrence) : undefined
   const selectedIndex = selectedOccurrence
     ? chronologicalOccurrences.findIndex(({ id }) => id === selectedOccurrence.id)
     : -1
@@ -258,19 +260,14 @@ function TimingDebuggerReady({
 
   useEffect(() => {
     if (occurrenceId === undefined || invalidTargetId || selectedOccurrenceId !== occurrenceId) return
-    const row = window.document.getElementById(`timing-occurrence-${encodeURIComponent(occurrenceId)}`)
-    if (row && typeof row.scrollIntoView === 'function') {
-      const reducedMotion = typeof window.matchMedia === 'function' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      row.scrollIntoView({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' })
-    }
+    revealTimingRow(occurrenceId)
   }, [invalidTargetId, occurrenceId, selectedOccurrenceId])
 
   const updateSelectedTiming = (
     field: 'startMs' | 'endMs',
     deltaMs: number,
   ): void => {
-    if (!selectedOccurrence || invalidTargetId) {
+    if (!selectedOccurrence || invalidTargetId || saving) {
       return
     }
     try {
@@ -290,13 +287,13 @@ function TimingDebuggerReady({
       setHistory(nextHistory)
       setMessage(undefined)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '播放切口无效。')
+      setMessage({ tone: 'error', text: error instanceof Error ? error.message : '播放切口无效。' })
     }
   }
 
   const previewSelectedOccurrence = (): void => {
     if (!selectedOccurrence || !playback.engine || invalidTargetId) {
-      setMessage('当前环境无法播放音频。')
+      setMessage({ tone: 'error', text: '当前环境无法播放音频。' })
       return
     }
     setMessage(undefined)
@@ -308,49 +305,52 @@ function TimingDebuggerReady({
       )
       .then((completion) => {
         if (completion.status === 'errored') {
-          setMessage(completion.error.message)
+          setMessage({ tone: 'error', text: completion.error.message })
         }
       })
   }
 
   const save = async (): Promise<void> => {
-    if (invalidTargetId || !dirty || storageConflict) {
-      return
-    }
-    const current = historyRef.current
-    const result = await saveTimingOverrides(current.current, {
-      occurrences: model.timeline.occurrences,
-      expectedSnapshot: storageBaselineRef.current,
-    })
-    if (result.status === 'saved') {
-      const persisted = readTimingOverrideStorageSnapshot(identity)
-      if (persisted.status !== 'available') {
+    if (invalidTargetId || !dirty || storageConflict || saving) return
+
+    setSaving(true)
+    setMessage(undefined)
+    try {
+      const current = historyRef.current
+      const result = await saveTimingOverrides(current.current, {
+        occurrences: model.timeline.occurrences,
+        expectedSnapshot: storageBaselineRef.current,
+      })
+      if (result.status === 'saved') {
+        const persisted = readTimingOverrideStorageSnapshot(identity)
+        if (persisted.status !== 'available') {
+          setStorageConflict(true)
+          setMessage({ tone: 'error', text: '本机记录已写入，但无法重新核验存储。草稿仍待确认。' })
+          return
+        }
+        storageBaselineRef.current = persisted
+        const savedHistory = markTimingEditSaved(current)
+        historyRef.current = savedHistory
+        setHistory(savedHistory)
+        setMessage({ tone: 'success', text: '本机微调已保存。' })
+      } else if (result.status === 'conflict') {
         setStorageConflict(true)
-        setMessage('本机记录已写入，但无法重新核验存储；草稿保留为未确认状态。')
-        return
-      }
-      storageBaselineRef.current = persisted
-      const savedHistory = markTimingEditSaved(current)
-      historyRef.current = savedHistory
-      setHistory(savedHistory)
-      setMessage('本机微调已保存。')
-    } else {
-      if (result.status === 'conflict') {
-        setStorageConflict(true)
-        setMessage('本机微调或其他标签页的数据已变化；本次未切换活动记录，草稿仍保留。请先导出保留记录并重新打开 Timing Debugger。')
+        setMessage({ tone: 'error', text: '本机微调或其他标签页的数据已变化。本次保留草稿和原记录。请先导出保留记录，再重新打开调试台。' })
       } else if (result.status === 'unavailable') {
-        setMessage('本机存储或多标签页安全锁不可用；未保存，草稿仍保留。')
+        setMessage({ tone: 'error', text: '本机存储或多标签页安全锁不可用。保存未完成，草稿已保留。' })
       } else if (result.status === 'invalid') {
         setStorageConflict(true)
-        setMessage('检测到无法核验的本机 Timing 记录；未保存，草稿仍保留。')
+        setMessage({ tone: 'error', text: '本机 Timing 记录无法核验。保存未完成，草稿已保留。' })
       } else {
-        setMessage('无法验证本机播放切口写入；未保存确认状态，草稿仍保留。')
+        setMessage({ tone: 'error', text: '无法验证本机播放切口写入。保存未完成，草稿已保留。' })
       }
+    } finally {
+      setSaving(false)
     }
   }
 
   const undo = (): void => {
-    if (invalidTargetId) return
+    if (invalidTargetId || saving) return
     const nextHistory = undoTimingEdit(historyRef.current)
     historyRef.current = nextHistory
     setHistory(nextHistory)
@@ -358,7 +358,7 @@ function TimingDebuggerReady({
   }
 
   const redo = (): void => {
-    if (invalidTargetId) return
+    if (invalidTargetId || saving) return
     const nextHistory = redoTimingEdit(historyRef.current)
     historyRef.current = nextHistory
     setHistory(nextHistory)
@@ -369,6 +369,7 @@ function TimingDebuggerReady({
     const target = chronologicalOccurrences[selectedIndex + offset]
     if (target) {
       selectOccurrence(target.id)
+      revealTimingRow(target.id)
     }
   }
 
@@ -380,9 +381,10 @@ function TimingDebuggerReady({
     }
 
     const updateDockOcclusion = (): void => {
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+      const viewport = window.visualViewport
+      const viewportBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight
       const dockRect = dock.getBoundingClientRect()
-      const bottomOffset = Math.max(0, viewportHeight - dockRect.bottom)
+      const bottomOffset = Math.max(0, viewportBottom - dockRect.bottom)
       const occlusion = Math.max(0, dockRect.height + bottomOffset)
       debuggerElement.style.setProperty(
         '--timing-debugger-dock-occlusion',
@@ -414,11 +416,8 @@ function TimingDebuggerReady({
     >
       <header className="timing-debugger-header">
         <div>
-          <p className="eyebrow">播放切口调试 / {core.edition.song.songId}</p>
           <h1>播放切口调试</h1>
-          <p className="timing-debugger-lede">
-            只调整每句歌词的播放起点和终点；保存后，学唱、全曲和讲解会共同消费这份本机微调。
-          </p>
+          <p className="timing-debugger-lede">试听每句的起点和终点。保存后，学唱、全曲和讲解使用这份本机微调。</p>
         </div>
         <a
           className="text-link"
@@ -433,22 +432,13 @@ function TimingDebuggerReady({
       <section className="timing-debugger-panel" aria-labelledby="timing-song-title">
         <div className="timing-debugger-song-heading">
           <div>
-            <p className="eyebrow">{core.edition.song.artist}</p>
             <h2 id="timing-song-title">{core.edition.song.title}</h2>
+            <p>{core.edition.song.artist}</p>
           </div>
-          <span className="timing-debugger-identity">Edition {core.edition.contentHash.slice(0, 12)}</span>
-        </div>
-        <div className="timing-debugger-transport" aria-label="播放切口播放控制">
-          <button type="button" onClick={() => selectRelative(-1)} disabled={selectedIndex <= 0}>
-            上一句
-          </button>
-          <button
-            type="button"
-            onClick={() => selectRelative(1)}
-            disabled={selectedIndex < 0 || selectedIndex >= chronologicalOccurrences.length - 1}
-          >
-            下一句
-          </button>
+          <div className="timing-debugger-identity">
+            <span>{core.edition.song.songId}</span>
+            <span>Edition {core.edition.contentHash.slice(0, 12)}</span>
+          </div>
         </div>
       </section>
 
@@ -494,75 +484,138 @@ function TimingDebuggerReady({
           className="timing-debugger-console"
           aria-label="当前句播放切口控制台"
         >
-          <p className="eyebrow">当前句播放切口</p>
+          <div className="timing-debugger-console-body" tabIndex={0} role="region" aria-label="当前句和时间微调">
+            <div className="timing-debugger-console-heading">
+              <h2>当前句</h2>
+              <p className="timing-debugger-save-state" role="status" data-dirty={dirty}>
+                {saving ? '正在保存…' : dirty ? '有未保存的微调' : '没有未保存的微调'}
+              </p>
+            </div>
+            {selectedRow && displayedTiming ? (
+              <>
+                <div className="timing-debugger-selection">
+                  <p>
+                    <span className="timing-debugger-position">
+                      {selectedRow.occurrence.id} · {selectedIndex + 1} / {chronologicalOccurrences.length}
+                    </span>
+                    <LyricText segment={selectedRow.segment} />
+                  </p>
+                  <div className="timing-debugger-transport" role="group" aria-label="选择相邻歌词">
+                    <button type="button" onClick={() => selectRelative(-1)} disabled={selectedIndex <= 0}>上一句</button>
+                    <button
+                      type="button"
+                      onClick={() => selectRelative(1)}
+                      disabled={selectedIndex < 0 || selectedIndex >= chronologicalOccurrences.length - 1}
+                    >
+                      下一句
+                    </button>
+                  </div>
+                </div>
+                <div className="timing-debugger-adjustments">
+                  <TimingAdjustment
+                    label="起点"
+                    value={displayedTiming.startMs}
+                    original={selectedRow.occurrence.startMs}
+                    disabled={saving}
+                    onAdjust={(delta) => updateSelectedTiming('startMs', delta)}
+                  />
+                  <TimingAdjustment
+                    label="终点"
+                    value={displayedTiming.endMs}
+                    original={selectedRow.occurrence.endMs}
+                    disabled={saving}
+                    onAdjust={(delta) => updateSelectedTiming('endMs', delta)}
+                  />
+                </div>
+              </>
+            ) : null}
+            {invalidTargetId ? (
+              <p className="timing-debugger-message" role="alert" data-tone="error">
+                句子链接中的 Occurrence「{invalidTargetId}」在当前 Song Edition 中不存在。请选择正确的歌词行。
+              </p>
+            ) : null}
+            {isDormantRead(initialStorageSnapshot.readResult) ? (
+              <p className="timing-debugger-message" role="status">
+                检测到其他完整 identity 的微调记录。设置中可查看和导出，当前 Edition 只使用身份匹配的记录。
+              </p>
+            ) : null}
+            {isBlockingRead(initialStorageSnapshot.readResult) ? (
+              <p className="timing-debugger-message" role="alert" data-tone="error">
+                本机 Timing 记录无法安全核验，禁止覆盖。可先在设置中导出可核验的保留记录。
+              </p>
+            ) : null}
+            {!initialStorageSnapshot.available ? (
+              <p className="timing-debugger-message" role="alert" data-tone="error">
+                无法读取本机微调存储。保存已停用。
+              </p>
+            ) : null}
+          </div>
+          {message ? (
+            <p
+              className="timing-debugger-message timing-debugger-feedback"
+              role={message.tone === 'error' ? 'alert' : 'status'}
+              data-tone={message.tone}
+            >
+              {message.text}
+            </p>
+          ) : null}
           {selectedOccurrence ? (
-            <>
-              <dl className="timing-debugger-values">
-                <div><dt>起点</dt><dd>{timingProvider.getTiming(selectedOccurrence).startMs} ms</dd></div>
-                <div><dt>终点</dt><dd>{timingProvider.getTiming(selectedOccurrence).endMs} ms</dd></div>
-              </dl>
-              <div className="timing-debugger-adjustment-group">
-                <span>起点</span>
-                <div>
-                  {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" disabled={Boolean(invalidTargetId)} onClick={() => updateSelectedTiming('startMs', deltaMs)}>
-                      {deltaMs > 0 ? '+' : ''}{deltaMs}ms
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="timing-debugger-adjustment-group">
-                <span>终点</span>
-                <div>
-                  {[-100, -20, 20, 100].map((deltaMs) => (
-                    <button key={deltaMs} type="button" disabled={Boolean(invalidTargetId)} onClick={() => updateSelectedTiming('endMs', deltaMs)}>
-                      {deltaMs > 0 ? '+' : ''}{deltaMs}ms
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="timing-debugger-console-actions">
-                <button type="button" onClick={undo} disabled={Boolean(invalidTargetId) || history.past.length === 0}>撤销</button>
-                <button type="button" onClick={redo} disabled={Boolean(invalidTargetId) || history.future.length === 0}>重做</button>
-                <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine || Boolean(invalidTargetId)}>播放</button>
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={!dirty || Boolean(invalidTargetId) || storageConflict}
-                >
-                  保存本机微调
-                </button>
-              </div>
-            </>
+            <div className="timing-debugger-console-actions">
+              <button type="button" onClick={undo} disabled={saving || history.past.length === 0}>撤销</button>
+              <button type="button" onClick={redo} disabled={saving || history.future.length === 0}>重做</button>
+              <button type="button" onClick={previewSelectedOccurrence} disabled={!playback.engine}>试听</button>
+              <button
+                className="timing-debugger-save"
+                type="button"
+                onClick={() => void save()}
+                disabled={!dirty || storageConflict || saving}
+              >
+                保存本机微调
+              </button>
+            </div>
           ) : null}
-          <p className="timing-debugger-save-state" role="status">
-            {dirty ? '有未保存的微调' : '没有未保存的微调'}
-          </p>
-          {invalidTargetId ? (
-            <p className="timing-debugger-message" role="alert">
-              句子链接中的 Occurrence「{invalidTargetId}」在当前 Song Edition 中不存在。请选择正确的歌词行。
-            </p>
-          ) : null}
-          {isDormantRead(initialStorageSnapshot.readResult) ? (
-            <p className="timing-debugger-message" role="status">
-              检测到其他完整 identity 的微调记录；它不会自动应用于当前 Edition，可在设置中单独查看和导出。
-            </p>
-          ) : null}
-          {isBlockingRead(initialStorageSnapshot.readResult) ? (
-            <p className="timing-debugger-message" role="alert">
-              本机 Timing 记录无法安全核验；当前不会应用，也不能保存覆盖。可先在设置中导出可核验的保留记录。
-            </p>
-          ) : null}
-          {!initialStorageSnapshot.available ? (
-            <p className="timing-debugger-message" role="alert">
-              无法读取本机微调存储；为保护已有数据，本次不能保存。
-            </p>
-          ) : null}
-          {message ? <p className="timing-debugger-message" role="alert">{message}</p> : null}
         </aside>
       </div>
     </main>
   )
+}
+
+function TimingAdjustment({
+  label, value, original, disabled, onAdjust,
+}: {
+  label: string
+  value: number
+  original: number
+  disabled: boolean
+  onAdjust: (delta: number) => void
+}) {
+  const difference = value - original
+  return (
+    <div className="timing-debugger-adjustment-group" role="group" aria-label={label}>
+      <dl className="timing-debugger-values">
+        <dt>{label}</dt>
+        <dd>{value} ms</dd>
+        {difference !== 0 ? (
+          <dd className="timing-debugger-difference" aria-label="相对原始值">
+            {difference > 0 ? '+' : ''}{difference} ms
+          </dd>
+        ) : null}
+      </dl>
+      <div className="timing-debugger-adjustment-buttons">
+        {[-100, -20, 20, 100].map((delta) => (
+          <button key={delta} type="button" disabled={disabled} onClick={() => onAdjust(delta)}>
+            {delta > 0 ? '+' : ''}{delta}ms
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function revealTimingRow(occurrenceId: string): void {
+  const row = document.getElementById(`timing-occurrence-${encodeURIComponent(occurrenceId)}`)
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  row?.scrollIntoView?.({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' })
 }
 
 function TimingDebuggerSelector({
@@ -578,9 +631,9 @@ function TimingDebuggerSelector({
     <main className="timing-debugger timing-debugger-selector">
       <header className="timing-debugger-header">
         <div>
-          <p className="eyebrow">设置 / 播放切口调试</p>
+          <p className="timing-debugger-context">播放切口调试</p>
           <h1>选择一首歌</h1>
-          <p className="timing-debugger-lede">选择 Song Edition 后，逐句试听并调整唯一的 startMs / endMs。</p>
+          <p className="timing-debugger-lede">打开一首歌，试听并微调每句歌词的播放起止点。</p>
         </div>
         <a className="text-link" href={homeHref}>返回曲库</a>
       </header>
@@ -588,8 +641,11 @@ function TimingDebuggerSelector({
         {editions.map((edition) => (
           <li key={edition.songId}>
             <a href={createTimingDebuggerHref(edition.songId, runtimeLocation)}>
-              <span>{edition.title}</span>
-              <small>{edition.artist}</small>
+              <span className="timing-debugger-song-link-copy">
+                <strong>{edition.title}</strong>
+                <small>{edition.artist}</small>
+              </span>
+              <span className="timing-debugger-chevron" aria-hidden="true">›</span>
             </a>
           </li>
         ))}

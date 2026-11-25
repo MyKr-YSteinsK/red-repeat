@@ -1,9 +1,5 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
-import {
-  RUNTIME_CONTRACT_VERSION,
-  type Catalog,
-  type CatalogEdition,
-} from '../library/runtime-schema'
+import { useEffect, useMemo, useState } from 'react'
+import type { Catalog, CatalogEdition } from '../library/runtime-schema'
 import {
   getTimingOverridesStorageKey,
   isTimingOverridesEmpty,
@@ -14,15 +10,13 @@ import {
   type TimingOverrideIdentity,
 } from '../practice/practice-timing-overrides'
 import { buildInfo } from '../release/build-info'
-import { compareSemVer } from '../release/semver'
 import type { RuntimeClient } from '../runtime/runtime-client'
-import {
-  describeUpdateStatus,
-  getUpdateManager,
-  type UpdateManager,
-} from '../pwa/update-manager'
+import { getUpdateManager, type UpdateManager } from '../pwa/update-manager'
 import { createTimingDebuggerHref } from '../navigation'
-import { ReleaseEntry, ReleaseHistory } from './ReleaseHistory'
+import { ReleaseHistory } from './ReleaseHistory'
+import { SystemSettings } from './SystemSettings'
+import { PersonalBackupPanel, type BackupFeedback, type BackupImportUiState } from './PersonalBackupPanel'
+import './settings-page.css'
 import {
   createTimingExportFilename,
   createTimingExportMarkdown,
@@ -39,7 +33,6 @@ import {
   type BackupStorage,
   type PersonalBackupDocument,
   type PersonalBackupDomain,
-  type PersonalBackupImportPreview,
 } from '../practice/personal-backup'
 import {
   parsePracticeLearningStateForBackup,
@@ -85,13 +78,6 @@ type ExportState =
   | { status: 'error'; detail: string }
   | { status: 'success'; filename: string; markdown: string }
 
-interface BackupImportUiState {
-  document: PersonalBackupDocument
-  preview: PersonalBackupImportPreview
-  selectedDomains: PersonalBackupDomain[]
-  overwriteDomains: PersonalBackupDomain[]
-}
-
 export function SettingsPage({
   catalogState,
   runtimeClient,
@@ -100,17 +86,10 @@ export function SettingsPage({
   updateManager: providedUpdateManager,
   highlightVersion,
 }: SettingsPageProps) {
-  const currentUpdateManager = providedUpdateManager ?? getUpdateManager()
-  const updateSnapshot = useSyncExternalStore(
-    currentUpdateManager.subscribe,
-    currentUpdateManager.getSnapshot,
-    currentUpdateManager.getSnapshot,
-  )
-  const offlineStatus = useOfflineStatus()
   const [selection, setSelection] = useState<ExportSelection>('all')
   const [exportState, setExportState] = useState<ExportState>({ status: 'idle' })
   const [backupBusy, setBackupBusy] = useState(false)
-  const [backupMessage, setBackupMessage] = useState<string>()
+  const [backupMessage, setBackupMessage] = useState<BackupFeedback>()
   const [backupImport, setBackupImport] = useState<BackupImportUiState>()
   const [timingArchiveListing, setTimingArchiveListing] = useState<TimingOverrideArchiveListing>(
     () => listTimingOverrideArchive(),
@@ -119,24 +98,6 @@ export function SettingsPage({
   const catalog = catalogState.status === 'ready' ? catalogState.catalog : undefined
   const settingsLocation = window.location
   const timingDebuggerHref = createTimingDebuggerHref(undefined, settingsLocation)
-  const remote = updateSnapshot.remote
-  const remoteVersion = remote?.version
-  const remoteHasUpdate = Boolean(
-    remote && (
-      compareSemVer(remote.version, buildInfo.version) > 0 ||
-      (compareSemVer(remote.version, buildInfo.version) === 0 &&
-        remote.commit !== buildInfo.commit)
-    ),
-  )
-  const candidateRemoteRelease = remote?.release
-  const remoteRelease = remoteHasUpdate &&
-    candidateRemoteRelease?.version === remoteVersion
-    ? candidateRemoteRelease
-    : undefined
-  const backupDomainSummary = backupImport
-    ? summarizeBackupDomains(backupImport.preview)
-    : []
-
   useEffect(() => {
     const refreshArchiveListing = (): void => {
       setTimingArchiveListing(listTimingOverrideArchive())
@@ -200,7 +161,7 @@ export function SettingsPage({
 
   const handlePersonalBackupExport = async (): Promise<void> => {
     if (!catalog) {
-      setBackupMessage('曲库尚未就绪，暂时无法核验个人状态。')
+      setBackupMessage({ kind: 'error', text: '曲库尚未就绪，暂时无法核验个人状态。' })
       return
     }
     setBackupBusy(true)
@@ -213,9 +174,9 @@ export function SettingsPage({
       const skipped = result.skipped.length > 0
         ? `跳过 ${result.skipped.length} 项无法通过当前身份或格式核验的数据：${result.skipped.slice(0, 4).join('；')}${result.skipped.length > 4 ? '…' : ''}`
         : '所有已发现的数据域均通过当前可用身份核验。'
-      setBackupMessage(`已下载 ${filename}。${skipped} 备份仅包含当前兼容的白名单用户状态，不包含历史 Timing 保留记录；历史记录需单独导出，也不包含歌曲资源、下载快照或未知本机数据。`)
+      setBackupMessage({ kind: 'notice', text: `已下载 ${filename}。${skipped} 备份仅包含当前兼容的白名单用户状态，不包含历史 Timing 保留记录；历史记录需单独导出，也不包含歌曲资源、下载快照或未知本机数据。` })
     } catch (error) {
-      setBackupMessage(`无法生成个人备份：${describeBackupError(error)}`)
+      setBackupMessage({ kind: 'error', text: `无法生成个人备份：${describeBackupError(error)}` })
     } finally {
       setBackupBusy(false)
     }
@@ -251,11 +212,11 @@ export function SettingsPage({
     setBackupMessage(undefined)
     if (!file) return
     if (file.size > 1_000_000) {
-      setBackupMessage('备份文件超过 1 MB，已拒绝读取。')
+      setBackupMessage({ kind: 'error', text: '备份文件超过 1 MB，已拒绝读取。' })
       return
     }
     if (!catalog) {
-      setBackupMessage('曲库尚未就绪；请等待曲库完成加载后再预览导入。')
+      setBackupMessage({ kind: 'error', text: '曲库尚未就绪；请等待曲库完成加载后再预览导入。' })
       return
     }
     setBackupBusy(true)
@@ -266,13 +227,14 @@ export function SettingsPage({
       const preview = preparePersonalBackupImport(backup, contexts, window.localStorage)
       setBackupImport({
         document: backup,
+        fileName: file.name,
         preview,
         selectedDomains: [],
         overwriteDomains: [],
       })
-      setBackupMessage('预览已完成；当前尚未写入任何本机数据。无法确认身份的条目会跳过。')
+      setBackupMessage({ kind: 'notice', text: '预览已完成。无法确认身份的条目会跳过，确认前本机数据保持原样。' })
     } catch (error) {
-      setBackupMessage(`无法预览个人备份：${describeBackupError(error)}`)
+      setBackupMessage({ kind: 'error', text: `无法预览个人备份：${describeBackupError(error)}` })
     } finally {
       setBackupBusy(false)
     }
@@ -288,116 +250,79 @@ export function SettingsPage({
     )
     if (result.status === 'committed') {
       setBackupImport(undefined)
-      setBackupMessage(`已恢复 ${result.written} 项本机状态。返回曲库或重新打开歌曲后将读取更新后的值。`)
+      setBackupMessage({ kind: 'notice', text: `已恢复 ${result.written} 项本机状态。返回曲库或重新打开歌曲后将读取更新后的值。` })
       return
     }
     if (result.status === 'unchanged') {
-      setBackupMessage('没有可写入的已选择条目；本机数据未改变。')
+      setBackupMessage({ kind: 'unchanged', text: '没有可写入的已选择条目；本机数据未改变。' })
       return
     }
     if (result.status === 'changed-since-preview') {
       setBackupImport(undefined)
-      setBackupMessage('预览后本机状态发生变化，已取消写入。请重新选择文件并核对新预览。')
+      setBackupMessage({ kind: 'error', text: '预览后本机状态发生变化，已取消写入。请重新选择文件并核对新预览。' })
       return
     }
     if (result.status === 'rolled-back') {
-      setBackupMessage(`写入失败，已逐项回滚并核验原值：${result.error}`)
+      setBackupMessage({ kind: 'error', text: `写入失败，已逐项回滚并核验原值：${result.error}` })
       return
     }
-    setBackupMessage(`严重：写入失败且至少一个回滚值无法验证。不要继续覆盖导入。错误：${result.error}；${result.rollbackErrors.join('；')}`)
+    setBackupMessage({ kind: 'error', text: `严重：写入失败且至少一个回滚值无法验证。不要继续覆盖导入。错误：${result.error}；${result.rollbackErrors.join('；')}` })
   }
 
   return (
     <main className="settings" aria-labelledby="settings-title">
       <header className="settings-header">
-        <div>
-          <p className="eyebrow">RED:REPEAT / 设置</p>
-          <h1 id="settings-title">设置</h1>
-          <p className="settings-lede">查看当前产品构建、曲库状态，并把人工播放切口交给 Codex 合入 source。</p>
-        </div>
-        <a className="text-link" href={homeHref}>返回曲库</a>
+        <h1 id="settings-title">设置</h1>
+        <a className="text-link settings-back" href={homeHref}>返回曲库</a>
       </header>
 
+      <SystemSettings
+        catalog={catalog}
+        catalogLoading={catalogState.status === 'loading'}
+        updateManager={providedUpdateManager ?? getUpdateManager()}
+      />
+
       <div className="settings-grid">
-        <section className="settings-card" aria-labelledby="system-info-title">
-          <div className="settings-card-heading">
-            <p className="eyebrow">系统信息</p>
-            <h2 id="system-info-title">当前环境</h2>
-          </div>
-          <dl className="settings-facts">
-            <div><dt>产品版本</dt><dd>{buildInfo.version}</dd></div>
-            <div><dt>Build SHA</dt><dd>{buildInfo.commit}</dd></div>
-            <div><dt>发布环境</dt><dd>{buildInfo.environment}</dd></div>
-            <div><dt>Runtime contract</dt><dd>v{RUNTIME_CONTRACT_VERSION}</dd></div>
-            <div><dt>曲库歌曲</dt><dd>{catalog?.editions.length ?? '读取中…'}</dd></div>
-            <div><dt>Catalog hash</dt><dd>{catalog?.contentHash.slice(0, 12) ?? '读取中…'}</dd></div>
-            <div><dt>PWA / offline cache</dt><dd>{offlineStatusLabel(offlineStatus)}</dd></div>
-          </dl>
-          <section className="settings-update-panel" aria-labelledby="app-update-title">
-            <p className="eyebrow">PWA / 更新</p>
-            <h3 id="app-update-title">应用更新</h3>
-            <p className="settings-update-version">
-              当前版本 <strong>{buildInfo.version}</strong>
-            </p>
-            <div className="settings-update-actions">
-              <button
-                className="control-button control-button--quiet"
-                type="button"
-                onClick={() => void currentUpdateManager.checkForUpdate({ manual: true })}
-                disabled={updateSnapshot.status === 'checking'}
-              >
-                {updateSnapshot.status === 'checking' ? '检查中…' : '检查更新'}
-              </button>
-            </div>
-            <p className="settings-update-status" role="status" aria-live="polite">
-              {describeUpdateStatus(updateSnapshot)}
-            </p>
-            {updateSnapshot.status === 'error' && updateSnapshot.error ? (
-              <p className="settings-update-error">{updateSnapshot.error}</p>
-            ) : null}
-            {updateSnapshot.checkedAt !== undefined ? (
-              <dl className="settings-remote-build" data-update-build>
-                {remote ? (
-                  <>
-                    <div><dt>线上版本</dt><dd>{remote.version}</dd></div>
-                    <div><dt>线上 Build SHA</dt><dd>{remote.commit}</dd></div>
-                    <div><dt>线上构建时间</dt><dd>{remote.builtAt}</dd></div>
-                  </>
-                ) : null}
-                <div><dt>最近检查</dt><dd>{formatTimestamp(updateSnapshot.checkedAt)}</dd></div>
-              </dl>
-            ) : null}
-            {remoteHasUpdate ? (
-              remoteRelease ? (
-                <section className="settings-remote-release" data-remote-release aria-labelledby="remote-release-title">
-                  <p className="eyebrow">待更新版本 {remoteRelease.version}</p>
-                  <h4 id="remote-release-title">远端更新说明</h4>
-                  <ReleaseEntry release={remoteRelease} />
-                </section>
-              ) : (
-                <p className="settings-update-note" data-remote-release-unavailable>
-                  发现新版本，但暂时无法读取更新说明。
-                </p>
-              )
-            ) : null}
-          </section>
+        <section className="settings-card settings-card-action" aria-labelledby="timing-settings-title">
+          <h2 id="timing-settings-title">播放切口调试</h2>
+          <p>逐句试听并调整播放起止点。学唱、全曲和讲解会使用这首歌的本机微调。</p>
+          <a className="control-button control-button--primary settings-primary-link" href={timingDebuggerHref}>打开播放切口调试 →</a>
         </section>
 
-        <section className="settings-card settings-card-action" aria-labelledby="timing-settings-title">
-          <div className="settings-card-heading">
-            <p className="eyebrow">内容作业</p>
-            <h2 id="timing-settings-title">播放切口调试</h2>
-          </div>
-          <p>逐句校准唯一的 startMs / endMs。微调只保存在本机，学唱、全曲和讲解会即时共同消费。</p>
-          <a className="settings-primary-link" href={timingDebuggerHref}>打开播放切口调试 →</a>
-        </section>
+        <PersonalBackupPanel
+          ready={catalogState.status === 'ready'}
+          busy={backupBusy}
+          backup={backupImport}
+          message={backupMessage}
+          onExport={() => void handlePersonalBackupExport()}
+          onFile={(file) => void handlePersonalBackupFile(file)}
+          onSelectDomain={(domain, checked) => {
+            setBackupMessage((current) => current?.kind === 'unchanged' ? undefined : current)
+            setBackupImport((current) => current ? {
+              ...current,
+              selectedDomains: toggleDomain(current.selectedDomains, domain, checked),
+              overwriteDomains: checked
+                ? current.overwriteDomains
+                : current.overwriteDomains.filter((item) => item !== domain),
+            } : current)
+          }}
+          onOverwriteDomain={(domain, checked) => {
+            setBackupMessage((current) => current?.kind === 'unchanged' ? undefined : current)
+            setBackupImport((current) => current ? {
+              ...current,
+              overwriteDomains: toggleDomain(current.overwriteDomains, domain, checked),
+            } : current)
+          }}
+          onConfirm={confirmPersonalBackupImport}
+          onCancel={() => {
+            setBackupImport(undefined)
+            setBackupMessage({ kind: 'notice', text: '已取消导入。本机数据保持原样。' })
+          }}
+        />
 
         <section className="settings-card settings-export" aria-labelledby="timing-export-title">
-          <div className="settings-card-heading">
-            <p className="eyebrow">内容作业</p>
-            <h2 id="timing-export-title">微调导出</h2>
-          </div>
-          <p>生成可以直接交给 Codex 的 Markdown 修复包；没有本机微调的歌曲不会被导出。</p>
+          <h2 id="timing-export-title">微调导出</h2>
+          <p>把当前 Edition 的本机微调下载为 Markdown 修复包，供合入歌曲源。</p>
           {catalogState.status === 'loading' ? (
             <p className="settings-muted" role="status">正在读取曲库…</p>
           ) : catalogState.status === 'error' ? (
@@ -447,25 +372,25 @@ export function SettingsPage({
         </section>
 
         <section className="settings-card settings-timing-archive" aria-labelledby="timing-archive-title">
-          <div className="settings-card-heading">
-            <p className="eyebrow">仅本机文件</p>
-            <h2 id="timing-archive-title">Timing 保留记录</h2>
-          </div>
+          <h2 id="timing-archive-title">Timing 保留记录</h2>
           <p>旧 Edition 的微调会按完整 song、Edition、audio 与 Timeline identity 保留，不会仅凭同一首歌自动应用于新版；只有活动 Edition 完整匹配时才参与播放。此导出不能直接作为当前版 Timing Correction Export 合入。</p>
           {timingArchiveListing.status === 'unavailable' ? (
             <p className="settings-inline-error" role="alert">无法读取本机 Timing 保留记录。</p>
           ) : timingArchiveListing.entries.length > 0 ? (
-            <ul className="settings-timing-archive-list">
-              {timingArchiveListing.entries.map((entry, index) => (
-                <li key={`${entry.identity.songId}-${entry.identity.editionContentHash}-${index}`}>
-                  <strong>{entry.identity.songId}</strong>
-                  <small>
-                    Edition {entry.identity.editionContentHash.slice(0, 12)} · audio {entry.identity.audioSourceHash.slice(0, 12)} · {Object.keys(entry.document.occurrences).length} 个 Occurrence · {entry.source === 'archive' ? '已保留' : '旧版 v3 槽'}
-                  </small>
-                  <small>Timeline: {entry.identity.baseTimelineUrl}</small>
-                </li>
-              ))}
-            </ul>
+            <details className="settings-disclosure">
+              <summary>查看 {timingArchiveListing.entries.length} 条可核验记录</summary>
+              <ul className="settings-timing-archive-list">
+                {timingArchiveListing.entries.map((entry, index) => (
+                  <li key={`${entry.identity.songId}-${entry.identity.editionContentHash}-${index}`}>
+                    <strong>{entry.identity.songId}</strong>
+                    <small>
+                      Edition {entry.identity.editionContentHash.slice(0, 12)} · audio {entry.identity.audioSourceHash.slice(0, 12)} · {Object.keys(entry.document.occurrences).length} 个 Occurrence · {entry.source === 'archive' ? '已保留' : '旧版 v3 槽'}
+                    </small>
+                    <small>Timeline {entry.identity.baseTimelineUrl}</small>
+                  </li>
+                ))}
+              </ul>
+            </details>
           ) : (
             <p className="settings-muted">当前没有可核验的 Timing 保留记录。</p>
           )}
@@ -483,99 +408,6 @@ export function SettingsPage({
           {timingArchiveMessage ? <p className="settings-export-message" role="status">{timingArchiveMessage}</p> : null}
         </section>
 
-        <section className="settings-card settings-personal-backup" aria-labelledby="personal-backup-title">
-          <div className="settings-card-heading">
-            <p className="eyebrow">仅本机文件</p>
-            <h2 id="personal-backup-title">个人状态备份</h2>
-          </div>
-          <p>导出或恢复经过身份核验的进度、速度、歌词显示偏好、最近位置、待练队列和兼容 timing overrides。历史 Timing 保留记录不包含在此备份中，需使用单独导出。文件只由浏览器下载或读取；不含音频、歌曲 Runtime、离线下载记录、cookie 或未知本机数据。</p>
-          <div className="personal-backup-actions">
-            <button
-              className="control-button control-button--primary"
-              type="button"
-              disabled={backupBusy || catalogState.status !== 'ready'}
-              onClick={() => void handlePersonalBackupExport()}
-            >
-              {backupBusy ? '处理中…' : '导出个人备份 JSON'}
-            </button>
-            <label className="personal-backup-file">
-              <span>选择本机 JSON 备份</span>
-              <input
-                type="file"
-                accept="application/json,.json"
-                disabled={backupBusy || catalogState.status !== 'ready'}
-                onChange={(event) => {
-                  void handlePersonalBackupFile(event.currentTarget.files?.[0])
-                  event.currentTarget.value = ''
-                }}
-              />
-            </label>
-          </div>
-          <p className="personal-backup-safety-note">导入预览和确认前不会写入状态。默认保留现有值；覆盖冲突需为对应数据域单独勾选。多键写入失败时会尝试逐键补偿回滚并核验。浏览器 localStorage 不提供跨键断电原子事务。</p>
-          {backupMessage ? <p className="personal-backup-message" role="status">{backupMessage}</p> : null}
-          {backupImport ? (
-            <div className="personal-backup-preview" aria-label="个人备份导入预览">
-              <h3>导入预览</h3>
-              <p>生成于 {backupImport.document.createdAt}。请只选择需要恢复的数据域；未选中的域不写入。</p>
-              {backupDomainSummary.length === 0 ? (
-                <p>备份中没有可恢复的白名单数据。</p>
-              ) : (
-                <ul>
-                  {backupDomainSummary.map(({ domain, newCount, conflicts, unchanged, skipped }) => {
-                    const selected = backupImport.selectedDomains.includes(domain)
-                    const overwrite = backupImport.overwriteDomains.includes(domain)
-                    return (
-                      <li key={domain} className="personal-backup-domain">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={(event) => {
-                              const checked = event.currentTarget.checked
-                              setBackupImport((current) => current ? {
-                                ...current,
-                                selectedDomains: toggleDomain(current.selectedDomains, domain, checked),
-                                overwriteDomains: checked
-                                  ? current.overwriteDomains
-                                  : current.overwriteDomains.filter((item) => item !== domain),
-                              } : current)
-                            }}
-                          />
-                          {backupDomainLabel(domain)}：新增 {newCount}，已有冲突 {conflicts}，相同 {unchanged}，跳过 {skipped}
-                        </label>
-                        {conflicts > 0 ? (
-                          <label className="personal-backup-overwrite">
-                            <input
-                              type="checkbox"
-                              checked={overwrite}
-                              disabled={!selected}
-                              onChange={(event) => {
-                                const checked = event.currentTarget.checked
-                                setBackupImport((current) => current ? {
-                                  ...current,
-                                  overwriteDomains: toggleDomain(current.overwriteDomains, domain, checked),
-                                } : current)
-                              }}
-                            />
-                            明确覆盖该域中身份相同的已有值
-                          </label>
-                        ) : null}
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-              <button
-                className="control-button control-button--primary"
-                type="button"
-                disabled={backupBusy || backupImport.selectedDomains.length === 0}
-                onClick={confirmPersonalBackupImport}
-              >
-                确认导入所选数据域
-              </button>
-            </div>
-          ) : null}
-        </section>
       </div>
 
       <ReleaseHistory highlightVersion={highlightVersion} />
@@ -789,29 +621,6 @@ function downloadJsonFile(filename: string, value: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
-function summarizeBackupDomains(preview: PersonalBackupImportPreview): Array<{
-  domain: PersonalBackupDomain
-  newCount: number
-  conflicts: number
-  unchanged: number
-  skipped: number
-}> {
-  const domains = new Set<PersonalBackupDomain>([
-    ...preview.candidates.map(({ domain }) => domain),
-    ...(Object.keys(preview.skipped) as PersonalBackupDomain[]),
-  ])
-  return [...domains].map((domain) => {
-    const candidates = preview.candidates.filter((candidate) => candidate.domain === domain)
-    return {
-      domain,
-      newCount: candidates.filter(({ state }) => state === 'new').length,
-      conflicts: candidates.filter(({ state }) => state === 'conflict').length,
-      unchanged: candidates.filter(({ state }) => state === 'unchanged').length,
-      skipped: preview.skipped[domain] ?? 0,
-    }
-  })
-}
-
 function toggleDomain(
   current: readonly PersonalBackupDomain[],
   domain: PersonalBackupDomain,
@@ -822,56 +631,8 @@ function toggleDomain(
     : current.filter((value) => value !== domain)
 }
 
-function backupDomainLabel(domain: PersonalBackupDomain): string {
-  return domain === 'practice' ? '学唱进度'
-    : domain === 'rates' ? '播放速度'
-      : domain === 'lyricDisplayPreferences' ? '歌词显示偏好'
-        : domain === 'resumeContext' ? '最近学习位置'
-          : domain === 'practiceQueue' ? '待练队列'
-            : 'Timing Debugger 微调'
-}
-
 function describeBackupError(error: unknown): string {
   return error instanceof Error ? error.message : '发生未知本地处理错误。'
-}
-
-type OfflineStatus = 'available' | 'waiting' | 'unavailable'
-
-function useOfflineStatus(): OfflineStatus {
-  const [status, setStatus] = useState<OfflineStatus>(() => getOfflineStatus())
-
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-      return
-    }
-    const updateStatus = (): void => setStatus(getOfflineStatus())
-    navigator.serviceWorker.addEventListener('controllerchange', updateStatus)
-    updateStatus()
-    return () => navigator.serviceWorker.removeEventListener('controllerchange', updateStatus)
-  }, [])
-
-  return status
-}
-
-function getOfflineStatus(): OfflineStatus {
-  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-    return 'unavailable'
-  }
-  return navigator.serviceWorker.controller ? 'available' : 'waiting'
-}
-
-function offlineStatusLabel(status: OfflineStatus): string {
-  if (status === 'available') {
-    return '可用'
-  }
-  if (status === 'waiting') {
-    return '可用，等待接管'
-  }
-  return '开发环境不可用'
-}
-
-function formatTimestamp(timestamp: number): string {
-  return new Date(timestamp).toISOString()
 }
 
 async function loadTimingExportSong(
