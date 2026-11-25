@@ -79,7 +79,8 @@ iPhone 14 Pro 是实际体验目标。95–98 的常规真机检查按批准延�
   遇到旧式 `public/library-runtime.tmp-*`，先确认归属并移出 public，再重建；
   `pwa:inspect` 在交付目录重新校验 Runtime。不同输出可以位于不同盘，单个事务的 staging、备份与目标需同文件系统。
 - 若 Pages 上传成功但 `deploy-pages` 报找不到本次名称，先核对 run、尝试编号、上传名称与 ID、实际 `main` SHA、部署状态及线上 `version.json`。1.32.0 的前两次尝试在 REST 已列出正确产物时失败，第三次在同一 SHA 成功。[1.32.0 生产记录](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45529735640/attempts/3)
-- Plan-98 分支将构建上传与部署拆为两个 job。恢复时核对 `pages_artifact` 成功，`deploy` 消费其输出，产物未过期且主线仍等于本次 SHA。确认错误发生在创建 Pages 部署前后，仅对可恢复的失败执行一次 `gh run rerun <run-id> --failed`，然后查询新尝试和线上身份。只重跑部署时沿用成功上传的确切名称与 ID。若产物过期、名称重复、主线已前进或部署结果不明，先核对当前状态，再决定是否为获批主线重新构建。PR 只跑质量门槛。[GitHub 重跑语义](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
+- 1.32.1 首次在生产完成 `quality → pages_artifact → deploy`。上传日志、运行内 REST 记录和实际部署请求均指向 `github-pages-1`（ID `14992057039`），随后线上身份探针通过。[首次三阶段生产运行](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45547549884)
+- 恢复时核对 `pages_artifact` 成功，`deploy` 消费其输出，产物未过期且主线仍等于本次 SHA。确认错误发生在创建 Pages 部署前后，仅对可恢复的失败执行一次 `gh run rerun <run-id> --failed`，然后查询新尝试和线上身份。只重跑部署时沿用成功上传的确切名称与 ID。若产物过期、名称重复、主线已前进或部署结果不明，先核对当前状态，再决定是否为获批主线重新构建。PR 只跑质量门槛。[GitHub 重跑语义](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
 - 线上显示旧版本，先核对 `version.json` 的版本与 SHA，接着按客户端区分当前 document 和等待 worker。
   检查实际 CI 记录与自然重开结果。保留本机 Cache Storage 和 localStorage 以便验证。
 - 发现同曲 Timing 未套用，先对照完整 song／Edition／audio／Timeline 与当前 Occurrence，

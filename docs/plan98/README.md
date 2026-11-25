@@ -53,4 +53,6 @@ python scripts/qa/measure-ui.py docs/delete/measure-candidate b314e4899f8d --url
 
 1.32.0 的质量门槛已通过。两次上传后，REST 已能唯一定位本轮 ID，`deploy-pages@d6db901` 的内部查询仍分别只列出 0、1 个产物，均缺本次名称。相同 SHA 第三次列出 3 个，匹配 `github-pages-3`（ID `14985615486`）并部署成功。1.31.0 也曾有同类记录。上游先按名称查内部产物列表，查到后才请求创建 Pages 部署，部署状态轮询不能覆盖前面的空列表。[1.32.0 实际运行](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45529735640) · [上游查询实现](https://github.com/actions/deploy-pages/blob/d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e/src/internal/api-client.js)
 
-独立工程提交 `e585d76` 保留质量门槛和每次上传的唯一名称。部署 job 从成功的上传 job 接收名称、ID、SHA、版本，核对当前主线和运行内的唯一未过期产物。单独重跑部署可继续使用该份产物，省去再次安装、编译和上传。本机以实际发布产物及八组隔离输入验证了正常、重跑、空结果、重复、不匹配和主线前进等路径。新流水线的首次真实 Pages 执行留待下一次获批发布。[恢复步骤](../项目源文件/RUNBOOK.md) · [GitHub 作业重跑约定](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
+独立工程提交 `e585d76` 保留质量门槛和每次上传的唯一名称。部署 job 从成功的上传 job 接收名称、ID、SHA、版本，核对当前主线和运行内的唯一未过期产物。单独重跑部署可继续使用该份产物，省去再次安装、编译和上传。本机以实际发布产物及八组隔离输入验证了正常、重跑、空结果、重复、不匹配和主线前进等路径。[恢复步骤](../项目源文件/RUNBOOK.md) · [GitHub 作业重跑约定](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs)
+
+2026-11-25，1.32.1 首次生产运行的三个 job 一次通过。上传与实际部署请求使用同一产物 `github-pages-1`（ID `14992057039`），线上回读 `1.32.1 / ebcc348fa5f9`，产品提交 `7c5521c`。本次正常发布无需触发恢复。[生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45547549884) · [发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/11)

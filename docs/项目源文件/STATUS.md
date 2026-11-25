@@ -1,12 +1,14 @@
 # 当前状态
 
-## 生产与审阅候选
+## 生产版本与真实使用反馈
 
-**已发布 1.32.0**。PR #10 合入 `main@eb42e35e6a38`，线上 `version.json` 为 `1.32.0 / eb42e35e6a38`，远端 `v1.32.0` 和版本账本指向产品提交 `c285a20`。quality 通过，第三次尝试的 Pages 部署 `8046264463` 成功。设置、备份预览和逐句微调升级已上线。Plan-97 已关闭。[发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/9#issuecomment-7150439143) · [Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.32.0)
+**1.32.1 已正式发布，本阶段整体升级结束。** 2026-11-25，PR #12 将已审阅的 `ed306a18f137` 合入 `main@ebcc348fa5f9`。首次上线回读为 `1.32.1 / ebcc348fa5f9`。线上产品、远端 `v1.32.1` 和版本账本均指向 `7c5521c`，79 条版本及 tag 校验通过。后续文档同步触发的构建身份见 Plan-98 发布回执。[Release](https://github.com/MyKr-YSteinsK/red-repeat/releases/tag/v1.32.1) · [Plan-98](https://github.com/MyKr-YSteinsK/red-repeat/issues/11)
 
-**1.32.1 PATCH 候选**。升级分支 `codex/site-polish-performance` 从上述发布主线分出，产品提交 `7c5521c`。讲解的来源返回随可用宽度排布，短屏优先留出歌词阅读区，全曲选句复用状态相同的歌词行。Pages 上传与部署拆分在独立工程提交 `e585d76`，远端实际部署验收随下次获批发布进行。常规 iPhone 14 Pro Safari／主屏幕体验延期集中观察。[Plan-98](https://github.com/MyKr-YSteinsK/red-repeat/issues/11) · [截图、测量与复跑入口](../plan98/README.md)
+三阶段生产流程首次执行即通过。质量检查通过 54 个文件、475 项测试和双路径 PWA 检查。上传和部署日志均记录产物 `github-pages-1`（ID `14992057039`），部署请求使用相同 ID，Pages 环境部署 `8048530100` 成功。此前 1.32.0 设置和逐句微调的发布与重试记录保存在 Plan-97。[1.32.1 生产 CI](https://github.com/MyKr-YSteinsK/red-repeat/actions/runs/45547549884) · [1.32.0 发布回执](https://github.com/MyKr-YSteinsK/red-repeat/issues/9#issuecomment-7150439143)
 
-候选浏览器构建为 `b314e4899f8d`。Windows 全量 54 文件、475 项通过，六曲 93 个产物逐路径 SHA-256 相同，根与 Pages 子路径的构建及 PWA 检查通过。393×570 样本的讲解返回栏减少 48 px，微调底栏减少 53 px。十轮密集歌词四次选播和暂停的脚本时间中位数由 174.5 ms 降至 100.3 ms。
+现在进入真实使用反馈阶段。曲库、学唱、全曲、讲解、设置和逐句微调均已上线。iPhone 14 Pro Safari／主屏幕 PWA 的日常阅读、触控和自然启动接管留待使用时记录。后续修正由具体反馈和复现决定。[观察入口](RUNBOOK.md#iphone-体验验收)
+
+发布前对照使用浏览器构建 `b314e4899f8d`。393×570 样本的讲解返回栏减少 48 px，微调底栏减少 53 px。十轮密集歌词四次选播和暂停的脚本时间中位数由 174.5 ms 降至 100.3 ms。[截图、测量与复跑入口](../plan98/README.md)
 
 六曲 93 个运行时文件与升级前逐字节一致。Zod 4.6.6 下生产审计为零告警，全量仍有 21 项开发工具链告警。
 [升级审查与路线](升级审查与路线.md)记录解析入口、审计分组和 iPhone 14 Pro 设计方向。
@@ -67,5 +69,4 @@ NIGHT DANCER、深海少女、妄想感傷代償連盟、どうして仍按现�
   三种模式、回曲库保存筛选、设置日志与 Timing Debugger 入口。iOS 真机、installed-PWA 跨版本激活、
   新的听感校准及生产部署验收本轮未执行。
 
-接手维护已随 `codex/incubator-refresh` 纳入升级分支历史。下一轮现有功能的 UI 与交互设计见
-[升级审查与路线](升级审查与路线.md)。历史审稿中的 HOLD 和旧验证结论按对应快照使用。
+接手维护已随 `codex/incubator-refresh` 纳入升级分支历史。95–98 已发布的体验改动与真实使用观察项见[升级审查与路线](升级审查与路线.md)。历史审稿中的 HOLD 和旧验证结论按对应快照使用。
